@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
-  distDir: 'build',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -11,6 +8,9 @@ const nextConfig = {
   },
   images: {
     unoptimized: true
+  },
+  experimental: {
+    esmExternals: false
   }
 }
 
