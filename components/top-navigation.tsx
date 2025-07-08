@@ -1,31 +1,87 @@
 "use client"
 
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+
 export function TopNavigation() {
+  const pathname = usePathname()
+
+  // Different navigation tabs based on the current page
+  const getNavigationTabs = () => {
+    if (pathname.startsWith("/settings")) {
+      return [
+        { id: "organisation", label: "Organisation", href: "/settings" },
+        { id: "users", label: "Users", href: "/settings/users" },
+        { id: "roles", label: "Roles", href: "/settings/roles" },
+        { id: "connections", label: "System Connections", href: "/settings/connections" },
+        { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
+        { id: "term-dates", label: "Term Dates", href: "/settings/term-dates" },
+        { id: "mailer", label: "Mailer", href: "/settings/mailer" },
+      ]
+    }
+
+    if (pathname.startsWith("/reports")) {
+      return [
+        { id: "dashboard", label: "Dashboard", href: "/reports" },
+        { id: "predefined", label: "Predefined reports", href: "/reports/predefined" },
+        { id: "data-export", label: "Data Export", href: "/reports/data-export" },
+        { id: "archive", label: "Archive", href: "/reports/archive" },
+      ]
+    }
+
+    // Default tabs for forms and other pages
+    return [
+      { id: "dashboard", label: "Dashboard", href: "/forms" },
+      { id: "maintenance", label: "Maintenance", href: "/forms/maintenance" },
+    ]
+  }
+
+  const tabs = getNavigationTabs()
+  const isSettingsPage = pathname.startsWith("/settings")
+  const isReportsPage = pathname.startsWith("/reports")
+
   return (
     <div className="w-full rounded-lg h-14 bg-white border border-slate-200 flex items-center justify-between px-4">
       {/* Navigation Tabs */}
       <div className="flex h-full">
-        <a href="/forms" className="font-semibold text-slate-900 border-b-2 border-blue-500 px-4 flex items-center">
-          Dashboard
-        </a>
-        <a href="/forms/maintenance" className="font-normal text-slate-700 px-4 flex items-center hover:text-slate-900">
-          Maintenance
-        </a>
+        {tabs.map((tab) => {
+          const isActive =
+            pathname === tab.href ||
+            (tab.href === "/settings" && pathname === "/settings") ||
+            (tab.href === "/reports" && pathname === "/reports")
+
+          return (
+            <a
+              key={tab.id}
+              href={tab.href}
+              className={cn(
+                "px-4 flex items-center border-b-2 transition-colors",
+                isActive
+                  ? "font-semibold text-slate-900 border-blue-500"
+                  : "font-normal text-slate-700 border-transparent hover:text-slate-900",
+              )}
+            >
+              {tab.label}
+            </a>
+          )
+        })}
       </div>
 
-      {/* Progress Section and User Profile */}
+      {/* Right side content */}
       <div className="flex items-center gap-6">
-        {/* Progress Bar */}
-        <div className="flex items-center gap-3">
-          <div className="text-sm text-slate-600">Progress:</div>
-          <div className="flex items-center gap-2">
-            <div className="w-32 bg-slate-200 rounded-full h-2">
-              <div className="bg-green-500 h-2 rounded-full" style={{ width: "15%" }}></div>
+        {/* Progress Bar - only show on forms pages */}
+        {!isSettingsPage && !isReportsPage && (
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-slate-600">Progress:</div>
+            <div className="flex items-center gap-2">
+              <div className="w-32 bg-slate-200 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: "15%" }}></div>
+              </div>
+              <span className="text-sm font-medium text-slate-700">3/20</span>
             </div>
-            <span className="text-sm font-medium text-slate-700">3/20</span>
+            <div className="text-xs text-slate-500">sections completed</div>
           </div>
-          <div className="text-xs text-slate-500">sections completed</div>
-        </div>
+        )}
 
         {/* User Profile */}
         <div className="flex items-center">

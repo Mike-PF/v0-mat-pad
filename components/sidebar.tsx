@@ -1,6 +1,7 @@
 "use client"
 
 import { Upload, Settings, ClipboardList, FileBarChart, Menu } from "lucide-react"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface SidebarProps {
@@ -9,12 +10,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ expanded, onToggle }: SidebarProps) {
+  const pathname = usePathname()
+
   const menuItems = [
     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: Settings, label: "Settings", href: "/settings" },
-    { icon: ClipboardList, label: "Forms", href: "/forms", active: true },
+    { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: FileBarChart, label: "Reports", href: "/reports" },
   ]
+
+  const isActive = (href: string) => {
+    return pathname.startsWith(href)
+  }
 
   return (
     <div className={cn("bg-slate-600 transition-all duration-300 flex flex-col", expanded ? "w-64" : "w-16")}>
@@ -29,20 +36,21 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
       <nav className="flex-1 px-2">
         {menuItems.map((item) => {
           const Icon = item.icon
+          const active = isActive(item.href)
           return (
             <div key={item.label} className="mb-2">
               <a
                 href={item.href}
                 className={cn(
                   "flex items-center rounded-lg h-10 transition-colors group",
-                  item.active ? "bg-slate-500" : "hover:bg-slate-500",
+                  active ? "bg-slate-500" : "hover:bg-slate-500",
                   expanded ? "px-3" : "justify-center",
                 )}
               >
                 <div
                   className={cn(
                     "flex items-center justify-center rounded-lg min-h-6 w-6 border border-slate-400",
-                    item.active ? "bg-white" : "bg-slate-200 group-hover:bg-white",
+                    active ? "bg-white" : "bg-slate-200 group-hover:bg-white",
                   )}
                 >
                   <Icon className="w-4 h-4 text-slate-700" />
