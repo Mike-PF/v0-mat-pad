@@ -17,7 +17,6 @@ interface ArchivedReport {
   description: string
   tags: string[]
   downloadCount: number
-  school?: string // Added school property
 }
 
 interface GroupedReports {
@@ -36,7 +35,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Comprehensive attendance analysis across all schools in the MAT",
     tags: ["attendance", "dashboard", "whole-mat"],
     downloadCount: 12,
-    school: "Whole MAT", // Added school value
   },
   {
     id: "ar-1b",
@@ -49,7 +47,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly attendance analysis across all schools in the MAT",
     tags: ["attendance", "dashboard", "whole-mat"],
     downloadCount: 8,
-    school: "Whole MAT", // Added school value
   },
   {
     id: "ar-1c",
@@ -62,7 +59,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly attendance analysis across all schools in the MAT",
     tags: ["attendance", "dashboard", "whole-mat"],
     downloadCount: 15,
-    school: "Whole MAT", // Added school value
   },
   {
     id: "ar-2",
@@ -75,7 +71,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Weekly attendance summary with trend analysis",
     tags: ["attendance", "weekly", "trends"],
     downloadCount: 5,
-    school: "Primary Phase", // Added school value
   },
   {
     id: "ar-2b",
@@ -88,7 +83,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Weekly attendance summary with trend analysis",
     tags: ["attendance", "weekly", "trends"],
     downloadCount: 3,
-    school: "Primary Phase", // Added school value
   },
   {
     id: "ar-2c",
@@ -101,7 +95,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Weekly attendance summary with trend analysis",
     tags: ["attendance", "weekly", "trends"],
     downloadCount: 7,
-    school: "Primary Phase", // Added school value
   },
   {
     id: "ar-3",
@@ -114,7 +107,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Quarterly SEND provision analysis and outcomes report",
     tags: ["send", "statutory", "quarterly"],
     downloadCount: 8,
-    school: "Secondary Phase", // Added school value
   },
   {
     id: "ar-3b",
@@ -127,7 +119,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Quarterly SEND provision analysis and outcomes report",
     tags: ["send", "statutory", "quarterly"],
     downloadCount: 12,
-    school: "Secondary Phase", // Added school value
   },
   {
     id: "ar-3c",
@@ -140,7 +131,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Quarterly SEND provision analysis and outcomes report",
     tags: ["send", "statutory", "quarterly"],
     downloadCount: 18,
-    school: "Secondary Phase", // Added school value
   },
   {
     id: "ar-4",
@@ -153,7 +143,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly behaviour incidents analysis with intervention recommendations",
     tags: ["behaviour", "incidents", "monthly"],
     downloadCount: 6,
-    school: "Primary Phase", // Added school value
   },
   {
     id: "ar-4b",
@@ -166,7 +155,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly behaviour incidents analysis with intervention recommendations",
     tags: ["behaviour", "incidents", "monthly"],
     downloadCount: 9,
-    school: "Primary Phase", // Added school value
   },
   {
     id: "ar-4c",
@@ -179,7 +167,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly behaviour incidents analysis with intervention recommendations",
     tags: ["behaviour", "incidents", "monthly"],
     downloadCount: 11,
-    school: "Primary Phase", // Added school value
   },
   {
     id: "ar-5",
@@ -192,7 +179,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual assessment of pupil premium spending and impact on outcomes",
     tags: ["pupil-premium", "impact", "annual"],
     downloadCount: 15,
-    school: "All Saints' Catholic High School", // Added school value
   },
   {
     id: "ar-5b",
@@ -205,7 +191,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual assessment of pupil premium spending and impact on outcomes",
     tags: ["pupil-premium", "impact", "annual"],
     downloadCount: 22,
-    school: "Emmaus Catholic and CofE Primary School", // Added school value
   },
   {
     id: "ar-5c",
@@ -218,7 +203,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual assessment of pupil premium spending and impact on outcomes",
     tags: ["pupil-premium", "impact", "annual"],
     downloadCount: 28,
-    school: "Notre Dame High School", // Added school value
   },
   {
     id: "ar-6",
@@ -231,7 +215,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly headteacher report covering all aspects of school performance",
     tags: ["governors", "headteacher", "monthly"],
     downloadCount: 18,
-    school: "Sacred Heart School, A Catholic Voluntary Academy", // Added school value
   },
   {
     id: "ar-6b",
@@ -244,7 +227,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly headteacher report covering all aspects of school performance",
     tags: ["governors", "headteacher", "monthly"],
     downloadCount: 14,
-    school: "St Thomas of Canterbury School, a Catholic Voluntary Academy", // Added school value
   },
   {
     id: "ar-6c",
@@ -257,7 +239,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Monthly headteacher report covering all aspects of school performance",
     tags: ["governors", "headteacher", "monthly"],
     downloadCount: 21,
-    school: "St Wilfrid's Catholic Primary School", // Added school value
   },
   {
     id: "ar-7",
@@ -270,7 +251,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual safeguarding overview for governing body review",
     tags: ["safeguarding", "annual", "compliance"],
     downloadCount: 25,
-    school: "St Marie's School, A Catholic Voluntary Academy", // Added school value
   },
   {
     id: "ar-7b",
@@ -283,7 +263,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual safeguarding overview for governing body review",
     tags: ["safeguarding", "annual", "compliance"],
     downloadCount: 31,
-    school: "St John Fisher Primary, A Catholic Voluntary Academy", // Added school value
   },
   {
     id: "ar-7c",
@@ -296,7 +275,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual safeguarding overview for governing body review",
     tags: ["safeguarding", "annual", "compliance"],
     downloadCount: 38,
-    school: "St Mary's Primary School, A Catholic Voluntary Academy", // Added school value
   },
 ]
 
@@ -310,19 +288,14 @@ export function ArchiveContent() {
   const [viewingReport, setViewingReport] = useState<any>(null)
 
   const schools = [
-    "All Saints' Catholic High School",
-    "Emmaus Catholic and CofE Primary School",
-    "Notre Dame High School",
-    "Sacred Heart School, A Catholic Voluntary Academy",
-    "St Thomas of Canterbury School, a Catholic Voluntary Academy",
-    "St Wilfrid's Catholic Primary School",
-    "St Marie's School, A Catholic Voluntary Academy",
-    "St John Fisher Primary, A Catholic Voluntary Academy",
-    "St Mary's Primary School, A Catholic Voluntary Academy",
-    "St Ann's Catholic Primary School, A Voluntary Academy",
-    "St Catherine's Catholic Primary School (Hallam)",
-    "St Alban's Catholic Primary and Nursery School",
-    "Holy Trinity Catholic and Church of England School",
+    "Greenfield Primary School",
+    "Oakwood Academy",
+    "Riverside Secondary School",
+    "Hillcrest Primary School",
+    "Valley View Academy",
+    "Meadowbrook School",
+    "Sunset Primary School",
+    "Northgate Secondary School",
   ]
 
   const scopeOptions = ["all", "Whole MAT", "Primary Phase", "Secondary Phase", ...schools]
@@ -342,14 +315,16 @@ export function ArchiveContent() {
     }
 
     if (selectedScope !== "all") {
-      filtered = filtered.filter(
-        (report) =>
-          report.tags.includes(selectedScope) ||
-          report.school === selectedScope ||
-          (selectedScope === "Whole MAT" && report.school === "Whole MAT") ||
-          (selectedScope === "Primary Phase" && report.tags.includes("Primary")) ||
-          (selectedScope === "Secondary Phase" && report.tags.includes("Secondary")),
-      )
+      if (selectedScope === "Whole MAT") {
+        filtered = filtered.filter((report) => report.tags.includes("whole-mat"))
+      } else if (selectedScope === "Primary Phase") {
+        filtered = filtered.filter((report) => report.tags.includes("primary"))
+      } else if (selectedScope === "Secondary Phase") {
+        filtered = filtered.filter((report) => report.tags.includes("secondary"))
+      } else if (schools.includes(selectedScope)) {
+        // Filter by specific school
+        filtered = filtered.filter((report) => report.tags.includes(selectedScope.toLowerCase().replace(/\s+/g, "-")))
+      }
     }
 
     // Filter by date range
@@ -484,6 +459,9 @@ export function ArchiveContent() {
               <SelectItem value="this-year">This year</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="mt-4 text-sm text-gray-600 flex items-center">
+          {filteredReports.length} report{filteredReports.length !== 1 ? "s" : ""} found
         </div>
       </div>
 
