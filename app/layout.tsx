@@ -1,12 +1,13 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, JetBrains_Mono } from "next/font/google"
+import { Poppins, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-poppins",
+  weight: ["300", "400", "500", "600", "700"],
 })
 
 const jetbrainsMono = JetBrains_Mono({
@@ -31,13 +32,13 @@ export default function RootLayout({
       <head>
         <style>{`
 html {
-  font-family: ${inter.style.fontFamily};
-  --font-sans: ${inter.variable};
+  font-family: ${poppins.style.fontFamily};
+  --font-sans: ${poppins.variable};
   --font-mono: ${jetbrainsMono.variable};
 }
         `}</style>
       </head>
-      <body className={`${inter.variable} ${jetbrainsMono.variable}`}>{children}</body>
+      <body className={`${poppins.variable} ${jetbrainsMono.variable}`}>{children}</body>
     </html>
   )
 }

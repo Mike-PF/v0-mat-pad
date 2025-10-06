@@ -16,6 +16,7 @@ export function TopNavigation() {
         { id: "connections", label: "System Connections", href: "/settings/connections" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
         { id: "term-dates", label: "Term Dates", href: "/settings/term-dates" },
+        { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
         { id: "mailer", label: "Mailer", href: "/settings/mailer" },
       ]
     }
@@ -57,7 +58,7 @@ export function TopNavigation() {
               className={cn(
                 "px-4 flex items-center border-b-2 transition-colors",
                 isActive
-                  ? "font-semibold text-slate-900 border-blue-500"
+                  ? "font-semibold text-slate-900 border-primary"
                   : "font-normal text-slate-700 border-transparent hover:text-slate-900",
               )}
             >
