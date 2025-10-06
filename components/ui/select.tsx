@@ -32,30 +32,6 @@ const SelectTrigger = React.forwardRef<
 ))
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
-const SelectGroupLabel = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.GroupLabel>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.GroupLabel>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.GroupLabel
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold text-muted-foreground", className)}
-    {...props}
-  />
-))
-SelectGroupLabel.displayName = SelectPrimitive.GroupLabel.displayName
-
-const SelectGroupDescription = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.GroupDescription>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.GroupDescription>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.GroupDescription
-    ref={ref}
-    className={cn("px-2 py-1 text-sm text-muted-foreground", className)}
-    {...props}
-  />
-))
-SelectGroupDescription.displayName = SelectPrimitive.GroupDescription.displayName
-
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
