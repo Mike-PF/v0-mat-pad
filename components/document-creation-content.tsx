@@ -1,10 +1,9 @@
 "use client"
-
-import type React from "react"
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { UploadModal } from "@/components/ui/upload-modal"
 import {
   ChevronDown,
   Save,
@@ -195,6 +194,7 @@ export function DocumentCreationContent() {
   const [saveConfirmationData, setSaveConfirmationData] = useState<{ matchedCount: number; totalCount: number } | null>(
     null,
   )
+  const [showUploadModal, setShowUploadModal] = useState(false)
   const [tags, setTags] = useState<any[]>([]) // Renamed from systemTags for clarity
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -218,6 +218,12 @@ export function DocumentCreationContent() {
 
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishingDocument, setPublishingDocument] = useState<any>(null)
+
+  const [showFormatModal, setShowFormatModal] = useState(false)
+  const [formatModalType, setFormatModalType] = useState<"format" | "formatfinance" | null>(null)
+  const [currentFormattingTagId, setCurrentFormattingTagId] = useState<string | null>(null)
+
+  const [showManualTagModal, setShowManualTagModal] = useState(false)
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
@@ -321,9 +327,8 @@ export function DocumentCreationContent() {
     }
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (file: File) => {
     console.log("[v0] handleFileUpload called")
-    const file = event.target.files?.[0]
     console.log("[v0] Selected file:", file)
     if (file) {
       setUploadedFile(file)
@@ -369,6 +374,12 @@ export function DocumentCreationContent() {
   }
 
   const handleStyleChange = (docTagId: string, style: string) => {
+    if (style === "Format Other" || style === "FormatFinance Other") {
+      setCurrentFormattingTagId(docTagId)
+      setFormatModalType(style === "Format Other" ? "format" : "formatfinance")
+      setShowFormatModal(true)
+      return
+    }
     setTagStyles((prev) => ({ ...prev, [docTagId]: style }))
   }
 
@@ -656,6 +667,63 @@ export function DocumentCreationContent() {
 
   return (
     <>
+      <UploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onFileSelect={handleFileUpload}
+        isProcessing={isProcessing}
+      />
+
+      {showManualTagModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="max-w-2xl w-full mx-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Create Manual System Tag</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setShowManualTagModal(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-slate-600">Manual tag creation coming soon...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {showFormatModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="max-w-2xl w-full mx-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">
+                  {formatModalType === "format" ? "Format Other" : "FormatFinance Other"}
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowFormatModal(false)
+                    setFormatModalType(null)
+                    setCurrentFormattingTagId(null)
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-slate-600">Format configuration coming soon...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {showPublishModal && publishingDocument && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="max-w-2xl w-full mx-4">
@@ -758,15 +826,37 @@ export function DocumentCreationContent() {
                   >
                     ← Back to List
                   </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={!selectedSP || !documentName || !uploadedFile}
-                    className="bg-[#121051] hover:bg-[#0f0d42] text-white disabled:opacity-50"
-                    style={{ backgroundColor: selectedSP && documentName && uploadedFile ? "#121051" : undefined }}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Configuration
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {uploadedFile && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = document.createElement("a")
+                          link.href = "#"
+                          link.download = uploadedFile.name
+                          link.click()
+                          setNotificationMessage(`Downloading ${uploadedFile.name}...`)
+                          setShowNotification(true)
+                        }}
+                        className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                      >
+                        <Download
+                          className="w-4 h-4 transition-colors group-hover:!text-white"
+                          style={{ color: "#0f0d42" }}
+                        />
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleSave}
+                      disabled={!selectedSP || !documentName || !uploadedFile}
+                      className="bg-[#121051] hover:bg-[#0f0d42] text-white disabled:opacity-50"
+                      style={{ backgroundColor: selectedSP && documentName && uploadedFile ? "#121051" : undefined }}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Configuration
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-6">
@@ -789,27 +879,14 @@ export function DocumentCreationContent() {
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Word Document</label>
-                    <input
-                      type="file"
-                      accept=".doc,.docx"
-                      onChange={handleFileUpload}
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowUploadModal(true)}
                       disabled={isProcessing}
-                      className="hidden"
-                      id="file-upload"
-                    />
-                    <label
-                      htmlFor="file-upload"
-                      className={`flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-md transition-colors ${
-                        isProcessing
-                          ? "border-slate-200 bg-slate-50 cursor-not-allowed"
-                          : "border-slate-300 hover:border-[#b30089] hover:bg-[#b30089]/5 cursor-pointer"
-                      }`}
+                      className="w-full justify-start text-left font-normal hover:bg-primary hover:text-white transition-colors"
                     >
-                      <Upload className="w-4 h-4 text-slate-600" />
-                      <span className="text-sm text-slate-600">
-                        {isProcessing ? "Processing..." : uploadedFile ? uploadedFile.name : "Choose file"}
-                      </span>
-                    </label>
+                      {isProcessing ? "Processing..." : uploadedFile ? uploadedFile.name : "Upload Document"}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -983,17 +1060,20 @@ export function DocumentCreationContent() {
 
         {(isCreatingNew || selectedDocument) && activeTab === "datapoint" && uploadedFile && (
           <>
-            <Card className="flex-shrink-0">
-              <CardContent className="pt-6">
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Select Report SP</label>
+            <div className="flex-1 grid grid-cols-[280px_1fr_1fr] gap-6 min-h-0">
+              {/* Select Report SP - Compact Left Sidebar */}
+              <Card className="flex flex-col min-h-0">
+                <CardHeader>
+                  <CardTitle className="text-base">Select Report SP</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col gap-4">
                   <div className="relative">
                     <select
                       value={selectedSP}
                       onChange={(e) => handleSPChange(e.target.value)}
-                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                     >
-                      <option value="">Please select a report SP...</option>
+                      <option value="">Select SP...</option>
                       {reportSPs.map((sp) => (
                         <option key={sp} value={sp}>
                           {sp}
@@ -1002,37 +1082,35 @@ export function DocumentCreationContent() {
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                   </div>
-                </div>
 
-                {selectedSP && documentTags.length > 0 && (
-                  <div className="mt-4 grid grid-cols-4 gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <div className="text-sm text-slate-600">Document Tags</div>
-                      <div className="text-2xl font-bold text-slate-900">{documentTags.length}</div>
-                    </div>
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <div className="text-sm text-slate-600">Matched Tags</div>
-                      <div className="text-2xl font-bold text-green-600">
-                        {documentTags.filter((t) => t.matched).length}
+                  {selectedSP && documentTags.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="p-3 bg-primary/10 rounded-lg">
+                        <div className="text-xs text-slate-600">Document Tags</div>
+                        <div className="text-xl font-bold text-slate-900">{documentTags.length}</div>
+                      </div>
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <div className="text-xs text-slate-600">Matched</div>
+                        <div className="text-xl font-bold text-green-600">
+                          {documentTags.filter((t) => t.matched).length}
+                        </div>
+                      </div>
+                      <div className="p-3 bg-orange-50 rounded-lg">
+                        <div className="text-xs text-slate-600">Unmatched</div>
+                        <div className="text-xl font-bold text-orange-600">
+                          {documentTags.length - documentTags.filter((t) => t.matched).length}
+                        </div>
+                      </div>
+                      <div className="p-3 bg-purple-50 rounded-lg">
+                        <div className="text-xs text-slate-600">Available System</div>
+                        <div className="text-xl font-bold text-purple-600">{tags.filter((t) => !t.matched).length}</div>
                       </div>
                     </div>
-                    <div className="p-3 bg-orange-50 rounded-lg">
-                      <div className="text-sm text-slate-600">Unmatched Tags</div>
-                      <div className="text-2xl font-bold text-orange-600">
-                        {documentTags.length - documentTags.filter((t) => t.matched).length}
-                      </div>
-                    </div>
-                    <div className="p-3 bg-purple-50 rounded-lg">
-                      <div className="text-sm text-slate-600">Available System Tags</div>
-                      <div className="text-2xl font-bold text-purple-600">{tags.filter((t) => !t.matched).length}</div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
 
-            <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
-              {/* Document Tags Panel */}
+              {/* Document Tags Panel - More Space */}
               <Card className="flex flex-col min-h-0">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -1119,16 +1197,31 @@ export function DocumentCreationContent() {
                               <div className="flex items-center gap-2">
                                 <div className="relative">
                                   <select
-                                    value={tagStyles[docTag.id] || "Normal"}
+                                    value={tagStyles[docTag.id] || "Format(N0)"}
                                     onChange={(e) => handleStyleChange(docTag.id, e.target.value)}
                                     className="px-3 py-1.5 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                                   >
-                                    <option value="Normal">Normal</option>
-                                    <option value="Bold">Bold</option>
-                                    <option value="Italic">Italic</option>
-                                    <option value="Underline">Underline</option>
-                                    <option value="Bold Italic">Bold Italic</option>
-                                    <option value="Bold Underline">Bold Underline</option>
+                                    <option value="Format(N0)">Format(N0)</option>
+                                    <option value="Format(N1)">Format(N1)</option>
+                                    <option value="Format(N2)">Format(N2)</option>
+                                    <option value="Format(P0)">Format(P0)</option>
+                                    <option value="Format(P1)">Format(P1)</option>
+                                    <option value="Format(P2)">Format(P2)</option>
+                                    <option value="Format(dd-MM-yyyy)">Format(dd-MM-yyyy)</option>
+                                    <option value="Format(dd/MM/yyyy)">Format(dd/MM/yyyy)</option>
+                                    <option value="Format(D ddd MMM, yyyy)">Format(D ddd MMM, yyyy)</option>
+                                    <option value="Format Other">Format Other</option>
+                                    <option value="FormatFinance(N0)">FormatFinance(N0)</option>
+                                    <option value="FormatFinance(N1)">FormatFinance(N1)</option>
+                                    <option value="FormatFinance(N2)">FormatFinance(N2)</option>
+                                    <option value="FormatFinance(K0)">FormatFinance(K0)</option>
+                                    <option value="FormatFinance(K1)">FormatFinance(K1)</option>
+                                    <option value="FormatFinance Other">FormatFinance Other</option>
+                                    <option value="FormatBit(Yes;No; )">FormatBit(Yes;No; )</option>
+                                    <option value="FormatBit(True;False; )">FormatBit(True;False; )</option>
+                                    <option value="Colour(…)">Colour(…)</option>
+                                    <option value="Colour">Colour</option>
+                                    <option value="format Other">format Other</option>
                                   </select>
                                   <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-500 pointer-events-none" />
                                 </div>
@@ -1152,7 +1245,7 @@ export function DocumentCreationContent() {
                 </CardContent>
               </Card>
 
-              {/* System Tags Panel */}
+              {/* System Tags Panel - More Space */}
               <Card className="flex flex-col min-h-0">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -1160,63 +1253,76 @@ export function DocumentCreationContent() {
                       <CardTitle className="text-lg">System Tags ({tags.length})</CardTitle>
                       <p className="text-sm text-slate-600">Available tags from {selectedSP}</p>
                     </div>
-                    <div className="relative">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                        className="flex items-center gap-2"
+                        onClick={() => setShowManualTagModal(true)}
+                        className="flex items-center gap-2 hover:bg-primary hover:text-white transition-colors"
                       >
-                        <Sliders className="w-4 h-4" />
-                        Filter
+                        <Plus className="w-4 h-4" />
+                        Add Tag
                       </Button>
+                      <div className="relative">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                          className="flex items-center gap-2"
+                        >
+                          <Sliders className="w-4 h-4" />
+                          Filter
+                        </Button>
 
-                      {showFilterDropdown && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setShowFilterDropdown(false)} />
-                          <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
-                            <div className="py-1">
-                              <button
-                                onClick={() => handleSort("name")}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
-                              >
-                                <span>Sort by Name</span>
-                                {sortBy === "name" && (
-                                  <span className="text-xs text-slate-500">
-                                    {sortDirection === "asc" ? "A-Z" : "Z-A"}
-                                  </span>
-                                )}
-                              </button>
-                              <button
-                                onClick={() => handleSort("order")}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
-                              >
-                                <span>Sort by Order</span>
-                                {sortBy === "order" && (
-                                  <span className="text-xs text-slate-500">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                                )}
-                              </button>
-                              <button
-                                onClick={handleSortByMostMatched}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10"
-                              >
-                                Sort by Most Matched
-                              </button>
-                              <button
-                                onClick={() => handleSort("category")}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
-                              >
-                                <span>Sort by Category</span>
-                                {sortBy === "category" && (
-                                  <span className="text-xs text-slate-500">
-                                    {sortDirection === "asc" ? "A-Z" : "Z-A"}
-                                  </span>
-                                )}
-                              </button>
+                        {showFilterDropdown && (
+                          <>
+                            <div className="fixed inset-0 z-10" onClick={() => setShowFilterDropdown(false)} />
+                            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => handleSort("name")}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
+                                >
+                                  <span>Sort by Name</span>
+                                  {sortBy === "name" && (
+                                    <span className="text-xs text-slate-500">
+                                      {sortDirection === "asc" ? "A-Z" : "Z-A"}
+                                    </span>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleSort("order")}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
+                                >
+                                  <span>Sort by Order</span>
+                                  {sortBy === "order" && (
+                                    <span className="text-xs text-slate-500">
+                                      {sortDirection === "asc" ? "↑" : "↓"}
+                                    </span>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={handleSortByMostMatched}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10"
+                                >
+                                  Sort by Most Matched
+                                </button>
+                                <button
+                                  onClick={() => handleSort("category")}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
+                                >
+                                  <span>Sort by Category</span>
+                                  {sortBy === "category" && (
+                                    <span className="text-xs text-slate-500">
+                                      {sortDirection === "asc" ? "A-Z" : "Z-A"}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
@@ -1343,7 +1449,7 @@ export function DocumentCreationContent() {
                   <CardContent className="pt-6">
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold text-slate-900">Question & Answer Configuration</h3>
-                      <p className="text-sm text-slate-600 mt-1">Create questions and assign them to document tags</p>
+                      <p className="text-sm text-slate-600 mt-1">Create and assign questions to document tags</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
