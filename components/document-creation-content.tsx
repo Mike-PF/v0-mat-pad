@@ -1,5 +1,7 @@
 "use client"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import type React from "react"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +21,10 @@ import {
   X,
   Check,
   Send,
+  ImageIcon,
+  GitBranch,
+  MousePointer,
+  ArrowLeft,
 } from "lucide-react"
 
 const mats = [
@@ -186,6 +192,7 @@ export function DocumentCreationContent() {
   const [activeTab, setActiveTab] = useState<"datapoint" | "qa">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [reportImage, setReportImage] = useState<File | null>(null)
   const [documentTags, setDocumentTags] = useState<any[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
@@ -225,6 +232,18 @@ export function DocumentCreationContent() {
 
   const [showManualTagModal, setShowManualTagModal] = useState(false)
 
+  const [showIfModal, setShowIfModal] = useState(false)
+  const [currentIfTagId, setCurrentIfTagId] = useState<string | null>(null)
+
+  const [rangeStartTagId, setRangeStartTagId] = useState<string | null>(null)
+  const [rangeEndTagId, setRangeEndTagId] = useState<string | null>(null)
+  const [showConditionalModal, setShowConditionalModal] = useState(false)
+  const [selectingTagMode, setSelectingTagMode] = useState<{ systemTagId: string; systemTagName: string } | null>(null)
+
+  useEffect(() => {
+    // Logic that might depend on other states, e.g., fetching data on load
+  }, [selectedSchoolUrn, selectedDocument])
+
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
   }
@@ -245,11 +264,13 @@ export function DocumentCreationContent() {
     setDocumentName("")
     setSelectedSP("")
     setUploadedFile(null)
+    setReportImage(null) // Reset report image
     setDocumentTags([])
     setTags([])
     setQuestions([])
     setQuestionAssignments({})
     setQaData({})
+    setSelectingTagMode(null) // Clear selection mode on create new
   }
 
   const handleEditDocument = (doc: any) => {
@@ -258,6 +279,7 @@ export function DocumentCreationContent() {
     setDocumentName(doc.name)
     setSelectedSP(doc.sp)
     setUploadedFile(null)
+    setReportImage(null) // Reset report image
 
     // Load existing configuration
     const tagCount = doc.sp === "SP_AttendanceReport" ? 1500 : doc.sp === "SP_SENDProvisionReport" ? 2000 : 500
@@ -280,6 +302,7 @@ export function DocumentCreationContent() {
         DOC_TAG_5: "Q_2",
       })
     }
+    setSelectingTagMode(null) // Clear selection mode on edit
   }
 
   const handleDeleteDocument = (docId: string) => {
@@ -325,6 +348,7 @@ export function DocumentCreationContent() {
       setTags([])
       setDocumentTags([]) // Clear document tags as well
     }
+    setSelectingTagMode(null) // Clear selection mode when changing SP
   }
 
   const handleFileUpload = (file: File) => {
@@ -351,12 +375,24 @@ export function DocumentCreationContent() {
     }
   }
 
+  const handleReportImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && file.type.startsWith("image/")) {
+      setReportImage(file)
+      setNotificationMessage(`Report image "${file.name}" uploaded successfully!`)
+      setShowNotification(true)
+    } else {
+      alert("Please select a valid image file (JPG, PNG, etc.)")
+    }
+  }
+
   const handleMatchTag = (docTagId: string, systemTagId: string) => {
     setDocumentTags((prevTags) =>
       prevTags.map((tag) => (tag.id === docTagId ? { ...tag, matched: true, matchedSystemTagId: systemTagId } : tag)),
     )
 
     setTagStyles((prev) => ({ ...prev, [docTagId]: "Normal" }))
+    setSelectingTagMode(null)
   }
 
   const handleUnmatchTag = (docTagId: string) => {
@@ -381,6 +417,20 @@ export function DocumentCreationContent() {
       return
     }
     setTagStyles((prev) => ({ ...prev, [docTagId]: style }))
+  }
+
+  const handleRangeStart = (docTagId: string) => {
+    setRangeStartTagId(docTagId)
+    setRangeEndTagId(null)
+  }
+
+  const handleRangeEnd = (docTagId: string) => {
+    setRangeEndTagId(docTagId)
+  }
+
+  const handleCancelRange = () => {
+    setRangeStartTagId(null)
+    setRangeEndTagId(null)
   }
 
   const handleOrderChange = (tagId: string, newOrder: number) => {
@@ -473,6 +523,11 @@ export function DocumentCreationContent() {
     if (editingQuestionText.trim() === "" || !editingQuestionId) return
 
     setQuestions(questions.map((q) => (q.id === editingQuestionId ? { ...q, text: editingQuestionText.trim() } : q)))
+    setEditingQuestionId(null)
+    setEditingQuestionText("")
+  }
+
+  const handleCancelEditQuestion = () => {
     setEditingQuestionId(null)
     setEditingQuestionText("")
   }
@@ -663,6 +718,7 @@ export function DocumentCreationContent() {
     documentTagsCount: documentTags.length,
     tagsCount: tags.length,
     activeTab,
+    selectingTagMode, // Log selection mode state
   })
 
   return (
@@ -724,6 +780,33 @@ export function DocumentCreationContent() {
         </div>
       )}
 
+      {showIfModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="max-w-2xl w-full mx-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">IF Conditional Logic</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowIfModal(false)
+                    setCurrentIfTagId(null)
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-slate-600">Conditional logic configuration coming soon...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {showPublishModal && publishingDocument && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="max-w-2xl w-full mx-4">
@@ -766,14 +849,16 @@ export function DocumentCreationContent() {
               <div className="flex gap-3">
                 <Button
                   onClick={handleSaveConfirm}
-                  className="flex-1 text-white"
+                  className="flex-1 text-white hover:bg-[#B30089] hover:border-[#B30089] transition-colors"
                   style={{ backgroundColor: "#0f0d42" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0a0830")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#0f0d42")}
                 >
                   OK
                 </Button>
-                <Button onClick={handleSaveCancel} variant="outline" className="flex-1 bg-transparent">
+                <Button
+                  onClick={handleSaveCancel}
+                  variant="outline"
+                  className="flex-1 bg-transparent hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                >
                   Cancel
                 </Button>
               </div>
@@ -798,10 +883,8 @@ export function DocumentCreationContent() {
               <p className="text-slate-700 mb-6">{notificationMessage}</p>
               <Button
                 onClick={() => setShowNotification(false)}
-                className="w-full text-white"
+                className="w-full text-white hover:bg-[#B30089] hover:border-[#B30089] transition-colors"
                 style={{ backgroundColor: "#0f0d42" }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0a0830")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#0f0d42")}
               >
                 OK
               </Button>
@@ -823,35 +906,58 @@ export function DocumentCreationContent() {
                       setIsCreatingNew(false)
                       setSelectedDocument(null)
                     }}
+                    className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                   >
-                    ← Back to List
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to List
                   </Button>
                   <div className="flex items-center gap-2">
+                    {/* Added report image upload button and styling */}
                     {uploadedFile && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const link = document.createElement("a")
-                          link.href = "#"
-                          link.download = uploadedFile.name
-                          link.click()
-                          setNotificationMessage(`Downloading ${uploadedFile.name}...`)
-                          setShowNotification(true)
-                        }}
-                        className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
-                      >
-                        <Download
-                          className="w-4 h-4 transition-colors group-hover:!text-white"
-                          style={{ color: "#0f0d42" }}
+                      <>
+                        <input
+                          type="file"
+                          id="report-image-upload"
+                          accept="image/*"
+                          onChange={handleReportImageUpload}
+                          className="hidden"
                         />
-                      </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => document.getElementById("report-image-upload")?.click()}
+                          className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                          title={reportImage ? `Current: ${reportImage.name}` : "Upload Report Image"}
+                        >
+                          <ImageIcon
+                            className="w-4 h-4 transition-colors group-hover:!text-white"
+                            style={{ color: reportImage ? "#b30089" : "#0f0d42" }}
+                          />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const link = document.createElement("a")
+                            link.href = "#"
+                            link.download = uploadedFile.name
+                            link.click()
+                            setNotificationMessage(`Downloading ${uploadedFile.name}...`)
+                            setShowNotification(true)
+                          }}
+                          className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                        >
+                          <Download
+                            className="w-4 h-4 transition-colors group-hover:!text-white"
+                            style={{ color: "#0f0d42" }}
+                          />
+                        </Button>
+                      </>
                     )}
                     <Button
                       onClick={handleSave}
                       disabled={!selectedSP || !documentName || !uploadedFile}
-                      className="bg-[#121051] hover:bg-[#0f0d42] text-white disabled:opacity-50"
-                      style={{ backgroundColor: selectedSP && documentName && uploadedFile ? "#121051" : undefined }}
+                      className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Save Configuration
@@ -883,7 +989,7 @@ export function DocumentCreationContent() {
                       variant="outline"
                       onClick={() => setShowUploadModal(true)}
                       disabled={isProcessing}
-                      className="w-full justify-start text-left font-normal hover:bg-primary hover:text-white transition-colors"
+                      className="w-full justify-start text-left font-normal hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                     >
                       {isProcessing ? "Processing..." : uploadedFile ? uploadedFile.name : "Upload Document"}
                     </Button>
@@ -969,7 +1075,10 @@ export function DocumentCreationContent() {
                     Manage document templates for {selectedOrganization?.name}
                   </p>
                 </div>
-                <Button onClick={handleCreateNew} className="bg-[#121051] hover:bg-[#0f0d42] text-white">
+                <Button
+                  onClick={handleCreateNew}
+                  className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Create New Document
                 </Button>
@@ -1085,25 +1194,25 @@ export function DocumentCreationContent() {
 
                   {selectedSP && documentTags.length > 0 && (
                     <div className="space-y-3">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <div className="text-xs text-slate-600">Document Tags</div>
-                        <div className="text-xl font-bold text-slate-900">{documentTags.length}</div>
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#5B9BF5" }}>
+                        <div className="text-xs text-white/90">Document Tags</div>
+                        <div className="text-xl font-bold text-white">{documentTags.length}</div>
                       </div>
-                      <div className="p-3 bg-green-50 rounded-lg">
-                        <div className="text-xs text-slate-600">Matched</div>
-                        <div className="text-xl font-bold text-green-600">
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#6AD0D5" }}>
+                        <div className="text-xs text-white/90">Matched</div>
+                        <div className="text-xl font-bold text-white">
                           {documentTags.filter((t) => t.matched).length}
                         </div>
                       </div>
-                      <div className="p-3 bg-orange-50 rounded-lg">
-                        <div className="text-xs text-slate-600">Unmatched</div>
-                        <div className="text-xl font-bold text-orange-600">
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#B30089" }}>
+                        <div className="text-xs text-white/90">Unmatched</div>
+                        <div className="text-xl font-bold text-white">
                           {documentTags.length - documentTags.filter((t) => t.matched).length}
                         </div>
                       </div>
-                      <div className="p-3 bg-purple-50 rounded-lg">
-                        <div className="text-xs text-slate-600">Available System</div>
-                        <div className="text-xl font-bold text-purple-600">{tags.filter((t) => !t.matched).length}</div>
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#121051" }}>
+                        <div className="text-xs text-white/90">Available System</div>
+                        <div className="text-xl font-bold text-white">{tags.filter((t) => !t.matched).length}</div>
                       </div>
                     </div>
                   )}
@@ -1123,7 +1232,7 @@ export function DocumentCreationContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowDocTagFilterDropdown(!showDocTagFilterDropdown)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                       >
                         <Sliders className="w-4 h-4" />
                         Filter
@@ -1177,69 +1286,230 @@ export function DocumentCreationContent() {
                 <CardContent className="flex-1 flex flex-col min-h-0 overflow-hidden">
                   <div className="flex-1 border border-slate-200 rounded-lg overflow-auto">
                     <div className="space-y-2 p-4">
-                      {filteredDocumentTags.map((docTag) => (
-                        <div
-                          key={docTag.id}
-                          className={`p-3 border rounded-lg ${
-                            docTag.matched ? "bg-green-50 border-green-200" : "bg-white border-slate-200"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex-1">
-                              <div className="font-mono text-sm font-medium">{docTag.placeholder}</div>
-                              {docTag.matched && (
-                                <div className="text-xs text-green-600 mt-1">
-                                  Matched to: {tags.find((t) => t.id === docTag.matchedSystemTagId)?.name}
-                                </div>
-                              )}
-                            </div>
+                      {filteredDocumentTags.map((docTag, index) => {
+                        const isAfterRangeStart = rangeStartTagId
+                          ? documentTags.findIndex((t) => t.id === docTag.id) >
+                            documentTags.findIndex((t) => t.id === rangeStartTagId)
+                          : false
+
+                        return (
+                          <div
+                            key={docTag.id}
+                            className={`border rounded-lg transition-all ${
+                              docTag.matched ? "bg-green-50 border-green-200" : "bg-white border-slate-200"
+                            }`}
+                          >
                             {docTag.matched ? (
-                              <div className="flex items-center gap-2">
-                                <div className="relative">
-                                  <select
-                                    value={tagStyles[docTag.id] || "Format(N0)"}
-                                    onChange={(e) => handleStyleChange(docTag.id, e.target.value)}
-                                    className="px-3 py-1.5 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                  >
-                                    <option value="Format(N0)">Format(N0)</option>
-                                    <option value="Format(N1)">Format(N1)</option>
-                                    <option value="Format(N2)">Format(N2)</option>
-                                    <option value="Format(P0)">Format(P0)</option>
-                                    <option value="Format(P1)">Format(P1)</option>
-                                    <option value="Format(P2)">Format(P2)</option>
-                                    <option value="Format(dd-MM-yyyy)">Format(dd-MM-yyyy)</option>
-                                    <option value="Format(dd/MM/yyyy)">Format(dd/MM/yyyy)</option>
-                                    <option value="Format(D ddd MMM, yyyy)">Format(D ddd MMM, yyyy)</option>
-                                    <option value="Format Other">Format Other</option>
-                                    <option value="FormatFinance(N0)">FormatFinance(N0)</option>
-                                    <option value="FormatFinance(N1)">FormatFinance(N1)</option>
-                                    <option value="FormatFinance(N2)">FormatFinance(N2)</option>
-                                    <option value="FormatFinance(K0)">FormatFinance(K0)</option>
-                                    <option value="FormatFinance(K1)">FormatFinance(K1)</option>
-                                    <option value="FormatFinance Other">FormatFinance Other</option>
-                                    <option value="FormatBit(Yes;No; )">FormatBit(Yes;No; )</option>
-                                    <option value="FormatBit(True;False; )">FormatBit(True;False; )</option>
-                                    <option value="Colour(…)">Colour(…)</option>
-                                    <option value="Colour">Colour</option>
-                                    <option value="format Other">format Other</option>
-                                  </select>
-                                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-500 pointer-events-none" />
+                              <div className="p-4 space-y-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    {/* Tag Placeholder - Primary Info */}
+                                    <div className="font-mono text-sm font-semibold text-slate-900 break-all">
+                                      {docTag.placeholder}
+                                    </div>
+
+                                    {/* Matched System Tag - Secondary Info */}
+                                    <div className="mt-2 flex items-center gap-2">
+                                      <Link className="w-4 h-4 text-green-600" />
+                                      <span className="text-sm text-slate-600">Matched to:</span>
+                                      <span className="text-sm font-medium text-green-700">
+                                        {tags.find((t) => t.id === docTag.matchedSystemTagId)?.name}
+                                      </span>
+                                    </div>
+                                    {/* Range Status Indicators */}
+                                    {docTag.id === rangeStartTagId && (
+                                      <div
+                                        className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
+                                        style={{ backgroundColor: "#121051", color: "white" }}
+                                      >
+                                        <Check className="w-3 h-3" />
+                                        Range Start Selected
+                                      </div>
+                                    )}
+                                    {docTag.id === rangeEndTagId && (
+                                      <div
+                                        className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
+                                        style={{ backgroundColor: "#121051", color: "white" }}
+                                      >
+                                        <Check className="w-3 h-3" />
+                                        Range End Selected
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleUnmatchTag(docTag.id)}
-                                  className="text-red-600"
-                                >
-                                  Unmatch
-                                </Button>
+
+                                {/* Format Dropdown - Full Width */}
+                                <div className="pt-2 border-t border-green-200">
+                                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Format</label>
+                                  <div className="relative">
+                                    <select
+                                      value={tagStyles[docTag.id] || "Format(N0)"}
+                                      onChange={(e) => handleStyleChange(docTag.id, e.target.value)}
+                                      className="w-full px-3 py-2 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                                    >
+                                      <option value="Format(N0)">Format(N0)</option>
+                                      <option value="Format(N1)">Format(N1)</option>
+                                      <option value="Format(N2)">Format(N2)</option>
+                                      <option value="Format(P0)">Format(P0)</option>
+                                      <option value="Format(P1)">Format(P1)</option>
+                                      <option value="Format(P2)">Format(P2)</option>
+                                      <option value="Format(dd-MM-yyyy)">Format(dd-MM-yyyy)</option>
+                                      <option value="Format(dd/MM/yyyy)">Format(dd/MM/yyyy)</option>
+                                      <option value="Format(D ddd MMM, yyyy)">Format(D ddd MMM, yyyy)</option>
+                                      <option value="Format Other">Format Other</option>
+                                      <option value="FormatFinance(N0)">FormatFinance(N0)</option>
+                                      <option value="FormatFinance(N1)">FormatFinance(N1)</option>
+                                      <option value="FormatFinance(N2)">FormatFinance(N2)</option>
+                                      <option value="FormatFinance(K0)">FormatFinance(K0)</option>
+                                      <option value="FormatFinance(K1)">FormatFinance(K1)</option>
+                                      <option value="FormatFinance Other">FormatFinance Other</option>
+                                      <option value="FormatBit(Yes;No; )">FormatBit(Yes;No; )</option>
+                                      <option value="FormatBit(True;False; )">FormatBit(True;False; )</option>
+                                      <option value="Colour(…)">Colour(…)</option>
+                                      <option value="Colour">Colour</option>
+                                      <option value="format Other">format Other</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                                  </div>
+                                </div>
+
+                                {/* Action Buttons - Organized in Groups */}
+                                <div className="pt-2 border-t border-green-200 flex items-center justify-between gap-3">
+                                  {/* Range & Conditional Logic Actions */}
+                                  <div className="flex items-center gap-2">
+                                    {!rangeStartTagId && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleRangeStart(docTag.id)}
+                                          className="flex items-center gap-1.5 transition-colors bg-white border-slate-300 text-slate-900 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                        >
+                                          Range Start
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => {
+                                            setCurrentIfTagId(docTag.id)
+                                            setShowIfModal(true)
+                                          }}
+                                          className="flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          title="Add IF conditional logic"
+                                        >
+                                          <GitBranch className="w-4 h-4" />
+                                        </Button>
+                                      </>
+                                    )}
+
+                                    {rangeStartTagId && docTag.id === rangeStartTagId && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={handleCancelRange}
+                                          className="flex items-center gap-1.5 transition-colors hover:bg-[#9a0074] hover:border-[#9a0074] bg-transparent"
+                                          style={{
+                                            backgroundColor: "#B30089",
+                                            borderColor: "#B30089",
+                                            color: "white",
+                                          }}
+                                        >
+                                          Range Start
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => {
+                                            setCurrentIfTagId(docTag.id)
+                                            setShowIfModal(true)
+                                          }}
+                                          className="flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          title="Add IF conditional logic"
+                                        >
+                                          <GitBranch className="w-4 h-4" />
+                                        </Button>
+                                      </>
+                                    )}
+
+                                    {rangeStartTagId && isAfterRangeStart && docTag.id !== rangeStartTagId && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleRangeEnd(docTag.id)}
+                                          className="flex items-center gap-1.5 transition-colors bg-white border-slate-300 text-slate-900 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          style={
+                                            rangeEndTagId === docTag.id
+                                              ? {
+                                                  backgroundColor: "#B30089",
+                                                  borderColor: "#B30089",
+                                                  color: "white",
+                                                }
+                                              : undefined
+                                          }
+                                        >
+                                          Range End
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => {
+                                            setCurrentIfTagId(docTag.id)
+                                            setShowIfModal(true)
+                                          }}
+                                          className="flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          title="Add IF conditional logic"
+                                        >
+                                          <GitBranch className="w-4 h-4" />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {/* Unmatch Action - Destructive, Separated */}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleUnmatchTag(docTag.id)}
+                                    className="text-red-600 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                                  >
+                                    <X className="w-4 h-4 mr-1" />
+                                    Unmatch
+                                  </Button>
+                                </div>
                               </div>
                             ) : (
-                              <div className="text-xs text-slate-500">Not matched</div>
+                              <div
+                                className={`font-mono text-sm text-slate-600 ${
+                                  selectingTagMode
+                                    ? "cursor-pointer hover:bg-blue-50 p-2 rounded border-2 border-dashed border-blue-300"
+                                    : ""
+                                }`}
+                                onClick={() => {
+                                  if (selectingTagMode) {
+                                    handleMatchTag(docTag.id, selectingTagMode.systemTagId)
+                                  }
+                                }}
+                              >
+                                {selectingTagMode ? (
+                                  <div className="space-y-1">
+                                    <div className="font-semibold text-slate-900">{docTag.placeholder}</div>
+                                    <div className="flex items-center gap-2">
+                                      <MousePointer className="w-4 h-4 text-blue-600" />
+                                      <span className="text-blue-600 font-medium text-xs">
+                                        Click to match with {selectingTagMode.systemTagName}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  docTag.placeholder
+                                )}
+                              </div>
                             )}
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 </CardContent>
@@ -1258,7 +1528,7 @@ export function DocumentCreationContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowManualTagModal(true)}
-                        className="flex items-center gap-2 hover:bg-primary hover:text-white transition-colors"
+                        className="flex items-center gap-2 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         Add Tag
@@ -1353,8 +1623,9 @@ export function DocumentCreationContent() {
                         return (
                           <div
                             key={tag.id}
-                            className="p-3 border rounded-lg bg-white border-slate-200 hover:border-[#b30089] hover:bg-[#b30089]/5 cursor-pointer"
+                            className="p-3 border rounded-lg bg-white border-slate-200 hover:border-l-4 hover:border-l-[#b30089] transition-all cursor-pointer"
                             onClick={() => {
+                              // This onClick is for the default "Match" behavior if no tag is selected
                               const firstUnmatched = documentTags.find((dt) => !dt.matched)
                               if (firstUnmatched) {
                                 handleMatchTag(firstUnmatched.id, tag.id)
@@ -1378,12 +1649,44 @@ export function DocumentCreationContent() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
+                                    if (selectingTagMode?.systemTagId === tag.id) {
+                                      // Cancel selection if clicking the same tag
+                                      setSelectingTagMode(null)
+                                    } else {
+                                      // Enter selection mode
+                                      setSelectingTagMode({ systemTagId: tag.id, systemTagName: tag.name })
+                                    }
+                                  }}
+                                  style={
+                                    selectingTagMode?.systemTagId === tag.id
+                                      ? {
+                                          backgroundColor: "#B30089",
+                                          color: "white",
+                                          borderColor: "#B30089",
+                                        }
+                                      : undefined
+                                  }
+                                  className={
+                                    selectingTagMode?.systemTagId === tag.id
+                                      ? "hover:bg-[#9a0074] hover:border-[#9a0074] transition-colors"
+                                      : "hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                                  }
+                                >
+                                  {selectingTagMode?.systemTagId === tag.id ? "Selected" : "Select Tag"}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     const firstUnmatched = documentTags.find((dt) => !dt.matched)
                                     if (firstUnmatched) {
                                       handleMatchTag(firstUnmatched.id, tag.id)
                                     }
                                   }}
+                                  className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                                 >
+                                  <Link className="w-3 h-3 mr-1" />
                                   Match
                                 </Button>
                               </div>
@@ -1497,7 +1800,7 @@ export function DocumentCreationContent() {
                           <Button
                             onClick={handleAddQuestion}
                             disabled={newQuestionText.trim() === ""}
-                            className="bg-[#121051] hover:bg-[#0f0d42] text-white"
+                            className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
                           >
                             <Plus className="w-4 h-4 mr-2" />
                             Add
@@ -1536,17 +1839,15 @@ export function DocumentCreationContent() {
                                       <Button
                                         size="sm"
                                         onClick={handleSaveEditQuestion}
-                                        className="bg-[#121051] hover:bg-[#0f0d42] text-white"
+                                        className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
                                       >
                                         Save
                                       </Button>
                                       <Button
-                                        size="sm"
                                         variant="outline"
-                                        onClick={() => {
-                                          setEditingQuestionId(null)
-                                          setEditingQuestionText("")
-                                        }}
+                                        size="sm"
+                                        onClick={handleCancelEditQuestion}
+                                        className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors bg-transparent"
                                       >
                                         Cancel
                                       </Button>
@@ -1568,7 +1869,7 @@ export function DocumentCreationContent() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleEditQuestion(question.id)}
-                                        className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                                        className="group hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                                       >
                                         <Edit
                                           className="w-3 h-3 transition-colors group-hover:!text-white"
@@ -1579,7 +1880,7 @@ export function DocumentCreationContent() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleDeleteQuestion(question.id)}
-                                        className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                                        className="group hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                                       >
                                         <Trash
                                           className="w-3 h-3 transition-colors group-hover:!text-white"
@@ -1691,56 +1992,57 @@ export function DocumentCreationContent() {
                               >
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <div className="font-mono text-sm font-medium text-slate-900">
-                                      {displayPlaceholder}
+                                    <div className="flex-1">
+                                      <div className="font-mono text-sm font-medium text-slate-900">
+                                        {displayPlaceholder}
+                                      </div>
+                                      {assignedQuestion && (
+                                        <div className="text-xs text-green-600 font-medium px-2 py-1 bg-green-100 rounded">
+                                          Assigned
+                                        </div>
+                                      )}
                                     </div>
-                                    {assignedQuestion && (
-                                      <div className="text-xs text-green-600 font-medium px-2 py-1 bg-green-100 rounded">
-                                        Assigned
+                                    {assignedQuestion ? (
+                                      <div className="space-y-2">
+                                        <div className="p-2 bg-white rounded border border-green-200">
+                                          <div className="text-xs text-slate-600 mb-1">Assigned Question:</div>
+                                          <div className="text-sm text-slate-900">{assignedQuestion.text}</div>
+                                        </div>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleUnassignQuestion(docTag.id)}
+                                          className="w-full text-red-600 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                                        >
+                                          <X className="w-3 h-3 mr-1" />
+                                          Unassign
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <div className="relative">
+                                        <select
+                                          value=""
+                                          onChange={(e) => {
+                                            if (e.target.value) {
+                                              handleAssignQuestion(docTag.id, e.target.value)
+                                            }
+                                          }}
+                                          className="w-full p-2 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                                          disabled={questions.length === 0}
+                                        >
+                                          <option value="">
+                                            {questions.length === 0 ? "No questions available" : "Select a question..."}
+                                          </option>
+                                          {questions.map((q) => (
+                                            <option key={q.id} value={q.id}>
+                                              {q.text}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-500 pointer-events-none" />
                                       </div>
                                     )}
                                   </div>
-
-                                  {assignedQuestion ? (
-                                    <div className="space-y-2">
-                                      <div className="p-2 bg-white rounded border border-green-200">
-                                        <div className="text-xs text-slate-600 mb-1">Assigned Question:</div>
-                                        <div className="text-sm text-slate-900">{assignedQuestion.text}</div>
-                                      </div>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleUnassignQuestion(docTag.id)}
-                                        className="w-full text-red-600 hover:bg-red-50"
-                                      >
-                                        <X className="w-3 h-3 mr-1" />
-                                        Unassign
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="relative">
-                                      <select
-                                        value=""
-                                        onChange={(e) => {
-                                          if (e.target.value) {
-                                            handleAssignQuestion(docTag.id, e.target.value)
-                                          }
-                                        }}
-                                        className="w-full p-2 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                        disabled={questions.length === 0}
-                                      >
-                                        <option value="">
-                                          {questions.length === 0 ? "No questions available" : "Select a question..."}
-                                        </option>
-                                        {questions.map((q) => (
-                                          <option key={q.id} value={q.id}>
-                                            {q.text}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-500 pointer-events-none" />
-                                    </div>
-                                  )}
                                 </div>
                               </div>
                             )
