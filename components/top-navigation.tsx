@@ -15,7 +15,7 @@ export function TopNavigation() {
         { id: "roles", label: "Roles", href: "/settings/roles" },
         { id: "connections", label: "System Connections", href: "/settings/connections" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
-        { id: "term-dates", label: "Term Dates", href: "/settings/term-dates" },
+        { id: "system-dates", label: "System Dates", href: "/settings/term-dates" },
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
         { id: "mailer", label: "Mailer", href: "/settings/mailer" },
       ]

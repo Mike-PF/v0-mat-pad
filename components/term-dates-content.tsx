@@ -7,8 +7,17 @@ import { Input } from "@/components/ui/input"
 import { ChevronDown, Save, RotateCcw } from "lucide-react"
 
 export function TermDatesContent() {
+  const [activeTab, setActiveTab] = useState<"termdates" | "censusdates">("termdates")
   const [selectedSchool, setSelectedSchool] = useState("")
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("")
+  const [censusDates, setCensusDates] = useState({
+    autumn1: "",
+    autumn2: "",
+    spring1: "",
+    spring2: "",
+    summer1: "",
+    summer2: "",
+  })
   const [termDates, setTermDates] = useState({
     autumn1: { start: "", end: "" },
     autumn2: { start: "", end: "" },
@@ -97,6 +106,13 @@ export function TermDatesContent() {
     }))
   }
 
+  const handleCensusDateChange = (term: string, value: string) => {
+    setCensusDates((prev) => ({
+      ...prev,
+      [term]: value,
+    }))
+  }
+
   const handleSchoolChange = (school: string) => {
     setSelectedSchool(school)
     // Reset academic year when school changes
@@ -116,6 +132,35 @@ export function TermDatesContent() {
       summer1: { start: "", end: "" },
       summer2: { start: "", end: "" },
     })
+    setCensusDates({
+      autumn1: "",
+      autumn2: "",
+      spring1: "",
+      spring2: "",
+      summer1: "",
+      summer2: "",
+    })
+  }
+
+  const handleSaveCensusDate = () => {
+    if (!selectedSchool) {
+      alert("Please select a school first")
+      return
+    }
+    if (!selectedAcademicYear) {
+      alert("Please select an academic year")
+      return
+    }
+
+    // Check if all census dates are filled
+    const allDatesComplete = Object.values(censusDates).every((date) => date)
+    if (!allDatesComplete) {
+      alert("Please fill in all census dates")
+      return
+    }
+
+    console.log("Saving census dates for:", selectedSchool, selectedAcademicYear, censusDates)
+    alert(`Census dates saved successfully for ${selectedSchool} (${selectedAcademicYear})!`)
   }
 
   const handleSave = () => {
@@ -150,6 +195,14 @@ export function TermDatesContent() {
         summer1: { start: "", end: "" },
         summer2: { start: "", end: "" },
       })
+      setCensusDates({
+        autumn1: "",
+        autumn2: "",
+        spring1: "",
+        spring2: "",
+        summer1: "",
+        summer2: "",
+      })
     }
   }
 
@@ -157,105 +210,115 @@ export function TermDatesContent() {
 
   return (
     <div className="h-full flex flex-col space-y-6">
-      {/* School Selection Card */}
+      {/* School Selection Card with Integrated Submenu */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Term Dates Management</CardTitle>
+              <CardTitle className="text-lg">
+                {activeTab === "termdates" ? "Term Dates Management" : "Census Dates Management"}
+              </CardTitle>
               <p className="text-sm text-slate-600 mt-1">
-                Configure term dates for individual schools across academic years
+                Configure {activeTab === "termdates" ? "term dates" : "census dates"} for individual schools across
+                academic years
               </p>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
+                className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] bg-transparent"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
               <Button
-                onClick={handleSave}
-                className="bg-[#121051] hover:bg-[#0f0d42] text-white"
+                onClick={activeTab === "termdates" ? handleSave : handleSaveCensusDate}
+                className="bg-[#121051] hover:bg-[#B30089] hover:text-white text-white"
                 style={{ backgroundColor: "#121051" }}
               >
                 <Save className="w-4 h-4 mr-2" />
-                Save Term Dates
+                {activeTab === "termdates" ? "Save Term Dates" : "Save Census Dates"}
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* School Selection */}
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-slate-700 mb-2">Select School</label>
-              <div className="relative">
-                <select
-                  value={selectedSchool}
-                  onChange={(e) => handleSchoolChange(e.target.value)}
-                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Please select a school...</option>
-                  {schools.map((school) => (
-                    <option key={school} value={school}>
-                      {school}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+        <CardContent className="p-0">
+          <div className="px-6 pt-6 pb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* School Selection */}
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-slate-700 mb-2">Select School</label>
+                <div className="relative">
+                  <select
+                    value={selectedSchool}
+                    onChange={(e) => handleSchoolChange(e.target.value)}
+                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Please select a school...</option>
+                    {schools.map((school) => (
+                      <option key={school} value={school}>
+                        {school}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
               </div>
-            </div>
 
-            {/* Academic Year Selection */}
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-slate-700 mb-2">Academic Year</label>
-              <div className="relative">
-                <select
-                  value={selectedAcademicYear}
-                  onChange={(e) => handleAcademicYearChange(e.target.value)}
-                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={!selectedSchool}
-                >
-                  <option value="">Please select academic year...</option>
-                  {academicYears.map((year) => (
-                    <option key={year.value} value={year.value}>
-                      {year.label}
-                      {year.isCurrent ? " (Current)" : ""}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              {/* Academic Year Selection */}
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-slate-700 mb-2">Academic Year</label>
+                <div className="relative">
+                  <select
+                    value={selectedAcademicYear}
+                    onChange={(e) => handleAcademicYearChange(e.target.value)}
+                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={!selectedSchool}
+                  >
+                    <option value="">Please select academic year...</option>
+                    {academicYears.map((year) => (
+                      <option key={year.value} value={year.value}>
+                        {year.label}
+                        {year.isCurrent ? " (Current)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Status Information */}
-          {selectedSchool && selectedAcademicYear && yearStatus && (
-            <div className="mt-4 flex items-center gap-6">
-              <div className="flex items-center">
-                <span className="text-slate-500 text-sm">Status:</span>
-                <span className={`ml-2 px-3 py-1 text-xs rounded-full font-medium ${yearStatus.color}`}>
-                  {yearStatus.text}
-                </span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-slate-500 text-sm">Last Updated:</span>
-                <span className="ml-2 text-slate-900 text-sm">Not saved</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-slate-500 text-sm">School Type:</span>
-                <span className="ml-2 text-slate-900 text-sm">Primary/Secondary</span>
-              </div>
+          <div className="">
+            <div className="flex gap-1">
+              <button
+                onClick={() => setActiveTab("termdates")}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "termdates"
+                    ? "text-slate-900 border-[#B30089]"
+                    : "text-slate-600 border-transparent hover:text-slate-900"
+                }`}
+              >
+                Term Dates
+              </button>
+              <button
+                onClick={() => setActiveTab("censusdates")}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "censusdates"
+                    ? "text-slate-900 border-[#B30089]"
+                    : "text-slate-600 border-transparent hover:text-slate-900"
+                }`}
+              >
+                Census Dates
+              </button>
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Term Dates Configuration */}
-      {selectedSchool && selectedAcademicYear && (
+      {/* Term Dates Configuration for Term Dates Tab */}
+      {selectedSchool && selectedAcademicYear && activeTab === "termdates" && (
         <Card className="flex-1">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -342,6 +405,88 @@ export function TermDatesContent() {
                   <span className="text-blue-700 font-medium">Completion:</span>
                   <span className="ml-2 text-blue-900">
                     {Object.values(termDates).filter((term) => term.start && term.end).length}/6 terms
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Census Dates Configuration - shows all terms at once like Term Dates */}
+      {selectedSchool && selectedAcademicYear && activeTab === "censusdates" && (
+        <Card className="flex-1">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Census Dates for {selectedSchool}</CardTitle>
+                <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear}</p>
+              </div>
+              {yearStatus && (
+                <span className={`px-3 py-1 text-xs rounded-full font-medium ${yearStatus.color}`}>
+                  {yearStatus.text}
+                </span>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {termLabels.map((term) => (
+                <div key={term.key} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                  <div className="mb-4">
+                    <h3 className="font-medium text-slate-900">{term.label}</h3>
+                    <p className="text-sm text-slate-600">{term.description}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                    <Input
+                      type="date"
+                      value={censusDates[term.key as keyof typeof censusDates]}
+                      onChange={(e) => handleCensusDateChange(term.key, e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Date preview */}
+                  {censusDates[term.key as keyof typeof censusDates] && (
+                    <div className="mt-3 p-2 bg-blue-50 rounded-md">
+                      <p className="text-xs text-blue-900">
+                        {new Date(censusDates[term.key as keyof typeof censusDates]).toLocaleDateString("en-GB", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Summary Information */}
+            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Census Dates Summary</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-700 font-medium">Total Terms:</span>
+                  <span className="ml-2 text-blue-900">6 half terms</span>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Academic Year:</span>
+                  <span className="ml-2 text-blue-900">{selectedAcademicYear}</span>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Year Status:</span>
+                  <span className="ml-2 text-blue-900">
+                    {yearStatus?.text.replace(" Academic Year", "").replace("Current Active Year", "Current")}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Completion:</span>
+                  <span className="ml-2 text-blue-900">
+                    {Object.values(censusDates).filter((date) => date).length}/6 census dates
                   </span>
                 </div>
               </div>
