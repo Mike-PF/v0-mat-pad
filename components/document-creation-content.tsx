@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Save,
   Search,
-  Upload,
   FileText,
   Plus,
   Edit,
@@ -26,6 +25,7 @@ import {
   MousePointer,
   ArrowLeft,
 } from "lucide-react"
+import { InfoTooltip } from "@/components/ui/info-tooltip"
 
 const mats = [
   { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
@@ -189,7 +189,7 @@ export function DocumentCreationContent() {
   const [selectedDocument, setSelectedDocument] = useState<any>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [documentName, setDocumentName] = useState("")
-  const [activeTab, setActiveTab] = useState<"datapoint" | "qa">("datapoint")
+  const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [reportImage, setReportImage] = useState<File | null>(null)
@@ -212,33 +212,48 @@ export function DocumentCreationContent() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [docTagFilter, setDocTagFilter] = useState<"all" | "matched" | "notmatched">("all")
   const [showDocTagFilterDropdown, setShowDocTagFilterDropdown] = useState(false)
-  const [qaDocTagFilter, setQaDocTagFilter] = useState<"all" | "assigned" | "unassigned">("all")
-  const [showQaDocTagFilterDropdown, setShowQaDocTagFilterDropdown] = useState(false)
+  // Removed qaDocTagFilter state as Q&A functionality is removed
+  // const [qaDocTagFilter, setQaDocTagFilter] = useState<"all" | "assigned" | "unassigned">("all")
+  // Removed showQaDocTagFilterDropdown state as Q&A functionality is removed
+  // const [showQaDocTagFilterDropdown, setShowQaDocTagFilterDropdown] = useState(false)
 
   // Q&A Functionality States
-  const [questions, setQuestions] = useState<Array<{ id: string; text: string }>>([])
-  const [questionAssignments, setQuestionAssignments] = useState<Record<string, string>>({}) // docTagId -> questionId
-  const [newQuestionText, setNewQuestionText] = useState("")
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
-  const [editingQuestionText, setEditingQuestionText] = useState("")
-  const [qaData, setQaData] = useState<Record<string, { question: string; answer: string }>>({})
+  // Removed questions, questionAssignments, newQuestionText, editingQuestionId, editingQuestionText, qaData states as Q&A functionality is removed
+  // const [questions, setQuestions] = useState<Array<{ id: string; text: string }>>([])
+  // const [questionAssignments, setQuestionAssignments] = useState<Record<string, string>>({}) // docTagId -> questionId
+  // const [newQuestionText, setNewQuestionText] = useState("")
+  // const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
+  // const [editingQuestionText, setEditingQuestionText] = useState("")
+  // const [qaData, setQaData] = useState<Record<string, { question: string; answer: string }>>({})
 
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishingDocument, setPublishingDocument] = useState<any>(null)
 
   const [showFormatModal, setShowFormatModal] = useState(false)
-  const [formatModalType, setFormatModalType] = useState<"format" | "formatfinance" | null>(null)
+  const [formatModalType, setFormatModalType] = useState<"format" | "formatfinance" | "colour" | null>(null)
   const [currentFormattingTagId, setCurrentFormattingTagId] = useState<string | null>(null)
 
   const [showManualTagModal, setShowManualTagModal] = useState(false)
+  const [manualTagName, setManualTagName] = useState("")
 
   const [showIfModal, setShowIfModal] = useState(false)
   const [currentIfTagId, setCurrentIfTagId] = useState<string | null>(null)
+  const [conditionalSystemTag, setConditionalSystemTag] = useState("")
+  const [conditionalOperator, setConditionalOperator] = useState("")
+  const [conditionalValue, setConditionalValue] = useState("")
+  const [conditionalOtherText, setConditionalOtherText] = useState("")
+  const [conditionalTrueAction, setConditionalTrueAction] = useState("")
+  const [conditionalFalseAction, setConditionalFalseAction] = useState("")
+  const [conditionalTagSearch, setConditionalTagSearch] = useState("")
+
+  const [tagConditionalLogic, setTagConditionalLogic] = useState<Record<string, any>>({})
 
   const [rangeStartTagId, setRangeStartTagId] = useState<string | null>(null)
   const [rangeEndTagId, setRangeEndTagId] = useState<string | null>(null)
   const [showConditionalModal, setShowConditionalModal] = useState(false)
   const [selectingTagMode, setSelectingTagMode] = useState<{ systemTagId: string; systemTagName: string } | null>(null)
+
+  const [systemTagFilter, setSystemTagFilter] = useState<"all" | "answers" | "ranges">("all")
 
   useEffect(() => {
     // Logic that might depend on other states, e.g., fetching data on load
@@ -267,9 +282,10 @@ export function DocumentCreationContent() {
     setReportImage(null) // Reset report image
     setDocumentTags([])
     setTags([])
-    setQuestions([])
-    setQuestionAssignments({})
-    setQaData({})
+    // Removed Q&A state resets
+    // setQuestions([])
+    // setQuestionAssignments({})
+    // setQaData({})
     setSelectingTagMode(null) // Clear selection mode on create new
   }
 
@@ -285,23 +301,30 @@ export function DocumentCreationContent() {
     const tagCount = doc.sp === "SP_AttendanceReport" ? 1500 : doc.sp === "SP_SENDProvisionReport" ? 2000 : 500
     setTags(generateMockTags(tagCount))
     setDocumentTags(generateDocumentTags(doc.tagCount))
+    // Load conditional logic if it exists
+    if (doc.tagConditionalLogic) {
+      setTagConditionalLogic(doc.tagConditionalLogic)
+    } else {
+      setTagConditionalLogic({}) // Ensure it's reset if no logic is found
+    }
     // TODO: Load Q&A data if it exists for this document
     // For now, let's simulate loading some QA data if the document exists
-    if (doc.id === "doc1") {
-      // Example: Load QA for doc1
-      setQaData({
-        DOC_TAG_1: { question: "What is the attendance rate?", answer: "95.5%" },
-        DOC_TAG_5: { question: "Are there any absences?", answer: "Yes, 5 students were absent." },
-      })
-      setQuestions([
-        { id: "Q_1", text: "What is the attendance rate?" },
-        { id: "Q_2", text: "Are there any absences?" },
-      ])
-      setQuestionAssignments({
-        DOC_TAG_1: "Q_1",
-        DOC_TAG_5: "Q_2",
-      })
-    }
+    // Removed mock Q&A data loading
+    // if (doc.id === "doc1") {
+    //   // Example: Load QA for doc1
+    //   setQaData({
+    //     DOC_TAG_1: { question: "What is the attendance rate?", answer: "95.5%" },
+    //     DOC_TAG_5: { question: "Are there any absences?", answer: "Yes, 5 students were absent." },
+    //   })
+    //   setQuestions([
+    //     { id: "Q_1", text: "What is the attendance rate?" },
+    //     { id: "Q_2", text: "Are there any absences?" },
+    //   ])
+    //   setQuestionAssignments({
+    //     DOC_TAG_1: "Q_1",
+    //     DOC_TAG_5: "Q_2",
+    //   })
+    // }
     setSelectingTagMode(null) // Clear selection mode on edit
   }
 
@@ -341,12 +364,20 @@ export function DocumentCreationContent() {
       setTags(generateMockTags(tagCount))
       setCurrentPage(1)
       setSearchQuery("")
-      setQaData({}) // Reset Q&A data when changing SP
-      setQuestions([]) // Also reset questions
-      setQuestionAssignments({}) // And assignments
+      // Reset Q&A data when changing SP
+      // setQaData({}) // Reset Q&A data when changing SP
+      // setQuestions([]) // Also reset questions
+      // setQuestionAssignments({})
+      // Reset conditional logic and related states when changing SP
+      setTagConditionalLogic({})
+      setRangeStartTagId(null)
+      setRangeEndTagId(null)
     } else {
       setTags([])
       setDocumentTags([]) // Clear document tags as well
+      setTagConditionalLogic({})
+      setRangeStartTagId(null)
+      setRangeEndTagId(null)
     }
     setSelectingTagMode(null) // Clear selection mode when changing SP
   }
@@ -368,9 +399,14 @@ export function DocumentCreationContent() {
         setNotificationMessage(`Document processed! Found ${extractedTagCount} tag placeholders in the document.`)
         setShowNotification(true)
         console.log("[v0] Document processed, extracted", extractedTagCount, "tags")
-        setQaData({}) // Reset Q&A data on file upload
-        setQuestions([]) // Reset questions and assignments
-        setQuestionAssignments({})
+        // Reset Q&A data on file upload
+        // setQaData({}) // Reset Q&A data on file upload
+        // setQuestions([]) // Reset questions and assignments
+        // setQuestionAssignments({})
+        // Reset conditional logic and range selection on file upload
+        setTagConditionalLogic({})
+        setRangeStartTagId(null)
+        setRangeEndTagId(null)
       }, 2000)
     }
   }
@@ -407,12 +443,27 @@ export function DocumentCreationContent() {
       delete newStyles[docTagId]
       return newStyles
     })
+
+    // Remove conditional logic for the tag when unmatching
+    if (tagConditionalLogic[docTagId]) {
+      setTagConditionalLogic((prev) => {
+        const newState = { ...prev }
+        delete newState[docTagId]
+        return newState
+      })
+    }
   }
 
   const handleStyleChange = (docTagId: string, style: string) => {
-    if (style === "Format Other" || style === "FormatFinance Other") {
+    if (style === "Format Other" || style === "FormatFinance Other" || style === "Colour") {
       setCurrentFormattingTagId(docTagId)
-      setFormatModalType(style === "Format Other" ? "format" : "formatfinance")
+      if (style === "Format Other") {
+        setFormatModalType("format")
+      } else if (style === "FormatFinance Other") {
+        setFormatModalType("formatfinance")
+      } else if (style === "Colour") {
+        setFormatModalType("colour")
+      }
       setShowFormatModal(true)
       return
     }
@@ -422,6 +473,7 @@ export function DocumentCreationContent() {
   const handleRangeStart = (docTagId: string) => {
     setRangeStartTagId(docTagId)
     setRangeEndTagId(null)
+    setSystemTagFilter("ranges")
   }
 
   const handleRangeEnd = (docTagId: string) => {
@@ -458,113 +510,115 @@ export function DocumentCreationContent() {
   }
 
   // Q&A Functionality Helpers
-  const generateDefaultQuestion = (tagPlaceholder: string) => {
-    // Extract the tag name from placeholder like {{DATA_1}} -> DATA_1
-    const tagName = tagPlaceholder.replace(/[{}]/g, "")
-    return `What value should be used for ${tagName}?`
-  }
+  // Removed Q&A helper functions as Q&A functionality is removed
+  // const generateDefaultQuestion = (tagPlaceholder: string) => {
+  //   // Extract the tag name from placeholder like {{DATA_1}} -> DATA_1
+  //   const tagName = tagPlaceholder.replace(/[{}]/g, "")
+  //   return `What value should be used for ${tagName}?`
+  // }
 
-  const handleAnswerChange = (docTagId: string, answer: string) => {
-    setQaData((prev) => ({
-      ...prev,
-      [docTagId]: {
-        question:
-          prev[docTagId]?.question ||
-          generateDefaultQuestion(documentTags.find((t) => t.id === docTagId)?.placeholder || ""),
-        answer,
-      },
-    }))
-  }
+  // const handleAnswerChange = (docTagId: string, answer: string) => {
+  //   setQaData((prev) => ({
+  //     ...prev,
+  //     [docTagId]: {
+  //       question:
+  //         prev[docTagId]?.question ||
+  //         generateDefaultQuestion(documentTags.find((t) => t.id === docTagId)?.placeholder || ""),
+  //       answer,
+  //     },
+  //   }))
+  // }
 
-  const handleQuestionChange = (docTagId: string, question: string) => {
-    setQaData((prev) => ({
-      ...prev,
-      [docTagId]: {
-        question,
-        answer: prev[docTagId]?.answer || "",
-      },
-    }))
-  }
+  // const handleQuestionChange = (docTagId: string, question: string) => {
+  //   setQaData((prev) => ({
+  //     ...prev,
+  //     [docTagId]: {
+  //       question,
+  //       answer: prev[docTagId]?.answer || "",
+  //     },
+  //   }))
+  // }
 
-  const handleGenerateQuestions = () => {
-    const newQaData: Record<string, { question: string; answer: string }> = {}
-    documentTags.forEach((tag) => {
-      newQaData[tag.id] = {
-        question: qaData[tag.id]?.question || generateDefaultQuestion(tag.placeholder),
-        answer: qaData[tag.id]?.answer || "",
-      }
-    })
-    setQaData(newQaData)
-    setNotificationMessage("Questions generated for all document tags!")
-    setShowNotification(true)
-  }
+  // const handleGenerateQuestions = () => {
+  //   const newQaData: Record<string, { question: string; answer: string }> = {}
+  //   documentTags.forEach((tag) => {
+  //     newQaData[tag.id] = {
+  //       question: qaData[tag.id]?.question || generateDefaultQuestion(tag.placeholder),
+  //       answer: qaData[tag.id]?.answer || "",
+  //     }
+  //   })
+  //   setQaData(newQaData)
+  //   setNotificationMessage("Questions generated for all document tags!")
+  //   setShowNotification(true)
+  // }
 
-  const handleAddQuestion = () => {
-    if (newQuestionText.trim() === "") return
+  // const handleAddQuestion = () => {
+  //   if (newQuestionText.trim() === "") return
 
-    const newQuestion = {
-      id: `Q_${Date.now()}`,
-      text: newQuestionText.trim(),
-    }
+  //   const newQuestion = {
+  //     id: `Q_${Date.now()}`,
+  //     text: newQuestionText.trim(),
+  //   }
 
-    setQuestions([...questions, newQuestion])
-    setNewQuestionText("")
-  }
+  //   setQuestions([...questions, newQuestion])
+  //   setNewQuestionText("")
+  // }
 
-  const handleEditQuestion = (questionId: string) => {
-    const question = questions.find((q) => q.id === questionId)
-    if (question) {
-      setEditingQuestionId(questionId)
-      setEditingQuestionText(question.text)
-    }
-  }
+  // const handleEditQuestion = (questionId: string) => {
+  //   const question = questions.find((q) => q.id === questionId)
+  //   if (question) {
+  //     setEditingQuestionId(questionId)
+  //     setEditingQuestionText(question.text)
+  //   }
+  // }
 
-  const handleSaveEditQuestion = () => {
-    if (editingQuestionText.trim() === "" || !editingQuestionId) return
+  // const handleSaveEditQuestion = () => {
+  //   if (editingQuestionText.trim() === "" || !editingQuestionId) return
 
-    setQuestions(questions.map((q) => (q.id === editingQuestionId ? { ...q, text: editingQuestionText.trim() } : q)))
-    setEditingQuestionId(null)
-    setEditingQuestionText("")
-  }
+  //   setQuestions(questions.map((q) => (q.id === editingQuestionId ? { ...q, text: editingQuestionText.trim() } : q)))
+  //   setEditingQuestionId(null)
+  //   setEditingQuestionText("")
+  // }
 
-  const handleCancelEditQuestion = () => {
-    setEditingQuestionId(null)
-    setEditingQuestionText("")
-  }
+  // const handleCancelEditQuestion = () => {
+  //   setEditingQuestionId(null)
+  //   setEditingQuestionText("")
+  // }
 
-  const handleDeleteQuestion = (questionId: string) => {
-    if (confirm("Are you sure you want to delete this question?")) {
-      setQuestions(questions.filter((q) => q.id !== questionId))
-      // Remove any assignments using this question
-      const newAssignments = { ...questionAssignments }
-      Object.keys(newAssignments).forEach((docTagId) => {
-        if (newAssignments[docTagId] === questionId) {
-          delete newAssignments[docTagId]
-        }
-      })
-      setQuestionAssignments(newAssignments)
-    }
-  }
+  // const handleDeleteQuestion = (questionId: string) => {
+  //   if (confirm("Are you sure you want to delete this question?")) {
+  //     setQuestions(questions.filter((q) => q.id !== questionId))
+  //     // Remove any assignments using this question
+  //     const newAssignments = { ...questionAssignments }
+  //     Object.keys(newAssignments).forEach((docTagId) => {
+  //       if (newAssignments[docTagId] === questionId) {
+  //         delete newAssignments[docTagId]
+  //       }
+  //     })
+  //     setQuestionAssignments(newAssignments)
+  //   }
+  // }
 
-  const handleAssignQuestion = (docTagId: string, questionId: string) => {
-    setQuestionAssignments({
-      ...questionAssignments,
-      [docTagId]: questionId,
-    })
-  }
+  // const handleAssignQuestion = (docTagId: string, questionId: string) => {
+  //   setQuestionAssignments({
+  //     ...questionAssignments,
+  //     [docTagId]: questionId,
+  //   })
+  // }
 
-  const handleUnassignQuestion = (docTagId: string) => {
-    const newAssignments = { ...questionAssignments }
-    delete newAssignments[docTagId]
-    setQuestionAssignments(newAssignments)
-  }
+  // const handleUnassignQuestion = (docTagId: string) => {
+  //   const newAssignments = { ...questionAssignments }
+  //   delete newAssignments[docTagId]
+  //   setQuestionAssignments(newAssignments)
+  // }
 
   // Q&A Statistics
-  const answeredQuestionsCount = Object.values(qaData).filter((qa) => qa.answer.trim() !== "").length
-  const unansweredQuestionsCount = documentTags.length - answeredQuestionsCount
+  // Removed Q&A statistics calculation as Q&A functionality is removed
+  // const answeredQuestionsCount = Object.values(qaData).filter((qa) => qa.answer.trim() !== "").length
+  // const unansweredQuestionsCount = documentTags.length - answeredQuestionsCount
   // Q&A Statistics
-  const assignedQuestionsCount = Object.keys(questionAssignments).length
-  const unassignedTagsCount = documentTags.length - assignedQuestionsCount
+  // const assignedQuestionsCount = Object.keys(questionAssignments).length
+  // const unassignedTagsCount = documentTags.length - assignedQuestionsCount
 
   const handleSave = () => {
     if (!selectedSP || !documentName) {
@@ -597,7 +651,10 @@ export function DocumentCreationContent() {
       uploadedFile: uploadedFile!.name,
       tagCount: documentTags.length,
       schoolUrn: selectedSchoolUrn,
-      qaData: qaData, // Save QA data
+      // Include conditional logic in the saved document configuration
+      tagConditionalLogic: tagConditionalLogic,
+      // Removed qaData from save payload
+      // qaData: qaData, // Save QA data
     }
 
     if (selectedDocument) {
@@ -650,12 +707,29 @@ export function DocumentCreationContent() {
 
   // Filter and sort tags
   const filteredAndSortedTags = useMemo(() => {
-    const filtered = tags.filter(
+    let filtered = tags.filter(
       (tag) =>
         tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tag.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tag.id.toLowerCase().includes(searchQuery.toLowerCase()),
     )
+
+    // Apply system tag filter
+    if (systemTagFilter === "answers") {
+      // Show only tags that have been matched (have answers)
+      filtered = filtered.filter((tag) => getTagMatchCount(tag.id) > 0)
+    } else if (systemTagFilter === "ranges") {
+      // Show only tags that are part of ranges
+      const rangeTagIds = new Set<string>()
+      documentTags.forEach((docTag) => {
+        if (docTag.id === rangeStartTagId || docTag.id === rangeEndTagId) {
+          if (docTag.matchedSystemTagId) {
+            rangeTagIds.add(docTag.matchedSystemTagId)
+          }
+        }
+      })
+      filtered = filtered.filter((tag) => rangeTagIds.has(tag.id))
+    }
 
     filtered.sort((a, b) => {
       let comparison = 0
@@ -676,7 +750,7 @@ export function DocumentCreationContent() {
     })
 
     return filtered
-  }, [tags, searchQuery, sortBy, sortDirection, documentTags])
+  }, [tags, searchQuery, sortBy, sortDirection, documentTags, systemTagFilter, rangeStartTagId, rangeEndTagId])
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedTags.length / itemsPerPage)
@@ -700,15 +774,16 @@ export function DocumentCreationContent() {
     }
   }, [documentTags, docTagFilter])
 
-  const filteredQaDocumentTags = useMemo(() => {
-    if (qaDocTagFilter === "all") {
-      return documentTags
-    } else if (qaDocTagFilter === "assigned") {
-      return documentTags.filter((tag) => questionAssignments[tag.id])
-    } else {
-      return documentTags.filter((tag) => !questionAssignments[tag.id])
-    }
-  }, [documentTags, qaDocTagFilter, questionAssignments])
+  // Removed filteredQaDocumentTags as Q&A functionality is removed
+  // const filteredQaDocumentTags = useMemo(() => {
+  //   if (qaDocTagFilter === "all") {
+  //     return documentTags
+  //   } else if (qaDocTagFilter === "assigned") {
+  //     return documentTags.filter((tag) => questionAssignments[tag.id])
+  //   } else {
+  //     return documentTags.filter((tag) => !questionAssignments[tag.id])
+  //   }
+  // }, [documentTags, qaDocTagFilter, questionAssignments])
 
   console.log("[v0] Component rendering, state:", {
     selectedSchoolUrn,
@@ -719,7 +794,43 @@ export function DocumentCreationContent() {
     tagsCount: tags.length,
     activeTab,
     selectingTagMode, // Log selection mode state
+    tagConditionalLogic, // Log conditional logic state
   })
+
+  const handleOpenIfModal = (tagId: string) => {
+    setCurrentIfTagId(tagId)
+
+    // Check if this tag already has conditional logic saved
+    const existingLogic = tagConditionalLogic[tagId]
+    if (existingLogic) {
+      // Pre-populate the form with existing values (edit mode)
+      setConditionalSystemTag(existingLogic.systemTag || "")
+      setConditionalOperator(existingLogic.operator || "")
+
+      // Check if the value is a custom "Other" value
+      if (!["Yes", "No"].includes(existingLogic.value)) {
+        setConditionalValue("Other")
+        setConditionalOtherText(existingLogic.value || "")
+      } else {
+        setConditionalValue(existingLogic.value || "")
+        setConditionalOtherText("")
+      }
+
+      setConditionalTrueAction(existingLogic.trueAction || "")
+      setConditionalFalseAction(existingLogic.falseAction || "")
+    } else {
+      // Reset form for new logic
+      setConditionalSystemTag("")
+      setConditionalOperator("")
+      setConditionalValue("")
+      setConditionalOtherText("")
+      setConditionalTrueAction("")
+      setConditionalFalseAction("")
+    }
+
+    setConditionalTagSearch("")
+    setShowIfModal(true)
+  }
 
   return (
     <>
@@ -736,14 +847,72 @@ export function DocumentCreationContent() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Create Manual System Tag</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setShowManualTagModal(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowManualTagModal(false)
+                    setManualTagName("")
+                  }}
+                >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-slate-600">Manual tag creation coming soon...</p>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className="block text-sm font-medium text-slate-700">System Tag</label>
+                    <InfoTooltip
+                      content="Enter a unique name for your custom system tag. This tag will be added to the available system tags list and can be matched to document tags."
+                      variant="monochrome"
+                    />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Enter system tag name..."
+                    value={manualTagName}
+                    onChange={(e) => setManualTagName(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowManualTagModal(false)
+                      setManualTagName("")
+                    }}
+                    className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (manualTagName.trim()) {
+                        const newTag = {
+                          id: `MANUAL_TAG_${Date.now()}`,
+                          name: manualTagName.trim(),
+                          description: `Manually created system tag: ${manualTagName.trim()}`,
+                          order: 0,
+                          category: "Manual",
+                          matched: false,
+                        }
+                        setTags([newTag, ...tags])
+                        setNotificationMessage(`Manual tag "${manualTagName}" created successfully!`)
+                        setShowNotification(true)
+                        setShowManualTagModal(false)
+                        setManualTagName("")
+                      }
+                    }}
+                    disabled={!manualTagName.trim()}
+                    className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                  >
+                    Create Tag
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -756,7 +925,11 @@ export function DocumentCreationContent() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {formatModalType === "format" ? "Format Other" : "FormatFinance Other"}
+                  {formatModalType === "format"
+                    ? "Format Other"
+                    : formatModalType === "formatfinance"
+                      ? "FormatFinance Other"
+                      : "Colour"}
                 </CardTitle>
                 <Button
                   variant="ghost"
@@ -773,7 +946,11 @@ export function DocumentCreationContent() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <p className="text-slate-600">Format configuration coming soon...</p>
+                <p className="text-slate-600">
+                  {formatModalType === "colour"
+                    ? "Colour configuration coming soon..."
+                    : "Format configuration coming soon..."}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -782,7 +959,7 @@ export function DocumentCreationContent() {
 
       {showIfModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="max-w-2xl w-full mx-4">
+          <Card className="max-w-3xl w-full mx-4 max-h-[90vh] overflow-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">IF Conditional Logic</CardTitle>
@@ -792,6 +969,13 @@ export function DocumentCreationContent() {
                   onClick={() => {
                     setShowIfModal(false)
                     setCurrentIfTagId(null)
+                    setConditionalSystemTag("")
+                    setConditionalOperator("")
+                    setConditionalValue("")
+                    setConditionalOtherText("")
+                    setConditionalTrueAction("")
+                    setConditionalFalseAction("")
+                    setConditionalTagSearch("")
                   }}
                 >
                   <X className="w-4 h-4" />
@@ -799,8 +983,239 @@ export function DocumentCreationContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-slate-600">Conditional logic configuration coming soon...</p>
+              <div className="space-y-6">
+                {/* Dropdown 1: System Tag Selection with Search */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Select System Tag</label>
+                  <div className="border border-slate-300 rounded-md bg-white">
+                    <div className="relative border-b border-slate-200">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search system tags..."
+                        value={conditionalTagSearch}
+                        onChange={(e) => setConditionalTagSearch(e.target.value)}
+                        className="pl-10 border-0 focus:ring-0 rounded-b-none"
+                      />
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={conditionalSystemTag}
+                        onChange={(e) => setConditionalSystemTag(e.target.value)}
+                        className="w-full p-3 pr-10 border-0 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary rounded-t-none"
+                      >
+                        <option value="">Select a system tag...</option>
+                        {tags
+                          .filter(
+                            (tag) =>
+                              tag.name.toLowerCase().includes(conditionalTagSearch.toLowerCase()) ||
+                              tag.id.toLowerCase().includes(conditionalTagSearch.toLowerCase()),
+                          )
+                          .map((tag) => (
+                            <option key={tag.id} value={tag.id}>
+                              {tag.name}
+                            </option>
+                          ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dropdown 2: Comparison Operator */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Comparison Operator</label>
+                  <div className="relative">
+                    <select
+                      value={conditionalOperator}
+                      onChange={(e) => setConditionalOperator(e.target.value)}
+                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="">Select operator...</option>
+                      <option value="<">&lt; (Less than)</option>
+                      <option value=">">&gt; (Greater than)</option>
+                      <option value="=">= (Equal to)</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Dropdown 3: Value (Yes/No/Other) */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Value</label>
+                  {conditionalValue === "Other" ? (
+                    <Input
+                      type="text"
+                      placeholder="Enter custom value..."
+                      value={conditionalOtherText}
+                      onChange={(e) => setConditionalOtherText(e.target.value)}
+                      className="w-full"
+                    />
+                  ) : (
+                    <div className="relative">
+                      <select
+                        value={conditionalValue}
+                        onChange={(e) => {
+                          setConditionalValue(e.target.value)
+                          if (e.target.value !== "Other") {
+                            setConditionalOtherText("")
+                          }
+                        }}
+                        className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      >
+                        <option value="">Select value...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Dropdown 4: True Action */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">If True</label>
+                  <div className="relative">
+                    <select
+                      value={conditionalTrueAction}
+                      onChange={(e) => setConditionalTrueAction(e.target.value)}
+                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="">Select action...</option>
+                      <option value="HideSection">Hide Section</option>
+                      <option value="HideTable">Hide Table</option>
+                      <option value="HideRow">Hide Row</option>
+                      <option value="ShowSection">Show Section</option>
+                      <option value="ShowTable">Show Table</option>
+                      <option value="ShowRow">Show Row</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Dropdown 5: False Action */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">If False</label>
+                  <div className="relative">
+                    <select
+                      value={conditionalFalseAction}
+                      onChange={(e) => setConditionalFalseAction(e.target.value)}
+                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="">Select action...</option>
+                      <option value="HideSection">Hide Section</option>
+                      <option value="HideTable">Hide Table</option>
+                      <option value="HideRow">Hide Row</option>
+                      <option value="ShowSection">Show Section</option>
+                      <option value="ShowTable">Show Table</option>
+                      <option value="ShowRow">Show Row</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Condition Preview */}
+                {(conditionalSystemTag ||
+                  conditionalOperator ||
+                  conditionalValue ||
+                  conditionalOtherText ||
+                  conditionalTrueAction ||
+                  conditionalFalseAction) && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-md p-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Condition Preview</p>
+                    <p className="text-sm text-slate-700 font-mono">
+                      <span className="font-semibold">IF</span>{" "}
+                      <span className="text-[#B30089]">
+                        {conditionalSystemTag
+                          ? tags.find((t) => t.id === conditionalSystemTag)?.name || "[System Tag]"
+                          : "[System Tag]"}
+                      </span>{" "}
+                      <span className="font-semibold">{conditionalOperator || "[Operator]"}</span>{" "}
+                      <span className="text-[#B30089]">
+                        {conditionalValue === "Other"
+                          ? conditionalOtherText || "[Value]"
+                          : conditionalValue || "[Value]"}
+                      </span>{" "}
+                      <span className="font-semibold">THEN</span>{" "}
+                      <span className="text-green-600">
+                        {conditionalTrueAction
+                          ? conditionalTrueAction.replace(/([A-Z])/g, " $1").trim()
+                          : "[True Action]"}
+                      </span>{" "}
+                      <span className="font-semibold">ELSE</span>{" "}
+                      <span className="text-orange-600">
+                        {conditionalFalseAction
+                          ? conditionalFalseAction.replace(/([A-Z])/g, " $1").trim()
+                          : "[False Action]"}
+                      </span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowIfModal(false)
+                      setCurrentIfTagId(null)
+                      setConditionalSystemTag("")
+                      setConditionalOperator("")
+                      setConditionalValue("")
+                      setConditionalOtherText("")
+                      setConditionalTrueAction("")
+                      setConditionalFalseAction("")
+                      setConditionalTagSearch("")
+                    }}
+                    className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const logicConfig = {
+                        tagId: currentIfTagId,
+                        systemTag: conditionalSystemTag,
+                        operator: conditionalOperator,
+                        value: conditionalValue === "Other" ? conditionalOtherText : conditionalValue,
+                        trueAction: conditionalTrueAction,
+                        falseAction: conditionalFalseAction,
+                      }
+
+                      // Store the logic for this tag
+                      if (currentIfTagId) {
+                        setTagConditionalLogic((prev) => ({
+                          ...prev,
+                          [currentIfTagId]: logicConfig,
+                        }))
+                      }
+
+                      console.log("Conditional logic saved:", logicConfig)
+                      setNotificationMessage("Conditional logic saved successfully!")
+                      setShowNotification(true)
+                      setShowIfModal(false)
+                      setCurrentIfTagId(null)
+                      setConditionalSystemTag("")
+                      setConditionalOperator("")
+                      setConditionalValue("")
+                      setConditionalOtherText("")
+                      setConditionalTrueAction("")
+                      setConditionalFalseAction("")
+                      setConditionalTagSearch("")
+                    }}
+                    disabled={
+                      !conditionalSystemTag ||
+                      !conditionalOperator ||
+                      (!conditionalValue && !conditionalOtherText) ||
+                      !conditionalTrueAction ||
+                      !conditionalFalseAction
+                    }
+                    className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                  >
+                    Save Logic
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1009,16 +1424,6 @@ export function DocumentCreationContent() {
                     }`}
                   >
                     Data Point
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("qa")}
-                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "qa"
-                        ? "text-slate-900 border-primary"
-                        : "text-slate-600 border-transparent hover:text-[#b30089] hover:border-[#b30089]/30"
-                    }`}
-                  >
-                    Q&A
                   </button>
                 </div>
               </div>
@@ -1248,33 +1653,40 @@ export function DocumentCreationContent() {
                                   setDocTagFilter("all")
                                   setShowDocTagFilterDropdown(false)
                                 }}
-                                className={`w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 ${
-                                  docTagFilter === "all" ? "bg-[#b30089]/10 font-medium" : ""
+                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between ${
+                                  docTagFilter === "all" ? "font-medium" : ""
                                 }`}
                               >
-                                All
+                                <span>All</span>
+                                {docTagFilter === "all" && <Check className="w-4 h-4" style={{ color: "#B30089" }} />}
                               </button>
                               <button
                                 onClick={() => {
                                   setDocTagFilter("matched")
                                   setShowDocTagFilterDropdown(false)
                                 }}
-                                className={`w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 ${
-                                  docTagFilter === "matched" ? "bg-[#b30089]/10 font-medium" : ""
+                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between ${
+                                  docTagFilter === "matched" ? "font-medium" : ""
                                 }`}
                               >
-                                Matched
+                                <span>Matched</span>
+                                {docTagFilter === "matched" && (
+                                  <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                )}
                               </button>
                               <button
                                 onClick={() => {
                                   setDocTagFilter("notmatched")
                                   setShowDocTagFilterDropdown(false)
                                 }}
-                                className={`w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 ${
-                                  docTagFilter === "notmatched" ? "bg-[#b30089]/10 font-medium" : ""
+                                className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between ${
+                                  docTagFilter === "notmatched" ? "font-medium" : ""
                                 }`}
                               >
-                                Not Matched
+                                <span>Not Matched</span>
+                                {docTagFilter === "notmatched" && (
+                                  <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                )}
                               </button>
                             </div>
                           </div>
@@ -1343,10 +1755,11 @@ export function DocumentCreationContent() {
                                   <label className="block text-xs font-medium text-slate-600 mb-1.5">Format</label>
                                   <div className="relative">
                                     <select
-                                      value={tagStyles[docTag.id] || "Format(N0)"}
+                                      value={tagStyles[docTag.id] || ""}
                                       onChange={(e) => handleStyleChange(docTag.id, e.target.value)}
                                       className="w-full px-3 py-2 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                                     >
+                                      <option value="">Please Select......</option>
                                       <option value="Format(N0)">Format(N0)</option>
                                       <option value="Format(N1)">Format(N1)</option>
                                       <option value="Format(N2)">Format(N2)</option>
@@ -1365,7 +1778,6 @@ export function DocumentCreationContent() {
                                       <option value="FormatFinance Other">FormatFinance Other</option>
                                       <option value="FormatBit(Yes;No; )">FormatBit(Yes;No; )</option>
                                       <option value="FormatBit(True;False; )">FormatBit(True;False; )</option>
-                                      <option value="Colour(…)">Colour(…)</option>
                                       <option value="Colour">Colour</option>
                                       <option value="format Other">format Other</option>
                                     </select>
@@ -1391,13 +1803,16 @@ export function DocumentCreationContent() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => {
-                                            setCurrentIfTagId(docTag.id)
-                                            setShowIfModal(true)
+                                            handleOpenIfModal(docTag.id)
                                           }}
-                                          className="flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
                                           title="Add IF conditional logic"
                                         >
-                                          <GitBranch className="w-4 h-4" />
+                                          <GitBranch
+                                            className={`w-4 h-4 transition-colors group-hover:text-white ${
+                                              tagConditionalLogic[docTag.id] ? "text-[#b30089]" : "text-[#0f0d42]"
+                                            }`}
+                                          />
                                         </Button>
                                       </>
                                     )}
@@ -1421,13 +1836,16 @@ export function DocumentCreationContent() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => {
-                                            setCurrentIfTagId(docTag.id)
-                                            setShowIfModal(true)
+                                            handleOpenIfModal(docTag.id)
                                           }}
-                                          className="flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
                                           title="Add IF conditional logic"
                                         >
-                                          <GitBranch className="w-4 h-4" />
+                                          <GitBranch
+                                            className={`w-4 h-4 transition-colors group-hover:text-white ${
+                                              tagConditionalLogic[docTag.id] ? "text-[#b30089]" : "text-[#0f0d42]"
+                                            }`}
+                                          />
                                         </Button>
                                       </>
                                     )}
@@ -1455,13 +1873,16 @@ export function DocumentCreationContent() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => {
-                                            setCurrentIfTagId(docTag.id)
-                                            setShowIfModal(true)
+                                            handleOpenIfModal(docTag.id)
                                           }}
-                                          className="flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
                                           title="Add IF conditional logic"
                                         >
-                                          <GitBranch className="w-4 h-4" />
+                                          <GitBranch
+                                            className={`w-4 h-4 transition-colors group-hover:text-white ${
+                                              tagConditionalLogic[docTag.id] ? "text-[#b30089]" : "text-[#0f0d42]"
+                                            }`}
+                                          />
                                         </Button>
                                       </>
                                     )}
@@ -1538,7 +1959,7 @@ export function DocumentCreationContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
                         >
                           <Sliders className="w-4 h-4" />
                           Filter
@@ -1549,43 +1970,49 @@ export function DocumentCreationContent() {
                             <div className="fixed inset-0 z-10" onClick={() => setShowFilterDropdown(false)} />
                             <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
                               <div className="py-1">
+                                <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">
+                                  Filter By
+                                </div>
                                 <button
-                                  onClick={() => handleSort("name")}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
+                                  onClick={() => {
+                                    setSystemTagFilter("all")
+                                    setShowFilterDropdown(false)
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between ${
+                                    systemTagFilter === "all" ? "font-medium" : ""
+                                  }`}
                                 >
-                                  <span>Sort by Name</span>
-                                  {sortBy === "name" && (
-                                    <span className="text-xs text-slate-500">
-                                      {sortDirection === "asc" ? "A-Z" : "Z-A"}
-                                    </span>
+                                  <span>All</span>
+                                  {systemTagFilter === "all" && (
+                                    <Check className="w-4 h-4" style={{ color: "#B30089" }} />
                                   )}
                                 </button>
                                 <button
-                                  onClick={() => handleSort("order")}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
+                                  onClick={() => {
+                                    setSystemTagFilter("answers")
+                                    setShowFilterDropdown(false)
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between ${
+                                    systemTagFilter === "answers" ? "font-medium" : ""
+                                  }`}
                                 >
-                                  <span>Sort by Order</span>
-                                  {sortBy === "order" && (
-                                    <span className="text-xs text-slate-500">
-                                      {sortDirection === "asc" ? "↑" : "↓"}
-                                    </span>
+                                  <span>Filter By Answers</span>
+                                  {systemTagFilter === "answers" && (
+                                    <Check className="w-4 h-4" style={{ color: "#B30089" }} />
                                   )}
                                 </button>
                                 <button
-                                  onClick={handleSortByMostMatched}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10"
+                                  onClick={() => {
+                                    setSystemTagFilter("ranges")
+                                    setShowFilterDropdown(false)
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between ${
+                                    systemTagFilter === "ranges" ? "font-medium" : ""
+                                  }`}
                                 >
-                                  Sort by Most Matched
-                                </button>
-                                <button
-                                  onClick={() => handleSort("category")}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between"
-                                >
-                                  <span>Sort by Category</span>
-                                  {sortBy === "category" && (
-                                    <span className="text-xs text-slate-500">
-                                      {sortDirection === "asc" ? "A-Z" : "Z-A"}
-                                    </span>
+                                  <span>Filter By Ranges</span>
+                                  {systemTagFilter === "ranges" && (
+                                    <Check className="w-4 h-4" style={{ color: "#B30089" }} />
                                   )}
                                 </button>
                               </div>
@@ -1724,354 +2151,6 @@ export function DocumentCreationContent() {
                 </CardContent>
               </Card>
             </div>
-          </>
-        )}
-
-        {(isCreatingNew || selectedDocument) && activeTab === "datapoint" && !uploadedFile && !isProcessing && (
-          <Card className="flex-1 min-h-0">
-            <CardContent className="flex-1 flex items-center justify-center p-12">
-              <div className="bg-white border border-slate-200 rounded-lg p-12 shadow-sm max-w-md w-full">
-                <div className="text-center flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-                    <Upload className="w-8 h-8 text-slate-600" />
-                  </div>
-                  <p className="text-slate-600 text-sm text-center">
-                    Upload a Word document to extract tags and configure mappings
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {(isCreatingNew || selectedDocument) && activeTab === "qa" && (
-          <>
-            {documentTags.length > 0 && (
-              <>
-                <Card className="flex-shrink-0">
-                  <CardContent className="pt-6">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-slate-900">Question & Answer Configuration</h3>
-                      <p className="text-sm text-slate-600 mt-1">Create and assign questions to document tags</p>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <div className="text-sm text-slate-600">Total Questions</div>
-                        <div className="text-2xl font-bold text-slate-900">{questions.length}</div>
-                      </div>
-                      <div className="p-3 bg-green-50 rounded-lg">
-                        <div className="text-sm text-slate-600">Assigned Tags</div>
-                        <div className="text-2xl font-bold text-green-600">{assignedQuestionsCount}</div>
-                      </div>
-                      <div className="p-3 bg-orange-50 rounded-lg">
-                        <div className="text-sm text-slate-600">Unassigned Tags</div>
-                        <div className="text-2xl font-bold text-orange-600">{unassignedTagsCount}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
-                  {/* Question Bank Panel */}
-                  <Card className="flex flex-col min-h-0">
-                    <CardHeader>
-                      <div>
-                        <CardTitle className="text-lg">Question Bank ({questions.length})</CardTitle>
-                        <p className="text-sm text-slate-600">Create and manage questions</p>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      {/* Add New Question */}
-                      <div className="mb-4 flex-shrink-0">
-                        <div className="flex gap-2">
-                          <Input
-                            type="text"
-                            placeholder="Enter a new question..."
-                            value={newQuestionText}
-                            onChange={(e) => setNewQuestionText(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                handleAddQuestion()
-                              }
-                            }}
-                            className="flex-1"
-                          />
-                          <Button
-                            onClick={handleAddQuestion}
-                            disabled={newQuestionText.trim() === ""}
-                            className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Questions List */}
-                      <div className="flex-1 border border-slate-200 rounded-lg overflow-auto min-h-0">
-                        <div className="space-y-2 p-4">
-                          {questions.length === 0 && (
-                            <div className="text-center py-8 text-slate-500 text-sm">
-                              No questions yet. Create your first question above.
-                            </div>
-                          )}
-
-                          {questions.map((question) => {
-                            const assignedCount = Object.values(questionAssignments).filter(
-                              (qId) => qId === question.id,
-                            ).length
-
-                            return (
-                              <div
-                                key={question.id}
-                                className="p-3 border rounded-lg bg-white border-slate-200 hover:border-l-4 hover:border-l-[#b30089] transition-all"
-                              >
-                                {editingQuestionId === question.id ? (
-                                  <div className="space-y-2">
-                                    <Input
-                                      type="text"
-                                      value={editingQuestionText}
-                                      onChange={(e) => setEditingQuestionText(e.target.value)}
-                                      className="w-full"
-                                    />
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        onClick={handleSaveEditQuestion}
-                                        className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
-                                      >
-                                        Save
-                                      </Button>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleCancelEditQuestion}
-                                        className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors bg-transparent"
-                                      >
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="flex-1">
-                                      <div className="text-sm text-slate-900">{question.text}</div>
-                                      {assignedCount > 0 && (
-                                        <div className="flex items-center gap-1 mt-2 text-xs text-green-600 font-medium">
-                                          <Link className="w-3 h-3" />
-                                          Assigned to {assignedCount} tag{assignedCount > 1 ? "s" : ""}
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleEditQuestion(question.id)}
-                                        className="group hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
-                                      >
-                                        <Edit
-                                          className="w-3 h-3 transition-colors group-hover:!text-white"
-                                          style={{ color: "#0f0d42" }}
-                                        />
-                                      </Button>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleDeleteQuestion(question.id)}
-                                        className="group hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
-                                      >
-                                        <Trash
-                                          className="w-3 h-3 transition-colors group-hover:!text-white"
-                                          style={{ color: "#0f0d42" }}
-                                        />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Document Tags Panel */}
-                  <Card className="flex flex-col min-h-0">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg">Document Tags ({documentTags.length})</CardTitle>
-                          <p className="text-sm text-slate-600">Assign questions to document tags</p>
-                        </div>
-                        <div className="relative">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowQaDocTagFilterDropdown(!showQaDocTagFilterDropdown)}
-                            className="flex items-center gap-2"
-                          >
-                            <Sliders className="w-4 h-4" />
-                            Filter
-                          </Button>
-
-                          {showQaDocTagFilterDropdown && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-10"
-                                onClick={() => setShowQaDocTagFilterDropdown(false)}
-                              />
-                              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() => {
-                                      setQaDocTagFilter("all")
-                                      setShowQaDocTagFilterDropdown(false)
-                                    }}
-                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between ${
-                                      qaDocTagFilter === "all" ? "font-medium" : ""
-                                    }`}
-                                  >
-                                    <span>All</span>
-                                    {qaDocTagFilter === "all" && (
-                                      <Check className="w-4 h-4" style={{ color: "#b30089" }} />
-                                    )}
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setQaDocTagFilter("assigned")
-                                      setShowQaDocTagFilterDropdown(false)
-                                    }}
-                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between ${
-                                      qaDocTagFilter === "assigned" ? "font-medium" : ""
-                                    }`}
-                                  >
-                                    <span>Assigned</span>
-                                    {qaDocTagFilter === "assigned" && (
-                                      <Check className="w-4 h-4" style={{ color: "#b30089" }} />
-                                    )}
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setQaDocTagFilter("unassigned")
-                                      setShowQaDocTagFilterDropdown(false)
-                                    }}
-                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#b30089]/10 flex items-center justify-between ${
-                                      qaDocTagFilter === "unassigned" ? "font-medium" : ""
-                                    }`}
-                                  >
-                                    <span>Unassigned</span>
-                                    {qaDocTagFilter === "unassigned" && (
-                                      <Check className="w-4 h-4" style={{ color: "#b30089" }} />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                      <div className="flex-1 border border-slate-200 rounded-lg overflow-auto">
-                        <div className="space-y-2 p-4">
-                          {filteredQaDocumentTags.map((docTag) => {
-                            const assignedQuestionId = questionAssignments[docTag.id]
-                            const assignedQuestion = questions.find((q) => q.id === assignedQuestionId)
-
-                            const displayPlaceholder = docTag.placeholder.replace(/DATA_(\d+)/, "Q&A_$1")
-
-                            return (
-                              <div
-                                key={docTag.id}
-                                className={`p-3 border rounded-lg ${
-                                  assignedQuestion ? "bg-green-50 border-green-200" : "bg-white border-slate-200"
-                                }`}
-                              >
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex-1">
-                                      <div className="font-mono text-sm font-medium text-slate-900">
-                                        {displayPlaceholder}
-                                      </div>
-                                      {assignedQuestion && (
-                                        <div className="text-xs text-green-600 font-medium px-2 py-1 bg-green-100 rounded">
-                                          Assigned
-                                        </div>
-                                      )}
-                                    </div>
-                                    {assignedQuestion ? (
-                                      <div className="space-y-2">
-                                        <div className="p-2 bg-white rounded border border-green-200">
-                                          <div className="text-xs text-slate-600 mb-1">Assigned Question:</div>
-                                          <div className="text-sm text-slate-900">{assignedQuestion.text}</div>
-                                        </div>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleUnassignQuestion(docTag.id)}
-                                          className="w-full text-red-600 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
-                                        >
-                                          <X className="w-3 h-3 mr-1" />
-                                          Unassign
-                                        </Button>
-                                      </div>
-                                    ) : (
-                                      <div className="relative">
-                                        <select
-                                          value=""
-                                          onChange={(e) => {
-                                            if (e.target.value) {
-                                              handleAssignQuestion(docTag.id, e.target.value)
-                                            }
-                                          }}
-                                          className="w-full p-2 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                          disabled={questions.length === 0}
-                                        >
-                                          <option value="">
-                                            {questions.length === 0 ? "No questions available" : "Select a question..."}
-                                          </option>
-                                          {questions.map((q) => (
-                                            <option key={q.id} value={q.id}>
-                                              {q.text}
-                                            </option>
-                                          ))}
-                                        </select>
-                                        <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-500 pointer-events-none" />
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </>
-            )}
-
-            {documentTags.length === 0 && (
-              <Card className="flex-1 min-h-0">
-                <CardContent className="flex-1 flex items-center justify-center p-12">
-                  <div className="bg-white border border-slate-200 rounded-lg p-12 shadow-sm max-w-md w-full">
-                    <div className="text-center flex flex-col items-center justify-center">
-                      <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-                        <Upload className="w-8 h-8 text-slate-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">Upload Document First</h3>
-                      <p className="text-slate-600 text-sm text-center">
-                        Upload a Word document to extract tags and configure Q&A
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </>
         )}
       </div>
