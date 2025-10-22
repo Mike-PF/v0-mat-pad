@@ -28,17 +28,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <style>{`
-html {
-  font-family: ${poppins.style.fontFamily};
-  --font-sans: ${poppins.variable};
-  --font-mono: ${jetbrainsMono.variable};
-}
-        `}</style>
-      </head>
-      <body className={`${poppins.variable} ${jetbrainsMono.variable}`}>{children}</body>
+    <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-sans">{children}</body>
     </html>
   )
 }
