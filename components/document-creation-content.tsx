@@ -230,8 +230,14 @@ export function DocumentCreationContent() {
   const [publishingDocument, setPublishingDocument] = useState<any>(null)
 
   const [showFormatModal, setShowFormatModal] = useState(false)
-  const [formatModalType, setFormatModalType] = useState<"format" | "formatfinance" | "colour" | null>(null)
+  const [formatModalType, setFormatModalType] = useState<"other" | "financeOther" | "colour" | null>(null)
+  const [colourDropdown1, setColourDropdown1] = useState("")
+  const [colourDropdown2, setColourDropdown2] = useState("")
+  const [colourSearchQuery, setColourSearchQuery] = useState("")
+  const [formatOtherText, setFormatOtherText] = useState("")
   const [currentFormattingTagId, setCurrentFormattingTagId] = useState<string | null>(null)
+  const [tagColourConfig, setTagColourConfig] = useState<Record<string, { element: string; systemTag?: string }>>({})
+  const [tagFormatOtherConfig, setTagFormatOtherConfig] = useState<Record<string, string>>({})
 
   const [showManualTagModal, setShowManualTagModal] = useState(false)
   const [manualTagName, setManualTagName] = useState("")
@@ -242,8 +248,8 @@ export function DocumentCreationContent() {
   const [conditionalOperator, setConditionalOperator] = useState("")
   const [conditionalValue, setConditionalValue] = useState("")
   const [conditionalOtherText, setConditionalOtherText] = useState("")
-  const [conditionalTrueAction, setConditionalTrueAction] = useState("")
-  const [conditionalFalseAction, setConditionalFalseAction] = useState("")
+  const [conditionalTrueAction, setConditionalTrueAction] = useState("") // Corrected state name
+  const [conditionalFalseAction, setConditionalFalseAction] = useState("") // Corrected state name
   const [conditionalTagSearch, setConditionalTagSearch] = useState("")
 
   const [tagConditionalLogic, setTagConditionalLogic] = useState<Record<string, any>>({})
@@ -307,6 +313,23 @@ export function DocumentCreationContent() {
     } else {
       setTagConditionalLogic({}) // Ensure it's reset if no logic is found
     }
+    // Load existing formatting configurations
+    if (doc.tagFormatOtherConfig) {
+      setTagFormatOtherConfig(doc.tagFormatOtherConfig)
+    } else {
+      setTagFormatOtherConfig({})
+    }
+    if (doc.tagColourConfig) {
+      setTagColourConfig(doc.tagColourConfig)
+    } else {
+      setTagColourConfig({})
+    }
+    if (doc.tagStyles) {
+      setTagStyles(doc.tagStyles)
+    } else {
+      setTagStyles({})
+    }
+
     // TODO: Load Q&A data if it exists for this document
     // For now, let's simulate loading some QA data if the document exists
     // Removed mock Q&A data loading
@@ -372,12 +395,21 @@ export function DocumentCreationContent() {
       setTagConditionalLogic({})
       setRangeStartTagId(null)
       setRangeEndTagId(null)
+      // Reset formatting states when changing SP
+      setTagStyles({})
+      setTagColourConfig({})
+      setTagFormatOtherConfig({})
+      setFormatModalType(null)
     } else {
       setTags([])
       setDocumentTags([]) // Clear document tags as well
       setTagConditionalLogic({})
       setRangeStartTagId(null)
       setRangeEndTagId(null)
+      setTagStyles({})
+      setTagColourConfig({})
+      setTagFormatOtherConfig({})
+      setFormatModalType(null)
     }
     setSelectingTagMode(null) // Clear selection mode when changing SP
   }
@@ -407,6 +439,11 @@ export function DocumentCreationContent() {
         setTagConditionalLogic({})
         setRangeStartTagId(null)
         setRangeEndTagId(null)
+        // Reset formatting states on file upload
+        setTagStyles({})
+        setTagColourConfig({})
+        setTagFormatOtherConfig({})
+        setFormatModalType(null)
       }, 2000)
     }
   }
@@ -427,7 +464,24 @@ export function DocumentCreationContent() {
       prevTags.map((tag) => (tag.id === docTagId ? { ...tag, matched: true, matchedSystemTagId: systemTagId } : tag)),
     )
 
-    setTagStyles((prev) => ({ ...prev, [docTagId]: "Normal" }))
+    // Reset style for the tag when matching to avoid conflicts
+    setTagStyles((prev) => {
+      const newState = { ...prev }
+      delete newState[docTagId]
+      return newState
+    })
+    // Clear formatting config when matching
+    setTagColourConfig((prev) => {
+      const newState = { ...prev }
+      delete newState[docTagId]
+      return newState
+    })
+    setTagFormatOtherConfig((prev) => {
+      const newState = { ...prev }
+      delete newState[docTagId]
+      return newState
+    })
+
     setSelectingTagMode(null)
   }
 
@@ -438,10 +492,21 @@ export function DocumentCreationContent() {
       prevTags.map((tag) => (tag.id === docTagId ? { ...tag, matched: false, matchedSystemTagId: null } : tag)),
     )
 
+    // Remove formatting styles and configurations when unmatching
     setTagStyles((prev) => {
       const newStyles = { ...prev }
       delete newStyles[docTagId]
       return newStyles
+    })
+    setTagColourConfig((prev) => {
+      const newConfig = { ...prev }
+      delete newConfig[docTagId]
+      return newConfig
+    })
+    setTagFormatOtherConfig((prev) => {
+      const newConfig = { ...prev }
+      delete newConfig[docTagId]
+      return newConfig
     })
 
     // Remove conditional logic for the tag when unmatching
@@ -455,19 +520,52 @@ export function DocumentCreationContent() {
   }
 
   const handleStyleChange = (docTagId: string, style: string) => {
-    if (style === "Format Other" || style === "FormatFinance Other" || style === "Colour") {
-      setCurrentFormattingTagId(docTagId)
-      if (style === "Format Other") {
-        setFormatModalType("format")
-      } else if (style === "FormatFinance Other") {
-        setFormatModalType("formatfinance")
-      } else if (style === "Colour") {
-        setFormatModalType("colour")
+    console.log("[v0] handleStyleChange called:", { docTagId, style })
+    console.log("[v0] Current tagColourConfig:", tagColourConfig)
+    console.log("[v0] Current tagStyles:", tagStyles)
+
+    setCurrentFormattingTagId(docTagId)
+
+    if (style === "Format Other" || style.startsWith("FormatOther(")) {
+      const savedConfig = tagFormatOtherConfig[docTagId]
+      if (savedConfig) {
+        setFormatOtherText(savedConfig)
+      } else {
+        setFormatOtherText("")
       }
-      setShowFormatModal(true)
-      return
+      setFormatModalType("other")
+    } else if (style === "FormatFinance Other") {
+      setFormatModalType("financeOther")
+    } else if (style === "Colour" || style.startsWith("colour(")) {
+      console.log("[v0] Colour selected, checking for saved config...")
+      const savedConfig = tagColourConfig[docTagId]
+      console.log("[v0] Saved config found:", savedConfig)
+
+      if (savedConfig) {
+        console.log("[v0] Pre-populating dropdowns with:", savedConfig)
+        setColourDropdown1(savedConfig.element)
+        setColourDropdown2(savedConfig.systemTag || "")
+      } else {
+        console.log("[v0] No saved config, resetting dropdowns")
+        setColourDropdown1("")
+        setColourDropdown2("")
+      }
+      setFormatModalType("colour")
+      console.log("[v0] Modal type set to colour, opening modal...")
+    } else {
+      setTagStyles((prev) => ({ ...prev, [docTagId]: style }))
     }
-    setTagStyles((prev) => ({ ...prev, [docTagId]: style }))
+
+    if (
+      style === "Format Other" ||
+      style.startsWith("FormatOther(") ||
+      style === "FormatFinance Other" ||
+      style === "Colour" ||
+      style.startsWith("colour(")
+    ) {
+      setShowFormatModal(true)
+      console.log("[v0] Format modal opened")
+    }
   }
 
   const handleRangeStart = (docTagId: string) => {
@@ -655,6 +753,10 @@ export function DocumentCreationContent() {
       tagConditionalLogic: tagConditionalLogic,
       // Removed qaData from save payload
       // qaData: qaData, // Save QA data
+      // Store tag styles, including colour configurations
+      tagStyles: tagStyles,
+      tagColourConfig: tagColourConfig,
+      tagFormatOtherConfig: tagFormatOtherConfig, // Save Format Other configurations
     }
 
     if (selectedDocument) {
@@ -817,7 +919,7 @@ export function DocumentCreationContent() {
       }
 
       setConditionalTrueAction(existingLogic.trueAction || "")
-      setConditionalFalseAction(existingLogic.falseAction || "")
+      setConditionalFalseAction(existingLogic.falseAction || "") // Corrected usage of setter
     } else {
       // Reset form for new logic
       setConditionalSystemTag("")
@@ -825,7 +927,7 @@ export function DocumentCreationContent() {
       setConditionalValue("")
       setConditionalOtherText("")
       setConditionalTrueAction("")
-      setConditionalFalseAction("")
+      setConditionalFalseAction("") // Corrected usage of setter
     }
 
     setConditionalTagSearch("")
@@ -925,11 +1027,13 @@ export function DocumentCreationContent() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {formatModalType === "format"
+                  {formatModalType === "other"
                     ? "Format Other"
-                    : formatModalType === "formatfinance"
+                    : formatModalType === "financeOther"
                       ? "FormatFinance Other"
-                      : "Colour"}
+                      : formatModalType === "colour"
+                        ? "Colour"
+                        : ""}
                 </CardTitle>
                 <Button
                   variant="ghost"
@@ -938,6 +1042,10 @@ export function DocumentCreationContent() {
                     setShowFormatModal(false)
                     setFormatModalType(null)
                     setCurrentFormattingTagId(null)
+                    setColourDropdown1("")
+                    setColourDropdown2("")
+                    setColourSearchQuery("")
+                    setFormatOtherText("") // Clear format other text
                   }}
                 >
                   <X className="w-4 h-4" />
@@ -945,13 +1053,253 @@ export function DocumentCreationContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-slate-600">
-                  {formatModalType === "colour"
-                    ? "Colour configuration coming soon..."
-                    : "Format configuration coming soon..."}
-                </p>
-              </div>
+              {formatModalType === "colour" ? (
+                <div className="space-y-6">
+                  {/* Dropdown 1 - Mandatory */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">
+                      Element <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={colourDropdown1}
+                      onChange={(e) => setColourDropdown1(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b30089]"
+                    >
+                      <option value="">Please Select......</option>
+                      {Array.from({ length: 100 }, (_, i) => {
+                        const variations = [
+                          "suspSchoolP",
+                          "suspSchoolF",
+                          "exclSchoolP",
+                          "exclSchoolF",
+                          "attSchoolP",
+                          "attSchoolF",
+                          "sendSchoolP",
+                          "sendSchoolF",
+                          "acadSchoolP",
+                          "acadSchoolF",
+                        ]
+                        const base = variations[i % variations.length]
+                        const suffix = Math.floor(i / variations.length)
+                        return `${base}${suffix > 0 ? suffix : ""}`
+                      }).map((element) => (
+                        <option key={element} value={element}>
+                          {element}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Dropdown 2 - Optional with Search */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">System Tag (Optional)</label>
+                    <div className="border border-slate-300 rounded-md bg-white">
+                      <div className="relative border-b border-slate-200">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                          type="text"
+                          placeholder="Search system tags..."
+                          value={colourSearchQuery}
+                          onChange={(e) => setColourSearchQuery(e.target.value)}
+                          className="pl-10 border-0 focus:ring-0 rounded-b-none"
+                        />
+                      </div>
+                      <div className="relative">
+                        <select
+                          value={colourDropdown2}
+                          onChange={(e) => setColourDropdown2(e.target.value)}
+                          className="w-full p-3 pr-10 border-0 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary rounded-t-none"
+                        >
+                          <option value="">None</option>
+                          {tags
+                            .filter(
+                              (tag) =>
+                                tag.name.toLowerCase().includes(colourSearchQuery.toLowerCase()) ||
+                                tag.id.toLowerCase().includes(colourSearchQuery.toLowerCase()),
+                            )
+                            .map((tag) => (
+                              <option key={tag.id} value={tag.id}>
+                                {tag.name}
+                              </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Condition Preview */}
+                  {colourDropdown1 && (
+                    <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="text-sm font-medium text-slate-600 mb-2">Preview:</div>
+                      <div className="font-mono text-sm">
+                        <span className="text-[#b30089] font-semibold">colour</span>
+                        <span className="text-slate-700">(</span>
+                        <span className="text-blue-600">{colourDropdown1}</span>
+                        {colourDropdown2 && (
+                          <>
+                            <span className="text-slate-700">;</span>
+                            <span className="text-green-600">
+                              {tags.find((t) => t.id === colourDropdown2)?.name || colourDropdown2}
+                            </span>
+                          </>
+                        )}
+                        <span className="text-slate-700">)</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        console.log("[v0] Colour modal cancelled")
+                        setShowFormatModal(false)
+                        setFormatModalType(null)
+                        setCurrentFormattingTagId(null)
+                        setColourDropdown1("")
+                        setColourDropdown2("")
+                        setColourSearchQuery("")
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        console.log("[v0] Save Colour clicked")
+                        console.log("[v0] Current values:", {
+                          currentFormattingTagId,
+                          colourDropdown1,
+                          colourDropdown2,
+                        })
+
+                        if (!currentFormattingTagId || !colourDropdown1) {
+                          console.log("[v0] Validation failed: missing required fields")
+                          // Optionally, show an error to the user
+                          return
+                        }
+
+                        const systemTagName = colourDropdown2
+                          ? tags.find((t) => t.id === colourDropdown2)?.name || colourDropdown2
+                          : ""
+
+                        const colourValue = colourDropdown2
+                          ? `colour(${colourDropdown1};${systemTagName})`
+                          : `colour(${colourDropdown1})`
+
+                        console.log("[v0] Generated colour value:", colourValue)
+
+                        // Save to tagColourConfig for edit mode
+                        const newConfig = {
+                          element: colourDropdown1,
+                          systemTag: colourDropdown2 || undefined,
+                        }
+                        console.log("[v0] Saving to tagColourConfig:", { [currentFormattingTagId]: newConfig })
+                        setTagColourConfig((prev) => ({
+                          ...prev,
+                          [currentFormattingTagId]: newConfig,
+                        }))
+
+                        // Save to tagStyles for display
+                        console.log("[v0] Saving to tagStyles:", { [currentFormattingTagId]: colourValue })
+                        setTagStyles((prev) => ({
+                          ...prev,
+                          [currentFormattingTagId]: colourValue,
+                        }))
+
+                        console.log("[v0] Closing modal and resetting state")
+                        setShowFormatModal(false)
+                        setFormatModalType(null)
+                        setCurrentFormattingTagId(null)
+                        setColourDropdown1("")
+                        setColourDropdown2("")
+                        setColourSearchQuery("")
+
+                        console.log("[v0] Colour configuration saved successfully")
+                      }}
+                      className="bg-[#b30089] hover:bg-[#8a0068] text-white"
+                    >
+                      Save Colour
+                    </Button>
+                  </div>
+                </div>
+              ) : formatModalType === "other" ? (
+                <div className="space-y-6">
+                  {/* Text Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Format Other</label>
+                    <Input
+                      type="text"
+                      placeholder="Enter format text..."
+                      value={formatOtherText}
+                      onChange={(e) => setFormatOtherText(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Preview */}
+                  {formatOtherText && (
+                    <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="text-sm font-medium text-slate-600 mb-2">Preview:</div>
+                      <div className="font-mono text-sm">
+                        <span className="text-[#b30089] font-semibold">FormatOther</span>
+                        <span className="text-slate-700">(</span>
+                        <span className="text-blue-600">{formatOtherText}</span>
+                        <span className="text-slate-700">)</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowFormatModal(false)
+                        setFormatModalType(null)
+                        setCurrentFormattingTagId(null)
+                        setFormatOtherText("")
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (!currentFormattingTagId || !formatOtherText) {
+                          return
+                        }
+
+                        const formatValue = `FormatOther(${formatOtherText})`
+
+                        // Save to tagFormatOtherConfig for edit mode
+                        setTagFormatOtherConfig((prev) => ({
+                          ...prev,
+                          [currentFormattingTagId]: formatOtherText,
+                        }))
+
+                        // Save to tagStyles for display
+                        setTagStyles((prev) => ({
+                          ...prev,
+                          [currentFormattingTagId]: formatValue,
+                        }))
+
+                        setShowFormatModal(false)
+                        setFormatModalType(null)
+                        setCurrentFormattingTagId(null)
+                        setFormatOtherText("")
+                      }}
+                      className="bg-[#b30089] hover:bg-[#8a0068] text-white"
+                    >
+                      Save Format
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-slate-600">Format configuration coming soon...</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -974,7 +1322,7 @@ export function DocumentCreationContent() {
                     setConditionalValue("")
                     setConditionalOtherText("")
                     setConditionalTrueAction("")
-                    setConditionalFalseAction("")
+                    setConditionalFalseAction("") // Corrected setter call
                     setConditionalTagSearch("")
                   }}
                 >
@@ -1165,7 +1513,7 @@ export function DocumentCreationContent() {
                       setConditionalValue("")
                       setConditionalOtherText("")
                       setConditionalTrueAction("")
-                      setConditionalFalseAction("")
+                      setConditionalFalseAction("") // Corrected setter call
                       setConditionalTagSearch("")
                     }}
                     className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
@@ -1180,7 +1528,7 @@ export function DocumentCreationContent() {
                         operator: conditionalOperator,
                         value: conditionalValue === "Other" ? conditionalOtherText : conditionalValue,
                         trueAction: conditionalTrueAction,
-                        falseAction: conditionalFalseAction,
+                        falseAction: conditionalFalseAction, // Corrected usage
                       }
 
                       // Store the logic for this tag
@@ -1201,7 +1549,7 @@ export function DocumentCreationContent() {
                       setConditionalValue("")
                       setConditionalOtherText("")
                       setConditionalTrueAction("")
-                      setConditionalFalseAction("")
+                      setConditionalFalseAction("") // Corrected setter call
                       setConditionalTagSearch("")
                     }}
                     disabled={
@@ -1308,7 +1656,7 @@ export function DocumentCreationContent() {
         </div>
       )}
 
-      <div className="h-[calc(100vh-12rem)] flex flex-col space-y-6 overflow-hidden">
+      <div className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
         {(isCreatingNew || selectedDocument) && (
           <Card className="flex-shrink-0">
             <CardHeader>
@@ -1757,7 +2105,7 @@ export function DocumentCreationContent() {
                                     <select
                                       value={tagStyles[docTag.id] || ""}
                                       onChange={(e) => handleStyleChange(docTag.id, e.target.value)}
-                                      className="w-full px-3 py-2 pr-8 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                                     >
                                       <option value="">Please Select......</option>
                                       <option value="Format(N0)">Format(N0)</option>
@@ -1778,8 +2126,11 @@ export function DocumentCreationContent() {
                                       <option value="FormatFinance Other">FormatFinance Other</option>
                                       <option value="FormatBit(Yes;No; )">FormatBit(Yes;No; )</option>
                                       <option value="FormatBit(True;False; )">FormatBit(True;False; )</option>
-                                      <option value="Colour">Colour</option>
-                                      <option value="format Other">format Other</option>
+                                      {tagStyles[docTag.id]?.startsWith("colour(") ? (
+                                        <option value={tagStyles[docTag.id]}>{tagStyles[docTag.id]}</option>
+                                      ) : (
+                                        <option value="Colour">Colour</option>
+                                      )}
                                     </select>
                                     <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                                   </div>
