@@ -13,8 +13,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-poppins)", "sans-serif"],
-        mono: ["var(--font-jetbrains-mono)", "monospace"],
+        sans: ["Poppins", "sans-serif"],
+        mono: ["monospace"],
       },
       colors: {
         background: "hsl(var(--background))",
