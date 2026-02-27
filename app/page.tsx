@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Upload } from "lucide-react"
 
 export default function HomePage() {
+  console.log("[v0] HomePage component rendering")
   const router = useRouter()
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [dragActive, setDragActive] = useState(false)
