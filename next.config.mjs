@@ -7,7 +7,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true
+    unoptimized: true,
+  },
+  webpack: (config, { isServer }) => {
+    // Force cache invalidation
+    config.cache = false
+    return config
   },
 }
 
