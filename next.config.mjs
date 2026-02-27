@@ -9,11 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  webpack: (config, { isServer }) => {
-    // Force cache invalidation
-    config.cache = false
-    return config
-  },
 }
 
 export default nextConfig
