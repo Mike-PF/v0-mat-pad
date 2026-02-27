@@ -1,19 +1,51 @@
 export default function HomePage() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-        <h1 className="text-3xl font-bold text-slate-900 mb-4">MAT Pad</h1>
-        <p className="text-slate-600 mb-6">Forms and Reports Management System</p>
-        <div className="flex gap-4 justify-center">
+    <div 
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f1f5f9"
+      }}
+    >
+      <div 
+        style={{
+          backgroundColor: "white",
+          padding: "2rem",
+          borderRadius: "0.5rem",
+          boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+          textAlign: "center"
+        }}
+      >
+        <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "#0f172a", marginBottom: "1rem" }}>
+          MAT Pad
+        </h1>
+        <p style={{ color: "#475569", marginBottom: "1.5rem" }}>
+          Forms and Reports Management System
+        </p>
+        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
           <a 
             href="/forms" 
-            className="px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity"
+            style={{
+              padding: "0.75rem 1.5rem",
+              backgroundColor: "#9333ea",
+              color: "white",
+              borderRadius: "0.5rem",
+              textDecoration: "none"
+            }}
           >
             Go to Forms
           </a>
           <a 
             href="/reports" 
-            className="px-6 py-3 bg-slate-600 text-white rounded-lg hover:opacity-90 transition-opacity"
+            style={{
+              padding: "0.75rem 1.5rem",
+              backgroundColor: "#475569",
+              color: "white",
+              borderRadius: "0.5rem",
+              textDecoration: "none"
+            }}
           >
             Go to Reports
           </a>
