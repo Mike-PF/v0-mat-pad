@@ -1,54 +1,78 @@
+"use client"
+
+import { useState, useRef } from "react"
+import { Sidebar } from "@/components/sidebar"
+import { TopNavigation } from "@/components/top-navigation"
+import { FormsReportPanel } from "@/components/forms-report-panel"
+import { QuestionSection } from "@/components/question-section"
+
 export default function HomePage() {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [selectedForm, setSelectedForm] = useState("")
+  const [selectedSchool, setSelectedSchool] = useState("")
+  const [selectedTerm, setSelectedTerm] = useState("")
+  const [activeSection, setActiveSection] = useState("academy-vision")
+  const [formData, setFormData] = useState<Record<string, any>>({})
+
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+
+  const scrollToSection = (sectionId: string) => {
+    const element = sectionRefs.current[sectionId]
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" })
+      setActiveSection(sectionId)
+    }
+  }
+
+  const updateFormData = (questionId: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [questionId]: value }))
+  }
+
+  const clearForm = () => {
+    if (window.confirm("Are you sure you want to clear all form data? This action cannot be undone.")) {
+      setSelectedForm("")
+      setSelectedSchool("")
+      setSelectedTerm("")
+      setFormData({})
+      scrollToSection("academy-vision")
+    }
+  }
+
   return (
-    <div 
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        backgroundColor: "#f1f5f9"
-      }}
-    >
-      <div 
-        style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "0.5rem",
-          boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-          textAlign: "center"
-        }}
-      >
-        <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "#0f172a", marginBottom: "1rem" }}>
-          MAT Pad
-        </h1>
-        <p style={{ color: "#475569", marginBottom: "1.5rem" }}>
-          Forms and Reports Management System
-        </p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-          <a 
-            href="/forms" 
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "#9333ea",
-              color: "white",
-              borderRadius: "0.5rem",
-              textDecoration: "none"
-            }}
-          >
-            Go to Forms
-          </a>
-          <a 
-            href="/reports" 
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "#475569",
-              color: "white",
-              borderRadius: "0.5rem",
-              textDecoration: "none"
-            }}
-          >
-            Go to Reports
-          </a>
+    <div className="flex h-screen bg-slate-50">
+      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+
+      <div className="flex-1 flex flex-col">
+        <div className="p-4">
+          <TopNavigation />
+        </div>
+
+        <div className="flex-1 px-4 pb-6 overflow-hidden">
+          <div className="flex h-full gap-4">
+            <div className="w-80 flex-shrink-0">
+              <FormsReportPanel
+                selectedForm={selectedForm}
+                selectedSchool={selectedSchool}
+                selectedTerm={selectedTerm}
+                onFormChange={setSelectedForm}
+                onSchoolChange={setSelectedSchool}
+                onTermChange={setSelectedTerm}
+                activeSection={activeSection}
+                onSectionClick={scrollToSection}
+                onClearForm={clearForm}
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <QuestionSection
+                activeSection={activeSection}
+                formData={formData}
+                onUpdateData={updateFormData}
+                sectionRefs={sectionRefs}
+                onSectionChange={setActiveSection}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
