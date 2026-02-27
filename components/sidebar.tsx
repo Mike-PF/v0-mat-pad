@@ -13,7 +13,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
   const pathname = usePathname()
 
   const menuItems = [
-    { icon: Upload, label: "Upload", href: "/upload" },
+    { icon: Upload, label: "Upload", href: "/" },
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: FileBarChart, label: "Reports", href: "/reports" },
