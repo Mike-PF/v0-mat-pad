@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Upload } from "lucide-react"
 
-export default function UploadPage() {
+export default function HomePage() {
   const router = useRouter()
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [dragActive, setDragActive] = useState(false)
@@ -52,7 +52,6 @@ export default function UploadPage() {
 
   const handleFileUpload = (file: File) => {
     setIsProcessing(true)
-    // Simulate processing delay then navigate to forms
     setTimeout(() => {
       router.push("/forms")
     }, 1000)
@@ -77,8 +76,8 @@ export default function UploadPage() {
                 <div
                   className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
                     dragActive
-                      ? "border-[#b30089] bg-[#b30089]/5"
-                      : "border-slate-300 hover:border-[#b30089] hover:bg-[#b30089]/5"
+                      ? "border-primary bg-primary/5"
+                      : "border-slate-300 hover:border-primary hover:bg-primary/5"
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
