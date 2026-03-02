@@ -84,54 +84,55 @@ export default function MappingPage() {
           <TopNavigation />
         </div>
 
-        <div className="flex-1 px-4 pb-6 overflow-auto">
+        <div className="flex-1 px-4 pb-6 overflow-auto space-y-4">
+          {/* Data Mapping Header Card */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-end justify-between">
+                <div className="flex items-end gap-6">
+                  <div>
+                    <h1 className="text-base font-bold text-slate-900 mb-1">Data Mapping</h1>
+                    <p className="text-xs text-slate-500 mb-1">Data mapping</p>
+                    <Select value={selectedMapping} onValueChange={setSelectedMapping}>
+                      <SelectTrigger className="w-36 h-9 bg-slate-50 border-slate-200">
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ethnicity">Ethnicity</SelectItem>
+                        <SelectItem value="gender">Gender</SelectItem>
+                        <SelectItem value="language">Language</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Organisation</p>
+                    <Select value={selectedOrganisation} onValueChange={setSelectedOrganisation}>
+                      <SelectTrigger className="w-52 h-9 bg-slate-50 border-slate-200">
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="st-clare">St Clare Catholic Multi A...</SelectItem>
+                        <SelectItem value="holy-cross">Holy Cross Academy</SelectItem>
+                        <SelectItem value="st-mary">St Mary&apos;s School</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <button
+                    onClick={clearSelection}
+                    className="text-sm text-slate-700 underline hover:text-slate-900 pb-2"
+                  >
+                    Clear Selection
+                  </button>
+                </div>
+                <Button className="bg-primary hover:bg-primary/90 px-8">Save</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Two Column Layout */}
+          {selectedMapping && selectedOrganisation && (
           <Card>
             <CardContent className="p-6">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-6">
-                  <div>
-                    <h1 className="text-lg font-semibold text-slate-900">Data Mapping</h1>
-                    <div className="flex items-center gap-4 mt-2">
-                      <div>
-                        <span className="text-sm text-slate-600 mr-2">Data mapping</span>
-                        <Select value={selectedMapping} onValueChange={setSelectedMapping}>
-                          <SelectTrigger className="w-32 h-8 inline-flex">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ethnicity">Ethnicity</SelectItem>
-                            <SelectItem value="gender">Gender</SelectItem>
-                            <SelectItem value="language">Language</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <span className="text-sm text-slate-600 mr-2">Organisation</span>
-                        <Select value={selectedOrganisation} onValueChange={setSelectedOrganisation}>
-                          <SelectTrigger className="w-48 h-8 inline-flex">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="st-clare">St Clare Catholic Multi A...</SelectItem>
-                            <SelectItem value="holy-cross">Holy Cross Academy</SelectItem>
-                            <SelectItem value="st-mary">St Mary&apos;s School</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <button
-                        onClick={clearSelection}
-                        className="text-sm text-slate-700 underline hover:text-slate-900"
-                      >
-                        Clear Selection
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <Button className="bg-primary hover:bg-primary/90">Save</Button>
-              </div>
-
-              {/* Two Column Layout */}
               <div className="grid grid-cols-2 gap-6">
                 {/* Left Panel - Ethnicity Values */}
                 <Card className="border">
@@ -209,6 +210,7 @@ export default function MappingPage() {
               </div>
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
     </div>
