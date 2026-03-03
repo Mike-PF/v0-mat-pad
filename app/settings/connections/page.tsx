@@ -146,7 +146,6 @@ const systemConfig: Record<string, {
   sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   weareevery: { columns: "weareevery", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   wonde: { columns: "wonde", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  wonde: { columns: "standard", idFieldName: "Wonde Domain", idPlaceholder: "https://...", brandColor: "#121051" },
 }
 
 const systems = [
