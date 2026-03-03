@@ -3,30 +3,76 @@
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, RefreshCw, CheckCircle, XCircle, Clock } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
-const mockConnections = [
-  { id: 1, name: "Student Information System", type: "API", status: "Connected", lastSync: "2 hours ago" },
-  { id: 2, name: "HR Database", type: "Database", status: "Connected", lastSync: "1 day ago" },
-  { id: 3, name: "Email Service", type: "SMTP", status: "Error", lastSync: "Failed" },
-  { id: 4, name: "Document Storage", type: "Cloud", status: "Pending", lastSync: "Never" },
+const systems = [
+  {
+    id: "arbor",
+    name: "Arbor",
+    logo: "Arbor",
+    logoColor: "text-green-600",
+    description: "Make informed decisions with Arbor's cloud-based MIS, providing instant access to real-time student data. Monitor attendance, track academic progress, and analyse trends across your school, all from a single, intuitive dashboard."
+  },
+  {
+    id: "bromcom",
+    name: "Bromcom",
+    logo: "Bromcom",
+    logoColor: "text-pink-600",
+    description: "Connect to Bromcom to synchronise attendance, student, and mark records using a secure, read-only data flow."
+  },
+  {
+    id: "cpoms",
+    name: "CPOMS",
+    logo: "CPOMS",
+    logoColor: "text-cyan-600",
+    description: "CPOMS (Child Protection Online Management System) is a safeguarding, wellbeing and pastoral case-management platform used by schools and trusts to securely record concerns, build chronologies, manage cases and support coordinated safeguarding action."
+  },
+  {
+    id: "evolve",
+    name: "Evolve",
+    logo: "EVOLVE",
+    logoColor: "text-slate-800",
+    description: "Gain full visibility over school trips and activities with Evolve's data-driven management system. Track approvals, risk assessments, and communication logs in one centralised platform, ensuring clear oversight and compliance at every stage."
+  },
+  {
+    id: "safesmart",
+    name: "Safesmart",
+    logo: "Safesmart",
+    logoColor: "text-teal-600",
+    description: "Manage health and safety data with ease using Safesmart. From incident reports to compliance checks, centralise safety records and access key insights to ensure your school meets regulatory standards efficiently."
+  },
+  {
+    id: "sampeople",
+    name: "SAMpeople",
+    logo: "SAM people",
+    logoColor: "text-green-600",
+    description: "Optimise your school's HR management with SAMpeople, the dedicated platform for tracking staff data, performance, and wellbeing. From absence management to professional development, SAMpeople provides clear insights and streamlined processes to support your team and improve operational efficiency."
+  },
+  {
+    id: "sisra",
+    name: "Sisra",
+    logo: "Sisra Analytics",
+    logoColor: "text-purple-600",
+    description: "Make time-consuming data analysis a thing of the past with Sisra Analytics, the most flexible data-driven solution for assessments in schools. Bring together student progress, performance and pastoral data across key stages 3, 4 & 5."
+  },
+  {
+    id: "weareevery",
+    name: "WeAreEvery",
+    logo: "every",
+    logoColor: "text-teal-600",
+    description: "Empower your school with Every, the all-in-one platform for managing compliance, HR, and operational data. From tracking staff records to overseeing site management and policies, Every gives you the tools to centralise processes, streamline reporting, and make data-driven decisions with confidence."
+  },
+  {
+    id: "wonde",
+    name: "Wonde",
+    logo: "wonde",
+    logoColor: "text-blue-600",
+    description: "Take control of your school's data with Wonde's secure integration platform. Automate data transfers, manage permissions, and connect to the digital tools you rely on while maintaining data accuracy and security."
+  },
 ]
 
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Connected":
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      case "Error":
-        return <XCircle className="h-5 w-5 text-red-500" />
-      default:
-        return <Clock className="h-5 w-5 text-yellow-500" />
-    }
-  }
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -39,49 +85,23 @@ export default function ConnectionsPage() {
 
         <div className="flex-1 px-4 pb-6 overflow-auto">
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>System Connections</CardTitle>
-                  <CardDescription>Manage external system integrations and APIs</CardDescription>
-                </div>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Connection
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {mockConnections.map((connection) => (
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {systems.map((system) => (
                   <div
-                    key={connection.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50"
+                    key={system.id}
+                    className="flex items-start gap-4 p-4 border-l-4 border-l-primary hover:bg-slate-50 cursor-pointer"
                   >
-                    <div className="flex items-center gap-4">
-                      {getStatusIcon(connection.status)}
-                      <div>
-                        <h3 className="font-medium text-slate-900">{connection.name}</h3>
-                        <p className="text-sm text-slate-500">
-                          {connection.type} · Last sync: {connection.lastSync}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          connection.status === "Connected"
-                            ? "bg-green-100 text-green-800"
-                            : connection.status === "Error"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {connection.status}
+                    <div className="w-20 flex-shrink-0 pt-1">
+                      <span className={`text-sm font-semibold ${system.logoColor}`}>
+                        {system.logo}
                       </span>
-                      <Button variant="ghost" size="sm">
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-900 mb-1">{system.name}</h3>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {system.description}
+                      </p>
                     </div>
                   </div>
                 ))}
