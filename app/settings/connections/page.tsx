@@ -14,6 +14,20 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 
+// Credentials data for systems like Safesmart
+const credentialsConnections: Record<string, Array<{
+  id: string
+  username: string
+  password: string
+  orgCode: string
+  active: boolean
+}>> = {
+  safesmart: [
+    { id: "1", username: "Gareth Heggie", password: "**********", orgCode: "STJOMAT", active: true },
+    { id: "2", username: "Gareth Heggie", password: "**********", orgCode: "STJOMAT", active: true },
+  ],
+}
+
 // Mock school data for each system
 const schoolConnections: Record<string, Array<{
   urn: string
@@ -79,7 +93,7 @@ const schoolConnections: Record<string, Array<{
 
 // System-specific configuration for modal display
 const systemConfig: Record<string, {
-  columns: "standard" | "simple"
+  columns: "standard" | "simple" | "credentials"
   idFieldName: string
   idPlaceholder: string
   brandColor: string
@@ -88,7 +102,7 @@ const systemConfig: Record<string, {
   bromcom: { columns: "simple", idFieldName: "Bromcom School ID", idPlaceholder: "e.g. 11504", brandColor: "#121051" },
   cpoms: { columns: "standard", idFieldName: "CPOMS Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   evolve: { columns: "simple", idFieldName: "API Key", idPlaceholder: "", brandColor: "#121051" },
-  safesmart: { columns: "standard", idFieldName: "Safesmart Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sampeople: { columns: "standard", idFieldName: "SAMpeople Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   weareevery: { columns: "standard", idFieldName: "Every Domain", idPlaceholder: "https://...", brandColor: "#121051" },
@@ -157,10 +171,13 @@ export default function ConnectionsPage() {
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
   const [connections, setConnections] = useState(schoolConnections)
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
+  const [credentials, setCredentials] = useState(credentialsConnections)
+  const [originalCredentials, setOriginalCredentials] = useState(credentialsConnections)
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
     setOriginalConnections(JSON.parse(JSON.stringify(connections)))
+    setOriginalCredentials(JSON.parse(JSON.stringify(credentials)))
   }
 
   const handleToggleActive = (systemId: string, urn: string) => {
@@ -186,6 +203,42 @@ export default function ConnectionsPage() {
       ...prev,
       [systemId]: prev[systemId].map(school => 
         school.urn === urn ? { ...school, apiKey: value } : school
+      )
+    }))
+  }
+
+  // Credentials handlers
+  const handleCredentialChange = (systemId: string, id: string, field: string, value: string | boolean) => {
+    setCredentials(prev => ({
+      ...prev,
+      [systemId]: prev[systemId].map(cred => 
+        cred.id === id ? { ...cred, [field]: value } : cred
+      )
+    }))
+  }
+
+  const hasCredentialChanges = (systemId: string, id: string) => {
+    const current = credentials[systemId]?.find(c => c.id === id)
+    const original = originalCredentials[systemId]?.find(c => c.id === id)
+    if (!current || !original) return false
+    return current.username !== original.username || 
+           current.password !== original.password || 
+           current.orgCode !== original.orgCode ||
+           current.active !== original.active
+  }
+
+  const canSaveCredential = (systemId: string, id: string) => {
+    const cred = credentials[systemId]?.find(c => c.id === id)
+    if (!cred) return false
+    const hasValidDetails = cred.username && cred.password && cred.orgCode
+    return hasCredentialChanges(systemId, id) && hasValidDetails
+  }
+
+  const handleSaveCredential = (systemId: string, id: string) => {
+    setOriginalCredentials(prev => ({
+      ...prev,
+      [systemId]: prev[systemId].map(cred => 
+        cred.id === id ? { ...credentials[systemId].find(c => c.id === id)! } : cred
       )
     }))
   }
@@ -301,77 +354,143 @@ export default function ConnectionsPage() {
           </DialogHeader>
           
           <div className="flex-1 overflow-auto">
-            <table className="w-full">
-              <thead className="sticky top-0 bg-white">
-                <tr className="border-b">
-                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">URN</th>
-                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School Name</th>
-                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Status</th>
-                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">
-                    {selectedSystem ? systemConfig[selectedSystem.id]?.idFieldName : "Domain"}
-                  </th>
-                  {selectedSystem && systemConfig[selectedSystem.id]?.columns === "standard" && (
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">API Key</th>
-                  )}
-                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
-                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedSystem && connections[selectedSystem.id]?.map((school) => (
-                  <tr key={school.urn} className="border-b last:border-0">
-                    <td className="py-3 px-2 text-sm text-slate-600">{school.urn}</td>
-                    <td className="py-3 px-2 text-sm text-slate-900">{school.schoolName}</td>
-                    <td className="py-3 px-2">
-                      <span className={`text-sm ${school.status === "connected" ? "text-green-600" : "text-slate-400"}`}>
-                        {school.status === "connected" ? "Connected" : "No connection"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-2">
-                      <Input
-                        value={school.domain}
-                        onChange={(e) => handleDomainChange(selectedSystem.id, school.urn, e.target.value)}
-                        placeholder={systemConfig[selectedSystem.id]?.idPlaceholder || "https://..."}
-                        className="h-8 text-sm w-48"
-                      />
-                    </td>
-                    {systemConfig[selectedSystem.id]?.columns === "standard" && (
+            {/* Credentials table for systems like Safesmart */}
+            {selectedSystem && systemConfig[selectedSystem.id]?.columns === "credentials" ? (
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Username</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Password</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Org Code</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {credentials[selectedSystem.id]?.map((cred) => (
+                    <tr key={cred.id} className="border-b last:border-0">
+                      <td className="py-3 px-2">
+                        <Input
+                          value={cred.username}
+                          onChange={(e) => handleCredentialChange(selectedSystem.id, cred.id, "username", e.target.value)}
+                          className="h-8 text-sm w-48"
+                        />
+                      </td>
                       <td className="py-3 px-2">
                         <Input
                           type="password"
-                          value={school.apiKey}
-                          onChange={(e) => handleApiKeyChange(selectedSystem.id, school.urn, e.target.value)}
-                          placeholder="API key"
+                          value={cred.password}
+                          onChange={(e) => handleCredentialChange(selectedSystem.id, cred.id, "password", e.target.value)}
+                          className="h-8 text-sm w-48"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={cred.orgCode}
+                          onChange={(e) => handleCredentialChange(selectedSystem.id, cred.id, "orgCode", e.target.value)}
                           className="h-8 text-sm w-32"
                         />
                       </td>
+                      <td className="py-3 px-2 text-center">
+                        <Switch
+                          checked={cred.active}
+                          onCheckedChange={(checked) => handleCredentialChange(selectedSystem.id, cred.id, "active", checked)}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-400"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Button 
+                          size="sm" 
+                          disabled={!canSaveCredential(selectedSystem.id, cred.id)}
+                          onClick={() => handleSaveCredential(selectedSystem.id, cred.id)}
+                          className={`px-6 ${
+                            canSaveCredential(selectedSystem.id, cred.id)
+                              ? "text-white"
+                              : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                          }`}
+                          style={canSaveCredential(selectedSystem.id, cred.id) ? { backgroundColor: "#121051" } : undefined}
+                        >
+                          Save
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              /* Standard/Simple school-based table */
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">URN</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School Name</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Status</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">
+                      {selectedSystem ? systemConfig[selectedSystem.id]?.idFieldName : "Domain"}
+                    </th>
+                    {selectedSystem && systemConfig[selectedSystem.id]?.columns === "standard" && (
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">API Key</th>
                     )}
-                    <td className="py-3 px-2 text-center">
-                      <Switch
-                        checked={school.active}
-                        onCheckedChange={() => handleToggleActive(selectedSystem.id, school.urn)}
-                        className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-400"
-                      />
-                    </td>
-                    <td className="py-3 px-2 text-center">
-                      <Button 
-                        size="sm" 
-                        disabled={!canSave(selectedSystem.id, school.urn)}
-                        onClick={() => handleSave(selectedSystem.id, school.urn)}
-                        className={`px-6 ${
-                          canSave(selectedSystem.id, school.urn)
-                            ? "text-white"
-                            : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                        }`}
-                        style={canSave(selectedSystem.id, school.urn) ? { backgroundColor: "#121051" } : undefined}
-                      >
-                        Save
-                      </Button>
-                    </td>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {selectedSystem && connections[selectedSystem.id]?.map((school) => (
+                    <tr key={school.urn} className="border-b last:border-0">
+                      <td className="py-3 px-2 text-sm text-slate-600">{school.urn}</td>
+                      <td className="py-3 px-2 text-sm text-slate-900">{school.schoolName}</td>
+                      <td className="py-3 px-2">
+                        <span className={`text-sm ${school.status === "connected" ? "text-green-600" : "text-slate-400"}`}>
+                          {school.status === "connected" ? "Connected" : "No connection"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={school.domain}
+                          onChange={(e) => handleDomainChange(selectedSystem.id, school.urn, e.target.value)}
+                          placeholder={systemConfig[selectedSystem.id]?.idPlaceholder || "https://..."}
+                          className="h-8 text-sm w-48"
+                        />
+                      </td>
+                      {systemConfig[selectedSystem.id]?.columns === "standard" && (
+                        <td className="py-3 px-2">
+                          <Input
+                            type="password"
+                            value={school.apiKey}
+                            onChange={(e) => handleApiKeyChange(selectedSystem.id, school.urn, e.target.value)}
+                            placeholder="API key"
+                            className="h-8 text-sm w-32"
+                          />
+                        </td>
+                      )}
+                      <td className="py-3 px-2 text-center">
+                        <Switch
+                          checked={school.active}
+                          onCheckedChange={() => handleToggleActive(selectedSystem.id, school.urn)}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-400"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Button 
+                          size="sm" 
+                          disabled={!canSave(selectedSystem.id, school.urn)}
+                          onClick={() => handleSave(selectedSystem.id, school.urn)}
+                          className={`px-6 ${
+                            canSave(selectedSystem.id, school.urn)
+                              ? "text-white"
+                              : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                          }`}
+                          style={canSave(selectedSystem.id, school.urn) ? { backgroundColor: "#121051" } : undefined}
+                        >
+                          Save
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </DialogContent>
       </Dialog>
