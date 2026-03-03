@@ -1281,10 +1281,16 @@ export default function ConnectionsPage() {
       {/* SISRA Datasets Modal */}
       <Dialog open={sisraDatasetsModal !== null} onOpenChange={(open) => !open && handleCloseSisraDatasets()}>
         <DialogContent className="max-w-4xl max-h-[85vh] p-0 flex flex-col">
-          <div className="p-6 pb-0">
+          <div className="p-6 pb-0 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">
               Configure SISRA Datasets – {sisraDatasetsModal?.schoolName}
             </h2>
+            <Input
+              placeholder="Search..."
+              value={sisraDatasetSearch}
+              onChange={(e) => setSisraDatasetSearch(e.target.value)}
+              className="w-48 h-9"
+            />
           </div>
           
           {/* Year tabs at top */}
@@ -1302,15 +1308,6 @@ export default function ConnectionsPage() {
                 {tab}
               </button>
             ))}
-          </div>
-
-          <div className="px-6 pt-4">
-            <Input
-              placeholder="Search..."
-              value={sisraDatasetSearch}
-              onChange={(e) => setSisraDatasetSearch(e.target.value)}
-              className="w-48 h-9"
-            />
           </div>
 
           <div className="flex-1 overflow-auto px-6 py-4">
@@ -1337,12 +1334,21 @@ export default function ConnectionsPage() {
                       />
                     </td>
                     <td className="py-3 px-2 text-center">
-                      {dataset.getDatasets && (
+                      {dataset.getDatasets ? (
                         <Button
                           size="sm"
                           onClick={() => handleDeleteSisraDataset(sisraDatasetsModal.urn, dataset.id)}
                           className="px-6 text-white"
                           style={{ backgroundColor: "#121051" }}
+                        >
+                          Delete
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled
+                          className="px-6 bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
                         >
                           Delete
                         </Button>
