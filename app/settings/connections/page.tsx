@@ -640,8 +640,8 @@ export default function ConnectionsPage() {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS School</th>
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked School</th>
                         <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School</th>
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked School</th>
                         <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Actions</th>
                       </tr>
                     </thead>
@@ -649,7 +649,6 @@ export default function ConnectionsPage() {
                       {cpomsLinks.map((link) => (
                         <tr key={link.slug} className="border-b last:border-0">
                           <td className="py-3 px-2 text-sm text-slate-900">{link.slug}</td>
-                          <td className="py-3 px-2 text-sm text-slate-600">{link.currentLink}</td>
                           <td className="py-3 px-2">
                             <select
                               value={link.linkedSchool}
@@ -664,6 +663,7 @@ export default function ConnectionsPage() {
                               ))}
                             </select>
                           </td>
+                          <td className="py-3 px-2 text-sm text-slate-600">{link.currentLink}</td>
                           <td className="py-3 px-2">
                             <div className="flex justify-center gap-2">
                               <Button
