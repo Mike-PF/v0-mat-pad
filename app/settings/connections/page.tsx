@@ -110,6 +110,38 @@ const sisraConnections: Array<{
   { urn: "150713", schoolName: "St Francis Xavier's Catholic Academy", connectionStatus: "Login details are incorrect", verified: true, lastRun: "Error 24/02/2026, 09:25:19", username: "heggar367840", password: "**********", enabled: true },
 ]
 
+// SISRA datasets for each school (by URN)
+const sisraDatasets: Record<string, Array<{
+  id: string
+  academicYear: string
+  datasetName: string
+  schoolName: string
+  getDatasets: boolean
+  yearTab: string
+}>> = {
+  "149031": [
+    { id: "1", academicYear: "24/25 - Year 11 Data", datasetName: "KS4 Targets", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: true, yearTab: "24/25 (Y11)" },
+    { id: "2", academicYear: "24/25 - Year 11 Data", datasetName: "SPI Targets", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "3", academicYear: "24/25 - Year 10 Data", datasetName: "Y10 Autumn Current", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "4", academicYear: "24/25 - Year 10 Data", datasetName: "Y10 Autumn Predicted", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "5", academicYear: "24/25 - Year 10 Data", datasetName: "Y10 Summer Current", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "6", academicYear: "24/25 - Year 10 Data", datasetName: "Y10 Summer Predicted", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "7", academicYear: "24/25 - Year 11 Data", datasetName: "Y11 Autumn Current", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "8", academicYear: "25/26 - Year 10 Data", datasetName: "Y10 Targets", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "25/26 (Y10)" },
+    { id: "9", academicYear: "23/24 - Year 11 Data", datasetName: "Final Results", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "23/24 (Leavers)" },
+    { id: "10", academicYear: "22/23 - Year 11 Data", datasetName: "Final Results", schoolName: "St Augustine Of Canterbury Catholic Academy", getDatasets: false, yearTab: "22/23 (Leavers)" },
+  ],
+  "150373": [
+    { id: "1", academicYear: "24/25 - Year 11 Data", datasetName: "KS4 Targets", schoolName: "Notre Dame Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+    { id: "2", academicYear: "24/25 - Year 11 Data", datasetName: "SPI Targets", schoolName: "Notre Dame Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+  ],
+  "150713": [
+    { id: "1", academicYear: "24/25 - Year 11 Data", datasetName: "KS4 Targets", schoolName: "St Francis Xavier's Catholic Academy", getDatasets: false, yearTab: "24/25 (Y11)" },
+  ],
+}
+
+const sisraYearTabs = ["24/25 (Y11)", "25/26 (Y10)", "23/24 (Leavers)", "22/23 (Leavers)"]
+
 // Available schools for linking dropdown
 const availableSchools = [
   { urn: "149032", name: "Blessed Carlo Acutis Catholic and Church of England Academy" },
@@ -280,6 +312,10 @@ export default function ConnectionsPage() {
   const [cpomsLinks, setCpomsLinks] = useState(cpomsSchoolLinks)
   const [originalCpomsLinks, setOriginalCpomsLinks] = useState(cpomsSchoolLinks)
   const [unlinkConfirmation, setUnlinkConfirmation] = useState<{ slug: string; schoolName: string } | null>(null)
+  const [sisraDatasetsModal, setSisraDatasetsModal] = useState<{ urn: string; schoolName: string } | null>(null)
+  const [sisraDatasetsData, setSisraDatasetsData] = useState(sisraDatasets)
+  const [sisraActiveTab, setSisraActiveTab] = useState("24/25 (Y11)")
+  const [sisraDatasetSearch, setSisraDatasetSearch] = useState("")
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
@@ -449,6 +485,48 @@ export default function ConnectionsPage() {
     setOriginalSisra(prev => prev.map(item =>
       item.urn === urn ? { ...sisra.find(s => s.urn === urn)! } : item
     ))
+  }
+
+  // SISRA datasets handlers
+  const handleOpenSisraDatasets = (urn: string, schoolName: string) => {
+    // Only open if the school is enabled (has active connection)
+    const school = sisra.find(s => s.urn === urn)
+    if (school && school.enabled) {
+      setSisraDatasetsModal({ urn, schoolName })
+      setSisraActiveTab("24/25 (Y11)")
+      setSisraDatasetSearch("")
+    }
+  }
+
+  const handleCloseSisraDatasets = () => {
+    setSisraDatasetsModal(null)
+  }
+
+  const handleToggleSisraDataset = (urn: string, datasetId: string, checked: boolean) => {
+    setSisraDatasetsData(prev => ({
+      ...prev,
+      [urn]: prev[urn]?.map(dataset =>
+        dataset.id === datasetId ? { ...dataset, getDatasets: checked } : dataset
+      ) || []
+    }))
+  }
+
+  const handleDeleteSisraDataset = (urn: string, datasetId: string) => {
+    setSisraDatasetsData(prev => ({
+      ...prev,
+      [urn]: prev[urn]?.filter(dataset => dataset.id !== datasetId) || []
+    }))
+  }
+
+  const getFilteredSisraDatasets = (urn: string) => {
+    const datasets = sisraDatasetsData[urn] || []
+    return datasets.filter(dataset => {
+      const matchesTab = dataset.yearTab === sisraActiveTab
+      const matchesSearch = sisraDatasetSearch === "" || 
+        dataset.datasetName.toLowerCase().includes(sisraDatasetSearch.toLowerCase()) ||
+        dataset.academicYear.toLowerCase().includes(sisraDatasetSearch.toLowerCase())
+      return matchesTab && matchesSearch
+    })
   }
   
   // CPOMS handlers
@@ -1043,7 +1121,11 @@ export default function ConnectionsPage() {
                         />
                       </td>
                       <td className="py-3 px-2 text-center">
-                        <button className="text-slate-400 hover:text-slate-600">
+                        <button 
+                          onClick={() => handleOpenSisraDatasets(item.urn, item.schoolName)}
+                          className={`${item.enabled ? "text-slate-400 hover:text-slate-600 cursor-pointer" : "text-slate-200 cursor-not-allowed"}`}
+                          disabled={!item.enabled}
+                        >
                           <Pencil className="h-4 w-4" />
                         </button>
                       </td>
@@ -1192,6 +1274,86 @@ export default function ConnectionsPage() {
             >
               Unlink
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SISRA Datasets Modal */}
+      <Dialog open={sisraDatasetsModal !== null} onOpenChange={(open) => !open && handleCloseSisraDatasets()}>
+        <DialogContent className="max-w-5xl max-h-[85vh] p-0 flex flex-col">
+          <div className="p-6 pb-0">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Configure SISRA Datasets – {sisraDatasetsModal?.schoolName}
+            </h2>
+          </div>
+          
+          <div className="px-6 pt-4">
+            <Input
+              placeholder="Search..."
+              value={sisraDatasetSearch}
+              onChange={(e) => setSisraDatasetSearch(e.target.value)}
+              className="w-48 h-9"
+            />
+          </div>
+
+          <div className="flex-1 overflow-auto px-6 py-4">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-white">
+                <tr className="border-b">
+                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Academic Year</th>
+                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Dataset Name</th>
+                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">School Name</th>
+                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Get Datasets</th>
+                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sisraDatasetsModal && getFilteredSisraDatasets(sisraDatasetsModal.urn).map((dataset) => (
+                  <tr key={dataset.id} className="border-b last:border-0">
+                    <td className="py-3 px-2 text-sm text-slate-600 text-center">{dataset.academicYear}</td>
+                    <td className="py-3 px-2 text-sm text-slate-600 text-center">{dataset.datasetName}</td>
+                    <td className="py-3 px-2 text-sm text-slate-600 text-center">{dataset.schoolName}</td>
+                    <td className="py-3 px-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={dataset.getDatasets}
+                        onChange={(e) => handleToggleSisraDataset(sisraDatasetsModal.urn, dataset.id, e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      {dataset.getDatasets && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleDeleteSisraDataset(sisraDatasetsModal.urn, dataset.id)}
+                          className="px-6 text-white"
+                          style={{ backgroundColor: "#121051" }}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Year tabs at bottom */}
+          <div className="px-6 py-4 border-t flex justify-center gap-4">
+            {sisraYearTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSisraActiveTab(tab)}
+                className={`text-sm ${
+                  sisraActiveTab === tab
+                    ? "text-blue-600 font-medium"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
