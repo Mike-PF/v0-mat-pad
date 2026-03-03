@@ -658,45 +658,43 @@ export default function ConnectionsPage() {
               </table>
             ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "wonde" ? (
               /* Wonde table - URN, Organisation Name, Connect/Edit */
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-white">
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">URN</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Organisation Name</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Connect/Edit</th>
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">URN</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Organisation Name</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Connect/Edit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wonde.map((item) => (
+                    <tr key={item.urn} className="border-b last:border-0">
+                      <td className="py-3 px-2 text-sm text-slate-600">{item.urn}</td>
+                      <td className="py-3 px-2 text-sm text-slate-900">{item.organisationName}</td>
+                      <td className="py-3 px-2 text-center">
+                        {item.connected ? (
+                          <Button 
+                            variant="outline"
+                            size="sm" 
+                            className="px-8 border-slate-300 text-slate-600"
+                          >
+                            Edit
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleWondeConnect(item.urn)}
+                            className="px-6 text-white"
+                            style={{ backgroundColor: "#121051" }}
+                          >
+                            Connect
+                          </Button>
+                        )}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {wonde.map((item) => (
-                      <tr key={item.urn} className="border-b border-slate-100 last:border-0">
-                        <td className="py-3 px-4 text-sm text-slate-600">{item.urn}</td>
-                        <td className="py-3 px-4 text-sm text-slate-900">{item.organisationName}</td>
-                        <td className="py-3 px-4 text-right">
-                          {item.connected ? (
-                            <Button 
-                              variant="outline"
-                              size="sm" 
-                              className="px-8 border-slate-300 text-slate-500 bg-white"
-                            >
-                              Edit
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleWondeConnect(item.urn)}
-                              className="px-6 text-white"
-                              style={{ backgroundColor: "#121051" }}
-                            >
-                              Connect
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             ) : (
               /* Standard/Simple school-based table */
               <table className="w-full">
