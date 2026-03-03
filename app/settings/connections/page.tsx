@@ -74,6 +74,8 @@ const systems = [
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
+  console.log("[v0] ConnectionsPage rendering")
+
   return (
     <div className="flex h-screen bg-slate-50">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
