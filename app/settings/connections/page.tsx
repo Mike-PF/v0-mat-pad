@@ -35,8 +35,15 @@ const schoolConnections: Record<string, Array<{
     { urn: "149134", schoolName: "The Trinity Catholic Academy", status: "connected", domain: "https://the-trinity-catholic-primary", apiKey: "**********", active: true },
   ],
   bromcom: [
-    { urn: "149001", schoolName: "St Mary's Primary School", status: "connected", domain: "https://stmarys.bromcom.com", apiKey: "**********", active: true },
-    { urn: "149002", schoolName: "Sacred Heart Academy", status: "no-connection", domain: "https://...", apiKey: "", active: false },
+    { urn: "149032", schoolName: "Blessed Carlo Acutis Catholic and Church of England Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "149190", schoolName: "Holy Family Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "149029", schoolName: "Holy Spirit Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "150373", schoolName: "Notre Dame Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "149133", schoolName: "St Ambrose Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "149031", schoolName: "St Augustine of Canterbury Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "150713", schoolName: "St Francis Xavier's Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "149132", schoolName: "St Nicholas Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
+    { urn: "149134", schoolName: "The Trinity Catholic Academy", status: "no-connection", domain: "", apiKey: "", active: false },
   ],
   cpoms: [
     { urn: "149001", schoolName: "St Mary's Primary School", status: "connected", domain: "https://stmarys.cpoms.net", apiKey: "**********", active: true },
@@ -60,6 +67,24 @@ const schoolConnections: Record<string, Array<{
   wonde: [
     { urn: "149001", schoolName: "St Mary's Primary School", status: "connected", domain: "https://stmarys.wonde.com", apiKey: "**********", active: true },
   ],
+}
+
+// System-specific configuration for modal display
+const systemConfig: Record<string, {
+  columns: "standard" | "simple"
+  idFieldName: string
+  idPlaceholder: string
+  brandColor: string
+}> = {
+  arbor: { columns: "standard", idFieldName: "Arbor Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  bromcom: { columns: "simple", idFieldName: "Bromcom School ID", idPlaceholder: "e.g. 11504", brandColor: "#121051" },
+  cpoms: { columns: "standard", idFieldName: "CPOMS Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  evolve: { columns: "standard", idFieldName: "Evolve Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  safesmart: { columns: "standard", idFieldName: "Safesmart Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  sampeople: { columns: "standard", idFieldName: "SAMpeople Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  weareevery: { columns: "standard", idFieldName: "Every Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  wonde: { columns: "standard", idFieldName: "Wonde Domain", idPlaceholder: "https://...", brandColor: "#121051" },
 }
 
 const systems = [
@@ -174,7 +199,15 @@ export default function ConnectionsPage() {
     const school = connections[systemId]?.find(s => s.urn === urn)
     if (!school) return false
     
-    // Must have changes AND have valid details filled in
+    const config = systemConfig[systemId]
+    
+    // For simple columns (like Bromcom), only need domain field filled
+    if (config?.columns === "simple") {
+      const hasValidDetails = school.domain && school.domain !== "" && school.domain !== config.idPlaceholder
+      return hasChanges(systemId, urn) && hasValidDetails
+    }
+    
+    // For standard columns, need both domain and API key
     const hasValidDetails = school.domain && school.domain !== "https://..." && school.apiKey && school.apiKey !== ""
     return hasChanges(systemId, urn) && hasValidDetails
   }
@@ -266,8 +299,12 @@ export default function ConnectionsPage() {
                   <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">URN</th>
                   <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School Name</th>
                   <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Status</th>
-                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">{selectedSystem ? getDomainColumnName(selectedSystem.name) : "Domain"}</th>
-                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">API Key</th>
+                  <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">
+                    {selectedSystem ? systemConfig[selectedSystem.id]?.idFieldName : "Domain"}
+                  </th>
+                  {selectedSystem && systemConfig[selectedSystem.id]?.columns === "standard" && (
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">API Key</th>
+                  )}
                   <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
                   <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
                 </tr>
@@ -286,19 +323,21 @@ export default function ConnectionsPage() {
                       <Input
                         value={school.domain}
                         onChange={(e) => handleDomainChange(selectedSystem.id, school.urn, e.target.value)}
-                        placeholder="https://..."
+                        placeholder={systemConfig[selectedSystem.id]?.idPlaceholder || "https://..."}
                         className="h-8 text-sm w-48"
                       />
                     </td>
-                    <td className="py-3 px-2">
-                      <Input
-                        type="password"
-                        value={school.apiKey}
-                        onChange={(e) => handleApiKeyChange(selectedSystem.id, school.urn, e.target.value)}
-                        placeholder="API key"
-                        className="h-8 text-sm w-32"
-                      />
-                    </td>
+                    {systemConfig[selectedSystem.id]?.columns === "standard" && (
+                      <td className="py-3 px-2">
+                        <Input
+                          type="password"
+                          value={school.apiKey}
+                          onChange={(e) => handleApiKeyChange(selectedSystem.id, school.urn, e.target.value)}
+                          placeholder="API key"
+                          className="h-8 text-sm w-32"
+                        />
+                      </td>
+                    )}
                     <td className="py-3 px-2 text-center">
                       <Switch
                         checked={school.active}
