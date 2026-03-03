@@ -123,6 +123,12 @@ export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
   const [connections, setConnections] = useState(schoolConnections)
+  const [originalConnections, setOriginalConnections] = useState(schoolConnections)
+
+  const handleOpenModal = (system: typeof systems[0]) => {
+    setSelectedSystem(system)
+    setOriginalConnections(JSON.parse(JSON.stringify(connections)))
+  }
 
   const handleToggleActive = (systemId: string, urn: string) => {
     setConnections(prev => ({
@@ -155,6 +161,41 @@ export default function ConnectionsPage() {
     return `${systemName} Domain`
   }
 
+  const hasChanges = (systemId: string, urn: string) => {
+    const current = connections[systemId]?.find(s => s.urn === urn)
+    const original = originalConnections[systemId]?.find(s => s.urn === urn)
+    if (!current || !original) return false
+    return current.domain !== original.domain || 
+           current.apiKey !== original.apiKey || 
+           current.active !== original.active
+  }
+
+  const canSave = (systemId: string, urn: string) => {
+    const school = connections[systemId]?.find(s => s.urn === urn)
+    if (!school) return false
+    
+    // Must have changes AND have valid details filled in
+    const hasValidDetails = school.domain && school.domain !== "https://..." && school.apiKey && school.apiKey !== ""
+    return hasChanges(systemId, urn) && hasValidDetails
+  }
+
+  const handleSave = (systemId: string, urn: string) => {
+    // Update original to match current (simulating save)
+    setOriginalConnections(prev => ({
+      ...prev,
+      [systemId]: prev[systemId].map(school => 
+        school.urn === urn ? { ...connections[systemId].find(s => s.urn === urn)! } : school
+      )
+    }))
+    // Also update status to connected
+    setConnections(prev => ({
+      ...prev,
+      [systemId]: prev[systemId].map(school => 
+        school.urn === urn ? { ...school, status: "connected" as const } : school
+      )
+    }))
+  }
+
   return (
     <div className="flex h-screen bg-slate-50">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
@@ -169,7 +210,7 @@ export default function ConnectionsPage() {
             {systems.map((system) => (
               <div
                 key={system.id}
-                onClick={() => setSelectedSystem(system)}
+                onClick={() => handleOpenModal(system)}
                 className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:shadow-sm cursor-pointer"
               >
                 <div className="w-24 flex-shrink-0 flex items-center justify-center">
@@ -203,7 +244,19 @@ export default function ConnectionsPage() {
       <Dialog open={!!selectedSystem} onOpenChange={(open) => !open && setSelectedSystem(null)}>
         <DialogContent className="max-w-6xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{selectedSystem?.name}</DialogTitle>
+            <DialogTitle>
+              {selectedSystem?.logoImage ? (
+                <Image
+                  src={selectedSystem.logoImage}
+                  alt={`${selectedSystem.name} logo`}
+                  width={100}
+                  height={50}
+                  className="object-contain"
+                />
+              ) : (
+                <span className="text-xl font-bold">{selectedSystem?.name}</span>
+              )}
+            </DialogTitle>
           </DialogHeader>
           
           <div className="flex-1 overflow-auto">
@@ -254,7 +307,16 @@ export default function ConnectionsPage() {
                       />
                     </td>
                     <td className="py-3 px-2 text-center">
-                      <Button size="sm" className="bg-slate-700 hover:bg-slate-800 text-white px-6">
+                      <Button 
+                        size="sm" 
+                        disabled={!canSave(selectedSystem.id, school.urn)}
+                        onClick={() => handleSave(selectedSystem.id, school.urn)}
+                        className={`px-6 ${
+                          canSave(selectedSystem.id, school.urn)
+                            ? "bg-slate-700 hover:bg-slate-800 text-white"
+                            : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                        }`}
+                      >
                         Save
                       </Button>
                     </td>
