@@ -1055,8 +1055,8 @@ export default function ConnectionsPage() {
                     <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Last Run</th>
                     <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">SISRA Username</th>
                     <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">SISRA Password</th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Connect / Save</th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Enable / Disable</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
                     <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Data set</th>
                   </tr>
                 </thead>
