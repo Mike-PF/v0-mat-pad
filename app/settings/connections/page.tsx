@@ -28,6 +28,18 @@ const credentialsConnections: Record<string, Array<{
   ],
 }
 
+// SAMpeople-specific credentials with domain and baseUrl
+const sampeopleConnections: Array<{
+  id: string
+  username: string
+  password: string
+  domain: string
+  baseUrl: string
+  active: boolean
+}> = [
+  { id: "1", username: "FEPS_BI$uk_group_118205", password: "**********", domain: "[ARBOR_DATA_CONNECTOR_PRODUCTION]", baseUrl: "xs48132.eu-west-2.aws.snowflakecomputing", active: true },
+]
+
 // Mock school data for each system
 const schoolConnections: Record<string, Array<{
   urn: string
@@ -93,7 +105,7 @@ const schoolConnections: Record<string, Array<{
 
 // System-specific configuration for modal display
 const systemConfig: Record<string, {
-  columns: "standard" | "simple" | "credentials"
+  columns: "standard" | "simple" | "credentials" | "sampeople"
   idFieldName: string
   idPlaceholder: string
   brandColor: string
@@ -103,7 +115,7 @@ const systemConfig: Record<string, {
   cpoms: { columns: "standard", idFieldName: "CPOMS Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   evolve: { columns: "simple", idFieldName: "API Key", idPlaceholder: "", brandColor: "#121051" },
   safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  sampeople: { columns: "standard", idFieldName: "SAMpeople Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   weareevery: { columns: "standard", idFieldName: "Every Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   wonde: { columns: "standard", idFieldName: "Wonde Domain", idPlaceholder: "https://...", brandColor: "#121051" },
@@ -173,11 +185,14 @@ export default function ConnectionsPage() {
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
   const [credentials, setCredentials] = useState(credentialsConnections)
   const [originalCredentials, setOriginalCredentials] = useState(credentialsConnections)
+  const [sampeople, setSampeople] = useState(sampeopleConnections)
+  const [originalSampeople, setOriginalSampeople] = useState(sampeopleConnections)
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
     setOriginalConnections(JSON.parse(JSON.stringify(connections)))
     setOriginalCredentials(JSON.parse(JSON.stringify(credentials)))
+    setOriginalSampeople(JSON.parse(JSON.stringify(sampeople)))
   }
 
   const handleToggleActive = (systemId: string, urn: string) => {
@@ -241,6 +256,37 @@ export default function ConnectionsPage() {
         cred.id === id ? { ...credentials[systemId].find(c => c.id === id)! } : cred
       )
     }))
+  }
+
+  // SAMpeople handlers
+  const handleSampeopleChange = (id: string, field: string, value: string | boolean) => {
+    setSampeople(prev => prev.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const hasSampeopleChanges = (id: string) => {
+    const current = sampeople.find(s => s.id === id)
+    const original = originalSampeople.find(s => s.id === id)
+    if (!current || !original) return false
+    return current.username !== original.username || 
+           current.password !== original.password || 
+           current.domain !== original.domain ||
+           current.baseUrl !== original.baseUrl ||
+           current.active !== original.active
+  }
+
+  const canSaveSampeople = (id: string) => {
+    const item = sampeople.find(s => s.id === id)
+    if (!item) return false
+    const hasValidDetails = item.username && item.password && item.domain && item.baseUrl
+    return hasSampeopleChanges(id) && hasValidDetails
+  }
+
+  const handleSaveSampeople = (id: string) => {
+    setOriginalSampeople(prev => prev.map(item => 
+      item.id === id ? { ...sampeople.find(s => s.id === id)! } : item
+    ))
   }
 
   const getDomainColumnName = (systemName: string) => {
@@ -409,6 +455,77 @@ export default function ConnectionsPage() {
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
                           style={canSaveCredential(selectedSystem.id, cred.id) ? { backgroundColor: "#121051" } : undefined}
+                        >
+                          Save
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "sampeople" ? (
+              /* SAMpeople credentials table */
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Username</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Password</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Domain</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Base URL</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sampeople.map((item) => (
+                    <tr key={item.id} className="border-b last:border-0">
+                      <td className="py-3 px-2">
+                        <Input
+                          value={item.username}
+                          onChange={(e) => handleSampeopleChange(item.id, "username", e.target.value)}
+                          className="h-8 text-sm w-48"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          type="password"
+                          value={item.password}
+                          onChange={(e) => handleSampeopleChange(item.id, "password", e.target.value)}
+                          className="h-8 text-sm w-36"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={item.domain}
+                          onChange={(e) => handleSampeopleChange(item.id, "domain", e.target.value)}
+                          className="h-8 text-sm w-56"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={item.baseUrl}
+                          onChange={(e) => handleSampeopleChange(item.id, "baseUrl", e.target.value)}
+                          className="h-8 text-sm w-56"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Switch
+                          checked={item.active}
+                          onCheckedChange={(checked) => handleSampeopleChange(item.id, "active", checked)}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-400"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Button 
+                          size="sm" 
+                          disabled={!canSaveSampeople(item.id)}
+                          onClick={() => handleSaveSampeople(item.id)}
+                          className={`px-6 ${
+                            canSaveSampeople(item.id)
+                              ? "text-white"
+                              : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                          }`}
+                          style={canSaveSampeople(item.id) ? { backgroundColor: "#121051" } : undefined}
                         >
                           Save
                         </Button>
