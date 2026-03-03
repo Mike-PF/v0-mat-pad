@@ -475,7 +475,7 @@ export default function ConnectionsPage() {
                   <tr className="border-b">
                     <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Username</th>
                     <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Password</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Org Code</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Organisation Code</th>
                     <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
                     <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
                   </tr>
