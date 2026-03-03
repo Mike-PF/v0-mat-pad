@@ -639,9 +639,9 @@ export default function ConnectionsPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS school slug</th>
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Current link</th>
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked school</th>
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS School</th>
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked School</th>
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School</th>
                         <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Actions</th>
                       </tr>
                     </thead>
