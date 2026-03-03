@@ -418,7 +418,7 @@ export default function ConnectionsPage() {
               <div
                 key={system.id}
                 onClick={() => handleOpenModal(system)}
-                className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:shadow-sm cursor-pointer"
+                className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md hover:border-slate-300 hover:bg-slate-50 cursor-pointer transition-all duration-150"
               >
                 <div className="w-24 flex-shrink-0 flex items-center justify-center">
                   {system.logoImage ? (
