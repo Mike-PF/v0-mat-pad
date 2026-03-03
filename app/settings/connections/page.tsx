@@ -1283,7 +1283,7 @@ export default function ConnectionsPage() {
         <DialogContent className="max-w-4xl max-h-[85vh] p-0 flex flex-col">
           <div className="p-6 pb-0">
             <h2 className="text-lg font-semibold text-slate-900">
-              Configure SISRA Datasets – {sisraDatasetsModal?.schoolName}
+              SISRA Datasets – {sisraDatasetsModal?.schoolName}
             </h2>
           </div>
           
