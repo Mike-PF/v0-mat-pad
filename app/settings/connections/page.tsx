@@ -67,6 +67,44 @@ const wondeConnections: Array<{
   { urn: "149134", organisationName: "The Trinity Catholic Academy", connected: false },
 ]
 
+// CPOMS storage connection
+const cpomsStorageConnection = {
+  tenant: "sjc",
+  storageAccountName: "insightukprodclientdata",
+  containerName: "insight-data-f01fb0d6-e012-45c1-9f9f-d45",
+  sasToken: "**********",
+}
+
+// CPOMS school links
+const cpomsSchoolLinks: Array<{
+  slug: string
+  currentLink: string
+  linkedSchool: string
+}> = [
+  { slug: "cpoms_francisxavier", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_holyfamilyplattbridge", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_holyspiritsefton", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_notredamecc", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_stambrosepri", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_staugs", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_stchadshigh", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_stcharlesliverpool", currentLink: "-", linkedSchool: "" },
+  { slug: "cpoms_stnicholascps", currentLink: "-", linkedSchool: "" },
+]
+
+// Available schools for linking dropdown
+const availableSchools = [
+  { urn: "149032", name: "Blessed Carlo Acutis Catholic and Church of England Academy" },
+  { urn: "149190", name: "Holy Family Catholic Academy" },
+  { urn: "149029", name: "Holy Spirit Catholic Academy" },
+  { urn: "150373", name: "Notre Dame Catholic Academy" },
+  { urn: "149133", name: "St Ambrose Catholic Academy" },
+  { urn: "149031", name: "St Augustine of Canterbury Catholic Academy" },
+  { urn: "150713", name: "St Francis Xavier's Catholic Academy" },
+  { urn: "149132", name: "St Nicholas Catholic Academy" },
+  { urn: "149134", name: "The Trinity Catholic Academy" },
+]
+
 // Mock school data for each system
 const schoolConnections: Record<string, Array<{
   urn: string
@@ -132,14 +170,14 @@ const schoolConnections: Record<string, Array<{
 
 // System-specific configuration for modal display
 const systemConfig: Record<string, {
-  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery" | "wonde"
+  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery" | "wonde" | "cpoms"
   idFieldName: string
   idPlaceholder: string
   brandColor: string
 }> = {
   arbor: { columns: "standard", idFieldName: "Arbor Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   bromcom: { columns: "simple", idFieldName: "Bromcom School ID", idPlaceholder: "e.g. 11504", brandColor: "#121051" },
-  cpoms: { columns: "standard", idFieldName: "CPOMS Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  cpoms: { columns: "cpoms", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   evolve: { columns: "simple", idFieldName: "API Key", idPlaceholder: "", brandColor: "#121051" },
   safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
@@ -217,6 +255,10 @@ export default function ConnectionsPage() {
   const [weareevery, setWeareevery] = useState(weareeveryConnections)
   const [originalWeareevery, setOriginalWeareevery] = useState(weareeveryConnections)
   const [wonde, setWonde] = useState(wondeConnections)
+  const [cpomsStorage, setCpomsStorage] = useState(cpomsStorageConnection)
+  const [originalCpomsStorage, setOriginalCpomsStorage] = useState(cpomsStorageConnection)
+  const [cpomsLinks, setCpomsLinks] = useState(cpomsSchoolLinks)
+  const [originalCpomsLinks, setOriginalCpomsLinks] = useState(cpomsSchoolLinks)
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
@@ -224,6 +266,8 @@ export default function ConnectionsPage() {
     setOriginalCredentials(JSON.parse(JSON.stringify(credentials)))
     setOriginalSampeople(JSON.parse(JSON.stringify(sampeople)))
     setOriginalWeareevery(JSON.parse(JSON.stringify(weareevery)))
+    setOriginalCpomsStorage(JSON.parse(JSON.stringify(cpomsStorage)))
+    setOriginalCpomsLinks(JSON.parse(JSON.stringify(cpomsLinks)))
   }
 
   const handleToggleActive = (systemId: string, urn: string) => {
@@ -356,6 +400,73 @@ export default function ConnectionsPage() {
     ))
   }
 
+  // CPOMS handlers
+  const handleCpomsStorageChange = (field: string, value: string) => {
+    setCpomsStorage(prev => ({ ...prev, [field]: value }))
+  }
+
+  const hasCpomsStorageChanges = () => {
+    return cpomsStorage.tenant !== originalCpomsStorage.tenant ||
+           cpomsStorage.storageAccountName !== originalCpomsStorage.storageAccountName ||
+           cpomsStorage.containerName !== originalCpomsStorage.containerName ||
+           cpomsStorage.sasToken !== originalCpomsStorage.sasToken
+  }
+
+  const canSaveCpomsStorage = () => {
+    const hasValidDetails = cpomsStorage.tenant && cpomsStorage.storageAccountName && 
+                            cpomsStorage.containerName && cpomsStorage.sasToken
+    return hasCpomsStorageChanges() && hasValidDetails
+  }
+
+  const handleSaveCpomsStorage = () => {
+    setOriginalCpomsStorage(JSON.parse(JSON.stringify(cpomsStorage)))
+  }
+
+  const handleCpomsLinkChange = (slug: string, linkedSchool: string) => {
+    setCpomsLinks(prev => prev.map(link => 
+      link.slug === slug ? { ...link, linkedSchool } : link
+    ))
+  }
+
+  const hasCpomsLinkChanges = (slug: string) => {
+    const current = cpomsLinks.find(l => l.slug === slug)
+    const original = originalCpomsLinks.find(l => l.slug === slug)
+    if (!current || !original) return false
+    return current.linkedSchool !== original.linkedSchool
+  }
+
+  const canSaveCpomsLink = (slug: string) => {
+    const link = cpomsLinks.find(l => l.slug === slug)
+    if (!link) return false
+    return hasCpomsLinkChanges(slug) && link.linkedSchool !== ""
+  }
+
+  const handleSaveCpomsLink = (slug: string) => {
+    const link = cpomsLinks.find(l => l.slug === slug)
+    if (link) {
+      setOriginalCpomsLinks(prev => prev.map(l => 
+        l.slug === slug ? { ...l, linkedSchool: link.linkedSchool, currentLink: link.linkedSchool } : l
+      ))
+      setCpomsLinks(prev => prev.map(l => 
+        l.slug === slug ? { ...l, currentLink: link.linkedSchool } : l
+      ))
+    }
+  }
+
+  const handleUnlinkCpoms = (slug: string) => {
+    setCpomsLinks(prev => prev.map(link => 
+      link.slug === slug ? { ...link, linkedSchool: "", currentLink: "-" } : link
+    ))
+    setOriginalCpomsLinks(prev => prev.map(link => 
+      link.slug === slug ? { ...link, linkedSchool: "", currentLink: "-" } : link
+    ))
+  }
+
+  const canUnlinkCpoms = (slug: string) => {
+    const link = cpomsLinks.find(l => l.slug === slug)
+    return link && link.currentLink !== "-"
+  }
+
   const getDomainColumnName = (systemName: string) => {
     return `${systemName} Domain`
   }
@@ -467,8 +578,129 @@ export default function ConnectionsPage() {
           </DialogHeader>
           
           <div className="flex-1 overflow-auto">
-            {/* Credentials table for systems like Safesmart */}
-            {selectedSystem && systemConfig[selectedSystem.id]?.columns === "credentials" ? (
+            {/* CPOMS - two sections: storage connection and school links */}
+            {selectedSystem && systemConfig[selectedSystem.id]?.columns === "cpoms" ? (
+              <div className="space-y-6">
+                {/* CPOMS storage connection section */}
+                <div className="border border-slate-200 rounded-lg p-4">
+                  <h3 className="text-center font-semibold text-slate-900 mb-4">CPOMS storage connection</h3>
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs text-slate-500 text-center mb-1">CPOMS tenant</label>
+                      <Input
+                        value={cpomsStorage.tenant}
+                        onChange={(e) => handleCpomsStorageChange("tenant", e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs text-slate-500 text-center mb-1">Storage account name</label>
+                      <Input
+                        value={cpomsStorage.storageAccountName}
+                        onChange={(e) => handleCpomsStorageChange("storageAccountName", e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs text-slate-500 text-center mb-1">Container name</label>
+                      <Input
+                        value={cpomsStorage.containerName}
+                        onChange={(e) => handleCpomsStorageChange("containerName", e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs text-slate-500 text-center mb-1">SAS token</label>
+                      <Input
+                        type="password"
+                        value={cpomsStorage.sasToken}
+                        onChange={(e) => handleCpomsStorageChange("sasToken", e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <Button
+                      disabled={!canSaveCpomsStorage()}
+                      onClick={handleSaveCpomsStorage}
+                      className={`px-6 whitespace-nowrap ${
+                        canSaveCpomsStorage()
+                          ? "text-white"
+                          : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                      }`}
+                      style={canSaveCpomsStorage() ? { backgroundColor: "#121051" } : undefined}
+                    >
+                      Save connection
+                    </Button>
+                  </div>
+                </div>
+
+                {/* CPOMS school links section */}
+                <div className="border border-slate-200 rounded-lg p-4">
+                  <h3 className="text-center font-semibold text-slate-900 mb-4">CPOMS school links</h3>
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS school slug</th>
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Current link</th>
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked school</th>
+                        <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cpomsLinks.map((link) => (
+                        <tr key={link.slug} className="border-b last:border-0">
+                          <td className="py-3 px-2 text-sm text-slate-900">{link.slug}</td>
+                          <td className="py-3 px-2 text-sm text-slate-600">{link.currentLink}</td>
+                          <td className="py-3 px-2">
+                            <select
+                              value={link.linkedSchool}
+                              onChange={(e) => handleCpomsLinkChange(link.slug, e.target.value)}
+                              className="w-full h-9 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"
+                            >
+                              <option value="">-- Unlinked --</option>
+                              {availableSchools.map((school) => (
+                                <option key={school.urn} value={school.name}>
+                                  {school.name}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-3 px-2">
+                            <div className="flex justify-center gap-2">
+                              <Button
+                                size="sm"
+                                disabled={!canSaveCpomsLink(link.slug)}
+                                onClick={() => handleSaveCpomsLink(link.slug)}
+                                className={`px-6 ${
+                                  canSaveCpomsLink(link.slug)
+                                    ? "text-white"
+                                    : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                                }`}
+                                style={canSaveCpomsLink(link.slug) ? { backgroundColor: "#121051" } : undefined}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!canUnlinkCpoms(link.slug)}
+                                onClick={() => handleUnlinkCpoms(link.slug)}
+                                className={`px-4 ${
+                                  canUnlinkCpoms(link.slug)
+                                    ? "border-slate-300 text-slate-600"
+                                    : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                                }`}
+                              >
+                                Unlink
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "credentials" ? (
               <table className="w-full">
                 <thead className="sticky top-0 bg-white">
                   <tr className="border-b">
