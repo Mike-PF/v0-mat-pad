@@ -1332,7 +1332,7 @@ export default function ConnectionsPage() {
                         type="checkbox"
                         checked={dataset.getDatasets}
                         onChange={(e) => handleToggleSisraDataset(sisraDatasetsModal.urn, dataset.id, e.target.checked)}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4 rounded border-slate-300 accent-[#121051] focus:ring-[#121051]"
                       />
                     </td>
                     <td className="py-3 px-2 text-center">
@@ -1341,7 +1341,7 @@ export default function ConnectionsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleDeleteSisraDataset(sisraDatasetsModal.urn, dataset.id)}
-                          className="px-6 border-slate-300 text-slate-600"
+                          className="px-6 border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
                         >
                           Delete
                         </Button>
