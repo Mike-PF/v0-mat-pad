@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { X } from "lucide-react"
+import { X, Pencil } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import {
@@ -93,6 +93,23 @@ const cpomsSchoolLinks: Array<{
   { slug: "cpoms_stnicholascps", currentLink: "-", linkedSchool: "" },
 ]
 
+// SISRA connections
+const sisraConnections: Array<{
+  urn: string
+  schoolName: string
+  connectionStatus: string
+  verified: boolean
+  lastRun: string
+  username: string
+  password: string
+  enabled: boolean
+}> = [
+  { urn: "149032", schoolName: "Blessed Carlo Acutis Catholic and Church of England Academy", connectionStatus: "Login details are incorrect", verified: false, lastRun: "Error 24/02/2026, 11:28:59", username: "heggar372216", password: "", enabled: false },
+  { urn: "150373", schoolName: "Notre Dame Catholic Academy", connectionStatus: "-", verified: true, lastRun: "-", username: "heggar372215", password: "**********", enabled: true },
+  { urn: "149031", schoolName: "St Augustine of Canterbury Catholic Academy", connectionStatus: "-", verified: true, lastRun: "-", username: "heggar372214", password: "**********", enabled: true },
+  { urn: "150713", schoolName: "St Francis Xavier's Catholic Academy", connectionStatus: "Login details are incorrect", verified: true, lastRun: "Error 24/02/2026, 09:25:19", username: "heggar367840", password: "**********", enabled: true },
+]
+
 // Available schools for linking dropdown
 const availableSchools = [
   { urn: "149032", name: "Blessed Carlo Acutis Catholic and Church of England Academy" },
@@ -171,7 +188,7 @@ const schoolConnections: Record<string, Array<{
 
 // System-specific configuration for modal display
 const systemConfig: Record<string, {
-  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery" | "wonde" | "cpoms"
+  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery" | "wonde" | "cpoms" | "sisra"
   idFieldName: string
   idPlaceholder: string
   brandColor: string
@@ -182,7 +199,7 @@ const systemConfig: Record<string, {
   evolve: { columns: "simple", idFieldName: "API Key", idPlaceholder: "", brandColor: "#121051" },
   safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  sisra: { columns: "sisra", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   weareevery: { columns: "weareevery", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   wonde: { columns: "wonde", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
 }
@@ -256,6 +273,8 @@ export default function ConnectionsPage() {
   const [weareevery, setWeareevery] = useState(weareeveryConnections)
   const [originalWeareevery, setOriginalWeareevery] = useState(weareeveryConnections)
   const [wonde, setWonde] = useState(wondeConnections)
+  const [sisra, setSisra] = useState(sisraConnections)
+  const [originalSisra, setOriginalSisra] = useState(sisraConnections)
   const [cpomsStorage, setCpomsStorage] = useState(cpomsStorageConnection)
   const [originalCpomsStorage, setOriginalCpomsStorage] = useState(cpomsStorageConnection)
   const [cpomsLinks, setCpomsLinks] = useState(cpomsSchoolLinks)
@@ -270,6 +289,7 @@ export default function ConnectionsPage() {
     setOriginalWeareevery(JSON.parse(JSON.stringify(weareevery)))
     setOriginalCpomsStorage(JSON.parse(JSON.stringify(cpomsStorage)))
     setOriginalCpomsLinks(JSON.parse(JSON.stringify(cpomsLinks)))
+    setOriginalSisra(JSON.parse(JSON.stringify(sisra)))
   }
 
   const handleToggleActive = (systemId: string, urn: string) => {
@@ -395,13 +415,42 @@ export default function ConnectionsPage() {
     ))
   }
 
-  // Wonde handlers
+// Wonde handlers
   const handleWondeConnect = (urn: string) => {
-    setWonde(prev => prev.map(item => 
+    setWonde(prev => prev.map(item =>
       item.urn === urn ? { ...item, connected: true } : item
     ))
   }
 
+  // SISRA handlers
+  const handleSisraChange = (urn: string, field: string, value: string | boolean) => {
+    setSisra(prev => prev.map(item =>
+      item.urn === urn ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const hasSisraChanges = (urn: string) => {
+    const current = sisra.find(s => s.urn === urn)
+    const original = originalSisra.find(s => s.urn === urn)
+    if (!current || !original) return false
+    return current.username !== original.username ||
+           current.password !== original.password ||
+           current.enabled !== original.enabled
+  }
+
+  const canSaveSisra = (urn: string) => {
+    const item = sisra.find(s => s.urn === urn)
+    if (!item) return false
+    const hasValidDetails = item.username && item.password
+    return hasSisraChanges(urn) && hasValidDetails
+  }
+
+  const handleSaveSisra = (urn: string) => {
+    setOriginalSisra(prev => prev.map(item =>
+      item.urn === urn ? { ...sisra.find(s => s.urn === urn)! } : item
+    ))
+  }
+  
   // CPOMS handlers
   const handleCpomsStorageChange = (field: string, value: string) => {
     setCpomsStorage(prev => ({ ...prev, [field]: value }))
@@ -911,6 +960,92 @@ export default function ConnectionsPage() {
                         >
                           Save
                         </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "sisra" ? (
+              /* SISRA table */
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">URN</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School Name</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Connection Status</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Verified</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Last Run</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">SISRA Username</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">SISRA Password</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Connect / Save</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Enable / Disable</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Data set</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sisra.map((item) => (
+                    <tr key={item.urn} className="border-b last:border-0">
+                      <td className="py-3 px-2 text-sm text-slate-600">{item.urn}</td>
+                      <td className="py-3 px-2 text-sm text-slate-900">{item.schoolName}</td>
+                      <td className="py-3 px-2 text-sm">
+                        {item.connectionStatus === "-" ? (
+                          <span className="text-slate-600">-</span>
+                        ) : (
+                          <span className="text-red-500">{item.connectionStatus}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2 text-sm text-center text-slate-600">
+                        {item.verified ? "Yes" : "No"}
+                      </td>
+                      <td className="py-3 px-2 text-sm">
+                        {item.lastRun === "-" ? (
+                          <span className="text-slate-600">-</span>
+                        ) : (
+                          <span className="text-red-500">{item.lastRun}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={item.username}
+                          onChange={(e) => handleSisraChange(item.urn, "username", e.target.value)}
+                          className="h-8 text-sm w-32"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          type="password"
+                          value={item.password}
+                          onChange={(e) => handleSisraChange(item.urn, "password", e.target.value)}
+                          placeholder="Password"
+                          className="h-8 text-sm w-28"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Button
+                          size="sm"
+                          disabled={!canSaveSisra(item.urn)}
+                          onClick={() => handleSaveSisra(item.urn)}
+                          className={`px-6 ${
+                            canSaveSisra(item.urn)
+                              ? "text-white"
+                              : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                          }`}
+                          style={canSaveSisra(item.urn) ? { backgroundColor: "#121051" } : undefined}
+                        >
+                          Save
+                        </Button>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Switch
+                          checked={item.enabled}
+                          onCheckedChange={(checked) => handleSisraChange(item.urn, "enabled", checked)}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-400"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <button className="text-slate-400 hover:text-slate-600">
+                          <Pencil className="h-4 w-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}
