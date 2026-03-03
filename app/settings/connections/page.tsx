@@ -582,7 +582,9 @@ export default function ConnectionsPage() {
             {selectedSystem && systemConfig[selectedSystem.id]?.columns === "cpoms" ? (
               <div className="space-y-6">
                 {/* CPOMS storage connection section */}
-                <table className="w-full">
+                <div>
+                  <h3 className="text-center font-semibold text-slate-900 mb-4">CPOMS storage connection</h3>
+                  <table className="w-full">
                   <thead className="sticky top-0 bg-white">
                     <tr className="border-b">
                       <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS tenant</th>
@@ -641,12 +643,15 @@ export default function ConnectionsPage() {
                     </tr>
                   </tbody>
                 </table>
+                </div>
 
                 {/* CPOMS school links section */}
-                <table className="w-full">
-                  <thead className="sticky top-0 bg-white">
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS School</th>
+                <div>
+                  <h3 className="text-center font-semibold text-slate-900 mb-4">CPOMS school links</h3>
+                  <table className="w-full">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS School</th>
                       <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School</th>
                       <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked School</th>
                       <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Actions</th>
@@ -703,8 +708,9 @@ export default function ConnectionsPage() {
                         </td>
                       </tr>
                     ))}
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "credentials" ? (
               <table className="w-full">
