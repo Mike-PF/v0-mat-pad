@@ -1281,33 +1281,35 @@ export default function ConnectionsPage() {
       {/* SISRA Datasets Modal */}
       <Dialog open={sisraDatasetsModal !== null} onOpenChange={(open) => !open && handleCloseSisraDatasets()}>
         <DialogContent className="max-w-4xl max-h-[85vh] p-0 flex flex-col">
-          <div className="p-6 pb-0 flex items-center justify-between">
+          <div className="p-6 pb-0">
             <h2 className="text-lg font-semibold text-slate-900">
               Configure SISRA Datasets – {sisraDatasetsModal?.schoolName}
             </h2>
+          </div>
+          
+          {/* Year tabs and search */}
+          <div className="px-6 pt-4 flex items-center justify-between border-b">
+            <div className="flex">
+              {sisraYearTabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setSisraActiveTab(tab)}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    sisraActiveTab === tab
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
             <Input
               placeholder="Search..."
               value={sisraDatasetSearch}
               onChange={(e) => setSisraDatasetSearch(e.target.value)}
-              className="w-48 h-9"
+              className="w-48 h-9 mb-2"
             />
-          </div>
-          
-          {/* Year tabs at top */}
-          <div className="px-6 pt-4 flex border-b">
-            {sisraYearTabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSisraActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                  sisraActiveTab === tab
-                    ? "border-[#121051] text-[#121051]"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
           </div>
 
           <div className="flex-1 overflow-auto px-6 py-4">
@@ -1337,9 +1339,9 @@ export default function ConnectionsPage() {
                       {dataset.getDatasets ? (
                         <Button
                           size="sm"
+                          variant="outline"
                           onClick={() => handleDeleteSisraDataset(sisraDatasetsModal.urn, dataset.id)}
-                          className="px-6 text-white"
-                          style={{ backgroundColor: "#121051" }}
+                          className="px-6 border-slate-300 text-slate-600"
                         >
                           Delete
                         </Button>
