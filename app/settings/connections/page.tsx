@@ -1036,15 +1036,7 @@ export default function ConnectionsPage() {
       {/* Unlink Confirmation Modal */}
       <Dialog open={unlinkConfirmation !== null} onOpenChange={(open) => !open && handleCancelUnlink()}>
         <DialogContent className="max-w-md">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">Confirm Unlink</h2>
-            <button
-              onClick={handleCancelUnlink}
-              className="text-slate-400 hover:text-slate-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Unlink</h2>
           <div className="py-4">
             <p className="text-sm text-slate-600">
               Are you sure you want to unlink <span className="font-semibold text-slate-900">{unlinkConfirmation?.schoolName}</span>?
