@@ -313,9 +313,10 @@ export default function ConnectionsPage() {
                         onClick={() => handleSave(selectedSystem.id, school.urn)}
                         className={`px-6 ${
                           canSave(selectedSystem.id, school.urn)
-                            ? "bg-slate-700 hover:bg-slate-800 text-white"
+                            ? "text-white"
                             : "bg-slate-300 text-slate-500 cursor-not-allowed"
                         }`}
+                        style={canSave(selectedSystem.id, school.urn) ? { backgroundColor: "#121051" } : undefined}
                       >
                         Save
                       </Button>
