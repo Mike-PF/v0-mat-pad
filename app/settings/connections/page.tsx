@@ -33,8 +33,7 @@ const systems = [
   {
     id: "safesmart",
     name: "Safesmart",
-    logoText: "Safesmart",
-    logoColor: "text-teal-600",
+    logoImage: "/images/logos/safesmart.png",
     description: "Manage health and safety data with ease using Safesmart. From incident reports to compliance checks, centralise safety records and access key insights to ensure your school meets regulatory standards efficiently."
   },
   {
@@ -52,15 +51,13 @@ const systems = [
   {
     id: "weareevery",
     name: "WeAreEvery",
-    logoText: "every",
-    logoColor: "text-teal-600",
+    logoImage: "/images/logos/every.png",
     description: "Empower your school with Every, the all-in-one platform for managing compliance, HR, and operational data. From tracking staff records to overseeing site management and policies, Every gives you the tools to centralise processes, streamline reporting, and make data-driven decisions with confidence."
   },
   {
     id: "wonde",
     name: "Wonde",
-    logoText: "wonde",
-    logoColor: "text-blue-600",
+    logoImage: "/images/logos/wonde.png",
     description: "Take control of your school's data with Wonde's secure integration platform. Automate data transfers, manage permissions, and connect to the digital tools you rely on while maintaining data accuracy and security."
   },
 ]
