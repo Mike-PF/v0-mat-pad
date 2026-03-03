@@ -582,123 +582,129 @@ export default function ConnectionsPage() {
             {selectedSystem && systemConfig[selectedSystem.id]?.columns === "cpoms" ? (
               <div className="space-y-6">
                 {/* CPOMS storage connection section */}
-                <div className="border border-slate-200 rounded-lg p-4">
-                  <h3 className="text-center font-semibold text-slate-900 mb-4">CPOMS storage connection</h3>
-                  <div className="flex items-end gap-3">
-                    <div className="flex-1">
-                      <label className="block text-xs text-slate-500 text-center mb-1">CPOMS tenant</label>
-                      <Input
-                        value={cpomsStorage.tenant}
-                        onChange={(e) => handleCpomsStorageChange("tenant", e.target.value)}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs text-slate-500 text-center mb-1">Storage account name</label>
-                      <Input
-                        value={cpomsStorage.storageAccountName}
-                        onChange={(e) => handleCpomsStorageChange("storageAccountName", e.target.value)}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs text-slate-500 text-center mb-1">Container name</label>
-                      <Input
-                        value={cpomsStorage.containerName}
-                        onChange={(e) => handleCpomsStorageChange("containerName", e.target.value)}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs text-slate-500 text-center mb-1">SAS token</label>
-                      <Input
-                        type="password"
-                        value={cpomsStorage.sasToken}
-                        onChange={(e) => handleCpomsStorageChange("sasToken", e.target.value)}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <Button
-                      disabled={!canSaveCpomsStorage()}
-                      onClick={handleSaveCpomsStorage}
-                      className={`px-6 whitespace-nowrap ${
-                        canSaveCpomsStorage()
-                          ? "text-white"
-                          : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                      }`}
-                      style={canSaveCpomsStorage() ? { backgroundColor: "#121051" } : undefined}
-                    >
-                      Save connection
-                    </Button>
-                  </div>
-                </div>
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-white">
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS tenant</th>
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Storage account name</th>
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Container name</th>
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">SAS token</th>
+                      <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="py-3 px-2">
+                        <Input
+                          value={cpomsStorage.tenant}
+                          onChange={(e) => handleCpomsStorageChange("tenant", e.target.value)}
+                          className="h-8 text-sm w-32"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={cpomsStorage.storageAccountName}
+                          onChange={(e) => handleCpomsStorageChange("storageAccountName", e.target.value)}
+                          className="h-8 text-sm w-48"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          value={cpomsStorage.containerName}
+                          onChange={(e) => handleCpomsStorageChange("containerName", e.target.value)}
+                          className="h-8 text-sm w-64"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          type="password"
+                          value={cpomsStorage.sasToken}
+                          onChange={(e) => handleCpomsStorageChange("sasToken", e.target.value)}
+                          className="h-8 text-sm w-32"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Button
+                          size="sm"
+                          disabled={!canSaveCpomsStorage()}
+                          onClick={handleSaveCpomsStorage}
+                          className={`px-6 ${
+                            canSaveCpomsStorage()
+                              ? "text-white"
+                              : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                          }`}
+                          style={canSaveCpomsStorage() ? { backgroundColor: "#121051" } : undefined}
+                        >
+                          Save
+                        </Button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
 
                 {/* CPOMS school links section */}
-                <div className="border border-slate-200 rounded-lg p-4">
-                  <h3 className="text-center font-semibold text-slate-900 mb-4">CPOMS school links</h3>
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS School</th>
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School</th>
-                        <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked School</th>
-                        <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cpomsLinks.map((link) => (
-                        <tr key={link.slug} className="border-b last:border-0">
-                          <td className="py-3 px-2 text-sm text-slate-900">{link.slug}</td>
-                          <td className="py-3 px-2">
-                            <select
-                              value={link.linkedSchool}
-                              onChange={(e) => handleCpomsLinkChange(link.slug, e.target.value)}
-                              className="w-full h-9 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-white">
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">CPOMS School</th>
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">School</th>
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Linked School</th>
+                      <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cpomsLinks.map((link) => (
+                      <tr key={link.slug} className="border-b last:border-0">
+                        <td className="py-3 px-2 text-sm text-slate-900">{link.slug}</td>
+                        <td className="py-3 px-2">
+                          <select
+                            value={link.linkedSchool}
+                            onChange={(e) => handleCpomsLinkChange(link.slug, e.target.value)}
+                            className="w-full h-8 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"
+                          >
+                            <option value="">-- Unlinked --</option>
+                            {availableSchools.map((school) => (
+                              <option key={school.urn} value={school.name}>
+                                {school.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="py-3 px-2 text-sm text-slate-600">{link.currentLink}</td>
+                        <td className="py-3 px-2">
+                          <div className="flex justify-center gap-2">
+                            <Button
+                              size="sm"
+                              disabled={!canSaveCpomsLink(link.slug)}
+                              onClick={() => handleSaveCpomsLink(link.slug)}
+                              className={`px-6 ${
+                                canSaveCpomsLink(link.slug)
+                                  ? "text-white"
+                                  : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                              }`}
+                              style={canSaveCpomsLink(link.slug) ? { backgroundColor: "#121051" } : undefined}
                             >
-                              <option value="">-- Unlinked --</option>
-                              {availableSchools.map((school) => (
-                                <option key={school.urn} value={school.name}>
-                                  {school.name}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="py-3 px-2 text-sm text-slate-600">{link.currentLink}</td>
-                          <td className="py-3 px-2">
-                            <div className="flex justify-center gap-2">
-                              <Button
-                                size="sm"
-                                disabled={!canSaveCpomsLink(link.slug)}
-                                onClick={() => handleSaveCpomsLink(link.slug)}
-                                className={`px-6 ${
-                                  canSaveCpomsLink(link.slug)
-                                    ? "text-white"
-                                    : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                                }`}
-                                style={canSaveCpomsLink(link.slug) ? { backgroundColor: "#121051" } : undefined}
-                              >
-                                Save
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={!canUnlinkCpoms(link.slug)}
-                                onClick={() => handleUnlinkCpoms(link.slug)}
-                                className={`px-4 ${
-                                  canUnlinkCpoms(link.slug)
-                                    ? "border-slate-300 text-slate-600"
-                                    : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                                }`}
-                              >
-                                Unlink
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={!canUnlinkCpoms(link.slug)}
+                              onClick={() => handleUnlinkCpoms(link.slug)}
+                              className={`px-4 ${
+                                canUnlinkCpoms(link.slug)
+                                  ? "border-slate-300 text-slate-600"
+                                  : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                              }`}
+                            >
+                              Unlink
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "credentials" ? (
               <table className="w-full">
