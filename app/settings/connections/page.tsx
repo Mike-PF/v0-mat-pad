@@ -259,6 +259,7 @@ export default function ConnectionsPage() {
   const [originalCpomsStorage, setOriginalCpomsStorage] = useState(cpomsStorageConnection)
   const [cpomsLinks, setCpomsLinks] = useState(cpomsSchoolLinks)
   const [originalCpomsLinks, setOriginalCpomsLinks] = useState(cpomsSchoolLinks)
+  const [unlinkConfirmation, setUnlinkConfirmation] = useState<{ slug: string; schoolName: string } | null>(null)
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
@@ -453,13 +454,27 @@ export default function ConnectionsPage() {
     }
   }
 
-  const handleUnlinkCpoms = (slug: string) => {
-    setCpomsLinks(prev => prev.map(link => 
-      link.slug === slug ? { ...link, linkedSchool: "", currentLink: "-" } : link
-    ))
-    setOriginalCpomsLinks(prev => prev.map(link => 
-      link.slug === slug ? { ...link, linkedSchool: "", currentLink: "-" } : link
-    ))
+  const handleUnlinkCpomsClick = (slug: string) => {
+    const link = cpomsLinks.find(l => l.slug === slug)
+    if (link && link.currentLink !== "-") {
+      setUnlinkConfirmation({ slug, schoolName: link.currentLink })
+    }
+  }
+
+  const handleConfirmUnlink = () => {
+    if (unlinkConfirmation) {
+      setCpomsLinks(prev => prev.map(link => 
+        link.slug === unlinkConfirmation.slug ? { ...link, linkedSchool: "", currentLink: "-" } : link
+      ))
+      setOriginalCpomsLinks(prev => prev.map(link => 
+        link.slug === unlinkConfirmation.slug ? { ...link, linkedSchool: "", currentLink: "-" } : link
+      ))
+      setUnlinkConfirmation(null)
+    }
+  }
+
+  const handleCancelUnlink = () => {
+    setUnlinkConfirmation(null)
   }
 
   const canUnlinkCpoms = (slug: string) => {
@@ -695,7 +710,7 @@ export default function ConnectionsPage() {
                               size="sm"
                               variant="outline"
                               disabled={!canUnlinkCpoms(link.slug)}
-                              onClick={() => handleUnlinkCpoms(link.slug)}
+                              onClick={() => handleUnlinkCpomsClick(link.slug)}
                               className={`px-4 ${
                                 canUnlinkCpoms(link.slug)
                                   ? "border-slate-300 text-slate-600"
@@ -1013,6 +1028,42 @@ export default function ConnectionsPage() {
                 </tbody>
               </table>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unlink Confirmation Modal */}
+      <Dialog open={unlinkConfirmation !== null} onOpenChange={(open) => !open && handleCancelUnlink()}>
+        <DialogContent className="max-w-md">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Confirm Unlink</h2>
+            <button
+              onClick={handleCancelUnlink}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to unlink <span className="font-semibold text-slate-900">{unlinkConfirmation?.schoolName}</span>?
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={handleCancelUnlink}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmUnlink}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Unlink
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
