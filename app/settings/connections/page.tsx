@@ -40,6 +40,16 @@ const sampeopleConnections: Array<{
   { id: "1", username: "FEPS_BI$uk_group_118205", password: "**********", domain: "[ARBOR_DATA_CONNECTOR_PRODUCTION]", baseUrl: "xs48132.eu-west-2.aws.snowflakecomputing", active: true },
 ]
 
+// WeAreEvery credentials (simple username/password)
+const weareeveryConnections: Array<{
+  id: string
+  username: string
+  password: string
+  active: boolean
+}> = [
+  { id: "1", username: "support@pixel-fusion.com", password: "**********", active: true },
+]
+
 // Mock school data for each system
 const schoolConnections: Record<string, Array<{
   urn: string
@@ -105,7 +115,7 @@ const schoolConnections: Record<string, Array<{
 
 // System-specific configuration for modal display
 const systemConfig: Record<string, {
-  columns: "standard" | "simple" | "credentials" | "sampeople"
+  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery"
   idFieldName: string
   idPlaceholder: string
   brandColor: string
@@ -117,7 +127,7 @@ const systemConfig: Record<string, {
   safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
-  weareevery: { columns: "standard", idFieldName: "Every Domain", idPlaceholder: "https://...", brandColor: "#121051" },
+  weareevery: { columns: "weareevery", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   wonde: { columns: "standard", idFieldName: "Wonde Domain", idPlaceholder: "https://...", brandColor: "#121051" },
 }
 
@@ -187,12 +197,15 @@ export default function ConnectionsPage() {
   const [originalCredentials, setOriginalCredentials] = useState(credentialsConnections)
   const [sampeople, setSampeople] = useState(sampeopleConnections)
   const [originalSampeople, setOriginalSampeople] = useState(sampeopleConnections)
+  const [weareevery, setWeareevery] = useState(weareeveryConnections)
+  const [originalWeareevery, setOriginalWeareevery] = useState(weareeveryConnections)
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
     setOriginalConnections(JSON.parse(JSON.stringify(connections)))
     setOriginalCredentials(JSON.parse(JSON.stringify(credentials)))
     setOriginalSampeople(JSON.parse(JSON.stringify(sampeople)))
+    setOriginalWeareevery(JSON.parse(JSON.stringify(weareevery)))
   }
 
   const handleToggleActive = (systemId: string, urn: string) => {
@@ -286,6 +299,35 @@ export default function ConnectionsPage() {
   const handleSaveSampeople = (id: string) => {
     setOriginalSampeople(prev => prev.map(item => 
       item.id === id ? { ...sampeople.find(s => s.id === id)! } : item
+    ))
+  }
+
+  // WeAreEvery handlers
+  const handleWeareeveryChange = (id: string, field: string, value: string | boolean) => {
+    setWeareevery(prev => prev.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const hasWeareeveryChanges = (id: string) => {
+    const current = weareevery.find(w => w.id === id)
+    const original = originalWeareevery.find(w => w.id === id)
+    if (!current || !original) return false
+    return current.username !== original.username || 
+           current.password !== original.password || 
+           current.active !== original.active
+  }
+
+  const canSaveWeareevery = (id: string) => {
+    const item = weareevery.find(w => w.id === id)
+    if (!item) return false
+    const hasValidDetails = item.username && item.password
+    return hasWeareeveryChanges(id) && hasValidDetails
+  }
+
+  const handleSaveWeareevery = (id: string) => {
+    setOriginalWeareevery(prev => prev.map(item => 
+      item.id === id ? { ...weareevery.find(w => w.id === id)! } : item
     ))
   }
 
@@ -526,6 +568,61 @@ export default function ConnectionsPage() {
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
                           style={canSaveSampeople(item.id) ? { backgroundColor: "#121051" } : undefined}
+                        >
+                          Save
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "weareevery" ? (
+              /* WeAreEvery credentials table */
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Username</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Password</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Active</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Save</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weareevery.map((item) => (
+                    <tr key={item.id} className="border-b last:border-0">
+                      <td className="py-3 px-2">
+                        <Input
+                          value={item.username}
+                          onChange={(e) => handleWeareeveryChange(item.id, "username", e.target.value)}
+                          className="h-8 text-sm w-64"
+                        />
+                      </td>
+                      <td className="py-3 px-2">
+                        <Input
+                          type="password"
+                          value={item.password}
+                          onChange={(e) => handleWeareeveryChange(item.id, "password", e.target.value)}
+                          className="h-8 text-sm w-64"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Switch
+                          checked={item.active}
+                          onCheckedChange={(checked) => handleWeareeveryChange(item.id, "active", checked)}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-400"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <Button 
+                          size="sm" 
+                          disabled={!canSaveWeareevery(item.id)}
+                          onClick={() => handleSaveWeareevery(item.id)}
+                          className={`px-6 ${
+                            canSaveWeareevery(item.id)
+                              ? "text-white"
+                              : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                          }`}
+                          style={canSaveWeareevery(item.id) ? { backgroundColor: "#121051" } : undefined}
                         >
                           Save
                         </Button>
