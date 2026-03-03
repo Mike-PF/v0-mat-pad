@@ -50,6 +50,23 @@ const weareeveryConnections: Array<{
   { id: "1", username: "support@pixel-fusion.com", password: "**********", active: true },
 ]
 
+// Wonde connections (URN, Organisation Name, connected status)
+const wondeConnections: Array<{
+  urn: string
+  organisationName: string
+  connected: boolean
+}> = [
+  { urn: "149032", organisationName: "Blessed Carlo Acutis Catholic and Church of England Academy", connected: true },
+  { urn: "149190", organisationName: "Holy Family Catholic Academy", connected: true },
+  { urn: "149029", organisationName: "Holy Spirit Catholic Academy", connected: false },
+  { urn: "150373", organisationName: "Notre Dame Catholic Academy", connected: false },
+  { urn: "149133", organisationName: "St Ambrose Catholic Academy", connected: false },
+  { urn: "149031", organisationName: "St Augustine of Canterbury Catholic Academy", connected: false },
+  { urn: "150713", organisationName: "St Francis Xavier's Catholic Academy", connected: false },
+  { urn: "149132", organisationName: "St Nicholas Catholic Academy", connected: false },
+  { urn: "149134", organisationName: "The Trinity Catholic Academy", connected: false },
+]
+
 // Mock school data for each system
 const schoolConnections: Record<string, Array<{
   urn: string
@@ -115,7 +132,7 @@ const schoolConnections: Record<string, Array<{
 
 // System-specific configuration for modal display
 const systemConfig: Record<string, {
-  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery"
+  columns: "standard" | "simple" | "credentials" | "sampeople" | "weareevery" | "wonde"
   idFieldName: string
   idPlaceholder: string
   brandColor: string
@@ -128,6 +145,7 @@ const systemConfig: Record<string, {
   sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   sisra: { columns: "standard", idFieldName: "Sisra Domain", idPlaceholder: "https://...", brandColor: "#121051" },
   weareevery: { columns: "weareevery", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
+  wonde: { columns: "wonde", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
   wonde: { columns: "standard", idFieldName: "Wonde Domain", idPlaceholder: "https://...", brandColor: "#121051" },
 }
 
@@ -199,6 +217,7 @@ export default function ConnectionsPage() {
   const [originalSampeople, setOriginalSampeople] = useState(sampeopleConnections)
   const [weareevery, setWeareevery] = useState(weareeveryConnections)
   const [originalWeareevery, setOriginalWeareevery] = useState(weareeveryConnections)
+  const [wonde, setWonde] = useState(wondeConnections)
 
   const handleOpenModal = (system: typeof systems[0]) => {
     setSelectedSystem(system)
@@ -328,6 +347,13 @@ export default function ConnectionsPage() {
   const handleSaveWeareevery = (id: string) => {
     setOriginalWeareevery(prev => prev.map(item => 
       item.id === id ? { ...weareevery.find(w => w.id === id)! } : item
+    ))
+  }
+
+  // Wonde handlers
+  const handleWondeConnect = (urn: string) => {
+    setWonde(prev => prev.map(item => 
+      item.urn === urn ? { ...item, connected: true } : item
     ))
   }
 
@@ -626,6 +652,45 @@ export default function ConnectionsPage() {
                         >
                           Save
                         </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : selectedSystem && systemConfig[selectedSystem.id]?.columns === "wonde" ? (
+              /* Wonde table - URN, Organisation Name, Connect/Edit */
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">URN</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-slate-700">Organisation Name</th>
+                    <th className="text-right py-3 px-2 text-sm font-semibold text-slate-700">Connect/Edit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wonde.map((item) => (
+                    <tr key={item.urn} className="border-b last:border-0">
+                      <td className="py-3 px-2 text-sm text-slate-600">{item.urn}</td>
+                      <td className="py-3 px-2 text-sm text-slate-900">{item.organisationName}</td>
+                      <td className="py-3 px-2 text-right">
+                        {item.connected ? (
+                          <Button 
+                            variant="outline"
+                            size="sm" 
+                            className="px-8 border-slate-300 text-slate-600"
+                          >
+                            Edit
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleWondeConnect(item.urn)}
+                            className="px-6 text-white"
+                            style={{ backgroundColor: "#121051" }}
+                          >
+                            Connect
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
