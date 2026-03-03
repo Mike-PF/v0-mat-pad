@@ -74,8 +74,6 @@ const systems = [
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
-  console.log("[v0] ConnectionsPage rendering")
-
   return (
     <div className="flex h-screen bg-slate-50">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
@@ -86,30 +84,26 @@ export default function ConnectionsPage() {
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-auto">
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {systems.map((system) => (
-                  <div
-                    key={system.id}
-                    className="flex items-start gap-4 p-4 border-l-4 border-l-primary hover:bg-slate-50 cursor-pointer"
-                  >
-                    <div className="w-20 flex-shrink-0 pt-1">
-                      <span className={`text-sm font-semibold ${system.logoColor}`}>
-                        {system.logo}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900 mb-1">{system.name}</h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {system.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+          <div className="space-y-2">
+            {systems.map((system) => (
+              <div
+                key={system.id}
+                className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg border-l-4 border-l-primary hover:shadow-sm cursor-pointer"
+              >
+                <div className="w-20 flex-shrink-0 pt-0.5">
+                  <span className={`text-sm font-semibold ${system.logoColor}`}>
+                    {system.logo}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 mb-1">{system.name}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {system.description}
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>
