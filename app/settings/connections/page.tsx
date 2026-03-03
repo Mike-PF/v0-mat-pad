@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { X } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import {
