@@ -79,7 +79,7 @@ export default function ConnectionsPage() {
             {systems.map((system) => (
               <div
                 key={system.id}
-                className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg border-l-4 border-l-primary hover:shadow-sm cursor-pointer"
+                className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:shadow-sm cursor-pointer"
               >
                 <div className="w-24 flex-shrink-0 flex items-center justify-center">
                   {system.logoImage ? (
