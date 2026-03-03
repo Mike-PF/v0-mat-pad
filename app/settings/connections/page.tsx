@@ -1280,13 +1280,30 @@ export default function ConnectionsPage() {
 
       {/* SISRA Datasets Modal */}
       <Dialog open={sisraDatasetsModal !== null} onOpenChange={(open) => !open && handleCloseSisraDatasets()}>
-        <DialogContent className="max-w-5xl max-h-[85vh] p-0 flex flex-col">
+        <DialogContent className="max-w-4xl max-h-[85vh] p-0 flex flex-col">
           <div className="p-6 pb-0">
             <h2 className="text-lg font-semibold text-slate-900">
               Configure SISRA Datasets – {sisraDatasetsModal?.schoolName}
             </h2>
           </div>
           
+          {/* Year tabs at top */}
+          <div className="px-6 pt-4 flex border-b">
+            {sisraYearTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSisraActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                  sisraActiveTab === tab
+                    ? "border-[#121051] text-[#121051]"
+                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
           <div className="px-6 pt-4">
             <Input
               placeholder="Search..."
@@ -1302,7 +1319,6 @@ export default function ConnectionsPage() {
                 <tr className="border-b">
                   <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Academic Year</th>
                   <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Dataset Name</th>
-                  <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">School Name</th>
                   <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Get Datasets</th>
                   <th className="text-center py-3 px-2 text-sm font-semibold text-slate-700">Delete</th>
                 </tr>
@@ -1312,7 +1328,6 @@ export default function ConnectionsPage() {
                   <tr key={dataset.id} className="border-b last:border-0">
                     <td className="py-3 px-2 text-sm text-slate-600 text-center">{dataset.academicYear}</td>
                     <td className="py-3 px-2 text-sm text-slate-600 text-center">{dataset.datasetName}</td>
-                    <td className="py-3 px-2 text-sm text-slate-600 text-center">{dataset.schoolName}</td>
                     <td className="py-3 px-2 text-center">
                       <input
                         type="checkbox"
@@ -1339,21 +1354,15 @@ export default function ConnectionsPage() {
             </table>
           </div>
 
-          {/* Year tabs at bottom */}
-          <div className="px-6 py-4 border-t flex justify-center gap-4">
-            {sisraYearTabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSisraActiveTab(tab)}
-                className={`text-sm ${
-                  sisraActiveTab === tab
-                    ? "text-blue-600 font-medium"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Save button at bottom */}
+          <div className="px-6 py-4 border-t flex justify-end">
+            <Button
+              onClick={handleCloseSisraDatasets}
+              className="px-6 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Save
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
