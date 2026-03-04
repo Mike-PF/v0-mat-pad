@@ -548,7 +548,6 @@ export default function OrganisationPage() {
                     className="text-white"
                     style={{ backgroundColor: "#121051" }}
                   >
-                    <Plus className="w-4 h-4 mr-1" />
                     Add Organisation
                   </Button>
                 )}
