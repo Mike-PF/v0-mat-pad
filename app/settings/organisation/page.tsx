@@ -821,7 +821,7 @@ export default function OrganisationPage() {
           <div className="p-6 space-y-4">
             <div>
               <label className="text-xs text-slate-500 block mb-1">Type</label>
-              <Select value={newOrgType} onValueChange={(value: "mat" | "school") => setNewOrgType(value)}>
+              <Select value={newOrgType} onValueChange={(value: "mat" | "school") => { setNewOrgType(value); setNewOrgName(""); }}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -834,12 +834,26 @@ export default function OrganisationPage() {
 
             <div>
               <label className="text-xs text-slate-500 block mb-1">Name</label>
-              <Input
-                value={newOrgName}
-                onChange={(e) => setNewOrgName(e.target.value)}
-                placeholder={newOrgType === "mat" ? "Enter MAT name" : "Enter school name"}
-                className="h-9"
-              />
+              <Select value={newOrgName} onValueChange={setNewOrgName}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder={newOrgType === "mat" ? "Select a MAT" : "Select a school"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {newOrgType === "mat" ? (
+                    mats.map((mat) => (
+                      <SelectItem key={mat.id} value={mat.id}>
+                        {mat.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    getAllSchools().map((school) => (
+                      <SelectItem key={school.id} value={school.id}>
+                        {school.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
