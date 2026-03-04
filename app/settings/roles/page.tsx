@@ -21,7 +21,7 @@ const availableOrganisations = [
 const matOrganisations = availableOrganisations.filter(org => org.type === "mat")
 const schoolOrganisations = availableOrganisations.filter(org => org.type === "school")
 
-const mockRoles = [
+const initialRoles: Role[] = [
   { id: 1, name: "User", users: 0 },
   { id: 2, name: "bl Finance", users: 2 },
   { id: 3, name: "Admin", users: 0 },
@@ -80,6 +80,7 @@ interface Role {
 
 export default function RolesPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [roles, setRoles] = useState<Role[]>(initialRoles)
   const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>(null)
   const [orgSearch, setOrgSearch] = useState("")
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -164,10 +165,32 @@ export default function RolesPage() {
     setEditingRole(newRole)
     setEditRoleName("")
     setSelectedUsers([])
-    setPermissions(permissionsData.map(cat => ({
-      ...cat,
-      permissions: cat.permissions.map(p => ({ ...p, enabled: false }))
-    })))
+    setPermissions(permissionsData)
+  }
+
+  const handleSaveRole = () => {
+    if (!editingRole) return
+    
+    if (editingRole.id === 0) {
+      // Adding a new role
+      const newId = Math.max(...roles.map(r => r.id), 0) + 1
+      const newRole: Role = {
+        id: newId,
+        name: editRoleName,
+        users: selectedUsers.length,
+      }
+      setRoles([...roles, newRole])
+    } else {
+      // Updating existing role
+      setRoles(roles.map(role => 
+        role.id === editingRole.id 
+          ? { ...role, name: editRoleName, users: selectedUsers.length }
+          : role
+      ))
+    }
+    
+    // Return to list view
+    handleBack()
   }
 
   const handleToggleUser = (userId: number) => {
@@ -224,6 +247,7 @@ export default function RolesPage() {
                 <Button
                   className="text-white"
                   style={{ backgroundColor: "#121051" }}
+                  onClick={handleSaveRole}
                 >
                   Save
                 </Button>
@@ -645,7 +669,7 @@ export default function RolesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockRoles.map((role) => (
+                      {roles.map((role) => (
                         <tr key={role.id} className="border-b border-slate-200 last:border-0">
                           <td className="py-4 px-4 text-sm text-slate-900">{role.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
