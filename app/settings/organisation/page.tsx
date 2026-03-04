@@ -529,6 +529,7 @@ export default function OrganisationPage() {
                 ) : (
                   /* Schools list for drilling down */
                   <div>
+                    {console.log("[v0] selectedMAT:", selectedMAT?.name, "schools count:", selectedMAT?.schools?.length)}
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                         Schools in Trust ({selectedMAT.schools.length})
