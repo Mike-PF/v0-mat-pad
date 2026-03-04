@@ -13,7 +13,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 // Sample MATs data
 const matsData = [
   { id: "mat-1", name: "St Joseph Catholic Multi Academy Trust", schools: ["school-1", "school-2", "school-3", "school-4"] },
-  { id: "mat-2", name: "Holy Cross Academy Trust", schools: ["school-5"] },
 ]
 
 // Sample Schools data  
@@ -22,7 +21,6 @@ const schoolsListData = [
   { id: "school-2", name: "St Ambrose Catholic Academy", urn: "149133", matId: "mat-1" },
   { id: "school-3", name: "St Nicholas Catholic Academy", urn: "149132", matId: "mat-1" },
   { id: "school-4", name: "Holy Family Catholic Academy", urn: "149190", matId: "mat-1" },
-  { id: "school-5", name: "St Mary's Primary", urn: "149200", matId: "mat-2" },
   { id: "school-6", name: "Sacred Heart School", urn: "149210", matId: null }, // Standalone school
 ]
 
