@@ -258,7 +258,7 @@ export function TermDatesContent() {
                   <select
                     value={selectedSchool}
                     onChange={(e) => handleSchoolChange(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-200 rounded-lg bg-slate-50 appearance-none focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051] text-slate-900"
+                    className="w-full p-3 pr-10 border border-slate-200 rounded-lg bg-white appearance-none focus:outline-none hover:border-slate-300 transition-colors text-slate-900"
                   >
                     <option value="">Please select a school...</option>
                     {schools.map((school) => (
@@ -267,7 +267,7 @@ export function TermDatesContent() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 </div>
               </div>
 
@@ -278,10 +278,10 @@ export function TermDatesContent() {
                   <select
                     value={selectedAcademicYear}
                     onChange={(e) => handleAcademicYearChange(e.target.value)}
-                    className={`w-full p-3 pr-10 border border-slate-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051] ${
+                    className={`w-full p-3 pr-10 border border-slate-200 rounded-lg appearance-none focus:outline-none transition-colors ${
                       !selectedSchool 
                         ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                        : "bg-slate-50 text-slate-900"
+                        : "bg-white text-slate-900 hover:border-slate-300"
                     }`}
                     disabled={!selectedSchool}
                   >
@@ -294,7 +294,7 @@ export function TermDatesContent() {
                     ))}
                   </select>
                   <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none ${
-                    !selectedSchool ? "text-slate-300" : "text-slate-500"
+                    !selectedSchool ? "text-slate-300" : "text-slate-400"
                   }`} />
                 </div>
               </div>
