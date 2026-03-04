@@ -9,6 +9,7 @@ import { Trash2, Pencil, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
 // Sample organisations for dropdown
 const availableOrganisations = [
@@ -97,6 +98,10 @@ export default function RolesPage() {
   const [userPage, setUserPage] = useState(1)
   const [usersPerPage, setUsersPerPage] = useState(5)
   const userDropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
 
   const selectedOrg = selectedOrganisation 
     ? availableOrganisations.find(o => o.id === selectedOrganisation) 
@@ -192,6 +197,19 @@ export default function RolesPage() {
     
     // Return to list view
     handleBack()
+  }
+
+  const handleDeleteClick = (role: Role) => {
+    setRoleToDelete(role)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (roleToDelete) {
+      setRoles(roles.filter(r => r.id !== roleToDelete.id))
+    }
+    setDeleteDialogOpen(false)
+    setRoleToDelete(null)
   }
 
   const handleToggleUser = (userId: number) => {
@@ -679,7 +697,10 @@ export default function RolesPage() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                                    <button 
+                                      onClick={() => handleDeleteClick(role)}
+                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                    >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
                                   </TooltipTrigger>
@@ -713,6 +734,33 @@ export default function RolesPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-slate-900">Delete Role</DialogTitle>
+                <DialogDescription className="text-slate-600">
+                  Are you sure you want to delete the role "{roleToDelete?.name}"? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteDialogOpen(false)}
+                  className="border-slate-200 text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmDelete}
+                  className="bg-red-600 text-white hover:bg-red-700"
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </div>
