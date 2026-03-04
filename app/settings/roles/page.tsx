@@ -268,7 +268,7 @@ export default function RolesPage() {
                   style={{ backgroundColor: "#121051" }}
                   onClick={handleSaveRole}
                 >
-                  Save
+                  {editingRole?.id === 0 ? "Create role" : "Save"}
                 </Button>
               </div>
             </div>
