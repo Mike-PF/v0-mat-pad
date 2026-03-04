@@ -200,15 +200,12 @@ export default function RolesPage() {
   }
 
   const handleDeleteClick = (role: Role) => {
-    console.log("[v0] handleDeleteClick called with role:", role)
     setRoleToDelete(role)
     setDeleteDialogOpen(true)
   }
 
   const handleConfirmDelete = () => {
-    console.log("[v0] handleConfirmDelete called, roleToDelete:", roleToDelete)
     if (roleToDelete) {
-      console.log("[v0] Deleting role id:", roleToDelete.id)
       setRoles(roles.filter(r => r.id !== roleToDelete.id))
     }
     setDeleteDialogOpen(false)
@@ -749,29 +746,30 @@ export default function RolesPage() {
           )}
 
           {/* Delete Confirmation Dialog */}
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <Dialog open={deleteDialogOpen} onOpenChange={(open) => !open && setDeleteDialogOpen(false)}>
             <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-slate-900">Delete Role</DialogTitle>
-                <DialogDescription className="text-slate-600">
-                  Are you sure you want to delete the role "{roleToDelete?.name}"? This action cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="gap-2 sm:gap-0">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Delete</h2>
+              <div className="py-4">
+                <p className="text-sm text-slate-600">
+                  Are you sure you want to delete <span className="font-semibold text-slate-900">{roleToDelete?.name}</span>? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button
                   variant="outline"
                   onClick={() => setDeleteDialogOpen(false)}
-                  className="border-slate-200 text-slate-700 hover:bg-slate-100"
+                  className="px-4"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleConfirmDelete}
-                  className="bg-red-600 text-white hover:bg-red-700"
+                  className="px-4 text-white"
+                  style={{ backgroundColor: "#121051" }}
                 >
                   Delete
                 </Button>
-              </DialogFooter>
+              </div>
             </DialogContent>
           </Dialog>
         </main>
