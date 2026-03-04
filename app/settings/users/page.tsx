@@ -472,7 +472,7 @@ export default function UsersPage() {
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
-                            <TooltipProvider delayDuration={200}>
+                            <TooltipProvider delayDuration={300}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button 
@@ -483,22 +483,8 @@ export default function UsersPage() {
                                     {user.roles.join(", ")}
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom" align="start" className="p-0 max-w-sm">
-                                  <div className="p-3">
-                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Click to view full breakdown</div>
-                                    {user.roles.map((role, idx) => {
-                                      const perms = rolePermissions[role] || []
-                                      return (
-                                        <div key={idx} className={idx > 0 ? "mt-2 pt-2 border-t" : ""}>
-                                          <div className="font-medium text-sm text-slate-900">{role}</div>
-                                          <div className="text-xs text-slate-500 mt-0.5">
-                                            {perms.length > 0 ? perms.slice(0, 3).join(", ") : "No permissions"}
-                                            {perms.length > 3 && ` +${perms.length - 3} more`}
-                                          </div>
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
+                                <TooltipContent>
+                                  <p>Click to view permissions breakdown</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
