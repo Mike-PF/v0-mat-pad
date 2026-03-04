@@ -133,9 +133,9 @@ export default function DashboardSettingsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Power BI Name</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Display Name</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisations</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Power BI Report Name</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Dashboard Name</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">School</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Roles</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
                       <th className="py-3 px-4"></th>
@@ -160,7 +160,7 @@ export default function DashboardSettingsPage() {
                             onValueChange={(value) => handleOrganisationChange(report.id, value)}
                           >
                             <SelectTrigger className="h-9 w-[200px] bg-slate-50 border-slate-200">
-                              <SelectValue placeholder="Select Organisations..." />
+                              <SelectValue placeholder="Select School..." />
                             </SelectTrigger>
                             <SelectContent>
                               {availableOrganisations.map((org) => (
