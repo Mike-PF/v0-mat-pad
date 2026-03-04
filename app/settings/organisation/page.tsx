@@ -435,6 +435,51 @@ export default function OrganisationPage() {
               )}
             </div>
 
+            {/* Schools Navigation Panel - shown when MAT is selected */}
+            {selectedType === "mat" && selectedMAT && (
+              <div className="px-4 py-3 border-b bg-slate-50">
+                {isViewingSchoolInMAT ? (
+                  /* Back to MAT navigation */
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleBackToMAT}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-slate-200 transition-colors text-sm text-slate-600"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Back to {selectedMAT.name}
+                    </button>
+                    <span className="text-slate-300">|</span>
+                    <div className="flex items-center gap-2 text-sm text-slate-900">
+                      <School className="w-4 h-4 text-slate-500" />
+                      <span className="font-medium">{selectedData?.name}</span>
+                    </div>
+                  </div>
+                ) : (
+                  /* Schools list for drilling down */
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Schools in Trust ({selectedMAT.schools.length})
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedMAT.schools.map((school) => (
+                        <button
+                          key={school.id}
+                          onClick={() => handleDrillDownToSchool(school.id)}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-md hover:border-[#121051] hover:bg-slate-50 transition-colors text-sm text-slate-700 group"
+                        >
+                          <School className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#121051]" />
+                          <span className="truncate max-w-[200px]">{school.name}</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#121051]" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Content */}
             <CardContent className="flex-1 overflow-auto p-6">
               {selectedData ? (
@@ -512,48 +557,6 @@ export default function OrganisationPage() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Schools list for MAT - clickable to drill down */}
-                  {selectedType === "mat" && !isViewingSchoolInMAT && selectedMAT && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                        Schools ({selectedMAT.schools.length})
-                      </h3>
-                      <div className="space-y-1">
-                        {selectedMAT.schools.map((school) => (
-                          <button
-                            key={school.id}
-                            onClick={() => handleDrillDownToSchool(school.id)}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-50 transition-colors text-left group"
-                          >
-                            <School className="w-4 h-4 text-slate-400" />
-                            <div className="flex-1 min-w-0">
-                              <span className="text-sm text-slate-700 block truncate">
-                                {school.name}
-                              </span>
-                              <span className="text-xs text-slate-500">URN: {school.urn}</span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Back to MAT button when viewing school within MAT */}
-                  {isViewingSchoolInMAT && selectedMAT && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3">Parent Trust</h3>
-                      <button
-                        onClick={handleBackToMAT}
-                        className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-50 transition-colors text-left group"
-                      >
-                        <ArrowLeft className="w-4 h-4 text-slate-400" />
-                        <Building2 className="w-4 h-4 text-slate-500" />
-                        <span className="text-sm text-slate-700">{selectedMAT.name}</span>
-                      </button>
-                    </div>
-                  )}
 
                   {/* Parent MAT for standalone school selected from dropdown */}
                   {selectedType === "school" && (selectedData as SchoolData).matId && (
