@@ -17,7 +17,9 @@ import {
   School, 
   Settings,
   Pencil,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react"
 
 // MAT and School data structure
@@ -207,6 +209,7 @@ export default function OrganisationPage() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
+  const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -217,11 +220,32 @@ export default function OrganisationPage() {
   const getSelectedData = (): MATData | SchoolData | null => {
     if (!selectedId) return null
     
+    // If we're drilled down into a school within a MAT
+    if (drillDownSchoolId && selectedType === "mat") {
+      const mat = mats.find(m => m.id === selectedId)
+      return mat?.schools.find(s => s.id === drillDownSchoolId) || null
+    }
+    
     if (selectedType === "mat") {
       return mats.find(m => m.id === selectedId) || null
     } else {
       return getAllSchools().find(s => s.id === selectedId) || null
     }
+  }
+
+  const getSelectedMAT = (): MATData | null => {
+    if (selectedType === "mat") {
+      return mats.find(m => m.id === selectedId) || null
+    }
+    return null
+  }
+
+  const handleDrillDownToSchool = (schoolId: string) => {
+    setDrillDownSchoolId(schoolId)
+  }
+
+  const handleBackToMAT = () => {
+    setDrillDownSchoolId(null)
   }
 
   const getParentMAT = (school: SchoolData): MATData | null => {
@@ -233,6 +257,7 @@ export default function OrganisationPage() {
     setSelectedType(type)
     setSelectedId(id)
     setPickerOpen(false)
+    setDrillDownSchoolId(null) // Reset drill down when selecting new item
   }
 
   const handleEditClick = () => {
@@ -246,7 +271,15 @@ export default function OrganisationPage() {
   const handleSaveEdit = () => {
     if (!editingItem) return
 
-    if (selectedType === "mat") {
+    // If editing a drilled-down school within a MAT
+    if (drillDownSchoolId && selectedType === "mat") {
+      const school = editingItem as SchoolData
+      setMats(prev => prev.map(m => 
+        m.id === selectedId 
+          ? { ...m, schools: m.schools.map(s => s.id === school.id ? school : s) }
+          : m
+      ))
+    } else if (selectedType === "mat") {
       setMats(prev => prev.map(m => 
         m.id === editingItem.id ? editingItem as MATData : m
       ))
@@ -281,6 +314,8 @@ export default function OrganisationPage() {
   }
 
   const selectedData = getSelectedData()
+  const selectedMAT = getSelectedMAT()
+  const isViewingSchoolInMAT = selectedType === "mat" && drillDownSchoolId !== null
   const displayName = selectedData?.name || "Select an organisation"
 
   return (
@@ -478,17 +513,49 @@ export default function OrganisationPage() {
                     </div>
                   </div>
 
-                  {/* Schools count for MAT */}
-                  {selectedType === "mat" && (
+                  {/* Schools list for MAT - clickable to drill down */}
+                  {selectedType === "mat" && !isViewingSchoolInMAT && selectedMAT && (
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3">Schools</h3>
-                      <p className="text-sm text-slate-600">
-                        {(selectedData as MATData).schools.length} schools in this trust
-                      </p>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                        Schools ({selectedMAT.schools.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {selectedMAT.schools.map((school) => (
+                          <button
+                            key={school.id}
+                            onClick={() => handleDrillDownToSchool(school.id)}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-50 transition-colors text-left group"
+                          >
+                            <School className="w-4 h-4 text-slate-400" />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm text-slate-700 block truncate">
+                                {school.name}
+                              </span>
+                              <span className="text-xs text-slate-500">URN: {school.urn}</span>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500" />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
-                  {/* Parent MAT for school */}
+                  {/* Back to MAT button when viewing school within MAT */}
+                  {isViewingSchoolInMAT && selectedMAT && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3">Parent Trust</h3>
+                      <button
+                        onClick={handleBackToMAT}
+                        className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-50 transition-colors text-left group"
+                      >
+                        <ArrowLeft className="w-4 h-4 text-slate-400" />
+                        <Building2 className="w-4 h-4 text-slate-500" />
+                        <span className="text-sm text-slate-700">{selectedMAT.name}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Parent MAT for standalone school selected from dropdown */}
                   {selectedType === "school" && (selectedData as SchoolData).matId && (
                     <div>
                       <h3 className="text-sm font-semibold text-slate-900 mb-3">Parent Trust</h3>
@@ -516,7 +583,7 @@ export default function OrganisationPage() {
         <DialogContent className="max-w-2xl max-h-[85vh] p-0 flex flex-col">
           <div className="p-6 pb-4 border-b">
             <h2 className="text-lg font-semibold text-slate-900">
-              Edit {selectedType === "mat" ? "Multi-Academy Trust" : "School"}
+              Edit {selectedType === "mat" && !isViewingSchoolInMAT ? "Multi-Academy Trust" : "School"}
             </h2>
           </div>
           
