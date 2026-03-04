@@ -792,56 +792,82 @@ export default function UsersPage() {
             </DialogContent>
           </Dialog>
 
-          {/* Permissions Modal */}
+          {/* Permissions Modal - Shows each role's permissions breakdown */}
           <Dialog open={permissionsModalOpen} onOpenChange={setPermissionsModalOpen}>
-            <DialogContent className="max-w-2xl !block">
-              <h2 className="text-lg font-semibold text-slate-900 mb-2">Role Permissions</h2>
-              <p className="text-sm text-slate-500 mb-4">
-                Showing permissions for: <span className="font-medium text-slate-700">{viewingUserRoles.join(", ")}</span>
-              </p>
+            <DialogContent className="max-w-4xl !block">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Role Permissions Breakdown</h2>
               
-              <div className="space-y-4 max-h-[60vh] overflow-auto">
-                {allPermissionCategories.map((cat) => {
-                  const combinedPerms = getCombinedPermissions(viewingUserRoles)
-                  return (
-                    <div key={cat.category} className="border rounded-lg overflow-hidden">
-                      <div className="bg-slate-50 px-4 py-2 border-b">
-                        <h3 className="text-sm font-semibold text-slate-700">{cat.category}</h3>
-                      </div>
-                      <div className="divide-y">
-                        {cat.permissions.map((perm) => {
-                          const isEnabled = combinedPerms.has(perm)
-                          // Find which roles grant this permission
-                          const grantingRoles = viewingUserRoles.filter(role => 
+              <div className="overflow-auto max-h-[60vh]">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="sticky top-0 bg-white">
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-3 font-medium text-slate-700 bg-slate-50 min-w-[180px]">Permission</th>
+                      {viewingUserRoles.map(role => (
+                        <th key={role} className="text-center py-2 px-3 font-medium text-slate-700 bg-slate-50 min-w-[100px]">
+                          {role}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allPermissionCategories.map((cat, catIdx) => (
+                      <>
+                        {/* Category Header */}
+                        <tr key={`cat-${cat.category}`} className="bg-slate-100">
+                          <td colSpan={viewingUserRoles.length + 1} className="py-2 px-3 font-semibold text-slate-700">
+                            {cat.category}
+                          </td>
+                        </tr>
+                        {/* Permissions */}
+                        {cat.permissions.map((perm, permIdx) => {
+                          const enabledCount = viewingUserRoles.filter(role => 
                             rolePermissions[role]?.includes(perm)
-                          )
+                          ).length
+                          const hasClash = enabledCount > 1
                           return (
-                            <div key={perm} className="flex items-center justify-between px-4 py-3">
-                              <div className="flex-1">
-                                <span className={`text-sm ${isEnabled ? "text-slate-900" : "text-slate-400"}`}>
-                                  {perm}
-                                </span>
-                                {isEnabled && grantingRoles.length > 0 && (
-                                  <span className="text-xs text-slate-400 ml-2">
-                                    (via {grantingRoles.join(", ")})
-                                  </span>
+                            <tr key={`${cat.category}-${perm}`} className={`border-b ${hasClash ? "bg-amber-50" : ""}`}>
+                              <td className="py-2 px-3 text-slate-600">
+                                {perm}
+                                {hasClash && (
+                                  <span className="ml-2 text-xs text-amber-600 font-medium">(overlap)</span>
                                 )}
-                              </div>
-                              <div className={`w-8 h-5 rounded-full flex items-center px-0.5 transition-colors ${
-                                isEnabled ? "bg-green-500 justify-end" : "bg-slate-200 justify-start"
-                              }`}>
-                                <div className="w-4 h-4 rounded-full bg-white shadow-sm" />
-                              </div>
-                            </div>
+                              </td>
+                              {viewingUserRoles.map(role => {
+                                const hasPermission = rolePermissions[role]?.includes(perm)
+                                return (
+                                  <td key={role} className="text-center py-2 px-3">
+                                    {hasPermission ? (
+                                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-400">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </span>
+                                    )}
+                                  </td>
+                                )
+                              })}
+                            </tr>
                           )
                         })}
-                      </div>
-                    </div>
-                  )
-                })}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              <div className="flex justify-end pt-4 border-t mt-4">
+              <div className="flex items-center justify-between pt-4 border-t mt-4">
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <span className="flex items-center gap-1">
+                    <span className="w-3 h-3 rounded bg-amber-50 border border-amber-200"></span>
+                    Overlap (multiple roles grant same permission)
+                  </span>
+                </div>
                 <Button
                   onClick={() => setPermissionsModalOpen(false)}
                   className="px-6 text-white"
