@@ -262,9 +262,9 @@ export default function DashboardSettingsPage() {
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <button 
-                                      className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors"
+                                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#121051] transition-colors"
                                     >
-                                      <span className="truncate text-slate-600">
+                                      <span className="flex-1 truncate text-slate-700">
                                         {report.organisations.length > 0 
                                           ? `${report.organisations.length} selected`
                                           : "Select School..."}
@@ -272,19 +272,17 @@ export default function DashboardSettingsPage() {
                                       <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                                     </button>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-[280px] p-0" align="start">
-                                    <div className="p-2 border-b border-slate-200">
-                                      <div className="relative">
-                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <Input
-                                          placeholder="Search schools..."
-                                          value={schoolSearch[report.id] || ""}
-                                          onChange={(e) => setSchoolSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
-                                          className="pl-8 h-8 text-sm"
-                                        />
-                                      </div>
+                                  <PopoverContent className="w-[350px] p-0 shadow-lg" align="start">
+                                    <div className="p-2 border-b">
+                                      <Input
+                                        placeholder="Search..."
+                                        value={schoolSearch[report.id] || ""}
+                                        onChange={(e) => setSchoolSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
+                                        className="h-8"
+                                        autoFocus
+                                      />
                                     </div>
-                                    <div className="max-h-[250px] overflow-auto">
+                                    <div className="max-h-[300px] overflow-auto">
                                       {/* MAT Section */}
                                       {matOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
                                         <>
@@ -296,14 +294,14 @@ export default function DashboardSettingsPage() {
                                             .map((org) => (
                                             <label
                                               key={org.id}
-                                              className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
                                             >
                                               <Checkbox
                                                 checked={report.organisations.includes(org.id)}
                                                 onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
                                                 className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
                                               />
-                                              <span className="text-sm text-slate-700">{org.name}</span>
+                                              <span className="text-sm text-slate-900">{org.name}</span>
                                             </label>
                                           ))}
                                         </>
@@ -319,20 +317,20 @@ export default function DashboardSettingsPage() {
                                             .map((org) => (
                                             <label
                                               key={org.id}
-                                              className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
                                             >
                                               <Checkbox
                                                 checked={report.organisations.includes(org.id)}
                                                 onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
                                                 className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
                                               />
-                                              <span className="text-sm text-slate-700">{org.name}</span>
+                                              <span className="text-sm text-slate-900">{org.name}</span>
                                             </label>
                                           ))}
                                         </>
                                       )}
                                       {availableOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length === 0 && (
-                                        <div className="px-3 py-2 text-sm text-slate-500">No results found</div>
+                                        <div className="p-3 text-sm text-slate-500 text-center">No results found</div>
                                       )}
                                     </div>
                                   </PopoverContent>
