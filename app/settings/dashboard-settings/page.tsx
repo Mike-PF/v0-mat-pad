@@ -39,7 +39,16 @@ const initialReports = [
   { id: "7", powerBiName: "Josh Test", displayName: "Josh Test", organisations: [] as string[], roles: [] as string[], active: true },
   { id: "8", powerBiName: "3", displayName: "Kates Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
   { id: "9", powerBiName: "test", displayName: "test", organisations: [] as string[], roles: [] as string[], active: false },
-]
+  { id: "10", powerBiName: "Behaviour Analytics", displayName: "Behaviour Analytics", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "11", powerBiName: "Finance Overview", displayName: "Finance Overview", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "12", powerBiName: "Staff Performance", displayName: "Staff Performance Dashboard", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "13", powerBiName: "Pupil Progress", displayName: "Pupil Progress Tracker", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "14", powerBiName: "Safeguarding Report", displayName: "Safeguarding Report", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "15", powerBiName: "SEND Overview", displayName: "SEND Overview Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "16", powerBiName: "Curriculum Analysis", displayName: "Curriculum Analysis", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "17", powerBiName: "Parent Engagement", displayName: "Parent Engagement Metrics", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "18", powerBiName: "Budget Forecast", displayName: "Budget Forecast 2024", organisations: [] as string[], roles: [] as string[], active: true },
+  ]
 
 type Report = typeof initialReports[number]
 
