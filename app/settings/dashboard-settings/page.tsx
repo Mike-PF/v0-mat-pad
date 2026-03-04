@@ -43,14 +43,18 @@ const initialReports = [
 
 type Report = typeof initialReports[number]
 
-// Sample organisations for dropdown
+// Sample organisations for dropdown - with type to distinguish MAT vs School
 const availableOrganisations = [
-  { id: "org-1", name: "St Clare Catholic Multi Academy Trust" },
-  { id: "org-2", name: "Holy Family Catholic Academy Trust" },
-  { id: "org-3", name: "All Saints' Catholic High School" },
-  { id: "org-4", name: "Notre Dame High School" },
-  { id: "org-5", name: "Sacred Heart School" },
+  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const },
+  { id: "org-2", name: "All Saints' Catholic High School", type: "school" as const },
+  { id: "org-3", name: "Emmaus Catholic and CofE Primary School", type: "school" as const },
+  { id: "org-4", name: "Notre Dame High School", type: "school" as const },
+  { id: "org-5", name: "Sacred Heart School", type: "school" as const },
+  { id: "org-6", name: "St Alban's Catholic Primary School", type: "school" as const },
 ]
+
+const matOrganisations = availableOrganisations.filter(org => org.type === "mat")
+const schoolOrganisations = availableOrganisations.filter(org => org.type === "school")
 
 // Sample roles per organisation
 const rolesByOrganisation: Record<string, { id: string; name: string }[]> = {
@@ -280,24 +284,55 @@ export default function DashboardSettingsPage() {
                                         />
                                       </div>
                                     </div>
-                                    <div className="max-h-[200px] overflow-auto">
-                                      {availableOrganisations
-                                        .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
-                                        .map((org) => (
-                                        <label
-                                          key={org.id}
-                                          className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
-                                        >
-                                          <Checkbox
-                                            checked={report.organisations.includes(org.id)}
-                                            onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
-                                            className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
-                                          />
-                                          <span className="text-sm text-slate-700">{org.name}</span>
-                                        </label>
-                                      ))}
+                                    <div className="max-h-[250px] overflow-auto">
+                                      {/* MAT Section */}
+                                      {matOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
+                                        <>
+                                          <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0 z-10">
+                                            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">MAT</span>
+                                          </div>
+                                          {matOrganisations
+                                            .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
+                                            .map((org) => (
+                                            <label
+                                              key={org.id}
+                                              className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                            >
+                                              <Checkbox
+                                                checked={report.organisations.includes(org.id)}
+                                                onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
+                                                className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                              />
+                                              <span className="text-sm text-slate-700">{org.name}</span>
+                                            </label>
+                                          ))}
+                                        </>
+                                      )}
+                                      {/* Schools Section */}
+                                      {schoolOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
+                                        <>
+                                          <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0 z-10">
+                                            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Schools</span>
+                                          </div>
+                                          {schoolOrganisations
+                                            .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
+                                            .map((org) => (
+                                            <label
+                                              key={org.id}
+                                              className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                            >
+                                              <Checkbox
+                                                checked={report.organisations.includes(org.id)}
+                                                onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
+                                                className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                              />
+                                              <span className="text-sm text-slate-700">{org.name}</span>
+                                            </label>
+                                          ))}
+                                        </>
+                                      )}
                                       {availableOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length === 0 && (
-                                        <div className="px-3 py-2 text-sm text-slate-500">No schools found</div>
+                                        <div className="px-3 py-2 text-sm text-slate-500">No results found</div>
                                       )}
                                     </div>
                                   </PopoverContent>
