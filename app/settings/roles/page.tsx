@@ -85,7 +85,7 @@ export default function RolesPage() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const [permissions, setPermissions] = useState(permissionsData)
   const [userPage, setUserPage] = useState(1)
-  const usersPerPage = 10
+  const [usersPerPage, setUsersPerPage] = useState(10)
   const userDropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedOrg = selectedOrganisation 
@@ -324,25 +324,103 @@ export default function RolesPage() {
                 </div>
 
                 {/* Pagination */}
-                {filteredUsersInTable.length > 0 && (
-                  <div className="flex items-center gap-2 mt-4 text-sm text-slate-600">
-                    <span>
-                      {((userPage - 1) * usersPerPage) + 1} - {Math.min(userPage * usersPerPage, filteredUsersInTable.length)} of {filteredUsersInTable.length}
+                {totalUserPages > 1 && (
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+                    <span className="text-sm text-slate-600">
+                      Showing {((userPage - 1) * usersPerPage) + 1} to {Math.min(userPage * usersPerPage, filteredUsersInTable.length)} of {filteredUsersInTable.length} results
                     </span>
-                    <button
-                      onClick={() => setUserPage(p => Math.max(1, p - 1))}
-                      disabled={userPage === 1}
-                      className="p-1 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setUserPage(p => Math.min(totalUserPages, p + 1))}
-                      disabled={userPage === totalUserPages || totalUserPages === 0}
-                      className="p-1 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                        disabled={userPage === 1}
+                        className="h-8 px-3 text-sm font-normal hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        Previous
+                      </Button>
+                      <div className="flex items-center">
+                        {/* First page */}
+                        <button
+                          onClick={() => setUserPage(1)}
+                          className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
+                            userPage === 1 
+                              ? "bg-[#121051] text-white" 
+                              : "text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          1
+                        </button>
+                        
+                        {/* Left ellipsis */}
+                        {userPage > 3 && (
+                          <span className="h-8 w-8 text-sm flex items-center justify-center text-slate-400">...</span>
+                        )}
+                        
+                        {/* Middle pages */}
+                        {Array.from({ length: totalUserPages }, (_, i) => i + 1)
+                          .filter(page => {
+                            if (page === 1 || page === totalUserPages) return false
+                            if (totalUserPages <= 7) return true
+                            return page >= userPage - 1 && page <= userPage + 1
+                          })
+                          .map(page => (
+                            <button
+                              key={page}
+                              onClick={() => setUserPage(page)}
+                              className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
+                                userPage === page 
+                                  ? "bg-[#121051] text-white" 
+                                  : "text-slate-600 hover:bg-slate-100"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                        
+                        {/* Right ellipsis */}
+                        {userPage < totalUserPages - 2 && totalUserPages > 5 && (
+                          <span className="h-8 w-8 text-sm flex items-center justify-center text-slate-400">...</span>
+                        )}
+                        
+                        {/* Last page */}
+                        {totalUserPages > 1 && (
+                          <button
+                            onClick={() => setUserPage(totalUserPages)}
+                            className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
+                              userPage === totalUserPages 
+                                ? "bg-[#121051] text-white" 
+                                : "text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {totalUserPages}
+                          </button>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setUserPage(p => Math.min(totalUserPages, p + 1))}
+                        disabled={userPage === totalUserPages}
+                        className="h-8 px-3 text-sm font-normal hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        Next
+                      </Button>
+                      <select
+                        value={usersPerPage}
+                        onChange={(e) => {
+                          setUsersPerPage(Number(e.target.value))
+                          setUserPage(1)
+                        }}
+                        className="h-8 px-2 pr-8 ml-2 border border-slate-200 rounded-md text-sm text-slate-600 bg-white appearance-none cursor-pointer"
+                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+                      >
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
                   </div>
                 )}
               </CardContent>
