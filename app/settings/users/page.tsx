@@ -581,7 +581,7 @@ export default function UsersPage() {
                       <span className="text-sm text-slate-900 flex-1 truncate">All Schools</span>
                     ) : editSelectedSchools.length > 0 ? (
                       <>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#121051" }}>
                           {editSelectedSchools.length}
                         </span>
                         <span className="text-sm text-slate-900 flex-1 truncate">
@@ -657,7 +657,7 @@ export default function UsersPage() {
                   >
                     {editSelectedRoles.length > 0 ? (
                       <>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#121051" }}>
                           {editSelectedRoles.length}
                         </span>
                         <span className="text-sm text-slate-900 flex-1 truncate">
