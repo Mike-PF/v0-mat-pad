@@ -1,26 +1,24 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Copy, ExternalLink, ChevronDown } from "lucide-react"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 
 // Sample organisations for dropdown
 const availableOrganisations = [
-  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const },
-  { id: "org-2", name: "All Saints' Catholic High School", type: "school" as const },
-  { id: "org-3", name: "Emmaus Catholic and CofE Primary School", type: "school" as const },
-  { id: "org-4", name: "Notre Dame High School", type: "school" as const },
+  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const, schoolCount: 5 },
+  { id: "org-2", name: "All Saints' Catholic High School", type: "school" as const, matName: "St Clare Catholic Multi Academy Trust" },
+  { id: "org-3", name: "Emmaus Catholic and CofE Primary School", type: "school" as const, matName: "St Clare Catholic Multi Academy Trust" },
+  { id: "org-4", name: "Notre Dame High School", type: "school" as const, matName: "St Clare Catholic Multi Academy Trust" },
   { id: "org-5", name: "Sacred Heart School", type: "school" as const },
 ]
+
+const matOrganisations = availableOrganisations.filter(org => org.type === "mat")
+const schoolOrganisations = availableOrganisations.filter(org => org.type === "school")
 
 const mockRoles = [
   { id: 1, name: "User", users: 0 },
@@ -32,14 +30,32 @@ export default function RolesPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>("org-1")
   const [orgSearch, setOrgSearch] = useState("")
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const selectedOrgName = selectedOrganisation 
-    ? availableOrganisations.find(o => o.id === selectedOrganisation)?.name 
+  const selectedOrg = selectedOrganisation 
+    ? availableOrganisations.find(o => o.id === selectedOrganisation) 
     : null
 
-  const filteredOrganisations = availableOrganisations.filter(org =>
+  const filteredMATs = matOrganisations.filter(org =>
     org.name.toLowerCase().includes(orgSearch.toLowerCase())
   )
+  
+  const filteredSchools = schoolOrganisations.filter(org =>
+    org.name.toLowerCase().includes(orgSearch.toLowerCase())
+  )
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setPickerOpen(false)
+        setOrgSearch("")
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -56,50 +72,122 @@ export default function RolesPage() {
             <CardContent className="py-4">
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-slate-900">Organisation</span>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button 
-                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#121051] transition-colors"
-                    >
-                      <span className="flex-1 truncate text-slate-700">
-                        {selectedOrgName || "Select Organisation..."}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => {
+                      setPickerOpen(!pickerOpen)
+                      setOrgSearch("")
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-md hover:border-[#121051] transition-colors text-sm min-w-[250px]"
+                  >
+                    {selectedOrg ? (
+                      <>
+                        <span className="text-sm font-medium text-slate-900 flex-1 text-left truncate">
+                          {selectedOrg.name}
+                        </span>
+                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                          {selectedOrg.type === "mat" ? "MAT" : "School"}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-slate-500 flex-1 text-left">
+                        Select an organisation...
                       </span>
-                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[350px] p-0 shadow-lg" align="start">
-                    <div className="p-2 border-b">
-                      <Input
-                        placeholder="Search..."
-                        value={orgSearch}
-                        onChange={(e) => setOrgSearch(e.target.value)}
-                        className="h-8"
-                        autoFocus
-                      />
+                    )}
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${pickerOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {/* Dropdown */}
+                  {pickerOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-[400px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[400px] flex flex-col">
+                      {/* Search Input */}
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="Search MATs or schools..."
+                          value={orgSearch}
+                          onChange={(e) => setOrgSearch(e.target.value)}
+                          className="h-9"
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="overflow-auto flex-1">
+                        {/* MATs Section */}
+                        {filteredMATs.length > 0 && (
+                          <>
+                            <div className="p-2 border-b">
+                              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
+                                Multi-Academy Trusts
+                              </span>
+                            </div>
+                            {filteredMATs.map((mat) => (
+                              <button
+                                key={mat.id}
+                                onClick={() => {
+                                  setSelectedOrganisation(mat.id)
+                                  setPickerOpen(false)
+                                  setOrgSearch("")
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
+                                  selectedOrganisation === mat.id ? "bg-slate-100" : ""
+                                }`}
+                              >
+                                <span className="text-sm text-slate-900 flex-1 text-left truncate">
+                                  {mat.name}
+                                </span>
+                                <span className="text-xs text-slate-500">
+                                  {mat.schoolCount} schools
+                                </span>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* Schools Section */}
+                        {filteredSchools.length > 0 && (
+                          <>
+                            <div className="p-2 border-b border-t">
+                              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
+                                Schools
+                              </span>
+                            </div>
+                            {filteredSchools.map((school) => (
+                              <button
+                                key={school.id}
+                                onClick={() => {
+                                  setSelectedOrganisation(school.id)
+                                  setPickerOpen(false)
+                                  setOrgSearch("")
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
+                                  selectedOrganisation === school.id ? "bg-slate-100" : ""
+                                }`}
+                              >
+                                <div className="flex-1 text-left min-w-0">
+                                  <span className="text-sm text-slate-900 block truncate">
+                                    {school.name}
+                                  </span>
+                                  {school.matName && (
+                                    <span className="text-xs text-slate-500 truncate block">
+                                      {school.matName}
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* No results */}
+                        {filteredMATs.length === 0 && filteredSchools.length === 0 && (
+                          <div className="p-4 text-center text-sm text-slate-500">
+                            No results found
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="max-h-[300px] overflow-auto">
-                      {filteredOrganisations.map((org) => (
-                        <div
-                          key={org.id}
-                          onClick={() => {
-                            setSelectedOrganisation(org.id)
-                            setOrgSearch("")
-                          }}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
-                            selectedOrganisation === org.id ? "bg-slate-50" : ""
-                          }`}
-                        >
-                          <span className={`text-sm ${selectedOrganisation === org.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
-                            {org.name}
-                          </span>
-                        </div>
-                      ))}
-                      {filteredOrganisations.length === 0 && (
-                        <div className="p-3 text-sm text-slate-500 text-center">No results found</div>
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                  )}
+                </div>
                 {selectedOrganisation && (
                   <button
                     onClick={() => setSelectedOrganisation(null)}
