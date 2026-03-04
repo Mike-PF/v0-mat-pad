@@ -33,11 +33,11 @@ const schoolsData = [
 ]
 
 // Sample users data matching the image
-const initialUsers = [
+const initialUsers: User[] = [
   { 
     id: 1, 
     email: "ed@pixel-fusion.com", 
-    hasLoggedIn: false, 
+    lastLoggedIn: null, 
     name: "fred ed", 
     roles: ["CPOMS Data", "User"],
     schools: [
@@ -49,7 +49,7 @@ const initialUsers = [
   { 
     id: 2, 
     email: "fred@test.com", 
-    hasLoggedIn: false, 
+    lastLoggedIn: "2024-03-01 14:32", 
     name: "Fred Smith", 
     roles: ["CPOMS Data", "Finance", "User"],
     schools: [
@@ -62,7 +62,7 @@ const initialUsers = [
   { 
     id: 3, 
     email: "sdfwesr@test.com", 
-    hasLoggedIn: false, 
+    lastLoggedIn: "2024-02-28 09:15", 
     name: "sdfsdf werwer", 
     roles: ["Finance", "Finance Data", "Preview", "User Admin"],
     schools: "all"
@@ -72,7 +72,7 @@ const initialUsers = [
 interface User {
   id: number
   email: string
-  hasLoggedIn: boolean
+  lastLoggedIn: string | null
   name: string
   roles: string[]
   schools: { urn: string; name: string }[] | "all"
@@ -307,8 +307,8 @@ export default function UsersPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-slate-200">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Email/Login</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Has logged in</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Email</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Last logged in</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Name</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Role</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Schools</th>
@@ -320,13 +320,7 @@ export default function UsersPage() {
                         <tr key={user.id} className="border-b border-slate-100 last:border-0">
                           <td className="py-4 px-4 text-sm text-slate-900">{user.email}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
-                            <span className={`inline-block px-2 py-0.5 rounded text-xs ${
-                              user.hasLoggedIn 
-                                ? "bg-green-100 text-green-700" 
-                                : "bg-slate-100 text-slate-600"
-                            }`}>
-                              {user.hasLoggedIn ? "Yes" : "No"}
-                            </span>
+                            {user.lastLoggedIn || "Never"}
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
