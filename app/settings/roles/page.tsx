@@ -249,22 +249,27 @@ export default function RolesPage() {
 
                     {userDropdownOpen && (
                       <div className="absolute top-full left-0 mt-1 w-[350px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-auto">
-                        {mockUsers.map(user => (
-                          <button
-                            key={user.id}
-                            onClick={() => handleToggleUser(user.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors ${
-                              selectedUsers.includes(user.id) ? "bg-[#B30089] hover:bg-[#B30089]" : ""
-                            }`}
-                          >
-                            <span className={`text-sm ${selectedUsers.includes(user.id) ? "text-white" : "text-slate-900"}`}>
-                              {user.name}
-                            </span>
-                            <span className={`text-xs ${selectedUsers.includes(user.id) ? "text-white/80" : "text-slate-500"}`}>
-                              ({user.email})
-                            </span>
-                          </button>
-                        ))}
+                        {mockUsers.map(user => {
+                          const isSelected = selectedUsers.includes(user.id)
+                          return (
+                            <button
+                              key={user.id}
+                              onClick={() => handleToggleUser(user.id)}
+                              className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors text-left ${
+                                isSelected 
+                                  ? "bg-[#B30089]" 
+                                  : "hover:bg-slate-100"
+                              }`}
+                            >
+                              <span className={`text-sm font-medium ${isSelected ? "text-white" : "text-slate-900"}`}>
+                                {user.name}
+                              </span>
+                              <span className={`text-xs ${isSelected ? "text-white/80" : "text-slate-500"}`}>
+                                ({user.email})
+                              </span>
+                            </button>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
