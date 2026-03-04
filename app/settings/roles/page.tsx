@@ -24,9 +24,9 @@ const matOrganisations = availableOrganisations.filter(org => org.type === "mat"
 const schoolOrganisations = availableOrganisations.filter(org => org.type === "school")
 
 const initialRoles: Role[] = [
-  { id: 1, name: "User", users: 0 },
-  { id: 2, name: "bl Finance", users: 2 },
-  { id: 3, name: "Admin", users: 0 },
+  { id: 1, name: "User", users: 0, userIds: [] },
+  { id: 2, name: "bl Finance", users: 2, userIds: [1, 2] },
+  { id: 3, name: "Admin", users: 0, userIds: [] },
 ]
 
 const mockUsers = [
@@ -78,6 +78,7 @@ interface Role {
   id: number
   name: string
   users: number
+  userIds: number[]
 }
 
 export default function RolesPage() {
@@ -188,13 +189,14 @@ export default function RolesPage() {
         id: newId,
         name: editRoleName,
         users: selectedUsers.length,
+        userIds: [...selectedUsers],
       }
       setRoles([...roles, newRole])
     } else {
       // Updating existing role
       setRoles(roles.map(role => 
         role.id === editingRole.id 
-          ? { ...role, name: editRoleName, users: selectedUsers.length }
+          ? { ...role, name: editRoleName, users: selectedUsers.length, userIds: [...selectedUsers] }
           : role
       ))
     }
@@ -715,7 +717,27 @@ export default function RolesPage() {
                       {roles.map((role) => (
                         <tr key={role.id} className="border-b border-slate-200 last:border-0">
                           <td className="py-4 px-4 text-sm text-slate-900">{role.name}</td>
-                          <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
+                          <td className="py-4 px-4 text-sm text-slate-600">
+                            {role.userIds.length > 0 ? (
+                              <TooltipProvider delayDuration={300}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="cursor-default">{role.users}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <div className="flex flex-col gap-1">
+                                      {role.userIds.map(userId => {
+                                        const user = mockUsers.find(u => u.id === userId)
+                                        return user ? <p key={userId}>{user.name}</p> : null
+                                      })}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <span>{role.users}</span>
+                            )}
+                          </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center justify-end gap-2">
                               <TooltipProvider delayDuration={300}>
