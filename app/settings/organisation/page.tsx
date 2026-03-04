@@ -8,10 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog"
+
 import { 
   Building2, 
   School, 
@@ -208,7 +205,7 @@ export default function OrganisationPage() {
   const [selectedId, setSelectedId] = useState<string>("")
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerSearch, setPickerSearch] = useState("")
-  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
   const [settingsTab, setSettingsTab] = useState<"basic" | "branding">("basic")
@@ -286,8 +283,13 @@ export default function OrganisationPage() {
     const data = getSelectedData()
     if (data) {
       setEditingItem(JSON.parse(JSON.stringify(data)))
-      setEditModalOpen(true)
+      setIsEditing(true)
     }
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditingItem(null)
   }
 
   const handleSaveEdit = () => {
@@ -321,7 +323,8 @@ export default function OrganisationPage() {
         ))
       }
     }
-    setEditModalOpen(false)
+    setIsEditing(false)
+    setEditingItem(null)
   }
 
   const handleFeatureToggle = (feature: keyof MATData["features"], value: boolean) => {
@@ -463,15 +466,38 @@ export default function OrganisationPage() {
               </div>
 
               {selectedData && (
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEditClick}
-                  className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
-                >
-                  <Pencil className="w-4 h-4 mr-1" />
-                  Edit
-                </Button>
+                <div className="flex gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCancelEdit}
+                        className="border-slate-300 text-slate-600"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        size="sm"
+                        onClick={handleSaveEdit}
+                        className="text-white"
+                        style={{ backgroundColor: "#121051" }}
+                      >
+                        Save
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditClick}
+                      className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                    >
+                      <Pencil className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
 
@@ -553,26 +579,73 @@ export default function OrganisationPage() {
                   {/* Basic Information Tab */}
                   {settingsTab === "basic" && (
                     <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        {"urn" in selectedData && (
-                          <div>
-                            <span className="text-xs text-slate-500">URN</span>
-                            <p className="text-sm text-slate-900">{selectedData.urn}</p>
+                      {isEditing && editingItem ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="col-span-2">
+                            <label className="text-xs text-slate-500 block mb-1">Name</label>
+                            <Input
+                              value={editingItem.name}
+                              onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+                              className="h-9"
+                            />
                           </div>
-                        )}
-                        <div className="col-span-2">
-                          <span className="text-xs text-slate-500">Address</span>
-                          <p className="text-sm text-slate-900">{selectedData.address}</p>
+                          {"urn" in editingItem && (
+                            <div>
+                              <label className="text-xs text-slate-500 block mb-1">URN</label>
+                              <Input
+                                value={editingItem.urn}
+                                onChange={(e) => setEditingItem({ ...editingItem, urn: e.target.value })}
+                                className="h-9"
+                              />
+                            </div>
+                          )}
+                          <div className="col-span-2">
+                            <label className="text-xs text-slate-500 block mb-1">Address</label>
+                            <Input
+                              value={editingItem.address}
+                              onChange={(e) => setEditingItem({ ...editingItem, address: e.target.value })}
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Phone</label>
+                            <Input
+                              value={editingItem.phone}
+                              onChange={(e) => setEditingItem({ ...editingItem, phone: e.target.value })}
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Email</label>
+                            <Input
+                              value={editingItem.email}
+                              onChange={(e) => setEditingItem({ ...editingItem, email: e.target.value })}
+                              className="h-9"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-xs text-slate-500">Phone</span>
-                          <p className="text-sm text-slate-900">{selectedData.phone}</p>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          {"urn" in selectedData && (
+                            <div>
+                              <span className="text-xs text-slate-500">URN</span>
+                              <p className="text-sm text-slate-900">{selectedData.urn}</p>
+                            </div>
+                          )}
+                          <div className="col-span-2">
+                            <span className="text-xs text-slate-500">Address</span>
+                            <p className="text-sm text-slate-900">{selectedData.address}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500">Phone</span>
+                            <p className="text-sm text-slate-900">{selectedData.phone}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500">Email</span>
+                            <p className="text-sm text-slate-900">{selectedData.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-xs text-slate-500">Email</span>
-                          <p className="text-sm text-slate-900">{selectedData.email}</p>
-                        </div>
-                      </div>
+                      )}
 
                       {/* Parent MAT for standalone school selected from dropdown */}
                       {selectedType === "school" && (selectedData as SchoolData).matId && (
@@ -589,50 +662,100 @@ export default function OrganisationPage() {
                   {/* Branding Tab */}
                   {settingsTab === "branding" && (
                     <div className="space-y-6">
-                      <div className="flex items-center gap-6">
-                        <div>
-                          <span className="text-xs text-slate-500 block mb-1">Logo</span>
-                          <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
-                            <Image
-                              src={selectedData.logo}
-                              alt="Logo"
-                              width={48}
-                              height={48}
-                              className="object-contain"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-slate-500 block mb-1">Primary Color</span>
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-8 h-8 rounded border border-slate-200"
-                              style={{ backgroundColor: selectedData.primaryColor }}
-                            />
-                            <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Feature Toggles */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
-                        <div className="space-y-3">
-                          {Object.entries(selectedData.features).map(([feature, enabled]) => (
-                            <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                              <span className="text-sm text-slate-700 capitalize">{feature}</span>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-xs ${enabled ? "text-green-600" : "text-slate-400"}`}>
-                                  {enabled ? "Enabled" : "Disabled"}
-                                </span>
-                                <div 
-                                  className={`w-2 h-2 rounded-full ${enabled ? "bg-green-500" : "bg-slate-300"}`}
+                      {isEditing && editingItem ? (
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs text-slate-500 block mb-1">Logo URL</label>
+                              <Input
+                                value={editingItem.logo}
+                                onChange={(e) => setEditingItem({ ...editingItem, logo: e.target.value })}
+                                className="h-9"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-slate-500 block mb-1">Primary Color</label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="color"
+                                  value={editingItem.primaryColor}
+                                  onChange={(e) => setEditingItem({ ...editingItem, primaryColor: e.target.value })}
+                                  className="h-9 w-12 p-1 cursor-pointer"
+                                />
+                                <Input
+                                  value={editingItem.primaryColor}
+                                  onChange={(e) => setEditingItem({ ...editingItem, primaryColor: e.target.value })}
+                                  className="h-9 flex-1"
                                 />
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
+
+                          {/* Feature Toggles - Editable */}
+                          <div>
+                            <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
+                            <div className="space-y-3">
+                              {Object.entries(editingItem.features).map(([feature, enabled]) => (
+                                <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                                  <span className="text-sm text-slate-700 capitalize">{feature}</span>
+                                  <Switch
+                                    checked={enabled}
+                                    onCheckedChange={(value) => handleFeatureToggle(feature as keyof MATData["features"], value)}
+                                    className="data-[state=checked]:bg-[#121051]"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-6">
+                            <div>
+                              <span className="text-xs text-slate-500 block mb-1">Logo</span>
+                              <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
+                                <Image
+                                  src={selectedData.logo}
+                                  alt="Logo"
+                                  width={48}
+                                  height={48}
+                                  className="object-contain"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-xs text-slate-500 block mb-1">Primary Color</span>
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-8 h-8 rounded border border-slate-200"
+                                  style={{ backgroundColor: selectedData.primaryColor }}
+                                />
+                                <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Feature Toggles - Read Only */}
+                          <div>
+                            <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
+                            <div className="space-y-3">
+                              {Object.entries(selectedData.features).map(([feature, enabled]) => (
+                                <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                                  <span className="text-sm text-slate-700 capitalize">{feature}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-xs ${enabled ? "text-green-600" : "text-slate-400"}`}>
+                                      {enabled ? "Enabled" : "Disabled"}
+                                    </span>
+                                    <div 
+                                      className={`w-2 h-2 rounded-full ${enabled ? "bg-green-500" : "bg-slate-300"}`}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -649,134 +772,7 @@ export default function OrganisationPage() {
         </div>
       </div>
 
-      {/* Edit Modal */}
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] p-0 flex flex-col">
-          <div className="p-6 pb-4 border-b">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Edit {selectedType === "mat" && !isViewingSchoolInMAT ? "Multi-Academy Trust" : "School"}
-            </h2>
-          </div>
-          
-          {editingItem && (
-            <div className="flex-1 overflow-auto p-6 space-y-6">
-              {/* Basic Info */}
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">Basic Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="text-xs text-slate-500 block mb-1">Name</label>
-                    <Input
-                      value={editingItem.name}
-                      onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
-                      className="h-9"
-                    />
-                  </div>
-                  {"urn" in editingItem && (
-                    <div>
-                      <label className="text-xs text-slate-500 block mb-1">URN</label>
-                      <Input
-                        value={editingItem.urn}
-                        onChange={(e) => setEditingItem({ ...editingItem, urn: e.target.value })}
-                        className="h-9"
-                      />
-                    </div>
-                  )}
-                  <div className="col-span-2">
-                    <label className="text-xs text-slate-500 block mb-1">Address</label>
-                    <Input
-                      value={editingItem.address}
-                      onChange={(e) => setEditingItem({ ...editingItem, address: e.target.value })}
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-500 block mb-1">Phone</label>
-                    <Input
-                      value={editingItem.phone}
-                      onChange={(e) => setEditingItem({ ...editingItem, phone: e.target.value })}
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-500 block mb-1">Email</label>
-                    <Input
-                      value={editingItem.email}
-                      onChange={(e) => setEditingItem({ ...editingItem, email: e.target.value })}
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Branding */}
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">Branding</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-slate-500 block mb-1">Logo URL</label>
-                    <Input
-                      value={editingItem.logo}
-                      onChange={(e) => setEditingItem({ ...editingItem, logo: e.target.value })}
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-500 block mb-1">Primary Color</label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="color"
-                        value={editingItem.primaryColor}
-                        onChange={(e) => setEditingItem({ ...editingItem, primaryColor: e.target.value })}
-                        className="h-9 w-12 p-1 cursor-pointer"
-                      />
-                      <Input
-                        value={editingItem.primaryColor}
-                        onChange={(e) => setEditingItem({ ...editingItem, primaryColor: e.target.value })}
-                        className="h-9 flex-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Features */}
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
-                <div className="space-y-3">
-                  {Object.entries(editingItem.features).map(([feature, enabled]) => (
-                    <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                      <span className="text-sm text-slate-700 capitalize">{feature}</span>
-                      <Switch
-                        checked={enabled}
-                        onCheckedChange={(value) => handleFeatureToggle(feature as keyof MATData["features"], value)}
-                        className="data-[state=checked]:bg-[#121051]"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="p-6 pt-4 border-t flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setEditModalOpen(false)}
-              className="px-4"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveEdit}
-              className="px-4 text-white"
-              style={{ backgroundColor: "#121051" }}
-            >
-              Save
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      
     </div>
   )
 }
