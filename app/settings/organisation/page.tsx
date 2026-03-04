@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus } from "lucide-react"
+import { Plus, ChevronDown } from "lucide-react"
 import { 
   Building2, 
   School, 
@@ -190,6 +190,8 @@ export default function OrganisationPage() {
   const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
   const [newOrgName, setNewOrgName] = useState("")
   const [newOrgExpiry, setNewOrgExpiry] = useState("")
+  const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false)
+  const [schoolsSearch, setSchoolsSearch] = useState("")
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -211,6 +213,16 @@ export default function OrganisationPage() {
     if (!pickerSearch) return allSchools
     const search = pickerSearch.toLowerCase()
     return allSchools.filter(school => 
+      school.name.toLowerCase().includes(search) ||
+      school.urn.toLowerCase().includes(search)
+    )
+  }
+
+  const getFilteredMATSchools = () => {
+    if (!selectedMAT) return []
+    if (!schoolsSearch) return selectedMAT.schools
+    const search = schoolsSearch.toLowerCase()
+    return selectedMAT.schools.filter(school => 
       school.name.toLowerCase().includes(search) ||
       school.urn.toLowerCase().includes(search)
     )
@@ -522,19 +534,74 @@ export default function OrganisationPage() {
                         Schools in Trust ({selectedMAT.schools.length})
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedMAT.schools.map((school) => (
+                    {selectedMAT.schools.length > 10 ? (
+                      /* Dropdown with search for large numbers */
+                      <div className="relative">
                         <button
-                          key={school.id}
-                          onClick={() => handleDrillDownToSchool(school.id)}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-md hover:border-[#121051] hover:bg-slate-50 transition-colors text-sm text-slate-700 group"
+                          onClick={() => {
+                            setSchoolsDropdownOpen(!schoolsDropdownOpen)
+                            setSchoolsSearch("")
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-md hover:border-[#121051] transition-colors text-sm text-slate-700 min-w-[250px]"
                         >
-                          <School className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#121051]" />
-                          <span className="truncate max-w-[200px]">{school.name}</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#121051]" />
+                          <School className="w-4 h-4 text-slate-400" />
+                          <span className="flex-1 text-left">Select a school...</span>
+                          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${schoolsDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
-                      ))}
-                    </div>
+                        {schoolsDropdownOpen && (
+                          <div className="absolute top-full left-0 mt-1 w-[350px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[300px] flex flex-col">
+                            <div className="p-2 border-b">
+                              <Input
+                                placeholder="Search schools..."
+                                value={schoolsSearch}
+                                onChange={(e) => setSchoolsSearch(e.target.value)}
+                                className="h-8"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="overflow-auto flex-1">
+                              {getFilteredMATSchools().length > 0 ? (
+                                getFilteredMATSchools().map((school) => (
+                                  <button
+                                    key={school.id}
+                                    onClick={() => {
+                                      handleDrillDownToSchool(school.id)
+                                      setSchoolsDropdownOpen(false)
+                                      setSchoolsSearch("")
+                                    }}
+                                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                  >
+                                    <School className="w-4 h-4 text-slate-400" />
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-sm text-slate-900 block truncate">{school.name}</span>
+                                      <span className="text-xs text-slate-500">URN: {school.urn}</span>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="p-3 text-sm text-slate-500 text-center">No schools found</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Chips for small numbers */
+                      <div className="flex flex-wrap gap-2">
+                        {selectedMAT.schools.map((school) => (
+                          <button
+                            key={school.id}
+                            onClick={() => handleDrillDownToSchool(school.id)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-md hover:border-[#121051] hover:bg-slate-50 transition-colors text-sm text-slate-700 group"
+                          >
+                            <School className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#121051]" />
+                            <span className="truncate max-w-[200px]">{school.name}</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#121051]" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
