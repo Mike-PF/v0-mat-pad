@@ -46,14 +46,34 @@ const availableOrganisations = [
   { id: "org-5", name: "Sacred Heart School" },
 ]
 
-// Sample roles for dropdown
-const availableRoles = [
-  { id: "role-1", name: "Admin" },
-  { id: "role-2", name: "Teacher" },
-  { id: "role-3", name: "Head Teacher" },
-  { id: "role-4", name: "Data Manager" },
-  { id: "role-5", name: "Viewer" },
-]
+// Sample roles per organisation
+const rolesByOrganisation: Record<string, { id: string; name: string }[]> = {
+  "org-1": [
+    { id: "role-1-1", name: "Admin" },
+    { id: "role-1-2", name: "Trust Leader" },
+    { id: "role-1-3", name: "Data Manager" },
+  ],
+  "org-2": [
+    { id: "role-2-1", name: "Admin" },
+    { id: "role-2-2", name: "Trust Leader" },
+    { id: "role-2-3", name: "Viewer" },
+  ],
+  "org-3": [
+    { id: "role-3-1", name: "Head Teacher" },
+    { id: "role-3-2", name: "Teacher" },
+    { id: "role-3-3", name: "Data Manager" },
+  ],
+  "org-4": [
+    { id: "role-4-1", name: "Head Teacher" },
+    { id: "role-4-2", name: "Teacher" },
+    { id: "role-4-3", name: "Admin" },
+  ],
+  "org-5": [
+    { id: "role-5-1", name: "Head Teacher" },
+    { id: "role-5-2", name: "Teacher" },
+    { id: "role-5-3", name: "Viewer" },
+  ],
+}
 
 export default function DashboardSettingsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
@@ -88,10 +108,15 @@ export default function DashboardSettingsPage() {
     }))
   }
 
-  const handleRoleChange = (id: string, value: string) => {
-    setReports(reports.map(report => 
-      report.id === id ? { ...report, roles: value ? [value] : [] } : report
-    ))
+  const handleRoleToggle = (reportId: string, roleId: string) => {
+    setReports(reports.map(report => {
+      if (report.id !== reportId) return report
+      const currentRoles = report.roles
+      const newRoles = currentRoles.includes(roleId)
+        ? currentRoles.filter(r => r !== roleId)
+        : [...currentRoles, roleId]
+      return { ...report, roles: newRoles }
+    }))
   }
 
   const handleActiveChange = (id: string, value: boolean) => {
@@ -198,22 +223,58 @@ export default function DashboardSettingsPage() {
                           </Popover>
                         </td>
                         <td className="py-4 px-4">
-                          <Select 
-                            value={report.roles[0] || ""} 
-                            onValueChange={(value) => handleRoleChange(report.id, value)}
-                            disabled={report.organisations.length === 0}
-                          >
-                            <SelectTrigger className="h-9 w-[200px] bg-slate-50 border-slate-200">
-                              <SelectValue placeholder={report.organisations.length === 0 ? "Select Organisations First" : "Select Roles..."} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableRoles.map((role) => (
-                                <SelectItem key={role.id} value={role.id}>
-                                  {role.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button 
+                                disabled={report.organisations.length === 0}
+                                className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-50"
+                              >
+                                <span className="truncate text-slate-600">
+                                  {report.organisations.length === 0 
+                                    ? "Select School First"
+                                    : report.roles.length > 0 
+                                      ? `${report.roles.length} selected`
+                                      : "Select Roles..."}
+                                </span>
+                                <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] p-0" align="start">
+                              <div className="max-h-[300px] overflow-auto">
+                                {report.organisations.map((orgId, index) => {
+                                  const org = availableOrganisations.find(o => o.id === orgId)
+                                  const orgRoles = rolesByOrganisation[orgId] || []
+                                  return (
+                                    <div key={orgId}>
+                                      {(report.organisations.length > 1) && (
+                                        <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0">
+                                          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                            {org?.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {orgRoles.map((role) => (
+                                        <label
+                                          key={role.id}
+                                          className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                        >
+                                          <Checkbox
+                                            checked={report.roles.includes(role.id)}
+                                            onCheckedChange={() => handleRoleToggle(report.id, role.id)}
+                                            className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                          />
+                                          <span className="text-sm text-slate-700">{role.name}</span>
+                                        </label>
+                                      ))}
+                                      {index < report.organisations.length - 1 && report.organisations.length > 1 && (
+                                        <div className="border-b border-slate-200" />
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
