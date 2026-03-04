@@ -102,6 +102,10 @@ export default function RolesPage() {
   // Delete confirmation state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
+  
+  // User delete confirmation state
+  const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<{ id: number; name: string } | null>(null)
 
   const selectedOrg = selectedOrganisation 
     ? availableOrganisations.find(o => o.id === selectedOrganisation) 
@@ -220,8 +224,17 @@ export default function RolesPage() {
     )
   }
 
-  const handleRemoveUser = (userId: number) => {
-    setSelectedUsers(prev => prev.filter(id => id !== userId))
+  const handleRemoveUserClick = (user: { id: number; name: string }) => {
+    setUserToDelete(user)
+    setDeleteUserDialogOpen(true)
+  }
+
+  const handleConfirmRemoveUser = () => {
+    if (userToDelete) {
+      setSelectedUsers(prev => prev.filter(id => id !== userToDelete.id))
+    }
+    setDeleteUserDialogOpen(false)
+    setUserToDelete(null)
   }
 
   const handleTogglePermission = (category: string, permissionId: string) => {
@@ -354,8 +367,8 @@ export default function RolesPage() {
                           <td className="py-3 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-3 px-4">
                             <div className="flex justify-end">
-                              <button 
-                                onClick={() => handleRemoveUser(user.id)}
+<button
+                                onClick={() => handleRemoveUserClick({ id: user.id, name: user.name })}
                                 className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -742,7 +755,7 @@ export default function RolesPage() {
             </Card>
           )}
 
-          {/* Delete Confirmation Dialog */}
+          {/* Delete Role Confirmation Dialog */}
           <Dialog open={deleteDialogOpen} onOpenChange={(open) => !open && setDeleteDialogOpen(false)}>
             <DialogContent className="max-w-md">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Delete</h2>
@@ -765,6 +778,34 @@ export default function RolesPage() {
                   style={{ backgroundColor: "#121051" }}
                 >
                   Delete
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Remove User Confirmation Dialog */}
+          <Dialog open={deleteUserDialogOpen} onOpenChange={(open) => !open && setDeleteUserDialogOpen(false)}>
+            <DialogContent className="max-w-md">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Remove User</h2>
+              <div className="py-4">
+                <p className="text-sm text-slate-600">
+                  Are you sure you want to remove <span className="font-semibold text-slate-900">{userToDelete?.name}</span> from this role?
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteUserDialogOpen(false)}
+                  className="px-4"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmRemoveUser}
+                  className="px-4 text-white"
+                  style={{ backgroundColor: "#121051" }}
+                >
+                  Remove
                 </Button>
               </div>
             </DialogContent>
