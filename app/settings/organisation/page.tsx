@@ -198,8 +198,8 @@ export default function OrganisationPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [mats, setMats] = useState<MATData[]>(initialMATs)
   const [standaloneSchools, setStandaloneSchools] = useState<SchoolData[]>(initialStandaloneSchools)
-  const [selectedType, setSelectedType] = useState<"mat" | "school">("mat")
-  const [selectedId, setSelectedId] = useState<string>("")
+  const [selectedType, setSelectedType] = useState<"mat" | "school" | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerSearch, setPickerSearch] = useState("")
   const [isEditing, setIsEditing] = useState(false)
@@ -541,7 +541,7 @@ export default function OrganisationPage() {
             </div>
 
             {/* Schools Navigation Panel - shown when MAT is selected */}
-            {selectedType === "mat" && selectedMAT && (
+            {selectedData && selectedType === "mat" && selectedMAT && (
               <div className="px-4 py-3 border-b bg-slate-50">
                 {isViewingSchoolInMAT ? (
                   /* Back to MAT navigation */
@@ -676,9 +676,10 @@ export default function OrganisationPage() {
               </div>
             )}
 
-            {/* Content */}
+            {/* Content - only shown when organisation is selected */}
+            {selectedData && (
             <CardContent className="flex-1 overflow-auto p-6">
-              {selectedData ? (
+              {selectedData && (
                 <div className="max-w-3xl">
                   {/* Basic Information Tab */}
                   {settingsTab === "basic" && (
@@ -975,15 +976,9 @@ export default function OrganisationPage() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <div className="text-center">
-                    <Settings className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Select an organisation or school to view settings</p>
-                  </div>
-                </div>
               )}
             </CardContent>
+            )}
           </Card>
         </div>
       </div>
