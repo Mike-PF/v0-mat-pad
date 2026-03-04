@@ -200,12 +200,15 @@ export default function RolesPage() {
   }
 
   const handleDeleteClick = (role: Role) => {
+    console.log("[v0] handleDeleteClick called with role:", role)
     setRoleToDelete(role)
     setDeleteDialogOpen(true)
   }
 
   const handleConfirmDelete = () => {
+    console.log("[v0] handleConfirmDelete called, roleToDelete:", roleToDelete)
     if (roleToDelete) {
+      console.log("[v0] Deleting role id:", roleToDelete.id)
       setRoles(roles.filter(r => r.id !== roleToDelete.id))
     }
     setDeleteDialogOpen(false)
@@ -694,11 +697,16 @@ export default function RolesPage() {
                           <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
                           <td className="py-4 px-4">
                             <div className="flex items-center justify-end gap-2">
-                              <TooltipProvider>
+                              <TooltipProvider delayDuration={300}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button 
-                                      onClick={() => handleDeleteClick(role)}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        handleDeleteClick(role)
+                                      }}
                                       className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Trash2 className="w-4 h-4" />
@@ -709,11 +717,16 @@ export default function RolesPage() {
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              <TooltipProvider>
+                              <TooltipProvider delayDuration={300}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button 
-                                      onClick={() => handleEditRole(role)}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        handleEditRole(role)
+                                      }}
                                       className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Pencil className="w-4 h-4" />
