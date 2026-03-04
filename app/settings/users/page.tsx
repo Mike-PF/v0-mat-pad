@@ -527,9 +527,9 @@ export default function UsersPage() {
               setRolesDropdownOpen(false)
             }
           }}>
-            <DialogContent className="max-w-md overflow-visible">
-              <div className="space-y-5">
-                <h2 className="text-lg font-semibold text-slate-900">Update User</h2>
+            <DialogContent className="max-w-md">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Update User</h2>
+              <div className="space-y-4">
                 
                 {/* First Name */}
                 <div>
@@ -705,15 +705,15 @@ export default function UsersPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-4 border-t">
-                  <Button
-                    onClick={handleSaveUser}
-                    className="px-6 text-white"
-                    style={{ backgroundColor: "#121051" }}
-                  >
-                    Save
-                  </Button>
                 </div>
+              <div className="flex justify-end pt-4 border-t">
+                <Button
+                  onClick={handleSaveUser}
+                  className="px-6 text-white"
+                  style={{ backgroundColor: "#121051" }}
+                >
+                  Save
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
