@@ -263,7 +263,7 @@ export default function DashboardSettingsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Type</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Power BI Report Name</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Dashboard Name</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">School</th>
@@ -273,16 +273,13 @@ export default function DashboardSettingsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedReports.map((report) => {
-                      console.log("[v0] report:", report.id, report.reportType)
-                      return (
+                    {paginatedReports.map((report) => (
                       <tr key={report.id} className="border-b border-slate-100">
                         <td className="py-4 px-4">
-                          <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                            report.reportType === "system" 
-                              ? "bg-blue-100 text-blue-700" 
-                              : "bg-slate-100 text-slate-600"
-                          }`}>
+                          <span 
+                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white"
+                            style={{ backgroundColor: report.reportType === "system" ? "#121051" : "#B30089" }}
+                          >
                             {report.reportType === "system" ? "System" : "Own"}
                           </span>
                         </td>
