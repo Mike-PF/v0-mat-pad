@@ -102,7 +102,7 @@ export default function DashboardSettingsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [schoolSearch, setSchoolSearch] = useState<Record<string, string>>({})
   const [roleSearch, setRoleSearch] = useState<Record<string, string>>({})
-  const itemsPerPage = 10
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const filteredReports = reports.filter(report => 
     report.powerBiName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -539,37 +539,97 @@ export default function DashboardSettingsPage() {
                   <span className="text-sm text-slate-600">
                     Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredReports.length)} of {filteredReports.length} results
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="h-8 px-2"
+                      className="h-8 px-3 text-sm font-normal"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      Previous
                     </Button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <Button
-                        key={page}
-                        variant={page === currentPage ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className={`h-8 w-8 ${page === currentPage ? "text-white" : ""}`}
-                        style={page === currentPage ? { backgroundColor: "#121051" } : undefined}
+                    <div className="flex items-center">
+                      {/* First page */}
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
+                          currentPage === 1 
+                            ? "bg-[#121051] text-white" 
+                            : "text-slate-600 hover:bg-slate-100"
+                        }`}
                       >
-                        {page}
-                      </Button>
-                    ))}
+                        1
+                      </button>
+                      
+                      {/* Left ellipsis */}
+                      {currentPage > 3 && (
+                        <span className="h-8 w-8 text-sm flex items-center justify-center text-slate-400">...</span>
+                      )}
+                      
+                      {/* Middle pages */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          if (page === 1 || page === totalPages) return false
+                          if (totalPages <= 7) return true
+                          return page >= currentPage - 1 && page <= currentPage + 1
+                        })
+                        .map(page => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
+                              currentPage === page 
+                                ? "bg-[#121051] text-white" 
+                                : "text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      
+                      {/* Right ellipsis */}
+                      {currentPage < totalPages - 2 && totalPages > 5 && (
+                        <span className="h-8 w-8 text-sm flex items-center justify-center text-slate-400">...</span>
+                      )}
+                      
+                      {/* Last page */}
+                      {totalPages > 1 && (
+                        <button
+                          onClick={() => setCurrentPage(totalPages)}
+                          className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
+                            currentPage === totalPages 
+                              ? "bg-[#121051] text-white" 
+                              : "text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="h-8 px-2"
+                      className="h-8 px-3 text-sm font-normal"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      Next
                     </Button>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value))
+                        setCurrentPage(1)
+                      }}
+                      className="h-8 px-2 pr-8 ml-2 border border-slate-200 rounded-md text-sm text-slate-600 bg-white appearance-none cursor-pointer"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
                   </div>
                 </div>
               )}
