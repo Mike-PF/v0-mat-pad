@@ -527,185 +527,183 @@ export default function UsersPage() {
               setRolesDropdownOpen(false)
             }
           }}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md !block">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Update User</h2>
-              <div className="space-y-4">
-                
-                {/* First Name */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                    First name<span className="text-slate-400">*</span>
-                  </label>
-                  <Input
-                    value={editFirstName}
-                    onChange={(e) => setEditFirstName(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
+              
+              {/* First Name */}
+              <div className="mb-4">
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                  First name<span className="text-slate-400">*</span>
+                </label>
+                <Input
+                  value={editFirstName}
+                  onChange={(e) => setEditFirstName(e.target.value)}
+                  className="h-11"
+                />
+              </div>
 
-                {/* Last Name */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                    Last name<span className="text-slate-400">*</span>
-                  </label>
-                  <Input
-                    value={editLastName}
-                    onChange={(e) => setEditLastName(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
+              {/* Last Name */}
+              <div className="mb-4">
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                  Last name<span className="text-slate-400">*</span>
+                </label>
+                <Input
+                  value={editLastName}
+                  onChange={(e) => setEditLastName(e.target.value)}
+                  className="h-11"
+                />
+              </div>
 
-                {/* Email (disabled) */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                    Email<span className="text-slate-400">*</span>
-                  </label>
-                  <Input
-                    value={editingUser?.email || ""}
-                    disabled
-                    className="h-11 bg-slate-100 text-slate-600"
-                  />
-                </div>
+              {/* Email (disabled) */}
+              <div className="mb-4">
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                  Email<span className="text-slate-400">*</span>
+                </label>
+                <Input
+                  value={editingUser?.email || ""}
+                  disabled
+                  className="h-11 bg-slate-100 text-slate-600"
+                />
+              </div>
 
-                {/* Select Schools */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                    Select school(s)
-                  </label>
-                  <div className="relative" ref={schoolsDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setSchoolsDropdownOpen(!schoolsDropdownOpen)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors text-left h-11"
-                    >
-                      {editAllSchools ? (
-                        <span className="text-sm text-slate-900 flex-1 truncate">All Schools</span>
-                      ) : editSelectedSchools.length > 0 ? (
-                        <>
-                          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
-                            {editSelectedSchools.length}
-                          </span>
-                          <span className="text-sm text-slate-900 flex-1 truncate">
-                            {editSelectedSchools.map(s => s.name).join(", ")}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-sm text-slate-500 flex-1">Select schools...</span>
-                      )}
-                      {(editAllSchools || editSelectedSchools.length > 0) && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditSelectedSchools([])
-                            setEditAllSchools(false)
-                          }}
-                          className="p-0.5 hover:bg-slate-100 rounded"
-                        >
-                          <X className="w-4 h-4 text-slate-400" />
-                        </button>
-                      )}
-                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${schoolsDropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
-
-                    {schoolsDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-[200px] overflow-auto">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditAllSchools(!editAllSchools)
-                            if (!editAllSchools) setEditSelectedSchools([])
-                          }}
-                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                            editAllSchools ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
-                          }`}
-                        >
-                          All Schools
-                        </button>
-                        {schoolsData.map(school => {
-                          const isSelected = editSelectedSchools.some(s => s.urn === school.urn)
-                          return (
-                            <button
-                              key={school.urn}
-                              type="button"
-                              onClick={() => {
-                                if (editAllSchools) setEditAllSchools(false)
-                                toggleSchool(school)
-                              }}
-                              className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                                isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
-                              }`}
-                            >
-                              {school.name}
-                            </button>
-                          )
-                        })}
-                      </div>
+              {/* Select Schools */}
+              <div className="mb-4">
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                  Select school(s)
+                </label>
+                <div className="relative" ref={schoolsDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setSchoolsDropdownOpen(!schoolsDropdownOpen)}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors text-left h-11"
+                  >
+                    {editAllSchools ? (
+                      <span className="text-sm text-slate-900 flex-1 truncate">All Schools</span>
+                    ) : editSelectedSchools.length > 0 ? (
+                      <>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
+                          {editSelectedSchools.length}
+                        </span>
+                        <span className="text-sm text-slate-900 flex-1 truncate">
+                          {editSelectedSchools.map(s => s.name).join(", ")}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-slate-500 flex-1">Select schools...</span>
                     )}
-                  </div>
-                </div>
-
-                {/* Select Roles */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                    Select role(s)
-                  </label>
-                  <div className="relative" ref={rolesDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setRolesDropdownOpen(!rolesDropdownOpen)}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors text-left h-11"
-                    >
-                      {editSelectedRoles.length > 0 ? (
-                        <>
-                          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
-                            {editSelectedRoles.length}
-                          </span>
-                          <span className="text-sm text-slate-900 flex-1 truncate">
-                            {editSelectedRoles.join(", ")}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-sm text-slate-500 flex-1">Select roles...</span>
-                      )}
-                      {editSelectedRoles.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditSelectedRoles([])
-                          }}
-                          className="p-0.5 hover:bg-slate-100 rounded"
-                        >
-                          <X className="w-4 h-4 text-slate-400" />
-                        </button>
-                      )}
-                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${rolesDropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
-
-                    {rolesDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-[200px] overflow-auto">
-                        {availableRoles.map(role => {
-                          const isSelected = editSelectedRoles.includes(role)
-                          return (
-                            <button
-                              key={role}
-                              type="button"
-                              onClick={() => toggleRole(role)}
-                              className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                                isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
-                              }`}
-                            >
-                              {role}
-                            </button>
-                          )
-                        })}
-                      </div>
+                    {(editAllSchools || editSelectedSchools.length > 0) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditSelectedSchools([])
+                          setEditAllSchools(false)
+                        }}
+                        className="p-0.5 hover:bg-slate-100 rounded"
+                      >
+                        <X className="w-4 h-4 text-slate-400" />
+                      </button>
                     )}
-                  </div>
-                </div>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${schoolsDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
 
+                  {schoolsDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-[200px] overflow-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditAllSchools(!editAllSchools)
+                          if (!editAllSchools) setEditSelectedSchools([])
+                        }}
+                        className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                          editAllSchools ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                        }`}
+                      >
+                        All Schools
+                      </button>
+                      {schoolsData.map(school => {
+                        const isSelected = editSelectedSchools.some(s => s.urn === school.urn)
+                        return (
+                          <button
+                            key={school.urn}
+                            type="button"
+                            onClick={() => {
+                              if (editAllSchools) setEditAllSchools(false)
+                              toggleSchool(school)
+                            }}
+                            className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                              isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            }`}
+                          >
+                            {school.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
+              </div>
+
+              {/* Select Roles */}
+              <div className="mb-4">
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                  Select role(s)
+                </label>
+                <div className="relative" ref={rolesDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setRolesDropdownOpen(!rolesDropdownOpen)}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors text-left h-11"
+                  >
+                    {editSelectedRoles.length > 0 ? (
+                      <>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
+                          {editSelectedRoles.length}
+                        </span>
+                        <span className="text-sm text-slate-900 flex-1 truncate">
+                          {editSelectedRoles.join(", ")}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-slate-500 flex-1">Select roles...</span>
+                    )}
+                    {editSelectedRoles.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditSelectedRoles([])
+                        }}
+                        className="p-0.5 hover:bg-slate-100 rounded"
+                      >
+                        <X className="w-4 h-4 text-slate-400" />
+                      </button>
+                    )}
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${rolesDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {rolesDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-[200px] overflow-auto">
+                      {availableRoles.map(role => {
+                        const isSelected = editSelectedRoles.includes(role)
+                        return (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => toggleRole(role)}
+                            className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                              isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            }`}
+                          >
+                            {role}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex justify-end pt-4 border-t">
                 <Button
                   onClick={handleSaveUser}
