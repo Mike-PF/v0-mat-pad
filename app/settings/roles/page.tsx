@@ -129,13 +129,13 @@ export default function RolesPage() {
                                   setOrgSearch("")
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                                  selectedOrganisation === mat.id ? "bg-slate-100" : ""
+                                  selectedOrganisation === mat.id ? "bg-[#121051]/10" : ""
                                 }`}
                               >
-                                <span className="text-sm text-slate-900 flex-1 text-left truncate">
+                                <span className={`text-sm flex-1 text-left truncate ${selectedOrganisation === mat.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
                                   {mat.name}
                                 </span>
-                                <span className="text-xs text-slate-500">
+                                <span className={`text-xs ${selectedOrganisation === mat.id ? "text-[#121051]" : "text-slate-500"}`}
                                   {mat.schoolCount} schools
                                 </span>
                               </button>
@@ -160,15 +160,15 @@ export default function RolesPage() {
                                   setOrgSearch("")
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                                  selectedOrganisation === school.id ? "bg-slate-100" : ""
+                                  selectedOrganisation === school.id ? "bg-[#121051]/10" : ""
                                 }`}
                               >
                                 <div className="flex-1 text-left min-w-0">
-                                  <span className="text-sm text-slate-900 block truncate">
+                                  <span className={`text-sm block truncate ${selectedOrganisation === school.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
                                     {school.name}
                                   </span>
                                   {school.matName && (
-                                    <span className="text-xs text-slate-500 truncate block">
+                                    <span className={`text-xs truncate block ${selectedOrganisation === school.id ? "text-[#121051]" : "text-slate-500"}`}
                                       {school.matName}
                                     </span>
                                   )}

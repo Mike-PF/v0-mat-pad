@@ -325,7 +325,7 @@ export default function DashboardSettingsPage() {
                                               key={org.id}
                                               onClick={() => handleMATSelect(report.id, org.id)}
                                               className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
-                                                report.organisations.includes(org.id) ? "bg-slate-50" : ""
+                                                report.organisations.includes(org.id) ? "bg-[#121051]/10" : ""
                                               }`}
                                             >
                                               <span className={`text-sm ${report.organisations.includes(org.id) ? "text-[#121051] font-medium" : "text-slate-900"}`}>

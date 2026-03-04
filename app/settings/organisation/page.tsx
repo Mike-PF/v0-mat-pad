@@ -402,13 +402,13 @@ export default function OrganisationPage() {
                               key={mat.id}
                               onClick={() => handleSelect("mat", mat.id)}
                               className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                                selectedType === "mat" && selectedId === mat.id ? "bg-slate-100" : ""
+                                selectedType === "mat" && selectedId === mat.id ? "bg-[#121051]/10" : ""
                               }`}
                             >
-                              <span className="text-sm text-slate-900 flex-1 text-left truncate">
+                              <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
                                 {mat.name}
                               </span>
-                              <span className="text-xs text-slate-500">
+                              <span className={`text-xs ${selectedType === "mat" && selectedId === mat.id ? "text-[#121051]" : "text-slate-500"}`}
                                 {mat.schools.length} schools
                               </span>
                             </button>
@@ -431,15 +431,15 @@ export default function OrganisationPage() {
                                 key={school.id}
                                 onClick={() => handleSelect("school", school.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                                  selectedType === "school" && selectedId === school.id ? "bg-slate-100" : ""
+                                  selectedType === "school" && selectedId === school.id ? "bg-[#121051]/10" : ""
                                 }`}
                               >
                                 <div className="flex-1 text-left min-w-0">
-                                  <span className="text-sm text-slate-900 block truncate">
+                                  <span className={`text-sm block truncate ${selectedType === "school" && selectedId === school.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
                                     {school.name}
                                   </span>
                                   {parentMAT && (
-                                    <span className="text-xs text-slate-500 truncate block">
+                                    <span className={`text-xs truncate block ${selectedType === "school" && selectedId === school.id ? "text-[#121051]" : "text-slate-500"}`}
                                       {parentMAT.name}
                                     </span>
                                   )}
