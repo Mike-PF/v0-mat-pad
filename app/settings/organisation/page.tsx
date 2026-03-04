@@ -534,7 +534,7 @@ export default function OrganisationPage() {
                         Schools in Trust ({selectedMAT.schools.length})
                       </span>
                     </div>
-                    {selectedMAT.schools.length > 10 ? (
+                    {selectedMAT.schools.length > 3 ? (
                       /* Dropdown with search for large numbers */
                       <div className="relative">
                         <button
