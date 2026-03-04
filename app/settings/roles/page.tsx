@@ -223,9 +223,8 @@ export default function RolesPage() {
               <CardContent className="py-4">
                 <h3 className="text-sm font-semibold text-[#121051] mb-4">Users</h3>
                 
-                {/* Users Label and Dropdown */}
-                <div className="mb-4">
-                  <label className="text-sm text-slate-700 block mb-2">Users</label>
+                {/* Users Dropdown and Search Row */}
+                <div className="flex items-center justify-between mb-4">
                   <div className="relative" ref={userDropdownRef}>
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -275,6 +274,15 @@ export default function RolesPage() {
                       </div>
                     )}
                   </div>
+                  <Input
+                    placeholder="Search..."
+                    value={userSearch}
+                    onChange={(e) => {
+                      setUserSearch(e.target.value)
+                      setUserPage(1)
+                    }}
+                    className="w-[200px] h-9 bg-white border-slate-200"
+                  />
                 </div>
 
                 {/* Users Table */}
@@ -284,17 +292,7 @@ export default function RolesPage() {
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700 w-[45%]">Email/Login</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Name</th>
-                        <th className="py-3 px-4 w-[200px]">
-                          <Input
-                            placeholder="Search..."
-                            value={userSearch}
-                            onChange={(e) => {
-                              setUserSearch(e.target.value)
-                              setUserPage(1)
-                            }}
-                            className="h-8 text-sm"
-                          />
-                        </th>
+                        <th className="py-3 px-4 w-[100px]"></th>
                       </tr>
                     </thead>
                     <tbody>
