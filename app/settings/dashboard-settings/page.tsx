@@ -20,6 +20,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { ChevronDown } from "lucide-react"
 
 // Sample Power BI reports data
@@ -166,6 +172,7 @@ export default function DashboardSettingsPage() {
   }
 
   return (
+    <TooltipProvider delayDuration={300}>
     <div className="flex h-screen bg-slate-100">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
       
@@ -217,93 +224,145 @@ export default function DashboardSettingsPage() {
                           />
                         </td>
                         <td className="py-4 px-4">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button 
-                                title={report.organisations.length > 0 ? getSelectedSchoolNames(report.organisations) : undefined}
-                                className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors"
-                              >
-                                <span className="truncate text-slate-600">
-                                  {report.organisations.length > 0 
-                                    ? `${report.organisations.length} selected`
-                                    : "Select School..."}
-                                </span>
-                                <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[280px] p-0" align="start">
-                              <div className="max-h-[250px] overflow-auto">
-                                {availableOrganisations.map((org) => (
-                                  <label
-                                    key={org.id}
-                                    className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
-                                  >
-                                    <Checkbox
-                                      checked={report.organisations.includes(org.id)}
-                                      onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
-                                      className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
-                                    />
-                                    <span className="text-sm text-slate-700">{org.name}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button 
-                                disabled={report.organisations.length === 0}
-                                title={report.roles.length > 0 ? getSelectedRoleNames(report) : undefined}
-                                className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-50"
-                              >
-                                <span className="truncate text-slate-600">
-                                  {report.organisations.length === 0 
-                                    ? "Select School First"
-                                    : report.roles.length > 0 
-                                      ? `${report.roles.length} selected`
-                                      : "Select Roles..."}
-                                </span>
-                                <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[280px] p-0" align="start">
-                              <div className="max-h-[300px] overflow-auto">
-                                {report.organisations.map((orgId, index) => {
-                                  const org = availableOrganisations.find(o => o.id === orgId)
-                                  const orgRoles = rolesByOrganisation[orgId] || []
-                                  return (
-                                    <div key={orgId}>
-                                      {(report.organisations.length > 1) && (
-                                        <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0">
-                                          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                                            {org?.name}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {orgRoles.map((role) => (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <button 
+                                      className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors"
+                                    >
+                                      <span className="truncate text-slate-600">
+                                        {report.organisations.length > 0 
+                                          ? `${report.organisations.length} selected`
+                                          : "Select School..."}
+                                      </span>
+                                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[280px] p-0" align="start">
+                                    <div className="max-h-[250px] overflow-auto">
+                                      {availableOrganisations.map((org) => (
                                         <label
-                                          key={role.id}
+                                          key={org.id}
                                           className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
                                         >
                                           <Checkbox
-                                            checked={report.roles.includes(role.id)}
-                                            onCheckedChange={() => handleRoleToggle(report.id, role.id)}
+                                            checked={report.organisations.includes(org.id)}
+                                            onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
                                             className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
                                           />
-                                          <span className="text-sm text-slate-700">{role.name}</span>
+                                          <span className="text-sm text-slate-700">{org.name}</span>
                                         </label>
                                       ))}
-                                      {index < report.organisations.length - 1 && report.organisations.length > 1 && (
-                                        <div className="border-b border-slate-200" />
-                                      )}
                                     </div>
-                                  )
-                                })}
+                                  </PopoverContent>
+                                </Popover>
                               </div>
-                            </PopoverContent>
-                          </Popover>
+                            </TooltipTrigger>
+                            {report.organisations.length > 0 && (
+                              <TooltipContent side="top" className="max-w-[300px]">
+                                <ul className="space-y-1">
+                                  {report.organisations.map(orgId => {
+                                    const org = availableOrganisations.find(o => o.id === orgId)
+                                    return (
+                                      <li key={orgId} className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                        {org?.name}
+                                      </li>
+                                    )
+                                  })}
+                                </ul>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <button 
+                                      disabled={report.organisations.length === 0}
+                                      className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-50"
+                                    >
+                                      <span className="truncate text-slate-600">
+                                        {report.organisations.length === 0 
+                                          ? "Select School First"
+                                          : report.roles.length > 0 
+                                            ? `${report.roles.length} selected`
+                                            : "Select Roles..."}
+                                      </span>
+                                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[280px] p-0" align="start">
+                                    <div className="max-h-[300px] overflow-auto">
+                                      {report.organisations.map((orgId, index) => {
+                                        const org = availableOrganisations.find(o => o.id === orgId)
+                                        const orgRoles = rolesByOrganisation[orgId] || []
+                                        return (
+                                          <div key={orgId}>
+                                            {(report.organisations.length > 1) && (
+                                              <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0">
+                                                <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                                  {org?.name}
+                                                </span>
+                                              </div>
+                                            )}
+                                            {orgRoles.map((role) => (
+                                              <label
+                                                key={role.id}
+                                                className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                              >
+                                                <Checkbox
+                                                  checked={report.roles.includes(role.id)}
+                                                  onCheckedChange={() => handleRoleToggle(report.id, role.id)}
+                                                  className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                                />
+                                                <span className="text-sm text-slate-700">{role.name}</span>
+                                              </label>
+                                            ))}
+                                            {index < report.organisations.length - 1 && report.organisations.length > 1 && (
+                                              <div className="border-b border-slate-200" />
+                                            )}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                            </TooltipTrigger>
+                            {report.roles.length > 0 && (
+                              <TooltipContent side="top" className="max-w-[350px]">
+                                <div className="space-y-2">
+                                  {report.organisations.map(orgId => {
+                                    const org = availableOrganisations.find(o => o.id === orgId)
+                                    const orgRoles = rolesByOrganisation[orgId] || []
+                                    const selectedOrgRoles = orgRoles.filter(r => report.roles.includes(r.id))
+                                    if (selectedOrgRoles.length === 0) return null
+                                    return (
+                                      <div key={orgId}>
+                                        {report.organisations.length > 1 && (
+                                          <div className="text-xs font-semibold text-slate-300 mb-1">{org?.name}</div>
+                                        )}
+                                        <ul className="space-y-0.5">
+                                          {selectedOrgRoles.map(role => (
+                                            <li key={role.id} className="flex items-center gap-2 text-sm">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                              {role.name}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
@@ -336,5 +395,6 @@ export default function DashboardSettingsPage() {
         </main>
       </div>
     </div>
+    </TooltipProvider>
   )
 }
