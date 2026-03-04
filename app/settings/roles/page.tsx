@@ -311,7 +311,7 @@ export default function RolesPage() {
                             <button
                               key={user.id}
                               onClick={() => handleToggleUser(user.id)}
-                              className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors text-left ${
+                              className={`w-full flex items-center px-4 py-2.5 transition-colors text-left ${
                                 isSelected 
                                   ? "bg-[#B30089]" 
                                   : "hover:bg-slate-100"
@@ -319,9 +319,6 @@ export default function RolesPage() {
                             >
                               <span className={`text-sm font-medium ${isSelected ? "text-white" : "text-slate-900"}`}>
                                 {user.name}
-                              </span>
-                              <span className={`text-xs ${isSelected ? "text-white/80" : "text-slate-500"}`}>
-                                ({user.email})
                               </span>
                             </button>
                           )
