@@ -32,7 +32,7 @@ const schoolsData = [
   { urn: "149190", name: "Holy Family Catholic Academy" },
 ]
 
-// Available roles
+// Available roles with their permissions
 const availableRoles = [
   "User",
   "Admin",
@@ -42,6 +42,39 @@ const availableRoles = [
   "Preview",
   "User Admin",
 ]
+
+// Role permissions mapping
+const rolePermissions: Record<string, { category: string; permissions: string[] }[]> = {
+  "User": [
+    { category: "Dashboards", permissions: ["View dashboards"] },
+    { category: "Reports", permissions: ["View reports"] },
+  ],
+  "Admin": [
+    { category: "Admin", permissions: ["Allow user management", "Manage Roles", "Manage users", "Manage users schools", "View system settings"] },
+    { category: "Dashboards", permissions: ["View dashboards"] },
+    { category: "Reports", permissions: ["Report Manager", "View reports"] },
+  ],
+  "Finance": [
+    { category: "Reports", permissions: ["View reports", "Report Manager"] },
+    { category: "Uploads", permissions: ["Upload data files"] },
+  ],
+  "Finance Data": [
+    { category: "Reports", permissions: ["View reports"] },
+    { category: "Uploads", permissions: ["Upload data files"] },
+  ],
+  "CPOMS Data": [
+    { category: "Reports", permissions: ["View reports"] },
+    { category: "Uploads", permissions: ["Upload data files"] },
+  ],
+  "Preview": [
+    { category: "Dashboards", permissions: ["View dashboards"] },
+    { category: "Reports", permissions: ["View reports"] },
+  ],
+  "User Admin": [
+    { category: "Admin", permissions: ["Allow user management", "Manage users", "Manage users schools"] },
+    { category: "Dashboards", permissions: ["View dashboards"] },
+  ],
+}
 
 // Sample users data matching the image
 const initialUsers: User[] = [
@@ -433,7 +466,40 @@ export default function UsersPage() {
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
-                            {user.roles.join(", ")}
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button type="button" className="text-left hover:text-[#B30089] transition-colors">
+                                    {user.roles.join(", ")}
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="max-w-md p-0">
+                                  <div className="p-3 max-h-[300px] overflow-auto">
+                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Role Permissions</div>
+                                    {user.roles.map((role, roleIdx) => {
+                                      const perms = rolePermissions[role]
+                                      return (
+                                        <div key={roleIdx} className={roleIdx > 0 ? "mt-3 pt-3 border-t" : ""}>
+                                          <div className="font-medium text-sm text-slate-900 mb-1">{role}</div>
+                                          {perms ? (
+                                            <div className="space-y-1">
+                                              {perms.map((cat, catIdx) => (
+                                                <div key={catIdx}>
+                                                  <span className="text-xs font-medium text-slate-500">{cat.category}:</span>
+                                                  <span className="text-xs text-slate-600 ml-1">{cat.permissions.join(", ")}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <span className="text-xs text-slate-400">No permissions defined</span>
+                                          )}
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-600">
                             {user.schools === "all" ? (
