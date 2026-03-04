@@ -43,37 +43,24 @@ const availableRoles = [
   "User Admin",
 ]
 
-// Role permissions mapping
-const rolePermissions: Record<string, { category: string; permissions: string[] }[]> = {
-  "User": [
-    { category: "Dashboards", permissions: ["View dashboards"] },
-    { category: "Reports", permissions: ["View reports"] },
-  ],
-  "Admin": [
-    { category: "Admin", permissions: ["Allow user management", "Manage Roles", "Manage users", "Manage users schools", "View system settings"] },
-    { category: "Dashboards", permissions: ["View dashboards"] },
-    { category: "Reports", permissions: ["Report Manager", "View reports"] },
-  ],
-  "Finance": [
-    { category: "Reports", permissions: ["View reports", "Report Manager"] },
-    { category: "Uploads", permissions: ["Upload data files"] },
-  ],
-  "Finance Data": [
-    { category: "Reports", permissions: ["View reports"] },
-    { category: "Uploads", permissions: ["Upload data files"] },
-  ],
-  "CPOMS Data": [
-    { category: "Reports", permissions: ["View reports"] },
-    { category: "Uploads", permissions: ["Upload data files"] },
-  ],
-  "Preview": [
-    { category: "Dashboards", permissions: ["View dashboards"] },
-    { category: "Reports", permissions: ["View reports"] },
-  ],
-  "User Admin": [
-    { category: "Admin", permissions: ["Allow user management", "Manage users", "Manage users schools"] },
-    { category: "Dashboards", permissions: ["View dashboards"] },
-  ],
+// All permission categories and their permissions
+const allPermissionCategories = [
+  { category: "Admin", permissions: ["Allow user management", "Manage Roles", "Manage users", "Manage users schools", "View system settings"] },
+  { category: "Dashboards", permissions: ["View dashboards", "Edit dashboards"] },
+  { category: "Q+A", permissions: ["Ask questions", "View Q+A history"] },
+  { category: "Reports", permissions: ["View reports", "Report Manager", "Export reports"] },
+  { category: "Uploads", permissions: ["Upload data files", "View upload history"] },
+]
+
+// Role permissions mapping - which permissions each role has
+const rolePermissions: Record<string, string[]> = {
+  "User": ["View dashboards", "View reports"],
+  "Admin": ["Allow user management", "Manage Roles", "Manage users", "Manage users schools", "View system settings", "View dashboards", "Edit dashboards", "Report Manager", "View reports", "Export reports"],
+  "Finance": ["View reports", "Report Manager", "Export reports", "Upload data files"],
+  "Finance Data": ["View reports", "Upload data files", "View upload history"],
+  "CPOMS Data": ["View reports", "Upload data files"],
+  "Preview": ["View dashboards", "View reports"],
+  "User Admin": ["Allow user management", "Manage users", "Manage users schools", "View dashboards"],
 }
 
 // Sample users data matching the image
@@ -144,6 +131,10 @@ export default function UsersPage() {
   const [editSelectedRoles, setEditSelectedRoles] = useState<string[]>([])
   const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false)
   const [rolesDropdownOpen, setRolesDropdownOpen] = useState(false)
+  
+  // Permissions modal state
+  const [permissionsModalOpen, setPermissionsModalOpen] = useState(false)
+  const [viewingUserRoles, setViewingUserRoles] = useState<string[]>([])
   
   const pickerRef = useRef<HTMLDivElement>(null)
   const schoolsDropdownRef = useRef<HTMLDivElement>(null)
@@ -233,6 +224,21 @@ export default function UsersPage() {
     }
     setEditSelectedRoles(user.roles)
     setEditUserOpen(true)
+  }
+
+  // Get combined permissions for a set of roles
+  const getCombinedPermissions = (roles: string[]): Set<string> => {
+    const combined = new Set<string>()
+    roles.forEach(role => {
+      const perms = rolePermissions[role] || []
+      perms.forEach(p => combined.add(p))
+    })
+    return combined
+  }
+
+  const handleViewPermissions = (roles: string[]) => {
+    setViewingUserRoles(roles)
+    setPermissionsModalOpen(true)
   }
 
   const handleSaveUser = () => {
@@ -466,40 +472,13 @@ export default function UsersPage() {
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
-                            <TooltipProvider delayDuration={300}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button type="button" className="text-left hover:text-[#B30089] transition-colors">
-                                    {user.roles.join(", ")}
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" align="start" className="max-w-md p-0">
-                                  <div className="p-3 max-h-[300px] overflow-auto">
-                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Role Permissions</div>
-                                    {user.roles.map((role, roleIdx) => {
-                                      const perms = rolePermissions[role]
-                                      return (
-                                        <div key={roleIdx} className={roleIdx > 0 ? "mt-3 pt-3 border-t" : ""}>
-                                          <div className="font-medium text-sm text-slate-900 mb-1">{role}</div>
-                                          {perms ? (
-                                            <div className="space-y-1">
-                                              {perms.map((cat, catIdx) => (
-                                                <div key={catIdx}>
-                                                  <span className="text-xs font-medium text-slate-500">{cat.category}:</span>
-                                                  <span className="text-xs text-slate-600 ml-1">{cat.permissions.join(", ")}</span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          ) : (
-                                            <span className="text-xs text-slate-400">No permissions defined</span>
-                                          )}
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <button 
+                              type="button" 
+                              onClick={() => handleViewPermissions(user.roles)}
+                              className="text-left hover:text-[#B30089] transition-colors underline decoration-dotted underline-offset-2"
+                            >
+                              {user.roles.join(", ")}
+                            </button>
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-600">
                             {user.schools === "all" ? (
@@ -808,6 +787,67 @@ export default function UsersPage() {
                   style={{ backgroundColor: "#121051" }}
                 >
                   Save
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Permissions Modal */}
+          <Dialog open={permissionsModalOpen} onOpenChange={setPermissionsModalOpen}>
+            <DialogContent className="max-w-2xl !block">
+              <h2 className="text-lg font-semibold text-slate-900 mb-2">Role Permissions</h2>
+              <p className="text-sm text-slate-500 mb-4">
+                Showing permissions for: <span className="font-medium text-slate-700">{viewingUserRoles.join(", ")}</span>
+              </p>
+              
+              <div className="space-y-4 max-h-[60vh] overflow-auto">
+                {allPermissionCategories.map((cat) => {
+                  const combinedPerms = getCombinedPermissions(viewingUserRoles)
+                  return (
+                    <div key={cat.category} className="border rounded-lg overflow-hidden">
+                      <div className="bg-slate-50 px-4 py-2 border-b">
+                        <h3 className="text-sm font-semibold text-slate-700">{cat.category}</h3>
+                      </div>
+                      <div className="divide-y">
+                        {cat.permissions.map((perm) => {
+                          const isEnabled = combinedPerms.has(perm)
+                          // Find which roles grant this permission
+                          const grantingRoles = viewingUserRoles.filter(role => 
+                            rolePermissions[role]?.includes(perm)
+                          )
+                          return (
+                            <div key={perm} className="flex items-center justify-between px-4 py-3">
+                              <div className="flex-1">
+                                <span className={`text-sm ${isEnabled ? "text-slate-900" : "text-slate-400"}`}>
+                                  {perm}
+                                </span>
+                                {isEnabled && grantingRoles.length > 0 && (
+                                  <span className="text-xs text-slate-400 ml-2">
+                                    (via {grantingRoles.join(", ")})
+                                  </span>
+                                )}
+                              </div>
+                              <div className={`w-8 h-5 rounded-full flex items-center px-0.5 transition-colors ${
+                                isEnabled ? "bg-green-500 justify-end" : "bg-slate-200 justify-start"
+                              }`}>
+                                <div className="w-4 h-4 rounded-full bg-white shadow-sm" />
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex justify-end pt-4 border-t mt-4">
+                <Button
+                  onClick={() => setPermissionsModalOpen(false)}
+                  className="px-6 text-white"
+                  style={{ backgroundColor: "#121051" }}
+                >
+                  Close
                 </Button>
               </div>
             </DialogContent>
