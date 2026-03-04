@@ -502,15 +502,24 @@ export default function DashboardSettingsPage() {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <Button
-                            onClick={() => handleSave(report.id)}
-                            size="sm"
-                            disabled={!hasChanges(report)}
-                            className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100"
-                            style={{ backgroundColor: hasChanges(report) ? "#121051" : undefined }}
-                          >
-                            Save
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => handleSave(report.id)}
+                              size="sm"
+                              disabled={!hasChanges(report)}
+                              className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100"
+                              style={{ backgroundColor: hasChanges(report) ? "#121051" : undefined }}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
