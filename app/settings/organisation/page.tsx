@@ -44,6 +44,8 @@ interface SchoolData {
   secondaryColor: string
   powerBiLoginEmail?: string
   matId?: string
+  createdDate: string
+  expiryDate: string
 }
 
 interface MATData {
@@ -57,6 +59,8 @@ interface MATData {
   primaryColor: string
   secondaryColor: string
   powerBiLoginEmail?: string
+  createdDate: string
+  expiryDate: string
   schools: SchoolData[]
 }
 
@@ -73,6 +77,8 @@ const initialMATs: MATData[] = [
     primaryColor: "#121051",
     secondaryColor: "#4A90D9",
     powerBiLoginEmail: "reports@stclaremat.org",
+    createdDate: "2021-03-15",
+    expiryDate: "2027-03-15",
     schools: [
       {
         id: "school-1",
@@ -87,6 +93,8 @@ const initialMATs: MATData[] = [
         secondaryColor: "#4A90D9",
         powerBiLoginEmail: "reports@allsaints.org",
         matId: "mat-1",
+        createdDate: "2021-03-15",
+        expiryDate: "2027-03-15",
       },
       {
         id: "school-2",
@@ -100,6 +108,8 @@ const initialMATs: MATData[] = [
         primaryColor: "#121051",
         secondaryColor: "#4A90D9",
         matId: "mat-1",
+        createdDate: "2021-06-20",
+        expiryDate: "2027-06-20",
       },
       {
         id: "school-3",
@@ -114,6 +124,8 @@ const initialMATs: MATData[] = [
         secondaryColor: "#60A5FA",
         powerBiLoginEmail: "reports@notredame.org",
         matId: "mat-1",
+        createdDate: "2022-01-10",
+        expiryDate: "2028-01-10",
       },
     ],
   },
@@ -127,6 +139,8 @@ const initialMATs: MATData[] = [
     logo: "/placeholder.svg",
     primaryColor: "#059669",
     secondaryColor: "#34D399",
+    createdDate: "2020-09-01",
+    expiryDate: "2026-09-01",
     schools: [
       {
         id: "school-4",
@@ -140,6 +154,8 @@ const initialMATs: MATData[] = [
         primaryColor: "#059669",
         secondaryColor: "#34D399",
         matId: "mat-2",
+        createdDate: "2020-09-01",
+        expiryDate: "2026-09-01",
       },
     ],
   },
@@ -159,6 +175,8 @@ const initialStandaloneSchools: SchoolData[] = [
     primaryColor: "#dc2626",
     secondaryColor: "#F87171",
     powerBiLoginEmail: "reports@stalbans.org",
+    createdDate: "2019-04-12",
+    expiryDate: "2025-04-12",
   },
   {
     id: "standalone-2",
@@ -171,6 +189,8 @@ const initialStandaloneSchools: SchoolData[] = [
     logo: "/placeholder.svg",
     primaryColor: "#7c3aed",
     secondaryColor: "#A78BFA",
+    createdDate: "2022-08-30",
+    expiryDate: "2028-08-30",
   },
 ]
 
@@ -726,6 +746,23 @@ export default function OrganisationPage() {
                               className="h-9"
                             />
                           </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Organisation Created Date</label>
+                            <Input
+                              value={new Date(editingItem.createdDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              disabled
+                              className="h-9 bg-slate-50 text-slate-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Expiry Date</label>
+                            <Input
+                              type="date"
+                              value={editingItem.expiryDate}
+                              onChange={(e) => setEditingItem({ ...editingItem, expiryDate: e.target.value })}
+                              className="h-9"
+                            />
+                          </div>
                         </div>
                       ) : (
                         <div className="grid grid-cols-2 gap-4">
@@ -757,6 +794,18 @@ export default function OrganisationPage() {
                           <div>
                             <span className="text-xs text-slate-500">Email</span>
                             <p className="text-sm text-slate-900">{selectedData.email}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500">Organisation Created Date</span>
+                            <p className="text-sm text-slate-900">
+                              {new Date(selectedData.createdDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500">Expiry Date</span>
+                            <p className="text-sm text-slate-900">
+                              {new Date(selectedData.expiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
                           </div>
                         </div>
                       )}
