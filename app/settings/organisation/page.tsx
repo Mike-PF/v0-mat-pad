@@ -460,6 +460,17 @@ export default function OrganisationPage() {
                   </div>
                 )}
               </div>
+              {selectedData && (
+                <button
+                  onClick={() => {
+                    setSelectedType(null)
+                    setSelectedId(null)
+                  }}
+                  className="text-sm text-[#121051] hover:underline"
+                >
+                  Clear Selection
+                </button>
+              )}
 
               <div className="flex gap-2">
                 {selectedData ? (
