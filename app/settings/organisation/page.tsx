@@ -352,6 +352,7 @@ export default function OrganisationPage() {
           <Card className="h-full flex flex-col">
             {/* Picker Header */}
             <div className="p-4 border-b flex items-center justify-between">
+              <div className="flex items-center gap-4">
               <div className="relative">
                 <button
                   onClick={() => setPickerOpen(!pickerOpen)}
@@ -471,6 +472,7 @@ export default function OrganisationPage() {
                   Clear Selection
                 </button>
               )}
+              </div>
 
               <div className="flex gap-2">
                 {selectedData ? (
