@@ -19,13 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, ChevronDown } from "lucide-react"
 import { 
+  Plus,
+  ChevronDown,
   Building2, 
   School, 
   Settings,
   Pencil,
-  ChevronDown,
   ChevronRight,
   ArrowLeft
 } from "lucide-react"
