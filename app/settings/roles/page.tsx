@@ -206,10 +206,9 @@ export default function RolesPage() {
                 {/* Header with Add Role button */}
                 <div className="flex items-center justify-end mb-6">
                   <Button 
-                    className="text-white gap-2"
+                    className="text-white"
                     style={{ backgroundColor: "#121051" }}
                   >
-                    <Plus className="w-4 h-4" />
                     Add role
                   </Button>
                 </div>
