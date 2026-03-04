@@ -8,7 +8,18 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Plus } from "lucide-react"
 import { 
   Building2, 
   School, 
@@ -209,6 +220,10 @@ export default function OrganisationPage() {
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
   const [settingsTab, setSettingsTab] = useState<"basic" | "branding">("basic")
+  const [addModalOpen, setAddModalOpen] = useState(false)
+  const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
+  const [newOrgName, setNewOrgName] = useState("")
+  const [newOrgExpiry, setNewOrgExpiry] = useState("")
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -290,6 +305,20 @@ export default function OrganisationPage() {
   const handleCancelEdit = () => {
     setIsEditing(false)
     setEditingItem(null)
+  }
+
+  const handleOpenAddModal = () => {
+    setNewOrgType("school")
+    setNewOrgName("")
+    setNewOrgExpiry("")
+    setAddModalOpen(true)
+  }
+
+  const handleAddOrganisation = () => {
+    // For now just close the modal - would save to backend in real app
+    setAddModalOpen(false)
+    setNewOrgName("")
+    setNewOrgExpiry("")
   }
 
   const handleSaveEdit = () => {
@@ -763,7 +792,15 @@ export default function OrganisationPage() {
                 <div className="h-full flex items-center justify-center text-slate-400">
                   <div className="text-center">
                     <Settings className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Select an organisation or school to view settings</p>
+                    <p className="mb-4">Select an organisation or school to view settings</p>
+                    <Button 
+                      onClick={handleOpenAddModal}
+                      className="text-white"
+                      style={{ backgroundColor: "#121051" }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Organisation
+                    </Button>
                   </div>
                 </div>
               )}
@@ -772,7 +809,67 @@ export default function OrganisationPage() {
         </div>
       </div>
 
-      
+      {/* Add Organisation Modal */}
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogContent className="max-w-md p-0 flex flex-col">
+          <div className="p-6 pb-4 border-b">
+            <h2 className="text-lg font-semibold text-slate-900">Add Organisation</h2>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Type</label>
+              <Select value={newOrgType} onValueChange={(value: "mat" | "school") => setNewOrgType(value)}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mat">Multi-Academy Trust (MAT)</SelectItem>
+                  <SelectItem value="school">School</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Name</label>
+              <Input
+                value={newOrgName}
+                onChange={(e) => setNewOrgName(e.target.value)}
+                placeholder={newOrgType === "mat" ? "Enter MAT name" : "Enter school name"}
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Expiry Date</label>
+              <Input
+                type="date"
+                value={newOrgExpiry}
+                onChange={(e) => setNewOrgExpiry(e.target.value)}
+                className="h-9"
+              />
+            </div>
+          </div>
+
+          <div className="p-6 pt-4 border-t flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setAddModalOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddOrganisation}
+              disabled={!newOrgName || !newOrgExpiry}
+              className="px-4 text-white disabled:opacity-50"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Add
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
