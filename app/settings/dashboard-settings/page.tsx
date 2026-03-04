@@ -324,14 +324,14 @@ export default function DashboardSettingsPage() {
                                             <div
                                               key={org.id}
                                               onClick={() => handleMATSelect(report.id, org.id)}
-                                              className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
-                                                report.organisations.includes(org.id) ? "bg-[#121051]/10" : ""
+                                              className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
+                                                report.organisations.includes(org.id) ? "bg-[#B30089]" : "hover:bg-slate-50"
                                               }`}
                                             >
-                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-[#121051] font-medium" : "text-slate-900"}`}>
+                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white font-medium" : "text-slate-900"}`}>
                                                 {org.name}
                                               </span>
-                                              <span className="text-sm text-slate-400">
+                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white" : "text-slate-400"}`}>
                                                 {org.schoolCount} {org.schoolCount === 1 ? "school" : "schools"}
                                               </span>
                                             </div>
