@@ -45,7 +45,8 @@ type Report = typeof initialReports[number]
 
 // Sample organisations for dropdown - with type to distinguish MAT vs School
 const availableOrganisations = [
-  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const },
+  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const, schoolCount: 3 },
+  { id: "org-7", name: "Holy Family Catholic Academy Trust", type: "mat" as const, schoolCount: 1 },
   { id: "org-2", name: "All Saints' Catholic High School", type: "school" as const },
   { id: "org-3", name: "Emmaus Catholic and CofE Primary School", type: "school" as const },
   { id: "org-4", name: "Notre Dame High School", type: "school" as const },
@@ -303,45 +304,41 @@ export default function DashboardSettingsPage() {
                                       {/* MAT Section - Single Select */}
                                       {matOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
                                         <>
-                                          <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0 z-10">
-                                            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">MAT</span>
+                                          <div className="px-3 py-2 border-b border-slate-200">
+                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Multi-Academy Trusts</span>
                                           </div>
                                           {matOrganisations
                                             .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
                                             .map((org) => (
-                                            <label
+                                            <div
                                               key={org.id}
-                                              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
+                                              onClick={() => handleMATSelect(report.id, org.id)}
+                                              className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
+                                                report.organisations.includes(org.id) ? "bg-slate-50" : ""
+                                              }`}
                                             >
-                                              <div 
-                                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                  report.organisations.includes(org.id) 
-                                                    ? "border-[#121051]" 
-                                                    : "border-slate-300"
-                                                }`}
-                                                onClick={() => handleMATSelect(report.id, org.id)}
-                                              >
-                                                {report.organisations.includes(org.id) && (
-                                                  <div className="w-2 h-2 rounded-full bg-[#121051]" />
-                                                )}
-                                              </div>
-                                              <span className="text-sm text-slate-900">{org.name}</span>
-                                            </label>
+                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-[#121051] font-medium" : "text-slate-900"}`}>
+                                                {org.name}
+                                              </span>
+                                              <span className="text-sm text-slate-400">
+                                                {org.schoolCount} {org.schoolCount === 1 ? "school" : "schools"}
+                                              </span>
+                                            </div>
                                           ))}
                                         </>
                                       )}
                                       {/* Schools Section - Multi Select */}
                                       {schoolOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
                                         <>
-                                          <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0 z-10">
-                                            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Schools</span>
+                                          <div className="px-3 py-2 border-b border-slate-200">
+                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Schools</span>
                                           </div>
                                           {schoolOrganisations
                                             .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
                                             .map((org) => (
                                             <label
                                               key={org.id}
-                                              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
+                                              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors"
                                             >
                                               <Checkbox
                                                 checked={report.organisations.includes(org.id)}
