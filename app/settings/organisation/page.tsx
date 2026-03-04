@@ -408,7 +408,7 @@ export default function OrganisationPage() {
                               <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
                                 {mat.name}
                               </span>
-                              <span className={`text-xs ${selectedType === "mat" && selectedId === mat.id ? "text-[#121051]" : "text-slate-500"}`}
+                              <span className={`text-xs ${selectedType === "mat" && selectedId === mat.id ? "text-[#121051]" : "text-slate-500"}`}>
                                 {mat.schools.length} schools
                               </span>
                             </button>
@@ -439,7 +439,7 @@ export default function OrganisationPage() {
                                     {school.name}
                                   </span>
                                   {parentMAT && (
-                                    <span className={`text-xs truncate block ${selectedType === "school" && selectedId === school.id ? "text-[#121051]" : "text-slate-500"}`}
+                                    <span className={`text-xs truncate block ${selectedType === "school" && selectedId === school.id ? "text-[#121051]" : "text-slate-500"}`}>
                                       {parentMAT.name}
                                     </span>
                                   )}
