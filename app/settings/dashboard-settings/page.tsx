@@ -545,7 +545,7 @@ export default function DashboardSettingsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="h-8 px-3 text-sm font-normal"
+                      className="h-8 px-3 text-sm font-normal hover:bg-slate-100 hover:text-slate-900"
                     >
                       Previous
                     </Button>
@@ -612,7 +612,7 @@ export default function DashboardSettingsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="h-8 px-3 text-sm font-normal"
+                      className="h-8 px-3 text-sm font-normal hover:bg-slate-100 hover:text-slate-900"
                     >
                       Next
                     </Button>
