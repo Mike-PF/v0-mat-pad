@@ -231,18 +231,15 @@ export default function DashboardSettingsPage() {
             <CardContent className="p-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
-                <div className="relative w-[300px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    placeholder="Search reports..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value)
-                      setCurrentPage(1)
-                    }}
-                    className="pl-9 h-9 bg-slate-50 border-slate-200"
-                  />
-                </div>
+                <Input
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="w-[300px] h-9 bg-white border-slate-200"
+                />
                 <Button 
                   onClick={handleIngest}
                   className="text-white"
