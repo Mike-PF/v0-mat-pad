@@ -516,15 +516,30 @@ export default function OrganisationPage() {
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEditClick}
-                      className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
-                    >
-                      <Pencil className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
+                    <>
+                      {selectedType === "mat" && (
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // TODO: Implement add school to MAT functionality
+                          }}
+                          className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add school
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEditClick}
+                        className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                      >
+                        <Pencil className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                    </>
                   )
                 ) : (
                   <Button 
