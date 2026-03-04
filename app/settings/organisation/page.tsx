@@ -339,11 +339,6 @@ export default function OrganisationPage() {
                 >
                   {selectedData ? (
                     <>
-                      {selectedType === "mat" ? (
-                        <Building2 className="w-5 h-5 text-slate-600" />
-                      ) : (
-                        <School className="w-5 h-5 text-slate-600" />
-                      )}
                       <span className="text-sm font-medium text-slate-900 flex-1 text-left truncate">
                         {displayName}
                       </span>
@@ -352,12 +347,9 @@ export default function OrganisationPage() {
                       </span>
                     </>
                   ) : (
-                    <>
-                      <Settings className="w-5 h-5 text-slate-400" />
-                      <span className="text-sm text-slate-500 flex-1 text-left">
-                        Select an organisation...
-                      </span>
-                    </>
+                    <span className="text-sm text-slate-500 flex-1 text-left">
+                      Select an organisation...
+                    </span>
                   )}
                   <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${pickerOpen ? "rotate-180" : ""}`} />
                 </button>
@@ -379,7 +371,6 @@ export default function OrganisationPage() {
                           selectedType === "mat" && selectedId === mat.id ? "bg-slate-100" : ""
                         }`}
                       >
-                        <Building2 className="w-4 h-4 text-slate-600" />
                         <span className="text-sm text-slate-900 flex-1 text-left truncate">
                           {mat.name}
                         </span>
@@ -405,7 +396,6 @@ export default function OrganisationPage() {
                             selectedType === "school" && selectedId === school.id ? "bg-slate-100" : ""
                           }`}
                         >
-                          <School className="w-4 h-4 text-slate-500" />
                           <div className="flex-1 text-left min-w-0">
                             <span className="text-sm text-slate-900 block truncate">
                               {school.name}
