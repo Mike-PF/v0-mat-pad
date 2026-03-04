@@ -294,10 +294,9 @@ export default function UsersPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-slate-900">Users</h3>
                   <Button 
-                    className="text-white gap-2"
+                    className="text-white"
                     style={{ backgroundColor: "#121051" }}
                   >
-                    <Plus className="w-4 h-4" />
                     Add user
                   </Button>
                 </div>
