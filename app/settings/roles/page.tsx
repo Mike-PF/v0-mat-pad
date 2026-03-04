@@ -78,7 +78,7 @@ export default function RolesPage() {
                       setPickerOpen(!pickerOpen)
                       setOrgSearch("")
                     }}
-                    className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-md hover:border-[#121051] transition-colors text-sm min-w-[250px]"
+                    className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors min-w-[300px]"
                   >
                     {selectedOrg ? (
                       <>
