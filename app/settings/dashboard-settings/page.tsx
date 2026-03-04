@@ -124,31 +124,37 @@ export default function DashboardSettingsPage() {
   }
 
   const handleMATSelect = (reportId: string, orgId: string) => {
-    // Single select for MAT - replace any existing MAT selection
+    // MAT is exclusive - selecting MAT clears all schools
     setReports(reports.map(report => {
       if (report.id !== reportId) return report
       const currentOrgs = report.organisations
-      // Remove any existing MAT selections
-      const withoutMATs = currentOrgs.filter(id => !matOrganisations.some(m => m.id === id))
-      // If clicking the same MAT, deselect it; otherwise select the new one
       const currentMATSelected = currentOrgs.find(id => matOrganisations.some(m => m.id === id))
+      // If clicking the same MAT, deselect it; otherwise select only the MAT (clear schools)
       const newOrgs = currentMATSelected === orgId 
-        ? withoutMATs 
-        : [...withoutMATs, orgId]
+        ? [] 
+        : [orgId]
       return { ...report, organisations: newOrgs }
     }))
   }
 
   const handleSchoolToggle = (reportId: string, orgId: string) => {
-    // Multi select for schools
+    // Multi select for schools - only allowed if no MAT is selected
     setReports(reports.map(report => {
       if (report.id !== reportId) return report
       const currentOrgs = report.organisations
+      // Check if a MAT is selected
+      const hasMATSelected = currentOrgs.some(id => matOrganisations.some(m => m.id === id))
+      if (hasMATSelected) return report // Don't allow school selection if MAT is selected
+      
       const newOrgs = currentOrgs.includes(orgId)
         ? currentOrgs.filter(o => o !== orgId)
         : [...currentOrgs, orgId]
       return { ...report, organisations: newOrgs }
     }))
+  }
+  
+  const hasMATSelected = (report: Report) => {
+    return report.organisations.some(id => matOrganisations.some(m => m.id === id))
   }
 
   const handleRoleToggle = (reportId: string, roleId: string) => {
@@ -326,7 +332,7 @@ export default function DashboardSettingsPage() {
                                           ))}
                                         </>
                                       )}
-                                      {/* Schools Section - Multi Select */}
+                                      {/* Schools Section - Multi Select (disabled if MAT is selected) */}
                                       {schoolOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
                                         <>
                                           <div className="px-3 py-2 border-b border-slate-200">
@@ -337,11 +343,16 @@ export default function DashboardSettingsPage() {
                                             .map((org) => (
                                             <label
                                               key={org.id}
-                                              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors"
+                                              className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${
+                                                hasMATSelected(report) 
+                                                  ? "opacity-50 cursor-not-allowed" 
+                                                  : "hover:bg-slate-50 cursor-pointer"
+                                              }`}
                                             >
                                               <Checkbox
                                                 checked={report.organisations.includes(org.id)}
                                                 onCheckedChange={() => handleSchoolToggle(report.id, org.id)}
+                                                disabled={hasMATSelected(report)}
                                                 className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
                                               />
                                               <span className="text-sm text-slate-900">{org.name}</span>
