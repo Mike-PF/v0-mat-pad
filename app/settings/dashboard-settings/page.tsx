@@ -87,6 +87,8 @@ export default function DashboardSettingsPage() {
   const [originalReports, setOriginalReports] = useState(initialReports)
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const [schoolSearch, setSchoolSearch] = useState<Record<string, string>>({})
+  const [roleSearch, setRoleSearch] = useState<Record<string, string>>({})
   const itemsPerPage = 10
 
   const filteredReports = reports.filter(report => 
@@ -267,8 +269,21 @@ export default function DashboardSettingsPage() {
                                     </button>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-[280px] p-0" align="start">
-                                    <div className="max-h-[250px] overflow-auto">
-                                      {availableOrganisations.map((org) => (
+                                    <div className="p-2 border-b border-slate-200">
+                                      <div className="relative">
+                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <Input
+                                          placeholder="Search schools..."
+                                          value={schoolSearch[report.id] || ""}
+                                          onChange={(e) => setSchoolSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
+                                          className="pl-8 h-8 text-sm"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="max-h-[200px] overflow-auto">
+                                      {availableOrganisations
+                                        .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
+                                        .map((org) => (
                                         <label
                                           key={org.id}
                                           className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
@@ -281,6 +296,9 @@ export default function DashboardSettingsPage() {
                                           <span className="text-sm text-slate-700">{org.name}</span>
                                         </label>
                                       ))}
+                                      {availableOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length === 0 && (
+                                        <div className="px-3 py-2 text-sm text-slate-500">No schools found</div>
+                                      )}
                                     </div>
                                   </PopoverContent>
                                 </Popover>
@@ -324,10 +342,24 @@ export default function DashboardSettingsPage() {
                                     </button>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-[280px] p-0" align="start">
-                                    <div className="max-h-[300px] overflow-auto">
+                                    <div className="p-2 border-b border-slate-200">
+                                      <div className="relative">
+                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <Input
+                                          placeholder="Search roles..."
+                                          value={roleSearch[report.id] || ""}
+                                          onChange={(e) => setRoleSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
+                                          className="pl-8 h-8 text-sm"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="max-h-[250px] overflow-auto">
                                       {report.organisations.map((orgId, index) => {
                                         const org = availableOrganisations.find(o => o.id === orgId)
-                                        const orgRoles = rolesByOrganisation[orgId] || []
+                                        const orgRoles = (rolesByOrganisation[orgId] || []).filter(role => 
+                                          role.name.toLowerCase().includes((roleSearch[report.id] || "").toLowerCase())
+                                        )
+                                        if (orgRoles.length === 0) return null
                                         return (
                                           <div key={orgId}>
                                             {(report.organisations.length > 1) && (
@@ -356,6 +388,13 @@ export default function DashboardSettingsPage() {
                                           </div>
                                         )
                                       })}
+                                      {report.organisations.every(orgId => 
+                                        (rolesByOrganisation[orgId] || []).filter(role => 
+                                          role.name.toLowerCase().includes((roleSearch[report.id] || "").toLowerCase())
+                                        ).length === 0
+                                      ) && (
+                                        <div className="px-3 py-2 text-sm text-slate-500">No roles found</div>
+                                      )}
                                     </div>
                                   </PopoverContent>
                                 </Popover>
