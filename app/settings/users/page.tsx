@@ -527,12 +527,10 @@ export default function UsersPage() {
               setRolesDropdownOpen(false)
             }
           }}>
-            <DialogContent className="max-w-md p-0">
-              <div className="flex items-center justify-between p-6 pb-4 border-b">
-                <h2 className="text-lg font-semibold text-slate-900">Update User</h2>
-              </div>
+            <DialogContent className="max-w-md">
+              <h2 className="text-lg font-semibold text-slate-900">Update User</h2>
               
-              <div className="p-6 space-y-5">
+              <div className="space-y-5">
                 {/* First Name */}
                 <div>
                   <label className="text-sm font-medium text-slate-700 mb-1.5 block">
@@ -708,7 +706,7 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div className="p-6 pt-0 flex justify-end">
+              <div className="flex justify-end pt-4 border-t">
                 <Button
                   onClick={handleSaveUser}
                   className="px-6 text-white"
