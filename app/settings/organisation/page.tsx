@@ -210,6 +210,7 @@ export default function OrganisationPage() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
+  const [settingsTab, setSettingsTab] = useState<"basic" | "branding">("basic")
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -480,91 +481,119 @@ export default function OrganisationPage() {
               </div>
             )}
 
+            {/* Settings Tabs */}
+            {selectedData && (
+              <div className="px-4 flex border-b">
+                <button
+                  onClick={() => setSettingsTab("basic")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    settingsTab === "basic"
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  Basic Information
+                </button>
+                <button
+                  onClick={() => setSettingsTab("branding")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    settingsTab === "branding"
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  Branding
+                </button>
+              </div>
+            )}
+
             {/* Content */}
             <CardContent className="flex-1 overflow-auto p-6">
               {selectedData ? (
-                <div className="space-y-6 max-w-3xl">
-                  {/* Basic Info */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3">Basic Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {"urn" in selectedData && (
+                <div className="max-w-3xl">
+                  {/* Basic Information Tab */}
+                  {settingsTab === "basic" && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        {"urn" in selectedData && (
+                          <div>
+                            <span className="text-xs text-slate-500">URN</span>
+                            <p className="text-sm text-slate-900">{selectedData.urn}</p>
+                          </div>
+                        )}
+                        <div className="col-span-2">
+                          <span className="text-xs text-slate-500">Address</span>
+                          <p className="text-sm text-slate-900">{selectedData.address}</p>
+                        </div>
                         <div>
-                          <span className="text-xs text-slate-500">URN</span>
-                          <p className="text-sm text-slate-900">{selectedData.urn}</p>
+                          <span className="text-xs text-slate-500">Phone</span>
+                          <p className="text-sm text-slate-900">{selectedData.phone}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-500">Email</span>
+                          <p className="text-sm text-slate-900">{selectedData.email}</p>
+                        </div>
+                      </div>
+
+                      {/* Parent MAT for standalone school selected from dropdown */}
+                      {selectedType === "school" && (selectedData as SchoolData).matId && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-900 mb-3">Parent Trust</h3>
+                          <p className="text-sm text-slate-600">
+                            {getParentMAT(selectedData as SchoolData)?.name}
+                          </p>
                         </div>
                       )}
-                      <div className="col-span-2">
-                        <span className="text-xs text-slate-500">Address</span>
-                        <p className="text-sm text-slate-900">{selectedData.address}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-500">Phone</span>
-                        <p className="text-sm text-slate-900">{selectedData.phone}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-500">Email</span>
-                        <p className="text-sm text-slate-900">{selectedData.email}</p>
-                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Branding */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3">Branding</h3>
-                    <div className="flex items-center gap-6">
-                      <div>
-                        <span className="text-xs text-slate-500 block mb-1">Logo</span>
-                        <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
-                          <Image
-                            src={selectedData.logo}
-                            alt="Logo"
-                            width={48}
-                            height={48}
-                            className="object-contain"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-500 block mb-1">Primary Color</span>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-8 h-8 rounded border border-slate-200"
-                            style={{ backgroundColor: selectedData.primaryColor }}
-                          />
-                          <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Feature Toggles */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
-                    <div className="space-y-3">
-                      {Object.entries(selectedData.features).map(([feature, enabled]) => (
-                        <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                          <span className="text-sm text-slate-700 capitalize">{feature}</span>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs ${enabled ? "text-green-600" : "text-slate-400"}`}>
-                              {enabled ? "Enabled" : "Disabled"}
-                            </span>
-                            <div 
-                              className={`w-2 h-2 rounded-full ${enabled ? "bg-green-500" : "bg-slate-300"}`}
+                  {/* Branding Tab */}
+                  {settingsTab === "branding" && (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-6">
+                        <div>
+                          <span className="text-xs text-slate-500 block mb-1">Logo</span>
+                          <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
+                            <Image
+                              src={selectedData.logo}
+                              alt="Logo"
+                              width={48}
+                              height={48}
+                              className="object-contain"
                             />
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        <div>
+                          <span className="text-xs text-slate-500 block mb-1">Primary Color</span>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-8 h-8 rounded border border-slate-200"
+                              style={{ backgroundColor: selectedData.primaryColor }}
+                            />
+                            <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Parent MAT for standalone school selected from dropdown */}
-                  {selectedType === "school" && (selectedData as SchoolData).matId && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3">Parent Trust</h3>
-                      <p className="text-sm text-slate-600">
-                        {getParentMAT(selectedData as SchoolData)?.name}
-                      </p>
+                      {/* Feature Toggles */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
+                        <div className="space-y-3">
+                          {Object.entries(selectedData.features).map(([feature, enabled]) => (
+                            <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                              <span className="text-sm text-slate-700 capitalize">{feature}</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs ${enabled ? "text-green-600" : "text-slate-400"}`}>
+                                  {enabled ? "Enabled" : "Disabled"}
+                                </span>
+                                <div 
+                                  className={`w-2 h-2 rounded-full ${enabled ? "bg-green-500" : "bg-slate-300"}`}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
