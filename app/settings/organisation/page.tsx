@@ -827,7 +827,7 @@ export default function OrganisationPage() {
                               className="h-9"
                             />
                             <p className="text-xs text-slate-500 mt-1">
-                              The email address used to log in to Power BI
+                              The email address used to log in to Power BI Premium
                             </p>
                           </div>
                         </div>
