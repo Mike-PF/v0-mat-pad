@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Copy, ExternalLink, ChevronDown } from "lucide-react"
+import { Plus, Trash2, Pencil, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 
 // Sample organisations for dropdown
@@ -231,12 +231,12 @@ export default function RolesPage() {
                           <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
                           <td className="py-4 px-4">
                             <div className="flex items-center justify-end gap-2">
-                              <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
-                                <Copy className="w-4 h-4" />
-                              </button>
-                              <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
-                                <ExternalLink className="w-4 h-4" />
-                              </button>
+<button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                              <Pencil className="w-4 h-4" />
+                            </button>
                             </div>
                           </td>
                         </tr>
