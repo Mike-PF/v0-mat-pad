@@ -705,12 +705,44 @@ export default function OrganisationPage() {
                         <>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="text-xs text-slate-500 block mb-1">Logo URL</label>
-                              <Input
-                                value={editingItem.logo}
-                                onChange={(e) => setEditingItem({ ...editingItem, logo: e.target.value })}
-                                className="h-9"
-                              />
+                              <label className="text-xs text-slate-500 block mb-1">Logo</label>
+                              <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden">
+                                  {editingItem.logo ? (
+                                    <Image
+                                      src={editingItem.logo}
+                                      alt="Logo"
+                                      width={48}
+                                      height={48}
+                                      className="object-contain"
+                                    />
+                                  ) : (
+                                    <span className="text-xs text-slate-400">No logo</span>
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <label 
+                                    htmlFor="logo-upload"
+                                    className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-md cursor-pointer hover:bg-slate-50 transition-colors"
+                                  >
+                                    Upload Logo
+                                  </label>
+                                  <input
+                                    id="logo-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) {
+                                        const url = URL.createObjectURL(file)
+                                        setEditingItem({ ...editingItem, logo: url })
+                                      }
+                                    }}
+                                  />
+                                  <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 2MB</p>
+                                </div>
+                              </div>
                             </div>
                             <div>
                               <label className="text-xs text-slate-500 block mb-1">Primary Color</label>
