@@ -35,24 +35,28 @@ interface SchoolData {
   id: string
   urn: string
   name: string
+  headTeacher: string
   address: string
   phone: string
   email: string
   logo: string
   primaryColor: string
   secondaryColor: string
+  powerBiReportId?: string
   matId?: string
 }
 
 interface MATData {
   id: string
   name: string
+  ceo: string
   address: string
   phone: string
   email: string
   logo: string
   primaryColor: string
   secondaryColor: string
+  powerBiReportId?: string
   schools: SchoolData[]
 }
 
@@ -61,29 +65,34 @@ const initialMATs: MATData[] = [
   {
     id: "mat-1",
     name: "St Clare Catholic Multi Academy Trust",
+    ceo: "Dr. Sarah Mitchell",
     address: "123 Trust House, Liverpool, L1 1AA",
     phone: "0151 123 4567",
     email: "admin@stclaremat.org",
     logo: "/placeholder.svg",
     primaryColor: "#121051",
     secondaryColor: "#4A90D9",
+    powerBiReportId: "abc123-report-001",
     schools: [
       {
         id: "school-1",
         urn: "138337",
         name: "All Saints' Catholic High School",
+        headTeacher: "Mr. James Wilson",
         address: "School Lane, Liverpool, L2 2BB",
         phone: "0151 234 5678",
         email: "office@allsaints.org",
         logo: "/placeholder.svg",
         primaryColor: "#121051",
         secondaryColor: "#4A90D9",
+        powerBiReportId: "abc123-report-002",
         matId: "mat-1",
       },
       {
         id: "school-2",
         urn: "140826",
         name: "Emmaus Catholic and CofE Primary School",
+        headTeacher: "Mrs. Helen Brown",
         address: "Church Road, Liverpool, L3 3CC",
         phone: "0151 345 6789",
         email: "office@emmaus.org",
@@ -96,12 +105,14 @@ const initialMATs: MATData[] = [
         id: "school-3",
         urn: "138361",
         name: "Notre Dame High School",
+        headTeacher: "Dr. Michael O'Connor",
         address: "Notre Dame Drive, Liverpool, L4 4DD",
         phone: "0151 456 7890",
         email: "office@notredame.org",
         logo: "/placeholder.svg",
         primaryColor: "#2563eb",
         secondaryColor: "#60A5FA",
+        powerBiReportId: "abc123-report-003",
         matId: "mat-1",
       },
     ],
@@ -109,6 +120,7 @@ const initialMATs: MATData[] = [
   {
     id: "mat-2",
     name: "Holy Family Catholic Academy Trust",
+    ceo: "Mr. David Thompson",
     address: "456 Academy Way, Manchester, M1 1AA",
     phone: "0161 123 4567",
     email: "admin@holyfamilymat.org",
@@ -120,6 +132,7 @@ const initialMATs: MATData[] = [
         id: "school-4",
         urn: "140439",
         name: "Sacred Heart School",
+        headTeacher: "Mrs. Patricia Kelly",
         address: "Heart Lane, Manchester, M2 2BB",
         phone: "0161 234 5678",
         email: "office@sacredheart.org",
@@ -138,17 +151,20 @@ const initialStandaloneSchools: SchoolData[] = [
     id: "standalone-1",
     urn: "148974",
     name: "St Alban's Catholic Primary and Nursery School",
+    headTeacher: "Mr. Robert Evans",
     address: "Alban Road, Leeds, LS1 1AA",
     phone: "0113 123 4567",
     email: "office@stalbans.org",
     logo: "/placeholder.svg",
     primaryColor: "#dc2626",
     secondaryColor: "#F87171",
+    powerBiReportId: "standalone-report-001",
   },
   {
     id: "standalone-2",
     urn: "144606",
     name: "Holy Trinity Catholic and Church of England School",
+    headTeacher: "Mrs. Angela Davies",
     address: "Trinity Street, Birmingham, B1 1AA",
     phone: "0121 123 4567",
     email: "office@holytrinity.org",
@@ -169,7 +185,7 @@ export default function OrganisationPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
-  const [settingsTab, setSettingsTab] = useState<"basic" | "branding">("basic")
+  const [settingsTab, setSettingsTab] = useState<"basic" | "branding" | "powerbi">("basic")
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
   const [newOrgName, setNewOrgName] = useState("")
@@ -547,6 +563,16 @@ export default function OrganisationPage() {
                 >
                   Branding
                 </button>
+                <button
+                  onClick={() => setSettingsTab("powerbi")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    settingsTab === "powerbi"
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  Power BI
+                </button>
               </div>
             )}
 
@@ -567,12 +593,31 @@ export default function OrganisationPage() {
                               className="h-9"
                             />
                           </div>
-                          {"urn" in editingItem && (
-                            <div>
-                              <label className="text-xs text-slate-500 block mb-1">URN</label>
+                          {"urn" in editingItem ? (
+                            <>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">URN</label>
+                                <Input
+                                  value={editingItem.urn}
+                                  onChange={(e) => setEditingItem({ ...editingItem, urn: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Head Teacher</label>
+                                <Input
+                                  value={(editingItem as SchoolData).headTeacher}
+                                  onChange={(e) => setEditingItem({ ...editingItem, headTeacher: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="col-span-2">
+                              <label className="text-xs text-slate-500 block mb-1">CEO</label>
                               <Input
-                                value={editingItem.urn}
-                                onChange={(e) => setEditingItem({ ...editingItem, urn: e.target.value })}
+                                value={(editingItem as MATData).ceo}
+                                onChange={(e) => setEditingItem({ ...editingItem, ceo: e.target.value })}
                                 className="h-9"
                               />
                             </div>
@@ -604,10 +649,21 @@ export default function OrganisationPage() {
                         </div>
                       ) : (
                         <div className="grid grid-cols-2 gap-4">
-                          {"urn" in selectedData && (
-                            <div>
-                              <span className="text-xs text-slate-500">URN</span>
-                              <p className="text-sm text-slate-900">{selectedData.urn}</p>
+                          {"urn" in selectedData ? (
+                            <>
+                              <div>
+                                <span className="text-xs text-slate-500">URN</span>
+                                <p className="text-sm text-slate-900">{selectedData.urn}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Head Teacher</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).headTeacher}</p>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="col-span-2">
+                              <span className="text-xs text-slate-500">CEO</span>
+                              <p className="text-sm text-slate-900">{(selectedData as MATData).ceo}</p>
                             </div>
                           )}
                           <div className="col-span-2">
@@ -752,6 +808,39 @@ export default function OrganisationPage() {
                               </div>
                             </div>
                           </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Power BI Tab */}
+                  {settingsTab === "powerbi" && (
+                    <div className="space-y-6">
+                      {isEditing && editingItem ? (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Power BI Report ID</label>
+                            <Input
+                              value={editingItem.powerBiReportId || ""}
+                              onChange={(e) => setEditingItem({ ...editingItem, powerBiReportId: e.target.value })}
+                              placeholder="Enter Power BI Report ID"
+                              className="h-9"
+                            />
+                            <p className="text-xs text-slate-500 mt-1">
+                              The unique identifier for the Power BI report to embed
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <span className="text-xs text-slate-500">Power BI Report ID</span>
+                            {selectedData.powerBiReportId ? (
+                              <p className="text-sm text-slate-900">{selectedData.powerBiReportId}</p>
+                            ) : (
+                              <p className="text-sm text-slate-400 italic">No report configured</p>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
