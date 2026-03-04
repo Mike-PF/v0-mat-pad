@@ -207,6 +207,7 @@ export default function OrganisationPage() {
   const [selectedType, setSelectedType] = useState<"mat" | "school">("mat")
   const [selectedId, setSelectedId] = useState<string>("")
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerSearch, setPickerSearch] = useState("")
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
@@ -216,6 +217,25 @@ export default function OrganisationPage() {
   const getAllSchools = (): SchoolData[] => {
     const matSchools = mats.flatMap(mat => mat.schools)
     return [...matSchools, ...standaloneSchools]
+  }
+
+  // Filter MATs and schools based on search
+  const getFilteredMATs = () => {
+    if (!pickerSearch) return mats
+    const search = pickerSearch.toLowerCase()
+    return mats.filter(mat => 
+      mat.name.toLowerCase().includes(search)
+    )
+  }
+
+  const getFilteredSchools = () => {
+    const allSchools = getAllSchools()
+    if (!pickerSearch) return allSchools
+    const search = pickerSearch.toLowerCase()
+    return allSchools.filter(school => 
+      school.name.toLowerCase().includes(search) ||
+      school.urn.toLowerCase().includes(search)
+    )
   }
 
   const getSelectedData = (): MATData | SchoolData | null => {
@@ -258,6 +278,7 @@ export default function OrganisationPage() {
     setSelectedType(type)
     setSelectedId(id)
     setPickerOpen(false)
+    setPickerSearch("") // Clear search when selecting
     setDrillDownSchoolId(null) // Reset drill down when selecting new item
   }
 
@@ -356,59 +377,87 @@ export default function OrganisationPage() {
 
                 {/* Dropdown */}
                 {pickerOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-[400px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[400px] overflow-auto">
-                    {/* MATs Section */}
+                  <div className="absolute top-full left-0 mt-1 w-[400px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[400px] flex flex-col">
+                    {/* Search Input */}
                     <div className="p-2 border-b">
-                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
-                        Multi-Academy Trusts
-                      </span>
+                      <Input
+                        placeholder="Search MATs or schools..."
+                        value={pickerSearch}
+                        onChange={(e) => setPickerSearch(e.target.value)}
+                        className="h-9"
+                        autoFocus
+                      />
                     </div>
-                    {mats.map((mat) => (
-                      <button
-                        key={mat.id}
-                        onClick={() => handleSelect("mat", mat.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                          selectedType === "mat" && selectedId === mat.id ? "bg-slate-100" : ""
-                        }`}
-                      >
-                        <span className="text-sm text-slate-900 flex-1 text-left truncate">
-                          {mat.name}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {mat.schools.length} schools
-                        </span>
-                      </button>
-                    ))}
-
-                    {/* Schools Section */}
-                    <div className="p-2 border-b border-t">
-                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
-                        Schools
-                      </span>
-                    </div>
-                    {getAllSchools().map((school) => {
-                      const parentMAT = getParentMAT(school)
-                      return (
-                        <button
-                          key={school.id}
-                          onClick={() => handleSelect("school", school.id)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                            selectedType === "school" && selectedId === school.id ? "bg-slate-100" : ""
-                          }`}
-                        >
-                          <div className="flex-1 text-left min-w-0">
-                            <span className="text-sm text-slate-900 block truncate">
-                              {school.name}
+                    
+                    <div className="overflow-auto flex-1">
+                      {/* MATs Section */}
+                      {getFilteredMATs().length > 0 && (
+                        <>
+                          <div className="p-2 border-b">
+                            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
+                              Multi-Academy Trusts
                             </span>
-                            {parentMAT && (
-                              <span className="text-xs text-slate-500 truncate block">
-                                {parentMAT.name}
-                              </span>
-                            )}
                           </div>
-                        </button>
-                      )
-                    })}
+                          {getFilteredMATs().map((mat) => (
+                            <button
+                              key={mat.id}
+                              onClick={() => handleSelect("mat", mat.id)}
+                              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
+                                selectedType === "mat" && selectedId === mat.id ? "bg-slate-100" : ""
+                              }`}
+                            >
+                              <span className="text-sm text-slate-900 flex-1 text-left truncate">
+                                {mat.name}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                {mat.schools.length} schools
+                              </span>
+                            </button>
+                          ))}
+                        </>
+                      )}
+
+                      {/* Schools Section */}
+                      {getFilteredSchools().length > 0 && (
+                        <>
+                          <div className="p-2 border-b border-t">
+                            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
+                              Schools
+                            </span>
+                          </div>
+                          {getFilteredSchools().map((school) => {
+                            const parentMAT = getParentMAT(school)
+                            return (
+                              <button
+                                key={school.id}
+                                onClick={() => handleSelect("school", school.id)}
+                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
+                                  selectedType === "school" && selectedId === school.id ? "bg-slate-100" : ""
+                                }`}
+                              >
+                                <div className="flex-1 text-left min-w-0">
+                                  <span className="text-sm text-slate-900 block truncate">
+                                    {school.name}
+                                  </span>
+                                  {parentMAT && (
+                                    <span className="text-xs text-slate-500 truncate block">
+                                      {parentMAT.name}
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            )
+                          })}
+                        </>
+                      )}
+
+                      {/* No results */}
+                      {getFilteredMATs().length === 0 && getFilteredSchools().length === 0 && (
+                        <div className="p-4 text-center text-sm text-slate-500">
+                          No results found
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
