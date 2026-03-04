@@ -75,6 +75,7 @@ export default function UsersPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>(null)
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
+  const [orgSearch, setOrgSearch] = useState("")
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
@@ -123,45 +124,78 @@ export default function UsersPage() {
           {/* Organisations Card */}
           <Card className="mb-4">
             <CardContent className="py-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Organisations</h3>
               <div className="flex items-center gap-4">
                 <div className="relative" ref={orgDropdownRef}>
                   <button
                     onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
-                    className="flex items-center justify-between gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors min-w-[280px] text-left"
+                    className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors min-w-[300px]"
                   >
-                    <span className={`text-sm truncate ${selectedOrg ? "text-slate-900" : "text-slate-500"}`}>
-                      {selectedOrg ? selectedOrg.name : "Select organisation..."}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${orgDropdownOpen ? "rotate-180" : ""}`} />
+                    {selectedOrg ? (
+                      <>
+                        <span className="text-sm font-medium text-slate-900 flex-1 text-left truncate">
+                          {selectedOrg.name}
+                        </span>
+                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                          {selectedOrg.type}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-slate-500 flex-1 text-left">
+                        Select an organisation...
+                      </span>
+                    )}
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${orgDropdownOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   {orgDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-auto">
-                      {organisations.map(org => (
-                        <button
-                          key={org.id}
-                          onClick={() => {
-                            setSelectedOrganisation(org.id)
-                            setOrgDropdownOpen(false)
-                          }}
-                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                            selectedOrganisation === org.id 
-                              ? "bg-[#B30089] text-white" 
-                              : "text-slate-900 hover:bg-slate-100"
-                          }`}
-                        >
-                          {org.name}
-                        </button>
-                      ))}
+                    <div className="absolute top-full left-0 mt-1 w-[400px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[400px] flex flex-col">
+                      {/* Search Input */}
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="Search organisations..."
+                          value={orgSearch}
+                          onChange={(e) => setOrgSearch(e.target.value)}
+                          className="h-9"
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="overflow-auto flex-1">
+                        {organisations
+                          .filter(org => org.name.toLowerCase().includes(orgSearch.toLowerCase()))
+                          .map(org => (
+                            <button
+                              key={org.id}
+                              onClick={() => {
+                                setSelectedOrganisation(org.id)
+                                setOrgDropdownOpen(false)
+                                setOrgSearch("")
+                              }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                                selectedOrganisation === org.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                              }`}
+                            >
+                              <span className={`text-sm flex-1 text-left truncate ${selectedOrganisation === org.id ? "text-white font-medium" : "text-slate-900"}`}>
+                                {org.name}
+                              </span>
+                              <span className={`text-xs ${selectedOrganisation === org.id ? "text-white" : "text-slate-500"}`}>
+                                {org.type}
+                              </span>
+                            </button>
+                          ))}
+                        {organisations.filter(org => org.name.toLowerCase().includes(orgSearch.toLowerCase())).length === 0 && (
+                          <div className="p-4 text-center text-sm text-slate-500">
+                            No results found
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-
                 {selectedOrganisation && (
                   <button
                     onClick={handleClearSelection}
-                    className="text-sm text-[#121051] hover:underline font-medium"
+                    className="text-sm text-[#121051] hover:underline"
                   >
                     Clear Selection
                   </button>
