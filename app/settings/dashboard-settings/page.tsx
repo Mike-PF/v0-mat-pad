@@ -45,8 +45,7 @@ type Report = typeof initialReports[number]
 
 // Sample organisations for dropdown - with type to distinguish MAT vs School
 const availableOrganisations = [
-  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const, schoolCount: 3 },
-  { id: "org-7", name: "Holy Family Catholic Academy Trust", type: "mat" as const, schoolCount: 1 },
+  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const, schoolCount: 5 },
   { id: "org-2", name: "All Saints' Catholic High School", type: "school" as const },
   { id: "org-3", name: "Emmaus Catholic and CofE Primary School", type: "school" as const },
   { id: "org-4", name: "Notre Dame High School", type: "school" as const },
