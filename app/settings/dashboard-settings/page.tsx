@@ -537,8 +537,7 @@ export default function DashboardSettingsPage() {
                           </div>
                         </td>
                       </tr>
-                    )})}
-                    
+                    ))}
                   </tbody>
                 </table>
               </div>
