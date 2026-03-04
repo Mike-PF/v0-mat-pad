@@ -216,6 +216,8 @@ export default function OrganisationPage() {
   const [schoolsSearch, setSchoolsSearch] = useState("")
   const [manageSchoolsOpen, setManageSchoolsOpen] = useState(false)
   const [manageSchoolsSearch, setManageSchoolsSearch] = useState("")
+  const [deleteSchoolDialogOpen, setDeleteSchoolDialogOpen] = useState(false)
+  const [schoolToDelete, setSchoolToDelete] = useState<SchoolData | null>(null)
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -1087,19 +1089,8 @@ export default function OrganisationPage() {
                         <td className="py-3 px-4">
                           <button
                             onClick={() => {
-                              if (selectedMAT) {
-                                // Remove school from MAT and add to standalone
-                                const schoolToRemove = selectedMAT.schools.find(s => s.id === school.id)
-                                if (schoolToRemove) {
-                                  const updatedSchool = { ...schoolToRemove, matId: undefined }
-                                  setStandaloneSchools([...standaloneSchools, updatedSchool])
-                                  setMats(mats.map(mat => 
-                                    mat.id === selectedMAT.id 
-                                      ? { ...mat, schools: mat.schools.filter(s => s.id !== school.id) }
-                                      : mat
-                                  ))
-                                }
-                              }
+                              setSchoolToDelete(school)
+                              setDeleteSchoolDialogOpen(true)
                             }}
                             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
                           >
@@ -1128,6 +1119,46 @@ export default function OrganisationPage() {
               style={{ backgroundColor: "#121051" }}
             >
               Done
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete School Confirmation Dialog */}
+      <Dialog open={deleteSchoolDialogOpen} onOpenChange={(open) => !open && setDeleteSchoolDialogOpen(false)}>
+        <DialogContent className="max-w-md">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Remove School</h2>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to remove <span className="font-semibold text-slate-900">{schoolToDelete?.name}</span> from this MAT?
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteSchoolDialogOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedMAT && schoolToDelete) {
+                  const updatedSchool = { ...schoolToDelete, matId: undefined }
+                  setStandaloneSchools([...standaloneSchools, updatedSchool])
+                  setMats(mats.map(mat => 
+                    mat.id === selectedMAT.id 
+                      ? { ...mat, schools: mat.schools.filter(s => s.id !== schoolToDelete.id) }
+                      : mat
+                  ))
+                }
+                setDeleteSchoolDialogOpen(false)
+                setSchoolToDelete(null)
+              }}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Remove
             </Button>
           </div>
         </DialogContent>
