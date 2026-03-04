@@ -527,13 +527,15 @@ export default function DashboardSettingsPage() {
                             >
                               Save
                             </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
-                            >
-                              Delete
-                            </Button>
+                            {report.reportType !== "system" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                              >
+                                Delete
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
