@@ -123,24 +123,25 @@ export default function DashboardSettingsPage() {
     return orgIds
       .map(id => availableOrganisations.find(o => o.id === id)?.name)
       .filter(Boolean)
-      .join(", ")
+      .join("\n")
   }
 
   const getSelectedRoleNames = (report: Report) => {
-    const roleNames: string[] = []
+    const lines: string[] = []
     report.organisations.forEach(orgId => {
       const org = availableOrganisations.find(o => o.id === orgId)
       const orgRoles = rolesByOrganisation[orgId] || []
       const selectedOrgRoles = orgRoles.filter(r => report.roles.includes(r.id))
       if (selectedOrgRoles.length > 0) {
         if (report.organisations.length > 1) {
-          roleNames.push(`${org?.name}: ${selectedOrgRoles.map(r => r.name).join(", ")}`)
+          lines.push(`${org?.name}:`)
+          selectedOrgRoles.forEach(r => lines.push(`  - ${r.name}`))
         } else {
-          roleNames.push(...selectedOrgRoles.map(r => r.name))
+          selectedOrgRoles.forEach(r => lines.push(`- ${r.name}`))
         }
       }
     })
-    return roleNames.join(" | ")
+    return lines.join("\n")
   }
 
   const handleActiveChange = (id: string, value: boolean) => {
