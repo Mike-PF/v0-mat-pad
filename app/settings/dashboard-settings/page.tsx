@@ -393,9 +393,9 @@ export default function DashboardSettingsPage() {
                                   <PopoverTrigger asChild>
                                     <button 
                                       disabled={report.organisations.length === 0}
-                                      className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-50"
+                                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#121051] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
                                     >
-                                      <span className="truncate text-slate-600">
+                                      <span className="flex-1 truncate text-slate-700">
                                         {report.organisations.length === 0 
                                           ? "Select School First"
                                           : report.roles.length > 0 
@@ -405,19 +405,17 @@ export default function DashboardSettingsPage() {
                                       <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                                     </button>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-[280px] p-0" align="start">
-                                    <div className="p-2 border-b border-slate-200">
-                                      <div className="relative">
-                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <Input
-                                          placeholder="Search roles..."
-                                          value={roleSearch[report.id] || ""}
-                                          onChange={(e) => setRoleSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
-                                          className="pl-8 h-8 text-sm"
-                                        />
-                                      </div>
+                                  <PopoverContent className="w-[350px] p-0 shadow-lg" align="start">
+                                    <div className="p-2 border-b">
+                                      <Input
+                                        placeholder="Search..."
+                                        value={roleSearch[report.id] || ""}
+                                        onChange={(e) => setRoleSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
+                                        className="h-8"
+                                        autoFocus
+                                      />
                                     </div>
-                                    <div className="max-h-[250px] overflow-auto">
+                                    <div className="max-h-[300px] overflow-auto">
                                       {report.organisations.map((orgId, index) => {
                                         const org = availableOrganisations.find(o => o.id === orgId)
                                         const orgRoles = (rolesByOrganisation[orgId] || []).filter(role => 
@@ -427,8 +425,8 @@ export default function DashboardSettingsPage() {
                                         return (
                                           <div key={orgId}>
                                             {(report.organisations.length > 1) && (
-                                              <div className="px-3 py-2 bg-slate-100 border-b border-slate-200 sticky top-0">
-                                                <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                              <div className="px-3 py-2 border-b border-slate-200">
+                                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                                   {org?.name}
                                                 </span>
                                               </div>
@@ -436,14 +434,14 @@ export default function DashboardSettingsPage() {
                                             {orgRoles.map((role) => (
                                               <label
                                                 key={role.id}
-                                                className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors"
                                               >
                                                 <Checkbox
                                                   checked={report.roles.includes(role.id)}
                                                   onCheckedChange={() => handleRoleToggle(report.id, role.id)}
                                                   className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
                                                 />
-                                                <span className="text-sm text-slate-700">{role.name}</span>
+                                                <span className="text-sm text-slate-900">{role.name}</span>
                                               </label>
                                             ))}
                                             {index < report.organisations.length - 1 && report.organisations.length > 1 && (
