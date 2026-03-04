@@ -119,6 +119,30 @@ export default function DashboardSettingsPage() {
     }))
   }
 
+  const getSelectedSchoolNames = (orgIds: string[]) => {
+    return orgIds
+      .map(id => availableOrganisations.find(o => o.id === id)?.name)
+      .filter(Boolean)
+      .join(", ")
+  }
+
+  const getSelectedRoleNames = (report: Report) => {
+    const roleNames: string[] = []
+    report.organisations.forEach(orgId => {
+      const org = availableOrganisations.find(o => o.id === orgId)
+      const orgRoles = rolesByOrganisation[orgId] || []
+      const selectedOrgRoles = orgRoles.filter(r => report.roles.includes(r.id))
+      if (selectedOrgRoles.length > 0) {
+        if (report.organisations.length > 1) {
+          roleNames.push(`${org?.name}: ${selectedOrgRoles.map(r => r.name).join(", ")}`)
+        } else {
+          roleNames.push(...selectedOrgRoles.map(r => r.name))
+        }
+      }
+    })
+    return roleNames.join(" | ")
+  }
+
   const handleActiveChange = (id: string, value: boolean) => {
     setReports(reports.map(report => 
       report.id === id ? { ...report, active: value } : report
@@ -194,7 +218,10 @@ export default function DashboardSettingsPage() {
                         <td className="py-4 px-4">
                           <Popover>
                             <PopoverTrigger asChild>
-                              <button className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors">
+                              <button 
+                                title={report.organisations.length > 0 ? getSelectedSchoolNames(report.organisations) : undefined}
+                                className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors"
+                              >
                                 <span className="truncate text-slate-600">
                                   {report.organisations.length > 0 
                                     ? `${report.organisations.length} selected`
@@ -227,6 +254,7 @@ export default function DashboardSettingsPage() {
                             <PopoverTrigger asChild>
                               <button 
                                 disabled={report.organisations.length === 0}
+                                title={report.roles.length > 0 ? getSelectedRoleNames(report) : undefined}
                                 className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-50"
                               >
                                 <span className="truncate text-slate-600">
