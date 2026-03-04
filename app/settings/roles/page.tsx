@@ -28,7 +28,7 @@ const mockRoles = [
 
 export default function RolesPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>("org-1")
+  const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>(null)
   const [orgSearch, setOrgSearch] = useState("")
   const [pickerOpen, setPickerOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -199,52 +199,54 @@ export default function RolesPage() {
             </CardContent>
           </Card>
 
-          {/* Roles Table Card */}
-          <Card>
-            <CardContent className="py-6">
-              {/* Header with Add Role button */}
-              <div className="flex items-center justify-end mb-6">
-                <Button 
-                  className="text-white gap-2"
-                  style={{ backgroundColor: "#121051" }}
-                >
-                  <Plus className="w-4 h-4" />
-                  Add role
-                </Button>
-              </div>
+          {/* Roles Table Card - Only show when organisation is selected */}
+          {selectedOrganisation && (
+            <Card>
+              <CardContent className="py-6">
+                {/* Header with Add Role button */}
+                <div className="flex items-center justify-end mb-6">
+                  <Button 
+                    className="text-white gap-2"
+                    style={{ backgroundColor: "#121051" }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add role
+                  </Button>
+                </div>
 
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-slate-700 w-[40%]">Role name</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Users</th>
-                      <th className="py-3 px-4 w-[100px]"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockRoles.map((role) => (
-                      <tr key={role.id} className="border-b border-slate-200 last:border-0">
-                        <td className="py-4 px-4 text-sm text-slate-900">{role.name}</td>
-                        <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
-                              <ExternalLink className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
+                {/* Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700 w-[40%]">Role name</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Users</th>
+                        <th className="py-3 px-4 w-[100px]"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                    </thead>
+                    <tbody>
+                      {mockRoles.map((role) => (
+                        <tr key={role.id} className="border-b border-slate-200 last:border-0">
+                          <td className="py-4 px-4 text-sm text-slate-900">{role.name}</td>
+                          <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                                <Copy className="w-4 h-4" />
+                              </button>
+                              <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                                <ExternalLink className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </main>
       </div>
     </div>
