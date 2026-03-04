@@ -5,8 +5,9 @@ import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2, Pencil, ChevronDown } from "lucide-react"
+import { Trash2, Pencil, ChevronDown, ChevronLeft, ChevronRight, X, Ban, HelpCircle, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 
 // Sample organisations for dropdown
 const availableOrganisations = [
@@ -22,9 +23,52 @@ const schoolOrganisations = availableOrganisations.filter(org => org.type === "s
 
 const mockRoles = [
   { id: 1, name: "User", users: 0 },
-  { id: 2, name: "bl Finance", users: 0 },
+  { id: 2, name: "bl Finance", users: 2 },
   { id: 3, name: "Admin", users: 0 },
 ]
+
+const mockUsers = [
+  { id: 1, email: "fred@test.com", name: "Fred Smith" },
+  { id: 2, email: "sdfwesr@test.com", name: "sdfsdf werwer" },
+  { id: 3, email: "john@test.com", name: "John Doe" },
+  { id: 4, email: "jane@test.com", name: "Jane Smith" },
+]
+
+const permissionsData = {
+  Admin: [
+    { id: "admin-1", name: "Allow Mapping Maintenance", enabled: false },
+    { id: "admin-2", name: "Allow Term Management", enabled: false },
+    { id: "admin-3", name: "Allow user management", enabled: false },
+    { id: "admin-4", name: "Form Builder", enabled: false },
+    { id: "admin-5", name: "Maintain Schools", enabled: false },
+    { id: "admin-6", name: "Manage Roles", enabled: false },
+    { id: "admin-7", name: "Manage system connectors", enabled: false },
+    { id: "admin-8", name: "Manage users", enabled: false },
+    { id: "admin-9", name: "Manage users schools", enabled: false },
+    { id: "admin-10", name: "View system settings", enabled: false },
+  ],
+  Dashboards: [
+    { id: "dash-1", name: "View dashboards", enabled: false },
+  ],
+  "Q+A": [
+    { id: "qa-1", name: "Archive Form", enabled: true },
+    { id: "qa-2", name: "Start Q+A Form", enabled: true },
+    { id: "qa-3", name: "View Questions and Answers area", enabled: true },
+  ],
+  Reports: [
+    { id: "rep-1", name: "Report Manager", enabled: true },
+    { id: "rep-2", name: "View reports", enabled: true },
+  ],
+  Uploads: [
+    { id: "upl-1", name: "Upload data files", enabled: true },
+  ],
+}
+
+interface Role {
+  id: number
+  name: string
+  users: number
+}
 
 export default function RolesPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
@@ -32,6 +76,17 @@ export default function RolesPage() {
   const [orgSearch, setOrgSearch] = useState("")
   const [pickerOpen, setPickerOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Edit mode state
+  const [editingRole, setEditingRole] = useState<Role | null>(null)
+  const [editRoleName, setEditRoleName] = useState("")
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([])
+  const [userSearch, setUserSearch] = useState("")
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+  const [permissions, setPermissions] = useState(permissionsData)
+  const [userPage, setUserPage] = useState(1)
+  const usersPerPage = 10
+  const userDropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedOrg = selectedOrganisation 
     ? availableOrganisations.find(o => o.id === selectedOrganisation) 
@@ -45,6 +100,22 @@ export default function RolesPage() {
     org.name.toLowerCase().includes(orgSearch.toLowerCase())
   )
 
+  // Get selected users data
+  const selectedUsersData = mockUsers.filter(u => selectedUsers.includes(u.id))
+  
+  // Filter users for search in table
+  const filteredUsersInTable = selectedUsersData.filter(u => 
+    u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+    u.name.toLowerCase().includes(userSearch.toLowerCase())
+  )
+  
+  // Pagination
+  const totalUserPages = Math.ceil(filteredUsersInTable.length / usersPerPage)
+  const paginatedUsers = filteredUsersInTable.slice(
+    (userPage - 1) * usersPerPage,
+    userPage * usersPerPage
+  )
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,11 +123,269 @@ export default function RolesPage() {
         setPickerOpen(false)
         setOrgSearch("")
       }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false)
+      }
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  const handleEditRole = (role: Role) => {
+    setEditingRole(role)
+    setEditRoleName(role.name)
+    // Mock: set some selected users for "bl Finance" role
+    if (role.name === "bl Finance") {
+      setSelectedUsers([1, 2])
+    } else {
+      setSelectedUsers([])
+    }
+    setPermissions(permissionsData)
+  }
+
+  const handleBack = () => {
+    setEditingRole(null)
+    setEditRoleName("")
+    setSelectedUsers([])
+    setUserSearch("")
+  }
+
+  const handleToggleUser = (userId: number) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    )
+  }
+
+  const handleRemoveUser = (userId: number) => {
+    setSelectedUsers(prev => prev.filter(id => id !== userId))
+  }
+
+  const handleTogglePermission = (category: string, permissionId: string) => {
+    setPermissions(prev => ({
+      ...prev,
+      [category]: prev[category as keyof typeof prev].map(p => 
+        p.id === permissionId ? { ...p, enabled: !p.enabled } : p
+      )
+    }))
+  }
+
+  // Edit View
+  if (editingRole) {
+    return (
+      <div className="flex h-screen bg-slate-50">
+        <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+
+        <div className="flex-1 flex flex-col">
+          <div className="p-4">
+            <TopNavigation />
+          </div>
+
+          <main className="flex-1 px-4 pb-6 overflow-auto">
+            {/* Header with Role Name and Actions */}
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <label className="text-sm text-slate-700 block mb-1">Role name*</label>
+                <Input
+                  value={editRoleName}
+                  onChange={(e) => setEditRoleName(e.target.value)}
+                  className="w-[200px] h-9"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  className="border-slate-200 text-slate-700 hover:bg-slate-100"
+                >
+                  Back
+                </Button>
+                <Button
+                  className="text-white"
+                  style={{ backgroundColor: "#121051" }}
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+
+            {/* Users Card */}
+            <Card className="mb-4">
+              <CardContent className="py-4">
+                <h3 className="text-sm font-semibold text-[#121051] mb-4">Users</h3>
+                
+                {/* Users Label and Dropdown */}
+                <div className="mb-4">
+                  <label className="text-sm text-slate-700 block mb-2">Users</label>
+                  <div className="relative" ref={userDropdownRef}>
+                    <button
+                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors min-w-[250px] text-left"
+                    >
+                      {selectedUsers.length > 0 ? (
+                        <>
+                          <span className="flex items-center justify-center w-5 h-5 bg-[#121051] text-white text-xs rounded-full">
+                            {selectedUsers.length}
+                          </span>
+                          <span className="text-sm text-slate-700 flex-1 truncate">
+                            {selectedUsersData.map(u => u.name).join(", ")}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedUsers([])
+                            }}
+                            className="p-0.5 hover:bg-slate-100 rounded"
+                          >
+                            <X className="w-3 h-3 text-slate-400" />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-sm text-slate-500 flex-1">Select users...</span>
+                      )}
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${userDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {userDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-[350px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-auto">
+                        {mockUsers.map(user => (
+                          <button
+                            key={user.id}
+                            onClick={() => handleToggleUser(user.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors ${
+                              selectedUsers.includes(user.id) ? "bg-[#B30089] hover:bg-[#B30089]" : ""
+                            }`}
+                          >
+                            <span className={`text-sm ${selectedUsers.includes(user.id) ? "text-white" : "text-slate-900"}`}>
+                              {user.name}
+                            </span>
+                            <span className={`text-xs ${selectedUsers.includes(user.id) ? "text-white/80" : "text-slate-500"}`}>
+                              ({user.email})
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Users Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700 w-[45%]">Email/Login</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Name</th>
+                        <th className="py-3 px-4 w-[200px]">
+                          <Input
+                            placeholder="Search..."
+                            value={userSearch}
+                            onChange={(e) => {
+                              setUserSearch(e.target.value)
+                              setUserPage(1)
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedUsers.map(user => (
+                        <tr key={user.id} className="border-b border-slate-200 last:border-0">
+                          <td className="py-3 px-4 text-sm text-slate-900">{user.email}</td>
+                          <td className="py-3 px-4 text-sm text-slate-900">{user.name}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex justify-end">
+                              <button 
+                                onClick={() => handleRemoveUser(user.id)}
+                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {paginatedUsers.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="py-6 text-center text-sm text-slate-500">
+                            No users assigned to this role
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {filteredUsersInTable.length > 0 && (
+                  <div className="flex items-center gap-2 mt-4 text-sm text-slate-600">
+                    <span>
+                      {((userPage - 1) * usersPerPage) + 1} - {Math.min(userPage * usersPerPage, filteredUsersInTable.length)} of {filteredUsersInTable.length}
+                    </span>
+                    <button
+                      onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                      disabled={userPage === 1}
+                      className="p-1 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setUserPage(p => Math.min(totalUserPages, p + 1))}
+                      disabled={userPage === totalUserPages || totalUserPages === 0}
+                      className="p-1 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Permissions Card */}
+            <Card>
+              <CardContent className="py-4">
+                <h3 className="text-sm font-semibold text-slate-900 mb-4">Permissions</h3>
+                
+                <div className="grid grid-cols-5 gap-4">
+                  {Object.entries(permissions).map(([category, perms]) => (
+                    <div key={category} className="border border-slate-200 rounded-lg p-4">
+                      {/* Category Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-sm font-semibold text-slate-900">{category}</h4>
+                        <div className="flex items-center gap-1">
+                          <Ban className="w-4 h-4 text-red-400" />
+                          <HelpCircle className="w-4 h-4 text-slate-400" />
+                          <Check className="w-4 h-4 text-green-500" />
+                        </div>
+                      </div>
+
+                      {/* Permissions List */}
+                      <div className="space-y-3">
+                        {perms.map(permission => (
+                          <div key={permission.id} className="flex items-center justify-between gap-2">
+                            <span className="text-sm text-slate-700 flex-1">{permission.name}</span>
+                            <Switch
+                              checked={permission.enabled}
+                              onCheckedChange={() => handleTogglePermission(category, permission.id)}
+                              className="data-[state=checked]:bg-[#22c55e]"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  // List View
   return (
     <div className="flex h-screen bg-slate-50">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
@@ -230,12 +559,15 @@ export default function RolesPage() {
                           <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
                           <td className="py-4 px-4">
                             <div className="flex items-center justify-end gap-2">
-<button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                            <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
-                              <Pencil className="w-4 h-4" />
-                            </button>
+                              <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleEditRole(role)}
+                                className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
                             </div>
                           </td>
                         </tr>
