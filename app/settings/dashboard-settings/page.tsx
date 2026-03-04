@@ -17,16 +17,18 @@ import {
 
 // Sample Power BI reports data
 const initialReports = [
-  { id: "1", powerBiName: "2", displayName: "2222", organisations: [], roles: [], active: true },
-  { id: "2", powerBiName: "attendance_PBI_test", displayName: "attendance_PBI_test...!", organisations: [], roles: [], active: true },
-  { id: "3", powerBiName: "attendance_PBI_test1", displayName: "attendance_PBI_test11", organisations: [], roles: [], active: true },
-  { id: "4", powerBiName: "Dans Test Report", displayName: "Dans Test Report", organisations: [], roles: [], active: true },
-  { id: "5", powerBiName: "Dashboard Test", displayName: "Dashboard Test", organisations: [], roles: [], active: true },
-  { id: "6", powerBiName: "DataModel", displayName: "DataModel", organisations: [], roles: [], active: false },
-  { id: "7", powerBiName: "Josh Test", displayName: "Josh Test", organisations: [], roles: [], active: true },
-  { id: "8", powerBiName: "3", displayName: "Kates Dashboard", organisations: [], roles: [], active: true },
-  { id: "9", powerBiName: "test", displayName: "test", organisations: [], roles: [], active: false },
+  { id: "1", powerBiName: "2", displayName: "2222", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "2", powerBiName: "attendance_PBI_test", displayName: "attendance_PBI_test...!", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "3", powerBiName: "attendance_PBI_test1", displayName: "attendance_PBI_test11", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "4", powerBiName: "Dans Test Report", displayName: "Dans Test Report", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "5", powerBiName: "Dashboard Test", displayName: "Dashboard Test", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "6", powerBiName: "DataModel", displayName: "DataModel", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "7", powerBiName: "Josh Test", displayName: "Josh Test", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "8", powerBiName: "3", displayName: "Kates Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "9", powerBiName: "test", displayName: "test", organisations: [] as string[], roles: [] as string[], active: false },
 ]
+
+type Report = typeof initialReports[number]
 
 // Sample organisations for dropdown
 const availableOrganisations = [
@@ -49,6 +51,18 @@ const availableRoles = [
 export default function DashboardSettingsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [reports, setReports] = useState(initialReports)
+  const [originalReports, setOriginalReports] = useState(initialReports)
+
+  const hasChanges = (report: Report) => {
+    const original = originalReports.find(r => r.id === report.id)
+    if (!original) return false
+    return (
+      report.displayName !== original.displayName ||
+      report.active !== original.active ||
+      JSON.stringify(report.organisations) !== JSON.stringify(original.organisations) ||
+      JSON.stringify(report.roles) !== JSON.stringify(original.roles)
+    )
+  }
 
   const handleDisplayNameChange = (id: string, value: string) => {
     setReports(reports.map(report => 
@@ -76,7 +90,12 @@ export default function DashboardSettingsPage() {
 
   const handleSave = (id: string) => {
     // In a real app, this would save to the backend
-    console.log("Saving report:", reports.find(r => r.id === id))
+    const report = reports.find(r => r.id === id)
+    console.log("Saving report:", report)
+    // Update original to match current (mark as saved)
+    setOriginalReports(originalReports.map(r => 
+      r.id === id ? { ...reports.find(rep => rep.id === id)! } : r
+    ))
   }
 
   const handleIngest = () => {
@@ -177,7 +196,7 @@ export default function DashboardSettingsPage() {
                             <Switch
                               checked={report.active}
                               onCheckedChange={(value) => handleActiveChange(report.id, value)}
-                              className="data-[state=checked]:bg-[#9333ea]"
+                              className="data-[state=checked]:bg-[#121051]"
                             />
                           </div>
                         </td>
@@ -185,8 +204,9 @@ export default function DashboardSettingsPage() {
                           <Button
                             onClick={() => handleSave(report.id)}
                             size="sm"
-                            className="text-white px-6"
-                            style={{ backgroundColor: "#9333ea" }}
+                            disabled={!hasChanges(report)}
+                            className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100"
+                            style={{ backgroundColor: hasChanges(report) ? "#121051" : undefined }}
                           >
                             Save
                           </Button>
