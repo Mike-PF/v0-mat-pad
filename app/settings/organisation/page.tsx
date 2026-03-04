@@ -369,7 +369,7 @@ export default function OrganisationPage() {
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
-          <Card className="h-full flex flex-col">
+          <Card>
             {/* Picker Header */}
             <div className="p-4 border-b flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -539,9 +539,13 @@ export default function OrganisationPage() {
                 )}
               </div>
             </div>
+          </Card>
 
+          {/* Content Card - Only shown when organisation is selected */}
+          {selectedData && (
+          <Card className="flex-1 flex flex-col mt-4">
             {/* Schools Navigation Panel - shown when MAT is selected */}
-            {selectedData && selectedType === "mat" && selectedMAT && (
+            {selectedType === "mat" && selectedMAT && (
               <div className="px-4 py-3 border-b bg-slate-50">
                 {isViewingSchoolInMAT ? (
                   /* Back to MAT navigation */
@@ -676,10 +680,8 @@ export default function OrganisationPage() {
               </div>
             )}
 
-            {/* Content - only shown when organisation is selected */}
-            {selectedData && (
+            {/* Content */}
             <CardContent className="flex-1 overflow-auto p-6">
-              {selectedData && (
                 <div className="max-w-3xl">
                   {/* Basic Information Tab */}
                   {settingsTab === "basic" && (
@@ -976,10 +978,9 @@ export default function OrganisationPage() {
                     </div>
                   )}
                 </div>
-              )}
             </CardContent>
-            )}
           </Card>
+          )}
         </div>
       </div>
 
