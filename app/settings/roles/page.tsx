@@ -135,7 +135,7 @@ export default function RolesPage() {
                                 <span className={`text-sm flex-1 text-left truncate ${selectedOrganisation === mat.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
                                   {mat.name}
                                 </span>
-                                <span className={`text-xs ${selectedOrganisation === mat.id ? "text-[#121051]" : "text-slate-500"}`}
+                                <span className={`text-xs ${selectedOrganisation === mat.id ? "text-[#121051]" : "text-slate-500"}`}>
                                   {mat.schoolCount} schools
                                 </span>
                               </button>
@@ -168,7 +168,7 @@ export default function RolesPage() {
                                     {school.name}
                                   </span>
                                   {school.matName && (
-                                    <span className={`text-xs truncate block ${selectedOrganisation === school.id ? "text-[#121051]" : "text-slate-500"}`}
+                                    <span className={`text-xs truncate block ${selectedOrganisation === school.id ? "text-[#121051]" : "text-slate-500"}`}>
                                       {school.matName}
                                     </span>
                                   )}
