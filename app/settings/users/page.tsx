@@ -527,10 +527,10 @@ export default function UsersPage() {
               setRolesDropdownOpen(false)
             }
           }}>
-            <DialogContent className="max-w-md">
-              <h2 className="text-lg font-semibold text-slate-900">Update User</h2>
-              
+            <DialogContent className="max-w-md overflow-visible">
               <div className="space-y-5">
+                <h2 className="text-lg font-semibold text-slate-900">Update User</h2>
+                
                 {/* First Name */}
                 <div>
                   <label className="text-sm font-medium text-slate-700 mb-1.5 block">
@@ -609,7 +609,7 @@ export default function UsersPage() {
                     </button>
 
                     {schoolsDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[200px] overflow-auto">
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-[200px] overflow-auto">
                         <button
                           type="button"
                           onClick={() => {
@@ -684,7 +684,7 @@ export default function UsersPage() {
                     </button>
 
                     {rolesDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[200px] overflow-auto">
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-[100] max-h-[200px] overflow-auto">
                         {availableRoles.map(role => {
                           const isSelected = editSelectedRoles.includes(role)
                           return (
@@ -704,16 +704,16 @@ export default function UsersPage() {
                     )}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end pt-4 border-t">
-                <Button
-                  onClick={handleSaveUser}
-                  className="px-6 text-white"
-                  style={{ backgroundColor: "#121051" }}
-                >
-                  Save
-                </Button>
+                <div className="flex justify-end pt-4 border-t">
+                  <Button
+                    onClick={handleSaveUser}
+                    className="px-6 text-white"
+                    style={{ backgroundColor: "#121051" }}
+                  >
+                    Save
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
