@@ -27,7 +27,9 @@ import {
   Settings,
   Pencil,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  Trash2,
+  Search
 } from "lucide-react"
 
 // MAT and School data structure
@@ -212,6 +214,8 @@ export default function OrganisationPage() {
   const [newOrgExpiry, setNewOrgExpiry] = useState("")
   const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false)
   const [schoolsSearch, setSchoolsSearch] = useState("")
+  const [manageSchoolsOpen, setManageSchoolsOpen] = useState(false)
+  const [manageSchoolsSearch, setManageSchoolsSearch] = useState("")
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -521,7 +525,8 @@ export default function OrganisationPage() {
                         <Button 
                           size="sm"
                           onClick={() => {
-                            // TODO: Implement manage schools functionality
+                            setManageSchoolsSearch("")
+                            setManageSchoolsOpen(true)
                           }}
                           className="text-white"
                           style={{ backgroundColor: "#121051" }}
@@ -996,6 +1001,137 @@ export default function OrganisationPage() {
           )}
         </div>
       </div>
+
+      {/* Manage Schools Modal */}
+      <Dialog open={manageSchoolsOpen} onOpenChange={setManageSchoolsOpen}>
+        <DialogContent className="max-w-2xl p-0 flex flex-col max-h-[80vh]">
+          <div className="p-6 pb-4 border-b">
+            <h2 className="text-lg font-semibold text-slate-900">Manage Schools</h2>
+            <p className="text-sm text-slate-500 mt-1">{selectedMAT?.name}</p>
+          </div>
+          
+          <div className="p-6 flex-1 overflow-auto">
+            {/* Search to add new school */}
+            <div className="mb-6">
+              <label className="text-xs text-slate-500 block mb-2">Add School by URN or Name</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder="Search by URN or school name..."
+                  value={manageSchoolsSearch}
+                  onChange={(e) => setManageSchoolsSearch(e.target.value)}
+                  className="pl-10 h-10"
+                />
+              </div>
+              {manageSchoolsSearch && (
+                <div className="mt-2 border border-slate-200 rounded-lg max-h-[150px] overflow-auto">
+                  {standaloneSchools
+                    .filter(school => 
+                      school.urn.toLowerCase().includes(manageSchoolsSearch.toLowerCase()) ||
+                      school.name.toLowerCase().includes(manageSchoolsSearch.toLowerCase())
+                    )
+                    .map(school => (
+                      <button
+                        key={school.id}
+                        onClick={() => {
+                          if (selectedMAT) {
+                            // Add school to MAT
+                            const updatedSchool = { ...school, matId: selectedMAT.id }
+                            setMats(mats.map(mat => 
+                              mat.id === selectedMAT.id 
+                                ? { ...mat, schools: [...mat.schools, updatedSchool] }
+                                : mat
+                            ))
+                            setStandaloneSchools(standaloneSchools.filter(s => s.id !== school.id))
+                            setManageSchoolsSearch("")
+                          }
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 text-left border-b border-slate-100 last:border-0"
+                      >
+                        <div>
+                          <span className="text-sm font-medium text-slate-900">{school.name}</span>
+                          <span className="text-xs text-slate-500 ml-2">URN: {school.urn}</span>
+                        </div>
+                        <span className="text-xs text-[#121051] font-medium">Add</span>
+                      </button>
+                    ))}
+                  {standaloneSchools.filter(school => 
+                    school.urn.toLowerCase().includes(manageSchoolsSearch.toLowerCase()) ||
+                    school.name.toLowerCase().includes(manageSchoolsSearch.toLowerCase())
+                  ).length === 0 && (
+                    <div className="px-4 py-3 text-sm text-slate-500 text-center">
+                      No schools found
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Current schools in MAT */}
+            <div>
+              <label className="text-xs text-slate-500 block mb-2">Schools in this MAT</label>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-left py-2.5 px-4 text-xs font-medium text-slate-600 w-[120px]">URN</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-medium text-slate-600">School Name</th>
+                      <th className="py-2.5 px-4 w-[60px]"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedMAT?.schools.map(school => (
+                      <tr key={school.id} className="border-b border-slate-100 last:border-0">
+                        <td className="py-3 px-4 text-sm text-slate-600">{school.urn}</td>
+                        <td className="py-3 px-4 text-sm text-slate-900">{school.name}</td>
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={() => {
+                              if (selectedMAT) {
+                                // Remove school from MAT and add to standalone
+                                const schoolToRemove = selectedMAT.schools.find(s => s.id === school.id)
+                                if (schoolToRemove) {
+                                  const updatedSchool = { ...schoolToRemove, matId: undefined }
+                                  setStandaloneSchools([...standaloneSchools, updatedSchool])
+                                  setMats(mats.map(mat => 
+                                    mat.id === selectedMAT.id 
+                                      ? { ...mat, schools: mat.schools.filter(s => s.id !== school.id) }
+                                      : mat
+                                  ))
+                                }
+                              }
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {selectedMAT?.schools.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="py-6 text-center text-sm text-slate-500">
+                          No schools in this MAT
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 pt-4 border-t flex justify-end">
+            <Button
+              onClick={() => setManageSchoolsOpen(false)}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Done
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Organisation Modal */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
