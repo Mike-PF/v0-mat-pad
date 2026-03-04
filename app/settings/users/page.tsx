@@ -10,11 +10,20 @@ import { Plus, ChevronDown, Trash2, Pencil } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
-// Sample organisations for dropdown
-const organisations = [
-  { id: "org-1", name: "St Joseph Catholic Multi Academy Trust" },
-  { id: "org-2", name: "Holy Cross Academy Trust" },
-  { id: "org-3", name: "Sacred Heart School" },
+// Sample MATs data
+const matsData = [
+  { id: "mat-1", name: "St Joseph Catholic Multi Academy Trust", schools: ["school-1", "school-2", "school-3", "school-4"] },
+  { id: "mat-2", name: "Holy Cross Academy Trust", schools: ["school-5"] },
+]
+
+// Sample Schools data  
+const schoolsListData = [
+  { id: "school-1", name: "Holy Spirit Catholic Academy", urn: "149029", matId: "mat-1" },
+  { id: "school-2", name: "St Ambrose Catholic Academy", urn: "149133", matId: "mat-1" },
+  { id: "school-3", name: "St Nicholas Catholic Academy", urn: "149132", matId: "mat-1" },
+  { id: "school-4", name: "Holy Family Catholic Academy", urn: "149190", matId: "mat-1" },
+  { id: "school-5", name: "St Mary's Primary", urn: "149200", matId: "mat-2" },
+  { id: "school-6", name: "Sacred Heart School", urn: "149210", matId: null }, // Standalone school
 ]
 
 // Sample schools data
@@ -73,29 +82,61 @@ interface User {
 
 export default function UsersPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>(null)
-  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
-  const [orgSearch, setOrgSearch] = useState("")
+  const [selectedType, setSelectedType] = useState<"mat" | "school" | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerSearch, setPickerSearch] = useState("")
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
-  const orgDropdownRef = useRef<HTMLDivElement>(null)
-
-  const selectedOrg = organisations.find(org => org.id === selectedOrganisation)
+  const pickerRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (orgDropdownRef.current && !orgDropdownRef.current.contains(event.target as Node)) {
-        setOrgDropdownOpen(false)
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setPickerOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const handleClearSelection = () => {
-    setSelectedOrganisation(null)
+  // Helper functions for filtering
+  const getFilteredMATs = () => {
+    return matsData.filter(mat => 
+      mat.name.toLowerCase().includes(pickerSearch.toLowerCase())
+    )
+  }
+
+  const getFilteredSchools = () => {
+    return schoolsListData.filter(school => 
+      school.name.toLowerCase().includes(pickerSearch.toLowerCase())
+    )
+  }
+
+  const getParentMAT = (school: typeof schoolsListData[0]) => {
+    if (!school.matId) return null
+    return matsData.find(mat => mat.id === school.matId)
+  }
+
+  const handleSelect = (type: "mat" | "school", id: string) => {
+    setSelectedType(type)
+    setSelectedId(id)
+    setPickerOpen(false)
+    setPickerSearch("")
+  }
+
+  // Get display name for selected item
+  const getSelectedDisplayName = () => {
+    if (selectedType === "mat") {
+      const mat = matsData.find(m => m.id === selectedId)
+      return mat?.name || ""
+    } else if (selectedType === "school") {
+      const school = schoolsListData.find(s => s.id === selectedId)
+      return school?.name || ""
+    }
+    return ""
   }
 
   const handleDeleteClick = (user: User) => {
@@ -125,18 +166,18 @@ export default function UsersPage() {
           <Card className="mb-4">
             <CardContent className="py-4">
               <div className="flex items-center gap-4">
-                <div className="relative" ref={orgDropdownRef}>
+                <div className="relative" ref={pickerRef}>
                   <button
-                    onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
+                    onClick={() => setPickerOpen(!pickerOpen)}
                     className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors min-w-[300px]"
                   >
-                    {selectedOrg ? (
+                    {selectedType ? (
                       <>
                         <span className="text-sm font-medium text-slate-900 flex-1 text-left truncate">
-                          {selectedOrg.name}
+                          {getSelectedDisplayName()}
                         </span>
                         <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                          {selectedOrg.type}
+                          {selectedType === "mat" ? "MAT" : "School"}
                         </span>
                       </>
                     ) : (
@@ -144,46 +185,87 @@ export default function UsersPage() {
                         Select an organisation...
                       </span>
                     )}
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${orgDropdownOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${pickerOpen ? "rotate-180" : ""}`} />
                   </button>
 
-                  {orgDropdownOpen && (
+                  {/* Dropdown */}
+                  {pickerOpen && (
                     <div className="absolute top-full left-0 mt-1 w-[400px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[400px] flex flex-col">
                       {/* Search Input */}
                       <div className="p-2 border-b">
                         <Input
-                          placeholder="Search organisations..."
-                          value={orgSearch}
-                          onChange={(e) => setOrgSearch(e.target.value)}
+                          placeholder="Search MATs or schools..."
+                          value={pickerSearch}
+                          onChange={(e) => setPickerSearch(e.target.value)}
                           className="h-9"
                           autoFocus
                         />
                       </div>
                       
                       <div className="overflow-auto flex-1">
-                        {organisations
-                          .filter(org => org.name.toLowerCase().includes(orgSearch.toLowerCase()))
-                          .map(org => (
-                            <button
-                              key={org.id}
-                              onClick={() => {
-                                setSelectedOrganisation(org.id)
-                                setOrgDropdownOpen(false)
-                                setOrgSearch("")
-                              }}
-                              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                selectedOrganisation === org.id ? "bg-[#B30089]" : "hover:bg-slate-50"
-                              }`}
-                            >
-                              <span className={`text-sm flex-1 text-left truncate ${selectedOrganisation === org.id ? "text-white font-medium" : "text-slate-900"}`}>
-                                {org.name}
+                        {/* MATs Section */}
+                        {getFilteredMATs().length > 0 && (
+                          <>
+                            <div className="p-2 border-b">
+                              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
+                                Multi-Academy Trusts
                               </span>
-                              <span className={`text-xs ${selectedOrganisation === org.id ? "text-white" : "text-slate-500"}`}>
-                                {org.type}
+                            </div>
+                            {getFilteredMATs().map((mat) => (
+                              <button
+                                key={mat.id}
+                                onClick={() => handleSelect("mat", mat.id)}
+                                className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                                  selectedType === "mat" && selectedId === mat.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                }`}
+                              >
+                                <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-white font-medium" : "text-slate-900"}`}>
+                                  {mat.name}
+                                </span>
+                                <span className={`text-xs ${selectedType === "mat" && selectedId === mat.id ? "text-white" : "text-slate-500"}`}>
+                                  {mat.schools.length} schools
+                                </span>
+                              </button>
+                            ))}
+                          </>
+                        )}
+
+                        {/* Schools Section */}
+                        {getFilteredSchools().length > 0 && (
+                          <>
+                            <div className="p-2 border-b border-t">
+                              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider px-2">
+                                Schools
                               </span>
-                            </button>
-                          ))}
-                        {organisations.filter(org => org.name.toLowerCase().includes(orgSearch.toLowerCase())).length === 0 && (
+                            </div>
+                            {getFilteredSchools().map((school) => {
+                              const parentMAT = getParentMAT(school)
+                              return (
+                                <button
+                                  key={school.id}
+                                  onClick={() => handleSelect("school", school.id)}
+                                  className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                                    selectedType === "school" && selectedId === school.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <div className="flex-1 text-left min-w-0">
+                                    <span className={`text-sm block truncate ${selectedType === "school" && selectedId === school.id ? "text-white font-medium" : "text-slate-900"}`}>
+                                      {school.name}
+                                    </span>
+                                    {parentMAT && (
+                                      <span className={`text-xs truncate block ${selectedType === "school" && selectedId === school.id ? "text-white" : "text-slate-500"}`}>
+                                        {parentMAT.name}
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </>
+                        )}
+
+                        {/* No results */}
+                        {getFilteredMATs().length === 0 && getFilteredSchools().length === 0 && (
                           <div className="p-4 text-center text-sm text-slate-500">
                             No results found
                           </div>
@@ -192,9 +274,12 @@ export default function UsersPage() {
                     </div>
                   )}
                 </div>
-                {selectedOrganisation && (
+                {selectedType && (
                   <button
-                    onClick={handleClearSelection}
+                    onClick={() => {
+                      setSelectedType(null)
+                      setSelectedId(null)
+                    }}
                     className="text-sm text-[#121051] hover:underline"
                   >
                     Clear Selection
@@ -205,7 +290,7 @@ export default function UsersPage() {
           </Card>
 
           {/* Users Card - Only shown when organisation is selected */}
-          {selectedOrganisation && (
+          {selectedType && (
             <Card>
               <CardContent className="py-6">
                 <div className="flex items-center justify-between mb-6">
