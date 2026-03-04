@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -14,6 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { ChevronDown } from "lucide-react"
 
 // Sample Power BI reports data
 const initialReports = [
@@ -70,10 +77,15 @@ export default function DashboardSettingsPage() {
     ))
   }
 
-  const handleOrganisationChange = (id: string, value: string) => {
-    setReports(reports.map(report => 
-      report.id === id ? { ...report, organisations: value ? [value] : [] } : report
-    ))
+  const handleOrganisationToggle = (reportId: string, orgId: string) => {
+    setReports(reports.map(report => {
+      if (report.id !== reportId) return report
+      const currentOrgs = report.organisations
+      const newOrgs = currentOrgs.includes(orgId)
+        ? currentOrgs.filter(o => o !== orgId)
+        : [...currentOrgs, orgId]
+      return { ...report, organisations: newOrgs }
+    }))
   }
 
   const handleRoleChange = (id: string, value: string) => {
@@ -155,21 +167,35 @@ export default function DashboardSettingsPage() {
                           />
                         </td>
                         <td className="py-4 px-4">
-                          <Select 
-                            value={report.organisations[0] || ""} 
-                            onValueChange={(value) => handleOrganisationChange(report.id, value)}
-                          >
-                            <SelectTrigger className="h-9 w-[200px] bg-slate-50 border-slate-200">
-                              <SelectValue placeholder="Select School..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableOrganisations.map((org) => (
-                                <SelectItem key={org.id} value={org.id}>
-                                  {org.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center justify-between h-9 w-[200px] px-3 bg-slate-50 border border-slate-200 rounded-md text-sm text-left hover:bg-slate-100 transition-colors">
+                                <span className="truncate text-slate-600">
+                                  {report.organisations.length > 0 
+                                    ? `${report.organisations.length} selected`
+                                    : "Select School..."}
+                                </span>
+                                <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] p-0" align="start">
+                              <div className="max-h-[250px] overflow-auto">
+                                {availableOrganisations.map((org) => (
+                                  <label
+                                    key={org.id}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+                                  >
+                                    <Checkbox
+                                      checked={report.organisations.includes(org.id)}
+                                      onCheckedChange={() => handleOrganisationToggle(report.id, org.id)}
+                                      className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                    />
+                                    <span className="text-sm text-slate-700">{org.name}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </td>
                         <td className="py-4 px-4">
                           <Select 
