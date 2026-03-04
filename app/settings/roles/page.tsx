@@ -3,36 +3,43 @@
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreHorizontal, Users, Check, X } from "lucide-react"
+import { Plus, Copy, ExternalLink, ChevronDown } from "lucide-react"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
+
+// Sample organisations for dropdown
+const availableOrganisations = [
+  { id: "org-1", name: "St Clare Catholic Multi Academy Trust", type: "mat" as const },
+  { id: "org-2", name: "All Saints' Catholic High School", type: "school" as const },
+  { id: "org-3", name: "Emmaus Catholic and CofE Primary School", type: "school" as const },
+  { id: "org-4", name: "Notre Dame High School", type: "school" as const },
+  { id: "org-5", name: "Sacred Heart School", type: "school" as const },
+]
 
 const mockRoles = [
-  {
-    id: 1,
-    name: "Admin",
-    description: "Full access to all features and settings",
-    users: 2,
-    permissions: { forms: true, reports: true, settings: true, users: true },
-  },
-  {
-    id: 2,
-    name: "Teacher",
-    description: "Can create and edit forms, view reports",
-    users: 15,
-    permissions: { forms: true, reports: true, settings: false, users: false },
-  },
-  {
-    id: 3,
-    name: "Viewer",
-    description: "Read-only access to forms and reports",
-    users: 8,
-    permissions: { forms: false, reports: true, settings: false, users: false },
-  },
+  { id: 1, name: "User", users: 0 },
+  { id: 2, name: "bl Finance", users: 0 },
+  { id: 3, name: "Admin", users: 0 },
 ]
 
 export default function RolesPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>("org-1")
+  const [orgSearch, setOrgSearch] = useState("")
+
+  const selectedOrgName = selectedOrganisation 
+    ? availableOrganisations.find(o => o.id === selectedOrganisation)?.name 
+    : null
+
+  const filteredOrganisations = availableOrganisations.filter(org =>
+    org.name.toLowerCase().includes(orgSearch.toLowerCase())
+  )
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -43,80 +50,106 @@ export default function RolesPage() {
           <TopNavigation />
         </div>
 
-        <div className="flex-1 px-4 pb-6 overflow-auto">
+        <main className="flex-1 px-4 pb-6 overflow-auto">
+          {/* Organisation Selector Card */}
+          <Card className="mb-4">
+            <CardContent className="py-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-slate-900">Organisation</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button 
+                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#121051] transition-colors"
+                    >
+                      <span className="flex-1 truncate text-slate-700">
+                        {selectedOrgName || "Select Organisation..."}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[350px] p-0 shadow-lg" align="start">
+                    <div className="p-2 border-b">
+                      <Input
+                        placeholder="Search..."
+                        value={orgSearch}
+                        onChange={(e) => setOrgSearch(e.target.value)}
+                        className="h-8"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-[300px] overflow-auto">
+                      {filteredOrganisations.map((org) => (
+                        <div
+                          key={org.id}
+                          onClick={() => {
+                            setSelectedOrganisation(org.id)
+                            setOrgSearch("")
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
+                            selectedOrganisation === org.id ? "bg-slate-50" : ""
+                          }`}
+                        >
+                          <span className={`text-sm ${selectedOrganisation === org.id ? "text-[#121051] font-medium" : "text-slate-900"}`}>
+                            {org.name}
+                          </span>
+                        </div>
+                      ))}
+                      {filteredOrganisations.length === 0 && (
+                        <div className="p-3 text-sm text-slate-500 text-center">No results found</div>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {selectedOrganisation && (
+                  <button
+                    onClick={() => setSelectedOrganisation(null)}
+                    className="text-sm text-[#121051] hover:underline"
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Roles Table Card */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Roles</CardTitle>
-                  <CardDescription>Manage user roles and permissions</CardDescription>
-                </div>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Role
+            <CardContent className="py-6">
+              {/* Header with Add Role button */}
+              <div className="flex items-center justify-end mb-6">
+                <Button 
+                  className="text-white gap-2"
+                  style={{ backgroundColor: "#121051" }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add role
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="border rounded-lg overflow-hidden">
+
+              {/* Table */}
+              <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50 border-b">
-                    <tr>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Role</th>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-slate-600">Description</th>
-                      <th className="text-center px-4 py-3 text-sm font-medium text-slate-600">Users</th>
-                      <th className="text-center px-4 py-3 text-sm font-medium text-slate-600">Forms</th>
-                      <th className="text-center px-4 py-3 text-sm font-medium text-slate-600">Reports</th>
-                      <th className="text-center px-4 py-3 text-sm font-medium text-slate-600">Settings</th>
-                      <th className="text-center px-4 py-3 text-sm font-medium text-slate-600">Users Mgmt</th>
-                      <th className="text-right px-4 py-3 text-sm font-medium text-slate-600">Actions</th>
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-slate-700 w-[40%]">Role name</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Users</th>
+                      <th className="py-3 px-4 w-[100px]"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {mockRoles.map((role) => (
-                      <tr key={role.id} className="border-b last:border-0 hover:bg-slate-50">
-                        <td className="px-4 py-3">
-                          <span className="font-medium text-slate-900">{role.name}</span>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600 text-sm">{role.description}</td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex items-center justify-center gap-1 text-slate-600">
-                            <Users className="h-4 w-4" />
-                            <span>{role.users}</span>
+                      <tr key={role.id} className="border-b border-slate-200 last:border-0">
+                        <td className="py-4 px-4 text-sm text-slate-900">{role.name}</td>
+                        <td className="py-4 px-4 text-sm text-slate-600">{role.users}</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                              <Copy className="w-4 h-4" />
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors">
+                              <ExternalLink className="w-4 h-4" />
+                            </button>
                           </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {role.permissions.forms ? (
-                            <Check className="h-4 w-4 text-green-600 mx-auto" />
-                          ) : (
-                            <X className="h-4 w-4 text-slate-300 mx-auto" />
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {role.permissions.reports ? (
-                            <Check className="h-4 w-4 text-green-600 mx-auto" />
-                          ) : (
-                            <X className="h-4 w-4 text-slate-300 mx-auto" />
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {role.permissions.settings ? (
-                            <Check className="h-4 w-4 text-green-600 mx-auto" />
-                          ) : (
-                            <X className="h-4 w-4 text-slate-300 mx-auto" />
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {role.permissions.users ? (
-                            <Check className="h-4 w-4 text-green-600 mx-auto" />
-                          ) : (
-                            <X className="h-4 w-4 text-slate-300 mx-auto" />
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -125,7 +158,7 @@ export default function RolesPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </main>
       </div>
     </div>
   )
