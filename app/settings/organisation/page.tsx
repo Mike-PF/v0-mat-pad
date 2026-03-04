@@ -42,7 +42,7 @@ interface SchoolData {
   logo: string
   primaryColor: string
   secondaryColor: string
-  powerBiReportId?: string
+  powerBiLoginEmail?: string
   matId?: string
 }
 
@@ -56,7 +56,7 @@ interface MATData {
   logo: string
   primaryColor: string
   secondaryColor: string
-  powerBiReportId?: string
+  powerBiLoginEmail?: string
   schools: SchoolData[]
 }
 
@@ -72,7 +72,7 @@ const initialMATs: MATData[] = [
     logo: "/placeholder.svg",
     primaryColor: "#121051",
     secondaryColor: "#4A90D9",
-    powerBiReportId: "abc123-report-001",
+    powerBiLoginEmail: "reports@stclaremat.org",
     schools: [
       {
         id: "school-1",
@@ -85,7 +85,7 @@ const initialMATs: MATData[] = [
         logo: "/placeholder.svg",
         primaryColor: "#121051",
         secondaryColor: "#4A90D9",
-        powerBiReportId: "abc123-report-002",
+        powerBiLoginEmail: "reports@allsaints.org",
         matId: "mat-1",
       },
       {
@@ -112,7 +112,7 @@ const initialMATs: MATData[] = [
         logo: "/placeholder.svg",
         primaryColor: "#2563eb",
         secondaryColor: "#60A5FA",
-        powerBiReportId: "abc123-report-003",
+        powerBiLoginEmail: "reports@notredame.org",
         matId: "mat-1",
       },
     ],
@@ -158,7 +158,7 @@ const initialStandaloneSchools: SchoolData[] = [
     logo: "/placeholder.svg",
     primaryColor: "#dc2626",
     secondaryColor: "#F87171",
-    powerBiReportId: "standalone-report-001",
+    powerBiLoginEmail: "reports@stalbans.org",
   },
   {
     id: "standalone-2",
@@ -818,26 +818,27 @@ export default function OrganisationPage() {
                       {isEditing && editingItem ? (
                         <div className="space-y-4">
                           <div>
-                            <label className="text-xs text-slate-500 block mb-1">Power BI Report ID</label>
-                            <Input
-                              value={editingItem.powerBiReportId || ""}
-                              onChange={(e) => setEditingItem({ ...editingItem, powerBiReportId: e.target.value })}
-                              placeholder="Enter Power BI Report ID"
+<label className="text-xs text-slate-500 block mb-1">Login Email</label>
+                              <Input
+                                type="email"
+                                value={editingItem.powerBiLoginEmail || ""}
+                                onChange={(e) => setEditingItem({ ...editingItem, powerBiLoginEmail: e.target.value })}
+                                placeholder="Enter Power BI login email"
                               className="h-9"
                             />
                             <p className="text-xs text-slate-500 mt-1">
-                              The unique identifier for the Power BI report to embed
+                              The email address used to log in to Power BI
                             </p>
                           </div>
                         </div>
                       ) : (
                         <div className="space-y-4">
                           <div>
-                            <span className="text-xs text-slate-500">Power BI Report ID</span>
-                            {selectedData.powerBiReportId ? (
-                              <p className="text-sm text-slate-900">{selectedData.powerBiReportId}</p>
+                            <span className="text-xs text-slate-500">Login Email</span>
+                            {selectedData.powerBiLoginEmail ? (
+                              <p className="text-sm text-slate-900">{selectedData.powerBiLoginEmail}</p>
                             ) : (
-                              <p className="text-sm text-slate-400 italic">No report configured</p>
+                              <p className="text-sm text-slate-400 italic">No email configured</p>
                             )}
                           </div>
                         </div>
