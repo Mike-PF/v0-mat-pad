@@ -472,13 +472,36 @@ export default function UsersPage() {
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
-                            <button 
-                              type="button" 
-                              onClick={() => handleViewPermissions(user.roles)}
-                              className="text-left hover:text-[#B30089] transition-colors underline decoration-dotted underline-offset-2"
-                            >
-                              {user.roles.join(", ")}
-                            </button>
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button 
+                                    type="button" 
+                                    onClick={() => handleViewPermissions(user.roles)}
+                                    className="text-left hover:text-[#B30089] transition-colors underline decoration-dotted underline-offset-2"
+                                  >
+                                    {user.roles.join(", ")}
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="p-0 max-w-sm">
+                                  <div className="p-3">
+                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Click to view full breakdown</div>
+                                    {user.roles.map((role, idx) => {
+                                      const perms = rolePermissions[role] || []
+                                      return (
+                                        <div key={idx} className={idx > 0 ? "mt-2 pt-2 border-t" : ""}>
+                                          <div className="font-medium text-sm text-slate-900">{role}</div>
+                                          <div className="text-xs text-slate-500 mt-0.5">
+                                            {perms.length > 0 ? perms.slice(0, 3).join(", ") : "No permissions"}
+                                            {perms.length > 3 && ` +${perms.length - 3} more`}
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-600">
                             {user.schools === "all" ? (
@@ -795,23 +818,7 @@ export default function UsersPage() {
           {/* Permissions Modal - Shows each role's permissions breakdown */}
           <Dialog open={permissionsModalOpen} onOpenChange={setPermissionsModalOpen}>
             <DialogContent className="max-w-4xl !block">
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-lg font-semibold text-slate-900">Role Permissions Breakdown</h2>
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button type="button" className="text-slate-400 hover:text-slate-600 transition-colors">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-xs">
-                      <p className="text-sm">This table shows which permissions each role grants. Amber highlighted rows indicate overlapping permissions across multiple roles.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Role Permissions Breakdown</h2>
               
               <div className="overflow-auto max-h-[60vh]">
                 <table className="w-full border-collapse text-sm">
