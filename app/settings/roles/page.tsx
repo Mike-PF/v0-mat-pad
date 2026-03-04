@@ -367,12 +367,26 @@ export default function RolesPage() {
                           <td className="py-3 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-3 px-4">
                             <div className="flex justify-end">
-<button
-                                onClick={() => handleRemoveUserClick({ id: user.id, name: user.name })}
-                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <TooltipProvider delayDuration={300}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        handleRemoveUserClick({ id: user.id, name: user.name })
+                                      }}
+                                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Remove user from role</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </td>
                         </tr>
