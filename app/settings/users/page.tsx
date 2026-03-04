@@ -99,9 +99,11 @@ export default function UsersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
   
-  // Edit user state
+  // Edit/Add user state
   const [editUserOpen, setEditUserOpen] = useState(false)
+  const [isAddMode, setIsAddMode] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [editEmail, setEditEmail] = useState("")
   const [editFirstName, setEditFirstName] = useState("")
   const [editLastName, setEditLastName] = useState("")
   const [editSelectedSchools, setEditSelectedSchools] = useState<{ urn: string; name: string }[]>([])
@@ -168,12 +170,27 @@ export default function UsersPage() {
     return ""
   }
 
+  // Add user handler
+  const handleAddUser = () => {
+    setIsAddMode(true)
+    setEditingUser(null)
+    setEditFirstName("")
+    setEditLastName("")
+    setEditEmail("")
+    setEditAllSchools(false)
+    setEditSelectedSchools([])
+    setEditSelectedRoles([])
+    setEditUserOpen(true)
+  }
+
   // Edit user handlers
   const handleEditUser = (user: User) => {
+    setIsAddMode(false)
     const nameParts = user.name.split(" ")
     setEditingUser(user)
     setEditFirstName(nameParts[0] || "")
     setEditLastName(nameParts.slice(1).join(" ") || "")
+    setEditEmail(user.email)
     if (user.schools === "all") {
       setEditAllSchools(true)
       setEditSelectedSchools([])
@@ -186,18 +203,30 @@ export default function UsersPage() {
   }
 
   const handleSaveUser = () => {
-    if (!editingUser) return
-    
-    const updatedUser: User = {
-      ...editingUser,
-      name: `${editFirstName} ${editLastName}`.trim(),
-      schools: editAllSchools ? "all" : editSelectedSchools,
-      roles: editSelectedRoles,
+    if (isAddMode) {
+      // Add new user
+      const newUser: User = {
+        id: Math.max(...users.map(u => u.id)) + 1,
+        email: editEmail,
+        lastLoggedIn: null,
+        name: `${editFirstName} ${editLastName}`.trim(),
+        schools: editAllSchools ? "all" : editSelectedSchools,
+        roles: editSelectedRoles,
+      }
+      setUsers([...users, newUser])
+    } else if (editingUser) {
+      // Update existing user
+      const updatedUser: User = {
+        ...editingUser,
+        name: `${editFirstName} ${editLastName}`.trim(),
+        schools: editAllSchools ? "all" : editSelectedSchools,
+        roles: editSelectedRoles,
+      }
+      setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u))
     }
-    
-    setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u))
     setEditUserOpen(false)
     setEditingUser(null)
+    setIsAddMode(false)
   }
 
   const toggleSchool = (school: { urn: string; name: string }) => {
@@ -374,6 +403,7 @@ export default function UsersPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-slate-900">Users</h3>
                   <Button 
+                    onClick={handleAddUser}
                     className="text-white"
                     style={{ backgroundColor: "#121051" }}
                   >
@@ -528,7 +558,7 @@ export default function UsersPage() {
             }
           }}>
             <DialogContent className="max-w-md !block">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">Update User</h2>
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">{isAddMode ? "Add User" : "Update User"}</h2>
               
               {/* First Name */}
               <div className="mb-4">
@@ -554,15 +584,16 @@ export default function UsersPage() {
                 />
               </div>
 
-              {/* Email (disabled) */}
+              {/* Email */}
               <div className="mb-4">
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">
                   Email<span className="text-slate-400">*</span>
                 </label>
                 <Input
-                  value={editingUser?.email || ""}
-                  disabled
-                  className="h-11 bg-slate-100 text-slate-600"
+                  value={isAddMode ? editEmail : editingUser?.email || ""}
+                  onChange={(e) => isAddMode && setEditEmail(e.target.value)}
+                  disabled={!isAddMode}
+                  className={`h-11 ${!isAddMode ? "bg-slate-100 text-slate-600" : ""}`}
                 />
               </div>
 
