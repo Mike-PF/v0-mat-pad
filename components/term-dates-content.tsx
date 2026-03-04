@@ -190,17 +190,21 @@ export function TermDatesContent() {
         summer2: { start: "", end: "" },
       })
       setCensusDates({
-        autumn1: "",
-        autumn2: "",
-        spring1: "",
-        spring2: "",
-        summer1: "",
-        summer2: "",
+        autumn: "",
+        spring: "",
+        summer: "",
       })
     }
   }
 
   const yearStatus = getYearStatus()
+
+  // Check if there's something to save
+  const hasTermDatesToSave = selectedSchool && selectedAcademicYear && 
+    Object.values(termDates).some((term) => term.start || term.end)
+  
+  const hasCensusDatesToSave = selectedSchool && selectedAcademicYear && 
+    Object.values(censusDates).some((date) => date)
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -228,8 +232,15 @@ export function TermDatesContent() {
               </Button>
               <Button
                 onClick={activeTab === "termdates" ? handleSave : handleSaveCensusDate}
-                className="bg-[#121051] hover:bg-[#B30089] hover:text-white text-white"
+                className={`text-white ${
+                  (activeTab === "termdates" && !hasTermDatesToSave) || 
+                  (activeTab === "censusdates" && !hasCensusDatesToSave)
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-[#B30089]"
+                }`}
                 style={{ backgroundColor: "#121051" }}
+                disabled={(activeTab === "termdates" && !hasTermDatesToSave) || 
+                         (activeTab === "censusdates" && !hasCensusDatesToSave)}
               >
                 <Save className="w-4 h-4 mr-2" />
                 {activeTab === "termdates" ? "Save Term Dates" : "Save Census Dates"}
@@ -242,12 +253,12 @@ export function TermDatesContent() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* School Selection */}
               <div className="flex flex-col">
-                <label className="text-sm font-medium text-slate-700 mb-2">Select School</label>
+                <label className="text-sm font-medium text-slate-700 mb-2">Select school</label>
                 <div className="relative">
                   <select
                     value={selectedSchool}
                     onChange={(e) => handleSchoolChange(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 pr-10 border border-slate-200 rounded-lg bg-slate-50 appearance-none focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051] text-slate-900"
                   >
                     <option value="">Please select a school...</option>
                     {schools.map((school) => (
@@ -267,7 +278,11 @@ export function TermDatesContent() {
                   <select
                     value={selectedAcademicYear}
                     onChange={(e) => handleAcademicYearChange(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-3 pr-10 border border-slate-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051] ${
+                      !selectedSchool 
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                        : "bg-slate-50 text-slate-900"
+                    }`}
                     disabled={!selectedSchool}
                   >
                     <option value="">Please select academic year...</option>
@@ -278,7 +293,9 @@ export function TermDatesContent() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none ${
+                    !selectedSchool ? "text-slate-300" : "text-slate-500"
+                  }`} />
                 </div>
               </div>
             </div>
