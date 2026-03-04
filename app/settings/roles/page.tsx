@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Trash2, Pencil, ChevronDown, Ban, HelpCircle, Check } from "lucide-react"
+import { Trash2, Pencil, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 
@@ -438,11 +438,6 @@ export default function RolesPage() {
                       {/* Category Header */}
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-sm font-semibold text-slate-900">{category}</h4>
-                        <div className="flex items-center gap-1">
-                          <Ban className="w-4 h-4 text-red-400" />
-                          <HelpCircle className="w-4 h-4 text-slate-400" />
-                          <Check className="w-4 h-4 text-green-500" />
-                        </div>
                       </div>
 
                       {/* Permissions List */}
