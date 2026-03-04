@@ -158,6 +158,18 @@ export default function RolesPage() {
     setUserSearch("")
   }
 
+  const handleAddRole = () => {
+    // Create a new blank role for editing
+    const newRole: Role = { id: 0, name: "", users: 0 }
+    setEditingRole(newRole)
+    setEditRoleName("")
+    setSelectedUsers([])
+    setPermissions(permissionsData.map(cat => ({
+      ...cat,
+      permissions: cat.permissions.map(p => ({ ...p, enabled: false }))
+    })))
+  }
+
   const handleToggleUser = (userId: number) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
@@ -616,6 +628,7 @@ export default function RolesPage() {
                   <Button 
                     className="text-white"
                     style={{ backgroundColor: "#121051" }}
+                    onClick={handleAddRole}
                   >
                     Add role
                   </Button>
