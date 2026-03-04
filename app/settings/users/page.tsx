@@ -6,7 +6,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, ChevronDown, Trash2, Pencil } from "lucide-react"
+import { Plus, ChevronDown, Trash2, Pencil, X } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -30,6 +30,17 @@ const schoolsData = [
   { urn: "149133", name: "St Ambrose Catholic Academy" },
   { urn: "149132", name: "St Nicholas Catholic Academy" },
   { urn: "149190", name: "Holy Family Catholic Academy" },
+]
+
+// Available roles
+const availableRoles = [
+  "User",
+  "Admin",
+  "Finance",
+  "Finance Data",
+  "CPOMS Data",
+  "Preview",
+  "User Admin",
 ]
 
 // Sample users data matching the image
@@ -87,13 +98,33 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  
+  // Edit user state
+  const [editUserOpen, setEditUserOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [editFirstName, setEditFirstName] = useState("")
+  const [editLastName, setEditLastName] = useState("")
+  const [editSelectedSchools, setEditSelectedSchools] = useState<{ urn: string; name: string }[]>([])
+  const [editAllSchools, setEditAllSchools] = useState(false)
+  const [editSelectedRoles, setEditSelectedRoles] = useState<string[]>([])
+  const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false)
+  const [rolesDropdownOpen, setRolesDropdownOpen] = useState(false)
+  
   const pickerRef = useRef<HTMLDivElement>(null)
+  const schoolsDropdownRef = useRef<HTMLDivElement>(null)
+  const rolesDropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
         setPickerOpen(false)
+      }
+      if (schoolsDropdownRef.current && !schoolsDropdownRef.current.contains(event.target as Node)) {
+        setSchoolsDropdownOpen(false)
+      }
+      if (rolesDropdownRef.current && !rolesDropdownRef.current.contains(event.target as Node)) {
+        setRolesDropdownOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -135,6 +166,55 @@ export default function UsersPage() {
       return school?.name || ""
     }
     return ""
+  }
+
+  // Edit user handlers
+  const handleEditUser = (user: User) => {
+    const nameParts = user.name.split(" ")
+    setEditingUser(user)
+    setEditFirstName(nameParts[0] || "")
+    setEditLastName(nameParts.slice(1).join(" ") || "")
+    if (user.schools === "all") {
+      setEditAllSchools(true)
+      setEditSelectedSchools([])
+    } else {
+      setEditAllSchools(false)
+      setEditSelectedSchools(user.schools)
+    }
+    setEditSelectedRoles(user.roles)
+    setEditUserOpen(true)
+  }
+
+  const handleSaveUser = () => {
+    if (!editingUser) return
+    
+    const updatedUser: User = {
+      ...editingUser,
+      name: `${editFirstName} ${editLastName}`.trim(),
+      schools: editAllSchools ? "all" : editSelectedSchools,
+      roles: editSelectedRoles,
+    }
+    
+    setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u))
+    setEditUserOpen(false)
+    setEditingUser(null)
+  }
+
+  const toggleSchool = (school: { urn: string; name: string }) => {
+    const exists = editSelectedSchools.find(s => s.urn === school.urn)
+    if (exists) {
+      setEditSelectedSchools(editSelectedSchools.filter(s => s.urn !== school.urn))
+    } else {
+      setEditSelectedSchools([...editSelectedSchools, school])
+    }
+  }
+
+  const toggleRole = (role: string) => {
+    if (editSelectedRoles.includes(role)) {
+      setEditSelectedRoles(editSelectedRoles.filter(r => r !== role))
+    } else {
+      setEditSelectedRoles([...editSelectedRoles, role])
+    }
   }
 
   const handleDeleteClick = (user: User) => {
@@ -388,7 +468,7 @@ export default function UsersPage() {
                                       onClick={(e) => {
                                         e.preventDefault()
                                         e.stopPropagation()
-                                        // TODO: Implement edit user
+                                        handleEditUser(user)
                                       }}
                                       className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
                                     >
@@ -434,6 +514,207 @@ export default function UsersPage() {
                   style={{ backgroundColor: "#121051" }}
                 >
                   Delete
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit User Modal */}
+          <Dialog open={editUserOpen} onOpenChange={(open) => {
+            if (!open) {
+              setEditUserOpen(false)
+              setSchoolsDropdownOpen(false)
+              setRolesDropdownOpen(false)
+            }
+          }}>
+            <DialogContent className="max-w-md p-0">
+              <div className="flex items-center justify-between p-6 pb-4 border-b">
+                <h2 className="text-lg font-semibold text-slate-900">Update User</h2>
+              </div>
+              
+              <div className="p-6 space-y-5">
+                {/* First Name */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                    First name<span className="text-slate-400">*</span>
+                  </label>
+                  <Input
+                    value={editFirstName}
+                    onChange={(e) => setEditFirstName(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                    Last name<span className="text-slate-400">*</span>
+                  </label>
+                  <Input
+                    value={editLastName}
+                    onChange={(e) => setEditLastName(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+
+                {/* Email (disabled) */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                    Email<span className="text-slate-400">*</span>
+                  </label>
+                  <Input
+                    value={editingUser?.email || ""}
+                    disabled
+                    className="h-11 bg-slate-100 text-slate-600"
+                  />
+                </div>
+
+                {/* Select Schools */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                    Select school(s)
+                  </label>
+                  <div className="relative" ref={schoolsDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setSchoolsDropdownOpen(!schoolsDropdownOpen)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors text-left h-11"
+                    >
+                      {editAllSchools ? (
+                        <span className="text-sm text-slate-900 flex-1 truncate">All Schools</span>
+                      ) : editSelectedSchools.length > 0 ? (
+                        <>
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
+                            {editSelectedSchools.length}
+                          </span>
+                          <span className="text-sm text-slate-900 flex-1 truncate">
+                            {editSelectedSchools.map(s => s.name).join(", ")}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-slate-500 flex-1">Select schools...</span>
+                      )}
+                      {(editAllSchools || editSelectedSchools.length > 0) && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditSelectedSchools([])
+                            setEditAllSchools(false)
+                          }}
+                          className="p-0.5 hover:bg-slate-100 rounded"
+                        >
+                          <X className="w-4 h-4 text-slate-400" />
+                        </button>
+                      )}
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${schoolsDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {schoolsDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[200px] overflow-auto">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditAllSchools(!editAllSchools)
+                            if (!editAllSchools) setEditSelectedSchools([])
+                          }}
+                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                            editAllSchools ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                          }`}
+                        >
+                          All Schools
+                        </button>
+                        {schoolsData.map(school => {
+                          const isSelected = editSelectedSchools.some(s => s.urn === school.urn)
+                          return (
+                            <button
+                              key={school.urn}
+                              type="button"
+                              onClick={() => {
+                                if (editAllSchools) setEditAllSchools(false)
+                                toggleSchool(school)
+                              }}
+                              className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                                isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              }`}
+                            >
+                              {school.name}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Select Roles */}
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                    Select role(s)
+                  </label>
+                  <div className="relative" ref={rolesDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setRolesDropdownOpen(!rolesDropdownOpen)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors text-left h-11"
+                    >
+                      {editSelectedRoles.length > 0 ? (
+                        <>
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-200 text-xs font-medium text-slate-700">
+                            {editSelectedRoles.length}
+                          </span>
+                          <span className="text-sm text-slate-900 flex-1 truncate">
+                            {editSelectedRoles.join(", ")}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-slate-500 flex-1">Select roles...</span>
+                      )}
+                      {editSelectedRoles.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditSelectedRoles([])
+                          }}
+                          className="p-0.5 hover:bg-slate-100 rounded"
+                        >
+                          <X className="w-4 h-4 text-slate-400" />
+                        </button>
+                      )}
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${rolesDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {rolesDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[200px] overflow-auto">
+                        {availableRoles.map(role => {
+                          const isSelected = editSelectedRoles.includes(role)
+                          return (
+                            <button
+                              key={role}
+                              type="button"
+                              onClick={() => toggleRole(role)}
+                              className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                                isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              }`}
+                            >
+                              {role}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 pt-0 flex justify-end">
+                <Button
+                  onClick={handleSaveUser}
+                  className="px-6 text-white"
+                  style={{ backgroundColor: "#121051" }}
+                >
+                  Save
                 </Button>
               </div>
             </DialogContent>
