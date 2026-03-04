@@ -329,12 +329,34 @@ export default function UsersPage() {
                           <td className="py-4 px-4 text-sm text-slate-600">
                             {user.schools === "all" ? (
                               <span>All Schools</span>
-                            ) : (
+                            ) : user.schools.length <= 2 ? (
                               <div className="flex flex-col gap-0.5">
                                 {user.schools.map((school, idx) => (
                                   <span key={idx}>{school.urn} {school.name}</span>
                                 ))}
                               </div>
+                            ) : (
+                              <TooltipProvider delayDuration={300}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button type="button" className="text-left">
+                                      <div className="flex flex-col gap-0.5">
+                                        <span>{user.schools[0].urn} {user.schools[0].name}</span>
+                                        <span className="text-[#121051] hover:underline cursor-pointer">
+                                          +{user.schools.length - 1} more schools
+                                        </span>
+                                      </div>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom" align="start" className="max-w-md">
+                                    <div className="flex flex-col gap-1 max-h-[200px] overflow-auto">
+                                      {user.schools.map((school, idx) => (
+                                        <span key={idx} className="text-sm">{school.urn} {school.name}</span>
+                                      ))}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </td>
                           <td className="py-4 px-4">
