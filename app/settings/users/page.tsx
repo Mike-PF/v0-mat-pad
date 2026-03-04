@@ -795,7 +795,23 @@ export default function UsersPage() {
           {/* Permissions Modal - Shows each role's permissions breakdown */}
           <Dialog open={permissionsModalOpen} onOpenChange={setPermissionsModalOpen}>
             <DialogContent className="max-w-4xl !block">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">Role Permissions Breakdown</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-lg font-semibold text-slate-900">Role Permissions Breakdown</h2>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <p className="text-sm">This table shows which permissions each role grants. Amber highlighted rows indicate overlapping permissions across multiple roles.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               
               <div className="overflow-auto max-h-[60vh]">
                 <table className="w-full border-collapse text-sm">
