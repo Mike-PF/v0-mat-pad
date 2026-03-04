@@ -10,7 +10,7 @@ export function TopNavigation() {
   const getNavigationTabs = () => {
     if (pathname.startsWith("/settings")) {
       return [
-        { id: "organisation", label: "Organisation", href: "/settings" },
+        { id: "organisation", label: "Organisation", href: "/settings/organisation" },
         { id: "users", label: "Users", href: "/settings/users" },
         { id: "roles", label: "Roles", href: "/settings/roles" },
         { id: "connections", label: "System Connections", href: "/settings/connections" },
@@ -48,7 +48,7 @@ export function TopNavigation() {
         {tabs.map((tab) => {
           const isActive =
             pathname === tab.href ||
-            (tab.href === "/settings" && pathname === "/settings") ||
+            (tab.href === "/settings/organisation" && pathname === "/settings") ||
             (tab.href === "/reports" && pathname === "/reports")
 
           return (
