@@ -494,9 +494,9 @@ export default function OrganisationPage() {
                 )}
               </div>
 
-              {selectedData && (
-                <div className="flex gap-2">
-                  {isEditing ? (
+              <div className="flex gap-2">
+                {selectedData ? (
+                  isEditing ? (
                     <>
                       <Button 
                         variant="outline"
@@ -525,9 +525,19 @@ export default function OrganisationPage() {
                       <Pencil className="w-4 h-4 mr-1" />
                       Edit
                     </Button>
-                  )}
-                </div>
-              )}
+                  )
+                ) : (
+                  <Button 
+                    size="sm"
+                    onClick={handleOpenAddModal}
+                    className="text-white"
+                    style={{ backgroundColor: "#121051" }}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Organisation
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Schools Navigation Panel - shown when MAT is selected */}
@@ -792,15 +802,7 @@ export default function OrganisationPage() {
                 <div className="h-full flex items-center justify-center text-slate-400">
                   <div className="text-center">
                     <Settings className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="mb-4">Select an organisation or school to view settings</p>
-                    <Button 
-                      onClick={handleOpenAddModal}
-                      className="text-white"
-                      style={{ backgroundColor: "#121051" }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Organisation
-                    </Button>
+                    <p>Select an organisation or school to view settings</p>
                   </div>
                 </div>
               )}
