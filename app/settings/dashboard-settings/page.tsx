@@ -26,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 // Sample Power BI reports data
 const initialReports = [
@@ -85,6 +85,20 @@ export default function DashboardSettingsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [reports, setReports] = useState(initialReports)
   const [originalReports, setOriginalReports] = useState(initialReports)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  const filteredReports = reports.filter(report => 
+    report.powerBiName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    report.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  
+  const totalPages = Math.ceil(filteredReports.length / itemsPerPage)
+  const paginatedReports = filteredReports.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   const hasChanges = (report: Report) => {
     const original = originalReports.find(r => r.id === report.id)
@@ -187,7 +201,19 @@ export default function DashboardSettingsPage() {
           <Card className="bg-white border-slate-200">
             <CardContent className="p-6">
               {/* Header */}
-              <div className="flex items-center justify-end mb-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="relative w-[300px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    placeholder="Search reports..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      setCurrentPage(1)
+                    }}
+                    className="pl-9 h-9 bg-slate-50 border-slate-200"
+                  />
+                </div>
                 <Button 
                   onClick={handleIngest}
                   className="text-white"
@@ -211,7 +237,7 @@ export default function DashboardSettingsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {reports.map((report) => (
+                    {paginatedReports.map((report) => (
                       <tr key={report.id} className="border-b border-slate-100">
                         <td className="py-4 px-4">
                           <span className="text-sm text-[#121051] font-medium">{report.powerBiName}</span>
@@ -390,6 +416,47 @@ export default function DashboardSettingsPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+                  <span className="text-sm text-slate-600">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredReports.length)} of {filteredReports.length} results
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 px-2"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <Button
+                        key={page}
+                        variant={page === currentPage ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={`h-8 w-8 ${page === currentPage ? "text-white" : ""}`}
+                        style={page === currentPage ? { backgroundColor: "#121051" } : undefined}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="h-8 px-2"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </main>
