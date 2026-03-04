@@ -118,14 +118,13 @@ export default function DashboardSettingsPage() {
           <Card className="bg-white border-slate-200">
             <CardContent className="p-6">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-lg font-semibold text-slate-900">Power BI Reports</h1>
+              <div className="flex items-center justify-end mb-6">
                 <Button 
                   onClick={handleIngest}
                   className="text-white"
                   style={{ backgroundColor: "#121051" }}
                 >
-                  Ingest
+                  Pull Reports
                 </Button>
               </div>
 
