@@ -421,7 +421,7 @@ export default function UsersPage() {
                                     <button type="button" className="text-left">
                                       <div className="flex flex-col gap-0.5">
                                         <span>{user.schools[0].urn} {user.schools[0].name}</span>
-                                        <span className="text-[#121051] hover:underline cursor-pointer">
+                                        <span className="text-[#B30089] hover:underline cursor-pointer">
                                           +{user.schools.length - 1} more schools
                                         </span>
                                       </div>
