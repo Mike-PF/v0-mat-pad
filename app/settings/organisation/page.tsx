@@ -7,7 +7,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
+
 import {
   Dialog,
   DialogContent,
@@ -40,13 +40,8 @@ interface SchoolData {
   email: string
   logo: string
   primaryColor: string
+  secondaryColor: string
   matId?: string
-  features: {
-    attendance: boolean
-    behaviour: boolean
-    safeguarding: boolean
-    analytics: boolean
-  }
 }
 
 interface MATData {
@@ -57,12 +52,7 @@ interface MATData {
   email: string
   logo: string
   primaryColor: string
-  features: {
-    attendance: boolean
-    behaviour: boolean
-    safeguarding: boolean
-    analytics: boolean
-  }
+  secondaryColor: string
   schools: SchoolData[]
 }
 
@@ -76,12 +66,7 @@ const initialMATs: MATData[] = [
     email: "admin@stclaremat.org",
     logo: "/placeholder.svg",
     primaryColor: "#121051",
-    features: {
-      attendance: true,
-      behaviour: true,
-      safeguarding: true,
-      analytics: true,
-    },
+    secondaryColor: "#4A90D9",
     schools: [
       {
         id: "school-1",
@@ -92,13 +77,8 @@ const initialMATs: MATData[] = [
         email: "office@allsaints.org",
         logo: "/placeholder.svg",
         primaryColor: "#121051",
+        secondaryColor: "#4A90D9",
         matId: "mat-1",
-        features: {
-          attendance: true,
-          behaviour: true,
-          safeguarding: true,
-          analytics: false,
-        },
       },
       {
         id: "school-2",
@@ -109,13 +89,8 @@ const initialMATs: MATData[] = [
         email: "office@emmaus.org",
         logo: "/placeholder.svg",
         primaryColor: "#121051",
+        secondaryColor: "#4A90D9",
         matId: "mat-1",
-        features: {
-          attendance: true,
-          behaviour: false,
-          safeguarding: true,
-          analytics: true,
-        },
       },
       {
         id: "school-3",
@@ -126,13 +101,8 @@ const initialMATs: MATData[] = [
         email: "office@notredame.org",
         logo: "/placeholder.svg",
         primaryColor: "#2563eb",
+        secondaryColor: "#60A5FA",
         matId: "mat-1",
-        features: {
-          attendance: true,
-          behaviour: true,
-          safeguarding: true,
-          analytics: true,
-        },
       },
     ],
   },
@@ -144,12 +114,7 @@ const initialMATs: MATData[] = [
     email: "admin@holyfamilymat.org",
     logo: "/placeholder.svg",
     primaryColor: "#059669",
-    features: {
-      attendance: true,
-      behaviour: true,
-      safeguarding: false,
-      analytics: true,
-    },
+    secondaryColor: "#34D399",
     schools: [
       {
         id: "school-4",
@@ -160,13 +125,8 @@ const initialMATs: MATData[] = [
         email: "office@sacredheart.org",
         logo: "/placeholder.svg",
         primaryColor: "#059669",
+        secondaryColor: "#34D399",
         matId: "mat-2",
-        features: {
-          attendance: true,
-          behaviour: true,
-          safeguarding: false,
-          analytics: true,
-        },
       },
     ],
   },
@@ -183,12 +143,7 @@ const initialStandaloneSchools: SchoolData[] = [
     email: "office@stalbans.org",
     logo: "/placeholder.svg",
     primaryColor: "#dc2626",
-    features: {
-      attendance: true,
-      behaviour: true,
-      safeguarding: true,
-      analytics: false,
-    },
+    secondaryColor: "#F87171",
   },
   {
     id: "standalone-2",
@@ -199,12 +154,7 @@ const initialStandaloneSchools: SchoolData[] = [
     email: "office@holytrinity.org",
     logo: "/placeholder.svg",
     primaryColor: "#7c3aed",
-    features: {
-      attendance: true,
-      behaviour: false,
-      safeguarding: true,
-      analytics: true,
-    },
+    secondaryColor: "#A78BFA",
   },
 ]
 
@@ -354,17 +304,6 @@ export default function OrganisationPage() {
     }
     setIsEditing(false)
     setEditingItem(null)
-  }
-
-  const handleFeatureToggle = (feature: keyof MATData["features"], value: boolean) => {
-    if (!editingItem) return
-    setEditingItem({
-      ...editingItem,
-      features: {
-        ...editingItem.features,
-        [feature]: value,
-      },
-    })
   }
 
   const selectedData = getSelectedData()
@@ -760,28 +699,26 @@ export default function OrganisationPage() {
                                 />
                               </div>
                             </div>
-                          </div>
-
-                          {/* Feature Toggles - Editable */}
-                          <div>
-                            <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
-                            <div className="space-y-3">
-                              {Object.entries(editingItem.features).map(([feature, enabled]) => (
-                                <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                                  <span className="text-sm text-slate-700 capitalize">{feature}</span>
-                                  <Switch
-                                    checked={enabled}
-                                    onCheckedChange={(value) => handleFeatureToggle(feature as keyof MATData["features"], value)}
-                                    className="data-[state=checked]:bg-[#121051]"
-                                  />
-                                </div>
-                              ))}
+                            <div>
+                              <label className="text-xs text-slate-500 block mb-1">Secondary Color</label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="color"
+                                  value={editingItem.secondaryColor}
+                                  onChange={(e) => setEditingItem({ ...editingItem, secondaryColor: e.target.value })}
+                                  className="h-9 w-12 p-1 cursor-pointer"
+                                />
+                                <Input
+                                  value={editingItem.secondaryColor}
+                                  onChange={(e) => setEditingItem({ ...editingItem, secondaryColor: e.target.value })}
+                                  className="h-9 flex-1"
+                                />
+                              </div>
                             </div>
                           </div>
                         </>
                       ) : (
-                        <>
-                          <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-6">
                             <div>
                               <span className="text-xs text-slate-500 block mb-1">Logo</span>
                               <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
@@ -804,28 +741,17 @@ export default function OrganisationPage() {
                                 <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
                               </div>
                             </div>
-                          </div>
-
-                          {/* Feature Toggles - Read Only */}
-                          <div>
-                            <h3 className="text-sm font-semibold text-slate-900 mb-3">Features</h3>
-                            <div className="space-y-3">
-                              {Object.entries(selectedData.features).map(([feature, enabled]) => (
-                                <div key={feature} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                                  <span className="text-sm text-slate-700 capitalize">{feature}</span>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-xs ${enabled ? "text-green-600" : "text-slate-400"}`}>
-                                      {enabled ? "Enabled" : "Disabled"}
-                                    </span>
-                                    <div 
-                                      className={`w-2 h-2 rounded-full ${enabled ? "bg-green-500" : "bg-slate-300"}`}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
+                            <div>
+                              <span className="text-xs text-slate-500 block mb-1">Secondary Color</span>
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-8 h-8 rounded border border-slate-200"
+                                  style={{ backgroundColor: selectedData.secondaryColor }}
+                                />
+                                <span className="text-sm text-slate-700">{selectedData.secondaryColor}</span>
+                              </div>
                             </div>
                           </div>
-                        </>
                       )}
                     </div>
                   )}
