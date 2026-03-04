@@ -11,12 +11,9 @@ export function TermDatesContent() {
   const [selectedSchool, setSelectedSchool] = useState("")
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("")
   const [censusDates, setCensusDates] = useState({
-    autumn1: "",
-    autumn2: "",
-    spring1: "",
-    spring2: "",
-    summer1: "",
-    summer2: "",
+    autumn: "",
+    spring: "",
+    summer: "",
   })
   const [termDates, setTermDates] = useState({
     autumn1: { start: "", end: "" },
@@ -133,12 +130,9 @@ export function TermDatesContent() {
       summer2: { start: "", end: "" },
     })
     setCensusDates({
-      autumn1: "",
-      autumn2: "",
-      spring1: "",
-      spring2: "",
-      summer1: "",
-      summer2: "",
+      autumn: "",
+      spring: "",
+      summer: "",
     })
   }
 
@@ -413,82 +407,100 @@ export function TermDatesContent() {
         </Card>
       )}
 
-      {/* Census Dates Configuration - shows all terms at once like Term Dates */}
+      {/* Census Dates Configuration - shows 3 census periods */}
       {selectedSchool && selectedAcademicYear && activeTab === "censusdates" && (
         <Card className="flex-1">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg">Census Dates for {selectedSchool}</CardTitle>
-                <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear}</p>
-              </div>
-              {yearStatus && (
-                <span className={`px-3 py-1 text-xs rounded-full font-medium ${yearStatus.color}`}>
-                  {yearStatus.text}
-                </span>
-              )}
+            <div>
+              <CardTitle className="text-lg">Census Dates for {selectedSchool}</CardTitle>
+              <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear}</p>
             </div>
           </CardHeader>
           <CardContent className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {termLabels.map((term) => (
-                <div key={term.key} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  <div className="mb-4">
-                    <h3 className="font-medium text-slate-900">{term.label}</h3>
-                    <p className="text-sm text-slate-600">{term.description}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
-                    <Input
-                      type="date"
-                      value={censusDates[term.key as keyof typeof censusDates]}
-                      onChange={(e) => handleCensusDateChange(term.key, e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Date preview */}
-                  {censusDates[term.key as keyof typeof censusDates] && (
-                    <div className="mt-3 p-2 bg-blue-50 rounded-md">
-                      <p className="text-xs text-blue-900">
-                        {new Date(censusDates[term.key as keyof typeof censusDates]).toLocaleDateString("en-GB", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  )}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Autumn Census */}
+              <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Autumn Census</h3>
+                  <p className="text-sm text-slate-500">September - December</p>
                 </div>
-              ))}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                  <Input
+                    type="date"
+                    value={censusDates.autumn}
+                    onChange={(e) => handleCensusDateChange("autumn", e.target.value)}
+                    className="w-full"
+                    placeholder="day-month-year"
+                  />
+                </div>
+              </div>
+
+              {/* Spring Census */}
+              <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Spring Census</h3>
+                  <p className="text-sm text-slate-500">January - March</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                  <Input
+                    type="date"
+                    value={censusDates.spring}
+                    onChange={(e) => handleCensusDateChange("spring", e.target.value)}
+                    className="w-full"
+                    placeholder="day-month-year"
+                  />
+                </div>
+              </div>
+
+              {/* Summer Census */}
+              <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Summer Census</h3>
+                  <p className="text-sm text-slate-500">April - July</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                  <Input
+                    type="date"
+                    value={censusDates.summer}
+                    onChange={(e) => handleCensusDateChange("summer", e.target.value)}
+                    className="w-full"
+                    placeholder="day-month-year"
+                  />
+                </div>
+              </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Summary Information */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Census Dates Summary</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-blue-700 font-medium">Total Terms:</span>
-                  <span className="ml-2 text-blue-900">6 half terms</span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Academic Year:</span>
-                  <span className="ml-2 text-blue-900">{selectedAcademicYear}</span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Year Status:</span>
-                  <span className="ml-2 text-blue-900">
-                    {yearStatus?.text.replace(" Academic Year", "").replace("Current Active Year", "Current")}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Completion:</span>
-                  <span className="ml-2 text-blue-900">
-                    {Object.values(censusDates).filter((date) => date).length}/6 census dates
-                  </span>
-                </div>
+      {/* Census Dates Summary */}
+      {selectedSchool && selectedAcademicYear && activeTab === "censusdates" && (
+        <Card className="border-l-4" style={{ borderLeftColor: "#121051" }}>
+          <CardContent className="py-4">
+            <h4 className="font-semibold mb-3" style={{ color: "#121051" }}>Census Dates Summary</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Total Census:</span>
+                <span className="ml-2 text-slate-700">3 census dates</span>
+              </div>
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Academic Year:</span>
+                <span className="ml-2 text-slate-700">{selectedAcademicYear}</span>
+              </div>
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Status:</span>
+                <span className="ml-2 text-slate-700">
+                  {Object.values(censusDates).filter((date) => date).length === 3 ? "Complete" : "Incomplete"}
+                </span>
+              </div>
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Completion:</span>
+                <span className="ml-2 text-slate-700">
+                  {Object.values(censusDates).filter((date) => date).length} / 3 dates
+                </span>
               </div>
             </div>
           </CardContent>
