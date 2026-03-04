@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Trash2, Pencil, ChevronDown, ChevronLeft, ChevronRight, X, Ban, HelpCircle, Check } from "lucide-react"
+import { Trash2, Pencil, ChevronDown, Ban, HelpCircle, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 
@@ -229,30 +229,24 @@ export default function RolesPage() {
                   <div className="relative" ref={userDropdownRef}>
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors min-w-[250px] text-left"
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors w-[250px] text-left"
                     >
                       {selectedUsers.length > 0 ? (
                         <>
-                          <span className="flex items-center justify-center w-5 h-5 bg-[#121051] text-white text-xs rounded-full">
+                          <span className="flex items-center justify-center w-5 h-5 bg-[#121051] text-white text-xs rounded-full flex-shrink-0">
                             {selectedUsers.length}
                           </span>
                           <span className="text-sm text-slate-700 flex-1 truncate">
-                            {selectedUsersData.map(u => u.name).join(", ")}
+                            {selectedUsersData.length <= 2 
+                              ? selectedUsersData.map(u => u.name).join(", ")
+                              : `${selectedUsersData.slice(0, 2).map(u => u.name).join(", ")}...`
+                            }
                           </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedUsers([])
-                            }}
-                            className="p-0.5 hover:bg-slate-100 rounded"
-                          >
-                            <X className="w-3 h-3 text-slate-400" />
-                          </button>
                         </>
                       ) : (
                         <span className="text-sm text-slate-500 flex-1">Select users...</span>
                       )}
-                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${userDropdownOpen ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${userDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     {userDropdownOpen && (
