@@ -71,7 +71,6 @@ export default function RolesPage() {
           <Card className="mb-4">
             <CardContent className="py-4">
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-slate-900">Organisation</span>
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => {
