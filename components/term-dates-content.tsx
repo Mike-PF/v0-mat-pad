@@ -224,14 +224,6 @@ export function TermDatesContent() {
             </div>
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                onClick={handleReset}
-                className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] bg-transparent"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button
                 onClick={activeTab === "termdates" ? handleSave : handleSaveCensusDate}
                 className={`text-white ${
                   (activeTab === "termdates" && !hasTermDatesToSave) || 
@@ -251,9 +243,9 @@ export function TermDatesContent() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="px-6 pt-6 pb-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="flex flex-wrap gap-6">
               {/* School Selection */}
-              <div className="flex flex-col">
+              <div className="flex flex-col w-[280px]">
                 <label className="text-sm font-medium text-slate-700 mb-2">Select school</label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -264,14 +256,22 @@ export function TermDatesContent() {
                       <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0 shadow-lg" align="start">
+                  <PopoverContent className="w-[280px] p-0 shadow-lg" align="start">
+                    {selectedSchool && (
+                      <div className="border-b border-slate-100">
+                        <button
+                          onClick={() => handleSchoolChange("")}
+                          className="w-full flex items-center px-3 py-2.5 text-sm text-[#B30089] hover:bg-slate-50 transition-colors"
+                        >
+                          Clear Selection
+                        </button>
+                      </div>
+                    )}
                     <div className="max-h-[300px] overflow-auto">
                       {schools.map((school) => (
                         <div
                           key={school}
-                          onClick={() => {
-                            handleSchoolChange(school)
-                          }}
+                          onClick={() => handleSchoolChange(school)}
                           className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
                             selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
                           }`}
@@ -285,7 +285,7 @@ export function TermDatesContent() {
               </div>
 
               {/* Academic Year Selection */}
-              <div className="flex flex-col">
+              <div className="flex flex-col w-[200px]">
                 <label className="text-sm font-medium text-slate-700 mb-2">Academic Year</label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -298,13 +298,23 @@ export function TermDatesContent() {
                       disabled={!selectedSchool}
                     >
                       <span className="flex-1 truncate">
-                        {selectedAcademicYear || "Select academic year..."}
+                        {selectedAcademicYear || "Select year..."}
                       </span>
                       <ChevronDown className={`w-4 h-4 flex-shrink-0 ${!selectedSchool ? "text-slate-300" : "text-slate-400"}`} />
                     </button>
                   </PopoverTrigger>
                   {selectedSchool && (
-                    <PopoverContent className="w-[300px] p-0 shadow-lg" align="start">
+                    <PopoverContent className="w-[200px] p-0 shadow-lg" align="start">
+                      {selectedAcademicYear && (
+                        <div className="border-b border-slate-100">
+                          <button
+                            onClick={() => handleAcademicYearChange("")}
+                            className="w-full flex items-center px-3 py-2.5 text-sm text-[#B30089] hover:bg-slate-50 transition-colors"
+                          >
+                            Clear Selection
+                          </button>
+                        </div>
+                      )}
                       <div className="max-h-[300px] overflow-auto">
                         {academicYears.map((year) => (
                           <div
