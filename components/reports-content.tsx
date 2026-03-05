@@ -86,41 +86,13 @@ export function ReportsContent() {
       {/* Card 1: Dashboard Selector */}
       <Card className="bg-white">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-slate-900 font-medium text-sm mb-2">Dashboard</div>
-              <div className="relative">
-                <select className="w-60 p-2 border border-slate-300 rounded bg-white appearance-none pr-8">
-                  <option>Attendance</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              </div>
-            </div>
-
-            <div className="flex gap-2 items-center">
-              <div className="relative">
-                <select className="w-32 p-2 border border-slate-300 rounded bg-white appearance-none pr-8">
-                  <option>Whole MAT</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              </div>
-
-              <div className="relative">
-                <select className="w-32 p-2 border border-slate-300 rounded bg-white appearance-none pr-8">
-                  <option>Characteristics</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              </div>
-
-              <Button variant="outline" size="icon" className="w-9 h-9 bg-transparent">
-                <FilterX className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="w-9 h-9 bg-transparent">
-                <Filter className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="w-9 h-9 bg-transparent" disabled>
-                <Download className="h-4 w-4" />
-              </Button>
+          <div>
+            <div className="text-slate-900 font-medium text-sm mb-2">Dashboard</div>
+            <div className="relative">
+              <select className="w-60 p-2 border border-slate-300 rounded bg-white appearance-none pr-8">
+                <option>Attendance</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
           </div>
         </CardContent>
