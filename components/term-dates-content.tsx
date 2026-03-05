@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ChevronDown, Save, RotateCcw } from "lucide-react"
 
 export function TermDatesContent() {
@@ -254,49 +255,79 @@ export function TermDatesContent() {
               {/* School Selection */}
               <div className="flex flex-col">
                 <label className="text-sm font-medium text-slate-700 mb-2">Select school</label>
-                <div className="relative">
-                  <select
-                    value={selectedSchool}
-                    onChange={(e) => handleSchoolChange(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-200 rounded-lg bg-white appearance-none focus:outline-none hover:border-slate-300 transition-colors text-slate-900"
-                  >
-                    <option value="">Please select a school...</option>
-                    {schools.map((school) => (
-                      <option key={school} value={school}>
-                        {school}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2 h-11 w-full px-3 bg-white border border-slate-200 rounded-lg text-sm text-left hover:border-[#121051] transition-colors">
+                      <span className="flex-1 truncate text-slate-700">
+                        {selectedSchool || "Select school..."}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0 shadow-lg" align="start">
+                    <div className="max-h-[300px] overflow-auto">
+                      {schools.map((school) => (
+                        <div
+                          key={school}
+                          onClick={() => {
+                            handleSchoolChange(school)
+                          }}
+                          className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
+                            selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                          }`}
+                        >
+                          <span className="text-sm">{school}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Academic Year Selection */}
               <div className="flex flex-col">
                 <label className="text-sm font-medium text-slate-700 mb-2">Academic Year</label>
-                <div className="relative">
-                  <select
-                    value={selectedAcademicYear}
-                    onChange={(e) => handleAcademicYearChange(e.target.value)}
-                    className={`w-full p-3 pr-10 border border-slate-200 rounded-lg appearance-none focus:outline-none transition-colors ${
-                      !selectedSchool 
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                        : "bg-white text-slate-900 hover:border-slate-300"
-                    }`}
-                    disabled={!selectedSchool}
-                  >
-                    <option value="">Please select academic year...</option>
-                    {academicYears.map((year) => (
-                      <option key={year.value} value={year.value}>
-                        {year.label}
-                        {year.isCurrent ? " (Current)" : ""}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none ${
-                    !selectedSchool ? "text-slate-300" : "text-slate-400"
-                  }`} />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button 
+                      className={`flex items-center gap-2 h-11 w-full px-3 border border-slate-200 rounded-lg text-sm text-left transition-colors ${
+                        !selectedSchool 
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                          : "bg-white text-slate-700 hover:border-[#121051]"
+                      }`}
+                      disabled={!selectedSchool}
+                    >
+                      <span className="flex-1 truncate">
+                        {selectedAcademicYear || "Select academic year..."}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 flex-shrink-0 ${!selectedSchool ? "text-slate-300" : "text-slate-400"}`} />
+                    </button>
+                  </PopoverTrigger>
+                  {selectedSchool && (
+                    <PopoverContent className="w-[300px] p-0 shadow-lg" align="start">
+                      <div className="max-h-[300px] overflow-auto">
+                        {academicYears.map((year) => (
+                          <div
+                            key={year.value}
+                            onClick={() => handleAcademicYearChange(year.value)}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
+                              selectedAcademicYear === year.value ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            }`}
+                          >
+                            <span className="text-sm">{year.label}</span>
+                            {year.isCurrent && (
+                              <span className={`text-xs px-2 py-0.5 rounded ${
+                                selectedAcademicYear === year.value ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                              }`}>
+                                Current
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  )}
+                </Popover>
               </div>
             </div>
           </div>
