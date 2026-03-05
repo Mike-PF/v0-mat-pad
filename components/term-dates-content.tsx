@@ -558,30 +558,7 @@ export function TermDatesContent() {
         </Card>
       )}
 
-      {/* Placeholder when no school or year selected */}
-      {(!selectedSchool || !selectedAcademicYear) && (
-        <Card className="flex-1">
-          <CardContent className="flex-1 flex items-center justify-center p-12">
-            <div className="bg-white border border-slate-200 rounded-lg p-12 shadow-sm max-w-md w-full">
-              <div className="text-center flex flex-col items-center justify-center">
-                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <p className="text-slate-600 text-sm text-center">
-                  {!selectedSchool ? "Please select an organisation" : "Please select an academic year"}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
     </div>
   )
 }
