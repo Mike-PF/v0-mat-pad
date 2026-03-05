@@ -3,6 +3,13 @@
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Filter, FilterX, Download, ArrowUp, ArrowDown, ChevronDown } from "lucide-react"
 
 export function ReportsContent() {
@@ -88,12 +95,17 @@ export function ReportsContent() {
         <CardContent className="p-4">
           <div>
             <div className="text-slate-900 font-medium text-sm mb-2">Dashboard</div>
-            <div className="relative">
-              <select className="w-60 p-2 border border-slate-300 rounded bg-white appearance-none pr-8">
-                <option>Attendance</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-            </div>
+            <Select defaultValue="attendance">
+              <SelectTrigger className="w-60 h-9 bg-white border-slate-200 hover:border-[#121051] transition-colors">
+                <SelectValue placeholder="Select dashboard" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="attendance">Attendance</SelectItem>
+                <SelectItem value="behaviour">Behaviour</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+                <SelectItem value="safeguarding">Safeguarding</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
