@@ -13,7 +13,7 @@ import {
 import { Filter, FilterX, Download, ArrowUp, ArrowDown, ChevronDown } from "lucide-react"
 
 export function ReportsContent() {
-  const [selectedDashboard, setSelectedDashboard] = useState<string | undefined>(undefined)
+  const [selectedDashboard, setSelectedDashboard] = useState("")
   const [selectedReport, setSelectedReport] = useState("attendanceDash")
   const [selectedScope, setSelectedScope] = useState("whole-mat")
   const [selectedCharacteristics, setSelectedCharacteristics] = useState("characteristics")
@@ -95,7 +95,7 @@ export function ReportsContent() {
       <Card className="bg-white">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <Select value={selectedDashboard} onValueChange={setSelectedDashboard}>
+            <Select value={selectedDashboard || ""} onValueChange={setSelectedDashboard}>
               <SelectTrigger className="w-60 h-9 bg-white border-slate-200 hover:border-[#121051] transition-colors">
                 <SelectValue placeholder="Select dashboard" />
               </SelectTrigger>
@@ -108,7 +108,7 @@ export function ReportsContent() {
             </Select>
             <button
               className="text-sm text-[#121051] hover:underline"
-              onClick={() => setSelectedDashboard(undefined)}
+              onClick={() => setSelectedDashboard("")}
             >
               Clear Selection
             </button>
