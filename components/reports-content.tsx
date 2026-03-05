@@ -401,89 +401,361 @@ export function ReportsContent() {
             </Card>
           </div>
 
-          {/* Bottom Row */}
-          <div className="grid grid-cols-3 gap-6">
-            {/* YTD Attendance Trends */}
-            <Card className="bg-white">
-              <CardContent className="p-4">
-                <h3 className="text-sm font-medium mb-4">YTD attendance trends</h3>
-                <div className="h-48 bg-slate-50 rounded flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <div className="text-2xl mb-2">📈</div>
-                    <div className="text-xs">Weekly trends chart</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* School Comparisons */}
-            <Card className="bg-white">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-medium">School with absence above Whole MAT average</h3>
-                  <Button variant="link" className="text-blue-600 p-0 h-auto text-xs">
-                    Show all schools
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-xs mb-1">Whole MAT - Primary</div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 bg-teal-500 rounded" style={{ width: "60%" }}></div>
-                      <span className="text-sm font-medium">4.4</span>
+          {/* Attendance Headlines Section */}
+          <Card className="bg-white border-0 shadow-none">
+            <CardContent className="p-0">
+              {/* Teal Header */}
+              <div className="bg-[#0d9488] text-white p-4 rounded-t-lg flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Attendance headlines - 01/09/2024 to 31/08/2025</h2>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-white/80">phase, schoolID</span>
+                    <div className="relative">
+                      <select className="bg-white text-slate-900 text-sm px-3 py-1.5 rounded border-0 appearance-none pr-8 min-w-[120px]">
+                        <option>Primary</option>
+                        <option>Secondary</option>
+                        <option>All</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs mb-1">Whole MAT - Secondary</div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-white/80">yearend, nat_term, HT</span>
+                    <div className="relative">
+                      <select className="bg-white text-slate-900 text-sm px-3 py-1.5 rounded border-0 appearance-none pr-8 min-w-[100px]">
+                        <option>2025</option>
+                        <option>2024</option>
+                        <option>2023</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-white/80">date</span>
                     <div className="flex items-center gap-2">
-                      <div className="h-6 bg-teal-600 rounded" style={{ width: "80%" }}></div>
-                      <span className="text-sm font-medium">7.2</span>
+                      <input type="date" defaultValue="2024-03-14" className="bg-white text-slate-900 text-sm px-3 py-1.5 rounded border-0" />
+                      <input type="date" defaultValue="2026-01-08" className="bg-white text-slate-900 text-sm px-3 py-1.5 rounded border-0" />
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Attendance by Pupil Group */}
-            <Card className="bg-white">
-              <CardContent className="p-4">
-                <h3 className="text-sm font-medium mb-4 text-center">Attendance by pupil group</h3>
-                <div className="overflow-auto max-h-48">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="text-left p-1 font-medium">Pupil group</th>
-                        <th className="text-center p-1 font-medium">No. of pupils</th>
-                        <th className="text-center p-1 font-medium">Attendance YTD</th>
-                        <th className="text-center p-1 font-medium">Change since YTD last year</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pupilGroupData.map((row, index) => (
-                        <tr key={index} className="border-b border-slate-100">
-                          <td className="p-1 font-medium">{row.group}</td>
-                          <td className="p-1 text-center">{row.pupils}</td>
-                          <td className="p-1 text-center" style={{ backgroundColor: row.bgColor }}>
-                            {row.attendance}
-                          </td>
-                          <td className="p-1 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              {row.trend === "up" ? (
-                                <ArrowUp className="h-3 w-3 text-green-500" />
-                              ) : (
-                                <ArrowDown className="h-3 w-3 text-red-500" />
-                              )}
-                              <span>{row.change}</span>
+              {/* Filters Applied Bar */}
+              <div className="px-4 py-2 bg-slate-50 border-b text-sm text-slate-600">
+                Filters applied: SEN status- All | FSM6- 1 | Attendance band- 95+%
+              </div>
+
+              <div className="flex">
+                {/* Main Content */}
+                <div className="flex-1 p-4">
+                  {/* Headline Metrics */}
+                  <div className="grid grid-cols-7 gap-3 mb-6">
+                    <div className="bg-[#0d9488] text-white p-3 rounded">
+                      <div className="text-xs mb-1">Total pupils</div>
+                      <div className="text-2xl font-bold">31</div>
+                    </div>
+                    <div className="bg-white border border-slate-200 p-3 rounded">
+                      <div className="text-xs text-slate-600 mb-1">Attendance</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-500">MAT</span>
+                        <span className="text-xl font-bold text-green-600">97.3%</span>
+                      </div>
+                      <div className="text-xs text-slate-500">Nat. 94.8% <span className="text-green-600">+2.5</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 p-3 rounded">
+                      <div className="text-xs text-slate-600 mb-1">Absence</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-500">MAT</span>
+                        <span className="text-xl font-bold text-green-600">2.7%</span>
+                      </div>
+                      <div className="text-xs text-slate-500">Nat. 5.2% <span className="text-red-500">-2.5</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 p-3 rounded">
+                      <div className="text-xs text-slate-600 mb-1">Auth. absence</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-500">MAT</span>
+                        <span className="text-xl font-bold text-green-600">2.0%</span>
+                      </div>
+                      <div className="text-xs text-slate-500">Nat. 3.7% <span className="text-red-500">-2.5</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 p-3 rounded">
+                      <div className="text-xs text-slate-600 mb-1">Unauth. absence</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-500">MAT</span>
+                        <span className="text-xl font-bold text-amber-600">0.8%</span>
+                      </div>
+                      <div className="text-xs text-slate-500">Nat. 1.5% <span className="text-red-500">-0.8</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 p-3 rounded">
+                      <div className="text-xs text-slate-600 mb-1">Persistent absence</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-500">MAT</span>
+                        <span className="text-xl font-bold text-green-600">0.0%</span>
+                      </div>
+                      <div className="text-xs text-slate-500">Nat. 15.6% <span className="text-red-500">-15.6</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 p-3 rounded">
+                      <div className="text-xs text-slate-600 mb-1">Severe absence</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-500">MAT</span>
+                        <span className="text-xl font-bold text-green-600">0.0%</span>
+                      </div>
+                      <div className="text-xs text-slate-500">Nat. 0.3% <span className="text-red-500">-0.3</span></div>
+                    </div>
+                  </div>
+
+                  {/* Charts Row */}
+                  <div className="grid grid-cols-4 gap-4 mb-6">
+                    {/* Attendance trends */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-sm font-medium mb-3">Attendance trends</h4>
+                      <div className="flex items-center gap-4 text-xs mb-2">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-[#0d9488]"></div>
+                          <span>MAT (selected pupils)</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-[#121051]"></div>
+                          <span>National (all pupils)</span>
+                        </div>
+                      </div>
+                      <div className="h-32 relative">
+                        <svg className="w-full h-full" viewBox="0 0 200 100">
+                          <line x1="20" y1="80" x2="180" y2="80" stroke="#e5e7eb" strokeWidth="1" />
+                          <line x1="20" y1="50" x2="180" y2="50" stroke="#e5e7eb" strokeWidth="1" />
+                          <line x1="20" y1="20" x2="180" y2="20" stroke="#e5e7eb" strokeWidth="1" />
+                          <text x="5" y="20" fontSize="8" fill="#64748b">100%</text>
+                          <text x="5" y="80" fontSize="8" fill="#64748b">95%</text>
+                          <polyline fill="none" stroke="#0d9488" strokeWidth="2" points="30,25 60,30 90,28 120,22 150,20 170,18" />
+                          <polyline fill="none" stroke="#121051" strokeWidth="2" points="30,60 60,58 90,55 120,50 150,48 170,50" />
+                          <circle cx="30" cy="25" r="3" fill="#0d9488" />
+                          <circle cx="170" cy="18" r="3" fill="#0d9488" />
+                          <circle cx="30" cy="60" r="3" fill="#121051" />
+                          <circle cx="170" cy="50" r="3" fill="#121051" />
+                        </svg>
+                        <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-500 px-4">
+                          <span>Spr. 2024</span>
+                          <span>Aut. 2025</span>
+                          <span>Spr. 2026</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pupils by attendance band */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-sm font-medium mb-3">% pupils by attendance band</h4>
+                      <div className="flex items-center justify-center h-32">
+                        <div className="relative w-28 h-28">
+                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" strokeWidth="15" strokeDasharray="100 151" strokeDashoffset="0" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="15" strokeDasharray="27 224" strokeDashoffset="-100" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#8b5cf6" strokeWidth="15" strokeDasharray="22 229" strokeDashoffset="-127" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" strokeWidth="15" strokeDasharray="10 241" strokeDashoffset="-149" />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center text-xs">
+                            <div className="text-center">
+                              <div className="font-bold">31</div>
+                              <div className="text-slate-500">(38.27%)</div>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs mt-2">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full"></span>95+%</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-full"></span>90-95%</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-purple-500 rounded-full"></span>80-90%</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500 rounded-full"></span>{'<'}50%</span>
+                      </div>
+                    </div>
+
+                    {/* Persistent/Severe Absence */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-sm font-medium mb-2">No. of persistently absent pupils</h4>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-xs text-slate-500">PA</span>
+                        <div className="flex-1 bg-slate-100 rounded h-4 relative">
+                          <div className="absolute left-0 top-0 h-full bg-[#c4b5fd] rounded" style={{width: '40%'}}></div>
+                        </div>
+                        <span className="text-xs font-medium">31</span>
+                      </div>
+                      <h4 className="text-sm font-medium mb-2">No. of severely absent pupils</h4>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">SA</span>
+                        <div className="flex-1 bg-slate-100 rounded h-4 relative">
+                          <div className="absolute left-0 top-0 h-full bg-[#d4d4d8] rounded" style={{width: '40%'}}></div>
+                        </div>
+                        <span className="text-xs font-medium">31</span>
+                      </div>
+                    </div>
+
+                    {/* Attendance by NCY */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-sm font-medium mb-3">% attendance by NCY</h4>
+                      <div className="flex items-end gap-1 h-28">
+                        {[
+                          { ncy: "1", green: 15, red: 85, label: "1.5%" },
+                          { ncy: "2", green: 16, red: 84, label: "1.6%" },
+                          { ncy: "3", green: 19, red: 81, label: "1.9%" },
+                          { ncy: "4", green: 20, red: 80, label: "2.0%" },
+                          { ncy: "5", green: 18, red: 82, label: "1.8%" },
+                          { ncy: "6", green: 20, red: 80, label: "2.0%" },
+                        ].map((item, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center">
+                            <div className="text-xs text-slate-600 mb-1">{item.label}</div>
+                            <div className="w-full flex flex-col" style={{height: '60px'}}>
+                              <div className="bg-red-400 rounded-t" style={{height: `${item.red}%`}}></div>
+                              <div className="bg-green-500 rounded-b" style={{height: `${item.green}%`}}></div>
+                            </div>
+                            <div className="text-xs text-slate-500 mt-1">{item.ncy}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Breakdown Charts Row */}
+                  <div className="grid grid-cols-5 gap-3">
+                    {/* % absence by school */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-xs font-medium mb-3">% absence by school</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-16 truncate">School B</span>
+                          <div className="flex-1 bg-red-300 rounded h-4" style={{width: '60%'}}></div>
+                          <span className="text-xs">2.6% (26)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-16 truncate">School A</span>
+                          <div className="flex-1 bg-red-200 rounded h-4" style={{width: '80%'}}></div>
+                          <span className="text-xs">3.5% (5)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* % absence by SEN status */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-xs font-medium mb-3">% absence by SEN status</h4>
+                      <div className="space-y-1">
+                        {[
+                          { label: "E", value: "3.7%", count: 2, width: "40%" },
+                          { label: "K", value: "3.0%", count: 11, width: "35%" },
+                          { label: "NULL", value: "2.4%", count: 15, width: "28%" },
+                          { label: "N", value: "2.7%", count: 3, width: "32%" },
+                        ].map((item, i) => (
+                          <div key={i} className="flex items-center gap-1">
+                            <span className="text-xs text-slate-600 w-8">{item.label}</span>
+                            <div className="flex-1 bg-red-200 rounded h-3" style={{width: item.width}}></div>
+                            <span className="text-xs">{item.value} ({item.count})</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* % absence by gender */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-xs font-medium mb-3">% absence by gender</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">0</span>
+                          <div className="flex-1 bg-green-400 rounded h-4" style={{width: '70%'}}></div>
+                          <span className="text-xs">2.8% (30)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">1</span>
+                          <div className="flex-1 bg-green-300 rounded h-4" style={{width: '20%'}}></div>
+                          <span className="text-xs">0.8% (1)</span>
+                        </div>
+                      </div>
+                      <h4 className="text-xs font-medium mt-4 mb-3">% absence by EAL</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">0</span>
+                          <div className="flex-1 bg-green-400 rounded h-4" style={{width: '70%'}}></div>
+                          <span className="text-xs">2.8% (30)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">1</span>
+                          <div className="flex-1 bg-green-300 rounded h-4" style={{width: '20%'}}></div>
+                          <span className="text-xs">0.8% (1)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* % absence by pupil premium & FSM */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-xs font-medium mb-3">% absence by pupil premium</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">1</span>
+                          <div className="flex-1 bg-red-400 rounded h-4" style={{width: '50%'}}></div>
+                          <span className="text-xs">4.0% (4)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">0</span>
+                          <div className="flex-1 bg-red-300 rounded h-4" style={{width: '40%'}}></div>
+                          <span className="text-xs">2.5% (27)</span>
+                        </div>
+                      </div>
+                      <h4 className="text-xs font-medium mt-4 mb-3">% absence by FSM</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-4">1</span>
+                          <div className="flex-1 bg-red-400 rounded h-4" style={{width: '40%'}}></div>
+                          <span className="text-xs">2.7% (31)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* % absence by ethnicity */}
+                    <div className="bg-white border border-slate-200 rounded p-3">
+                      <h4 className="text-xs font-medium mb-3">% absence by ethnicity</h4>
+                      <div className="space-y-1">
+                        {[
+                          { label: "Any oth...", value: "2.1%", count: 11, color: "bg-red-300" },
+                          { label: "White a...", value: "3.1%", count: 18, color: "bg-red-400" },
+                          { label: "NULL", value: "2.1%", count: 11, color: "bg-red-200" },
+                          { label: "White -...", value: "3.4%", count: 1, color: "bg-red-400" },
+                          { label: "Any oth...", value: "0.8%", count: 1, color: "bg-red-100" },
+                        ].map((item, i) => (
+                          <div key={i} className="flex items-center gap-1">
+                            <span className="text-xs text-slate-600 w-16 truncate">{item.label}</span>
+                            <div className={`flex-1 ${item.color} rounded h-3`} style={{width: `${30 + (i * 10)}%`}}></div>
+                            <span className="text-xs">{item.value} ({item.count})</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                {/* Right Sidebar Filters */}
+                <div className="w-48 bg-slate-50 border-l p-3 space-y-3">
+                  <p className="text-xs text-slate-500">Also need gender and NCY/reg group (reg group nested in NCY)</p>
+                  
+                  {[
+                    { label: "ethnicity", value: "All" },
+                    { label: "disadvantaged", value: "All" },
+                    { label: "ppi", value: "All" },
+                    { label: "fsm6", value: "1" },
+                    { label: "fsm", value: "All" },
+                    { label: "ever_in_care...", value: "All" },
+                    { label: "sen_status, s...", value: "All" },
+                    { label: "eal", value: "All" },
+                  ].map((filter, i) => (
+                    <div key={i}>
+                      <label className="text-xs text-slate-600 mb-1 block">{filter.label}</label>
+                      <div className="relative">
+                        <select className="w-full text-xs p-2 border border-slate-200 rounded bg-white appearance-none pr-6">
+                          <option>{filter.value}</option>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </CardContent>
       </Card>
     </div>
