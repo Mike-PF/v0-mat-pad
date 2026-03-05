@@ -209,40 +209,38 @@ export function TermDatesContent() {
 
   return (
     <div className="h-full flex flex-col space-y-6">
-      {/* School Selection Card with Integrated Submenu */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">
-                {activeTab === "termdates" ? "Term Dates Management" : "Census Dates Management"}
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Configure {activeTab === "termdates" ? "term dates" : "census dates"} for individual schools across
-                academic years
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={activeTab === "termdates" ? handleSave : handleSaveCensusDate}
-                className={`text-white ${
-                  (activeTab === "termdates" && !hasTermDatesToSave) || 
-                  (activeTab === "censusdates" && !hasCensusDatesToSave)
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#B30089]"
-                }`}
-                style={{ backgroundColor: "#121051" }}
-                disabled={(activeTab === "termdates" && !hasTermDatesToSave) || 
-                         (activeTab === "censusdates" && !hasCensusDatesToSave)}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {activeTab === "termdates" ? "Save Term Dates" : "Save Census Dates"}
-              </Button>
-            </div>
+      {/* Header Section - No Card */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-lg font-semibold text-slate-900">
+              {activeTab === "termdates" ? "Term Dates Management" : "Census Dates Management"}
+            </h1>
+            <p className="text-sm text-slate-600 mt-1">
+              Configure {activeTab === "termdates" ? "term dates" : "census dates"} for individual schools across
+              academic years
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="px-6 pt-6 pb-4">
+          <div className="flex gap-2">
+            <Button
+              onClick={activeTab === "termdates" ? handleSave : handleSaveCensusDate}
+              className={`text-white ${
+                (activeTab === "termdates" && !hasTermDatesToSave) || 
+                (activeTab === "censusdates" && !hasCensusDatesToSave)
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-[#B30089]"
+              }`}
+              style={{ backgroundColor: "#121051" }}
+              disabled={(activeTab === "termdates" && !hasTermDatesToSave) || 
+                       (activeTab === "censusdates" && !hasCensusDatesToSave)}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {activeTab === "termdates" ? "Save Term Dates" : "Save Census Dates"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-6 mb-6">
             <div className="flex flex-wrap items-end gap-6">
               {/* School Selection */}
               <div className="flex flex-col w-[280px]">
@@ -332,35 +330,32 @@ export function TermDatesContent() {
                   Clear Selection
                 </button>
               )}
-            </div>
           </div>
 
-          <div className="">
-            <div className="flex gap-1">
-              <button
-                onClick={() => setActiveTab("termdates")}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "termdates"
-                    ? "text-slate-900 border-[#B30089]"
-                    : "text-slate-600 border-transparent hover:text-slate-900"
-                }`}
-              >
-                Term Dates
-              </button>
-              <button
-                onClick={() => setActiveTab("censusdates")}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "censusdates"
-                    ? "text-slate-900 border-[#B30089]"
-                    : "text-slate-600 border-transparent hover:text-slate-900"
-                }`}
-              >
-                Census Dates
-              </button>
-            </div>
+          <div className="flex gap-1 border-b border-slate-200">
+            <button
+              onClick={() => setActiveTab("termdates")}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "termdates"
+                  ? "text-slate-900 border-[#B30089]"
+                  : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
+            >
+              Term Dates
+            </button>
+            <button
+              onClick={() => setActiveTab("censusdates")}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "censusdates"
+                  ? "text-slate-900 border-[#B30089]"
+                  : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
+            >
+              Census Dates
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Term Dates Configuration for Term Dates Tab */}
       {selectedSchool && selectedAcademicYear && activeTab === "termdates" && (
