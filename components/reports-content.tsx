@@ -93,8 +93,7 @@ export function ReportsContent() {
       {/* Card 1: Dashboard Selector */}
       <Card className="bg-white">
         <CardContent className="p-4">
-          <div>
-            <div className="text-slate-900 font-medium text-sm mb-2">Dashboard</div>
+          <div className="flex items-center gap-4">
             <Select defaultValue="attendance">
               <SelectTrigger className="w-60 h-9 bg-white border-slate-200 hover:border-[#121051] transition-colors">
                 <SelectValue placeholder="Select dashboard" />
@@ -106,6 +105,11 @@ export function ReportsContent() {
                 <SelectItem value="safeguarding">Safeguarding</SelectItem>
               </SelectContent>
             </Select>
+            <button
+              className="text-sm text-[#121051] hover:underline"
+            >
+              Clear Selection
+            </button>
           </div>
         </CardContent>
       </Card>
