@@ -243,7 +243,7 @@ export function TermDatesContent() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="px-6 pt-6 pb-4">
-            <div className="flex flex-wrap gap-6">
+            <div className="flex flex-wrap items-end gap-6">
               {/* School Selection */}
               <div className="flex flex-col w-[280px]">
                 <label className="text-sm font-medium text-slate-700 mb-2">Select school</label>
@@ -257,16 +257,6 @@ export function TermDatesContent() {
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[280px] p-0 shadow-lg" align="start">
-                    {selectedSchool && (
-                      <div className="border-b border-slate-100">
-                        <button
-                          onClick={() => handleSchoolChange("")}
-                          className="w-full flex items-center px-3 py-2.5 text-sm text-[#B30089] hover:bg-slate-50 transition-colors"
-                        >
-                          Clear Selection
-                        </button>
-                      </div>
-                    )}
                     <div className="max-h-[300px] overflow-auto">
                       {schools.map((school) => (
                         <div
@@ -305,16 +295,6 @@ export function TermDatesContent() {
                   </PopoverTrigger>
                   {selectedSchool && (
                     <PopoverContent className="w-[200px] p-0 shadow-lg" align="start">
-                      {selectedAcademicYear && (
-                        <div className="border-b border-slate-100">
-                          <button
-                            onClick={() => handleAcademicYearChange("")}
-                            className="w-full flex items-center px-3 py-2.5 text-sm text-[#B30089] hover:bg-slate-50 transition-colors"
-                          >
-                            Clear Selection
-                          </button>
-                        </div>
-                      )}
                       <div className="max-h-[300px] overflow-auto">
                         {academicYears.map((year) => (
                           <div
@@ -339,6 +319,19 @@ export function TermDatesContent() {
                   )}
                 </Popover>
               </div>
+
+              {/* Clear Selection Button */}
+              {(selectedSchool || selectedAcademicYear) && (
+                <button
+                  onClick={() => {
+                    handleSchoolChange("")
+                    handleAcademicYearChange("")
+                  }}
+                  className="text-sm text-[#121051] hover:underline h-11 flex items-center"
+                >
+                  Clear Selection
+                </button>
+              )}
             </div>
           </div>
 
