@@ -13,6 +13,7 @@ import {
 import { Filter, FilterX, Download, ArrowUp, ArrowDown, ChevronDown } from "lucide-react"
 
 export function ReportsContent() {
+  const [selectedDashboard, setSelectedDashboard] = useState<string | undefined>(undefined)
   const [selectedReport, setSelectedReport] = useState("attendanceDash")
   const [selectedScope, setSelectedScope] = useState("whole-mat")
   const [selectedCharacteristics, setSelectedCharacteristics] = useState("characteristics")
@@ -94,7 +95,7 @@ export function ReportsContent() {
       <Card className="bg-white">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <Select defaultValue="attendance">
+            <Select value={selectedDashboard} onValueChange={setSelectedDashboard}>
               <SelectTrigger className="w-60 h-9 bg-white border-slate-200 hover:border-[#121051] transition-colors">
                 <SelectValue placeholder="Select dashboard" />
               </SelectTrigger>
@@ -107,6 +108,7 @@ export function ReportsContent() {
             </Select>
             <button
               className="text-sm text-[#121051] hover:underline"
+              onClick={() => setSelectedDashboard(undefined)}
             >
               Clear Selection
             </button>
@@ -114,30 +116,33 @@ export function ReportsContent() {
         </CardContent>
       </Card>
 
-      {/* Dashboard Buttons */}
-      <Card className="bg-white">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2">
-            {dashboardButtons.map((button) => (
-              <Button
-                key={button.id}
-                variant={button.active ? "default" : "outline"}
-                size="sm"
-                className={`h-9 px-3 text-sm ${
-                  button.active
-                    ? "bg-[#121051] text-white hover:bg-[#1a1a6c]"
-                    : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
-                }`}
-                onClick={() => setSelectedReport(button.id)}
-              >
-                {button.label}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Dashboard Buttons - Only show when dashboard is selected */}
+      {selectedDashboard && (
+        <Card className="bg-white">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-2">
+              {dashboardButtons.map((button) => (
+                <Button
+                  key={button.id}
+                  variant={selectedReport === button.id ? "default" : "outline"}
+                  size="sm"
+                  className={`h-9 px-3 text-sm ${
+                    selectedReport === button.id
+                      ? "bg-[#121051] text-white hover:bg-[#1a1a6c]"
+                      : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                  }`}
+                  onClick={() => setSelectedReport(button.id)}
+                >
+                  {button.label}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Card 3: Attendance Headlines Dashboard */}
+      {/* Card 3: Attendance Headlines Dashboard - Only show when dashboard is selected */}
+      {selectedDashboard && (
       <Card className="bg-white overflow-hidden">
         <CardContent className="p-0">
           {/* Teal Header */}
@@ -521,6 +526,7 @@ export function ReportsContent() {
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   )
 }
