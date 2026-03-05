@@ -94,7 +94,7 @@ export function ReportsContent() {
                 size="sm"
                 className={`h-9 px-3 text-sm ${
                   button.active
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    ? "bg-[#121051] text-white hover:bg-[#1a1a6c]"
                     : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
                 }`}
                 onClick={() => setSelectedReport(button.id)}
