@@ -148,7 +148,7 @@ export function ReportsContent() {
       <Card className="bg-white overflow-hidden">
         <CardContent className="p-0">
           {/* Teal Header */}
-          <div className="bg-[#6Ad0d5] text-white px-6 py-4 flex items-center justify-between">
+          <div className="bg-[#2395A4] text-white px-6 py-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Attendance headlines - 01/09/2024 to 31/08/2025</h2>
             <div className="flex items-center gap-4">
               <div className="flex flex-col">
@@ -193,13 +193,13 @@ export function ReportsContent() {
               {/* Headline Metrics Row */}
               <div className="grid grid-cols-7 gap-3 mb-6">
                 {/* Total Pupils */}
-                <div className="bg-[#6Ad0d5] text-white rounded-lg p-4">
+                <div className="bg-[#2395A4] text-white rounded-lg p-4">
                   <div className="text-xs font-medium mb-2">Total pupils</div>
                   <div className="text-3xl font-bold">31</div>
                 </div>
                 {/* Attendance */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="text-xs font-medium text-[#6Ad0d5] mb-2">Attendance</div>
+                  <div className="text-xs font-medium text-[#2395A4] mb-2">Attendance</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs text-slate-500">MAT</span>
                     <span className="text-2xl font-bold text-emerald-500">97.3%</span>
@@ -210,7 +210,7 @@ export function ReportsContent() {
                 </div>
                 {/* Absence */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="text-xs font-medium text-[#6Ad0d5] mb-2">Absence</div>
+                  <div className="text-xs font-medium text-[#2395A4] mb-2">Absence</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs text-slate-500">MAT</span>
                     <span className="text-2xl font-bold text-emerald-500">2.7%</span>
@@ -221,7 +221,7 @@ export function ReportsContent() {
                 </div>
                 {/* Auth. absence */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="text-xs font-medium text-[#6Ad0d5] mb-2">Auth. absence</div>
+                  <div className="text-xs font-medium text-[#2395A4] mb-2">Auth. absence</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs text-slate-500">MAT</span>
                     <span className="text-2xl font-bold text-emerald-500">2.0%</span>
@@ -232,7 +232,7 @@ export function ReportsContent() {
                 </div>
                 {/* Unauth. absence */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="text-xs font-medium text-[#6Ad0d5] mb-2">Unauth. absence</div>
+                  <div className="text-xs font-medium text-[#2395A4] mb-2">Unauth. absence</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs text-slate-500">MAT</span>
                     <span className="text-2xl font-bold text-amber-500">0.8%</span>
@@ -243,7 +243,7 @@ export function ReportsContent() {
                 </div>
                 {/* Persistent absence */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="text-xs font-medium text-[#6Ad0d5] mb-2">Persistent absence</div>
+                  <div className="text-xs font-medium text-[#2395A4] mb-2">Persistent absence</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs text-slate-500">MAT</span>
                     <span className="text-2xl font-bold text-emerald-500">0.0%</span>
@@ -254,7 +254,7 @@ export function ReportsContent() {
                 </div>
                 {/* Severe absence */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="text-xs font-medium text-[#6Ad0d5] mb-2">Severe absence</div>
+                  <div className="text-xs font-medium text-[#2395A4] mb-2">Severe absence</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xs text-slate-500">MAT</span>
                     <span className="text-2xl font-bold text-emerald-500">0.0%</span>
@@ -272,7 +272,7 @@ export function ReportsContent() {
                   <h4 className="text-sm font-medium text-slate-700 mb-3">Attendance trends</h4>
                   <div className="flex items-center gap-4 text-xs mb-2">
                     <div className="flex items-center gap-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#6Ad0d5]"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#2395A4]"></div>
                       <span className="text-slate-600">MAT (selected pupils)</span>
                     </div>
                     <div className="flex items-center gap-1">
