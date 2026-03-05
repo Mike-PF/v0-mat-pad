@@ -30,24 +30,24 @@ import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 // Sample Power BI reports data
 const initialReports = [
-  { id: "1", powerBiName: "2", displayName: "2222", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "2", powerBiName: "attendance_PBI_test", displayName: "attendance_PBI_test...!", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "3", powerBiName: "attendance_PBI_test1", displayName: "attendance_PBI_test11", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "4", powerBiName: "Dans Test Report", displayName: "Dans Test Report", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "5", powerBiName: "Dashboard Test", displayName: "Dashboard Test", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "6", powerBiName: "DataModel", displayName: "DataModel", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "7", powerBiName: "Josh Test", displayName: "Josh Test", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "8", powerBiName: "3", displayName: "Kates Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "9", powerBiName: "test", displayName: "test", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "10", powerBiName: "Behaviour Analytics", displayName: "Behaviour Analytics", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "11", powerBiName: "Finance Overview", displayName: "Finance Overview", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "12", powerBiName: "Staff Performance", displayName: "Staff Performance Dashboard", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "13", powerBiName: "Pupil Progress", displayName: "Pupil Progress Tracker", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "14", powerBiName: "Safeguarding Report", displayName: "Safeguarding Report", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "15", powerBiName: "SEND Overview", displayName: "SEND Overview Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "16", powerBiName: "Curriculum Analysis", displayName: "Curriculum Analysis", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "17", powerBiName: "Parent Engagement", displayName: "Parent Engagement Metrics", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "18", powerBiName: "Budget Forecast", displayName: "Budget Forecast 2024", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "1", reportType: "own" as const, powerBiName: "2", displayName: "2222", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "2", reportType: "system" as const, powerBiName: "attendance_PBI_test", displayName: "attendance_PBI_test...!", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "3", reportType: "system" as const, powerBiName: "attendance_PBI_test1", displayName: "attendance_PBI_test11", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "4", reportType: "own" as const, powerBiName: "Dans Test Report", displayName: "Dans Test Report", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "5", reportType: "own" as const, powerBiName: "Dashboard Test", displayName: "Dashboard Test", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "6", reportType: "system" as const, powerBiName: "DataModel", displayName: "DataModel", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "7", reportType: "own" as const, powerBiName: "Josh Test", displayName: "Josh Test", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "8", reportType: "own" as const, powerBiName: "3", displayName: "Kates Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "9", reportType: "own" as const, powerBiName: "test", displayName: "test", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "10", reportType: "system" as const, powerBiName: "Behaviour Analytics", displayName: "Behaviour Analytics", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "11", reportType: "system" as const, powerBiName: "Finance Overview", displayName: "Finance Overview", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "12", reportType: "system" as const, powerBiName: "Staff Performance", displayName: "Staff Performance Dashboard", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "13", reportType: "system" as const, powerBiName: "Pupil Progress", displayName: "Pupil Progress Tracker", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "14", reportType: "system" as const, powerBiName: "Safeguarding Report", displayName: "Safeguarding Report", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "15", reportType: "system" as const, powerBiName: "SEND Overview", displayName: "SEND Overview Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "16", reportType: "own" as const, powerBiName: "Curriculum Analysis", displayName: "Curriculum Analysis", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "17", reportType: "system" as const, powerBiName: "Parent Engagement", displayName: "Parent Engagement Metrics", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "18", reportType: "system" as const, powerBiName: "Budget Forecast", displayName: "Budget Forecast 2024", organisations: [] as string[], roles: [] as string[], active: true },
   ]
 
 type Report = typeof initialReports[number]
@@ -263,6 +263,7 @@ export default function DashboardSettingsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-200">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Power BI Report Name</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Dashboard Name</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">School</th>
@@ -274,6 +275,14 @@ export default function DashboardSettingsPage() {
                   <tbody>
                     {paginatedReports.map((report) => (
                       <tr key={report.id} className="border-b border-slate-100">
+                        <td className="py-4 px-4">
+                          <span 
+                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white"
+                            style={{ backgroundColor: report.reportType === "system" ? "#121051" : "#B30089" }}
+                          >
+                            {report.reportType === "system" ? "System" : "Own"}
+                          </span>
+                        </td>
                         <td className="py-4 px-4">
                           <span className="text-sm text-[#121051] font-medium">{report.powerBiName}</span>
                         </td>
@@ -324,14 +333,14 @@ export default function DashboardSettingsPage() {
                                             <div
                                               key={org.id}
                                               onClick={() => handleMATSelect(report.id, org.id)}
-                                              className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
-                                                report.organisations.includes(org.id) ? "bg-slate-50" : ""
+                                              className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
+                                                report.organisations.includes(org.id) ? "bg-[#B30089]" : "hover:bg-slate-50"
                                               }`}
                                             >
-                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-[#121051] font-medium" : "text-slate-900"}`}>
+                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white font-medium" : "text-slate-900"}`}>
                                                 {org.name}
                                               </span>
-                                              <span className="text-sm text-slate-400">
+                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white" : "text-slate-400"}`}>
                                                 {org.schoolCount} {org.schoolCount === 1 ? "school" : "schools"}
                                               </span>
                                             </div>
@@ -518,13 +527,15 @@ export default function DashboardSettingsPage() {
                             >
                               Save
                             </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
-                            >
-                              Delete
-                            </Button>
+                            {report.reportType !== "system" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                              >
+                                Delete
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>

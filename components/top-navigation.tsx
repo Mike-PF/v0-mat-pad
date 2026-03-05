@@ -14,9 +14,9 @@ export function TopNavigation() {
         { id: "users", label: "Users", href: "/settings/users" },
         { id: "roles", label: "Roles", href: "/settings/roles" },
         { id: "connections", label: "System Connections", href: "/settings/connections" },
+        { id: "system-dates", label: "System Dates", href: "/settings/term-dates" },
         { id: "dashboard-settings", label: "Dashboard Settings", href: "/settings/dashboard-settings" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
-        { id: "system-dates", label: "System Dates", href: "/settings/term-dates" },
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
         { id: "mailer", label: "Mailer", href: "/settings/mailer" },
       ]

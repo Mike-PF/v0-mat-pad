@@ -27,7 +27,9 @@ import {
   Settings,
   Pencil,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  Trash2,
+  Search
 } from "lucide-react"
 
 // MAT and School data structure
@@ -44,6 +46,8 @@ interface SchoolData {
   secondaryColor: string
   powerBiLoginEmail?: string
   matId?: string
+  createdDate: string
+  expiryDate: string
 }
 
 interface MATData {
@@ -57,6 +61,8 @@ interface MATData {
   primaryColor: string
   secondaryColor: string
   powerBiLoginEmail?: string
+  createdDate: string
+  expiryDate: string
   schools: SchoolData[]
 }
 
@@ -73,6 +79,8 @@ const initialMATs: MATData[] = [
     primaryColor: "#121051",
     secondaryColor: "#4A90D9",
     powerBiLoginEmail: "reports@stclaremat.org",
+    createdDate: "2021-03-15",
+    expiryDate: "2027-03-15",
     schools: [
       {
         id: "school-1",
@@ -87,6 +95,8 @@ const initialMATs: MATData[] = [
         secondaryColor: "#4A90D9",
         powerBiLoginEmail: "reports@allsaints.org",
         matId: "mat-1",
+        createdDate: "2021-03-15",
+        expiryDate: "2027-03-15",
       },
       {
         id: "school-2",
@@ -100,6 +110,8 @@ const initialMATs: MATData[] = [
         primaryColor: "#121051",
         secondaryColor: "#4A90D9",
         matId: "mat-1",
+        createdDate: "2021-06-20",
+        expiryDate: "2027-06-20",
       },
       {
         id: "school-3",
@@ -114,6 +126,8 @@ const initialMATs: MATData[] = [
         secondaryColor: "#60A5FA",
         powerBiLoginEmail: "reports@notredame.org",
         matId: "mat-1",
+        createdDate: "2022-01-10",
+        expiryDate: "2028-01-10",
       },
     ],
   },
@@ -127,6 +141,8 @@ const initialMATs: MATData[] = [
     logo: "/placeholder.svg",
     primaryColor: "#059669",
     secondaryColor: "#34D399",
+    createdDate: "2020-09-01",
+    expiryDate: "2026-09-01",
     schools: [
       {
         id: "school-4",
@@ -140,6 +156,8 @@ const initialMATs: MATData[] = [
         primaryColor: "#059669",
         secondaryColor: "#34D399",
         matId: "mat-2",
+        createdDate: "2020-09-01",
+        expiryDate: "2026-09-01",
       },
     ],
   },
@@ -159,6 +177,8 @@ const initialStandaloneSchools: SchoolData[] = [
     primaryColor: "#dc2626",
     secondaryColor: "#F87171",
     powerBiLoginEmail: "reports@stalbans.org",
+    createdDate: "2019-04-12",
+    expiryDate: "2025-04-12",
   },
   {
     id: "standalone-2",
@@ -171,6 +191,8 @@ const initialStandaloneSchools: SchoolData[] = [
     logo: "/placeholder.svg",
     primaryColor: "#7c3aed",
     secondaryColor: "#A78BFA",
+    createdDate: "2022-08-30",
+    expiryDate: "2028-08-30",
   },
 ]
 
@@ -178,8 +200,8 @@ export default function OrganisationPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [mats, setMats] = useState<MATData[]>(initialMATs)
   const [standaloneSchools, setStandaloneSchools] = useState<SchoolData[]>(initialStandaloneSchools)
-  const [selectedType, setSelectedType] = useState<"mat" | "school">("mat")
-  const [selectedId, setSelectedId] = useState<string>("")
+  const [selectedType, setSelectedType] = useState<"mat" | "school" | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerSearch, setPickerSearch] = useState("")
   const [isEditing, setIsEditing] = useState(false)
@@ -192,6 +214,10 @@ export default function OrganisationPage() {
   const [newOrgExpiry, setNewOrgExpiry] = useState("")
   const [schoolsDropdownOpen, setSchoolsDropdownOpen] = useState(false)
   const [schoolsSearch, setSchoolsSearch] = useState("")
+  const [manageSchoolsOpen, setManageSchoolsOpen] = useState(false)
+  const [manageSchoolsSearch, setManageSchoolsSearch] = useState("")
+  const [deleteSchoolDialogOpen, setDeleteSchoolDialogOpen] = useState(false)
+  const [schoolToDelete, setSchoolToDelete] = useState<SchoolData | null>(null)
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -349,9 +375,10 @@ export default function OrganisationPage() {
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
-          <Card className="h-full flex flex-col">
+          <Card>
             {/* Picker Header */}
             <div className="p-4 border-b flex items-center justify-between">
+              <div className="flex items-center gap-4">
               <div className="relative">
                 <button
                   onClick={() => setPickerOpen(!pickerOpen)}
@@ -401,14 +428,14 @@ export default function OrganisationPage() {
                             <button
                               key={mat.id}
                               onClick={() => handleSelect("mat", mat.id)}
-                              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                                selectedType === "mat" && selectedId === mat.id ? "bg-slate-100" : ""
+                              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                                selectedType === "mat" && selectedId === mat.id ? "bg-[#B30089]" : "hover:bg-slate-50"
                               }`}
                             >
-                              <span className="text-sm text-slate-900 flex-1 text-left truncate">
+                              <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-white font-medium" : "text-slate-900"}`}>
                                 {mat.name}
                               </span>
-                              <span className="text-xs text-slate-500">
+                              <span className={`text-xs ${selectedType === "mat" && selectedId === mat.id ? "text-white" : "text-slate-500"}`}>
                                 {mat.schools.length} schools
                               </span>
                             </button>
@@ -430,16 +457,16 @@ export default function OrganisationPage() {
                               <button
                                 key={school.id}
                                 onClick={() => handleSelect("school", school.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                                  selectedType === "school" && selectedId === school.id ? "bg-slate-100" : ""
+                                className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                                  selectedType === "school" && selectedId === school.id ? "bg-[#B30089]" : "hover:bg-slate-50"
                                 }`}
                               >
                                 <div className="flex-1 text-left min-w-0">
-                                  <span className="text-sm text-slate-900 block truncate">
+                                  <span className={`text-sm block truncate ${selectedType === "school" && selectedId === school.id ? "text-white font-medium" : "text-slate-900"}`}>
                                     {school.name}
                                   </span>
                                   {parentMAT && (
-                                    <span className="text-xs text-slate-500 truncate block">
+                                    <span className={`text-xs truncate block ${selectedType === "school" && selectedId === school.id ? "text-white" : "text-slate-500"}`}>
                                       {parentMAT.name}
                                     </span>
                                   )}
@@ -459,6 +486,18 @@ export default function OrganisationPage() {
                     </div>
                   </div>
                 )}
+              </div>
+              {selectedData && (
+                <button
+                  onClick={() => {
+                    setSelectedType(null)
+                    setSelectedId(null)
+                  }}
+                  className="text-sm text-[#121051] hover:underline"
+                >
+                  Clear Selection
+                </button>
+              )}
               </div>
 
               <div className="flex gap-2">
@@ -483,15 +522,30 @@ export default function OrganisationPage() {
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEditClick}
-                      className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
-                    >
-                      <Pencil className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
+                    <>
+                      {selectedType === "mat" && (
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            setManageSchoolsSearch("")
+                            setManageSchoolsOpen(true)
+                          }}
+                          className="text-white"
+                          style={{ backgroundColor: "#121051" }}
+                        >
+                          Manage Schools
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEditClick}
+                        className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                      >
+                        <Pencil className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                    </>
                   )
                 ) : (
                   <Button 
@@ -500,13 +554,16 @@ export default function OrganisationPage() {
                     className="text-white"
                     style={{ backgroundColor: "#121051" }}
                   >
-                    <Plus className="w-4 h-4 mr-1" />
                     Add Organisation
                   </Button>
                 )}
               </div>
             </div>
+          </Card>
 
+          {/* Content Card - Only shown when organisation is selected */}
+          {selectedData && (
+          <Card className="flex-1 flex flex-col mt-4">
             {/* Schools Navigation Panel - shown when MAT is selected */}
             {selectedType === "mat" && selectedMAT && (
               <div className="px-4 py-3 border-b bg-slate-50">
@@ -645,7 +702,6 @@ export default function OrganisationPage() {
 
             {/* Content */}
             <CardContent className="flex-1 overflow-auto p-6">
-              {selectedData ? (
                 <div className="max-w-3xl">
                   {/* Basic Information Tab */}
                   {settingsTab === "basic" && (
@@ -713,6 +769,23 @@ export default function OrganisationPage() {
                               className="h-9"
                             />
                           </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Organisation Created Date</label>
+                            <Input
+                              value={new Date(editingItem.createdDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              disabled
+                              className="h-9 bg-slate-50 text-slate-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Expiry Date</label>
+                            <Input
+                              type="date"
+                              value={editingItem.expiryDate}
+                              onChange={(e) => setEditingItem({ ...editingItem, expiryDate: e.target.value })}
+                              className="h-9"
+                            />
+                          </div>
                         </div>
                       ) : (
                         <div className="grid grid-cols-2 gap-4">
@@ -744,6 +817,18 @@ export default function OrganisationPage() {
                           <div>
                             <span className="text-xs text-slate-500">Email</span>
                             <p className="text-sm text-slate-900">{selectedData.email}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500">Organisation Created Date</span>
+                            <p className="text-sm text-slate-900">
+                              {new Date(selectedData.createdDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500">Expiry Date</span>
+                            <p className="text-sm text-slate-900">
+                              {new Date(selectedData.expiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -913,18 +998,171 @@ export default function OrganisationPage() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <div className="text-center">
-                    <Settings className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Select an organisation or school to view settings</p>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
+
+      {/* Manage Schools Modal */}
+      <Dialog open={manageSchoolsOpen} onOpenChange={setManageSchoolsOpen}>
+        <DialogContent className="max-w-2xl p-0 flex flex-col max-h-[80vh]">
+          <div className="p-6 pb-4 border-b">
+            <h2 className="text-lg font-semibold text-slate-900">Manage Schools</h2>
+            <p className="text-sm text-slate-500 mt-1">{selectedMAT?.name}</p>
+          </div>
+          
+          <div className="p-6 flex-1 overflow-auto">
+            {/* Search to add new school */}
+            <div className="mb-6">
+              <label className="text-xs text-slate-500 block mb-2">Add School by URN or Name</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder="Search by URN or school name..."
+                  value={manageSchoolsSearch}
+                  onChange={(e) => setManageSchoolsSearch(e.target.value)}
+                  className="pl-10 h-10"
+                />
+              </div>
+              {manageSchoolsSearch && (
+                <div className="mt-2 border border-slate-200 rounded-lg max-h-[150px] overflow-auto">
+                  {standaloneSchools
+                    .filter(school => 
+                      school.urn.toLowerCase().includes(manageSchoolsSearch.toLowerCase()) ||
+                      school.name.toLowerCase().includes(manageSchoolsSearch.toLowerCase())
+                    )
+                    .map(school => (
+                      <button
+                        key={school.id}
+                        onClick={() => {
+                          if (selectedMAT) {
+                            // Add school to MAT
+                            const updatedSchool = { ...school, matId: selectedMAT.id }
+                            setMats(mats.map(mat => 
+                              mat.id === selectedMAT.id 
+                                ? { ...mat, schools: [...mat.schools, updatedSchool] }
+                                : mat
+                            ))
+                            setStandaloneSchools(standaloneSchools.filter(s => s.id !== school.id))
+                            setManageSchoolsSearch("")
+                          }
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 text-left border-b border-slate-100 last:border-0"
+                      >
+                        <div>
+                          <span className="text-sm font-medium text-slate-900">{school.name}</span>
+                          <span className="text-xs text-slate-500 ml-2">URN: {school.urn}</span>
+                        </div>
+                        <span className="text-xs text-[#121051] font-medium">Add</span>
+                      </button>
+                    ))}
+                  {standaloneSchools.filter(school => 
+                    school.urn.toLowerCase().includes(manageSchoolsSearch.toLowerCase()) ||
+                    school.name.toLowerCase().includes(manageSchoolsSearch.toLowerCase())
+                  ).length === 0 && (
+                    <div className="px-4 py-3 text-sm text-slate-500 text-center">
+                      No schools found
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Current schools in MAT */}
+            <div>
+              <label className="text-xs text-slate-500 block mb-2">Schools in this MAT</label>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-left py-2.5 px-4 text-xs font-medium text-slate-600 w-[120px]">URN</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-medium text-slate-600">School Name</th>
+                      <th className="py-2.5 px-4 w-[60px]"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedMAT?.schools.map(school => (
+                      <tr key={school.id} className="border-b border-slate-100 last:border-0">
+                        <td className="py-3 px-4 text-sm text-slate-600">{school.urn}</td>
+                        <td className="py-3 px-4 text-sm text-slate-900">{school.name}</td>
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={() => {
+                              setSchoolToDelete(school)
+                              setDeleteSchoolDialogOpen(true)
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {selectedMAT?.schools.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="py-6 text-center text-sm text-slate-500">
+                          No schools in this MAT
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 pt-4 border-t flex justify-end">
+            <Button
+              onClick={() => setManageSchoolsOpen(false)}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Done
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete School Confirmation Dialog */}
+      <Dialog open={deleteSchoolDialogOpen} onOpenChange={(open) => !open && setDeleteSchoolDialogOpen(false)}>
+        <DialogContent className="max-w-md">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Remove School</h2>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to remove <span className="font-semibold text-slate-900">{schoolToDelete?.name}</span> from this MAT?
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteSchoolDialogOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedMAT && schoolToDelete) {
+                  const updatedSchool = { ...schoolToDelete, matId: undefined }
+                  setStandaloneSchools([...standaloneSchools, updatedSchool])
+                  setMats(mats.map(mat => 
+                    mat.id === selectedMAT.id 
+                      ? { ...mat, schools: mat.schools.filter(s => s.id !== schoolToDelete.id) }
+                      : mat
+                  ))
+                }
+                setDeleteSchoolDialogOpen(false)
+                setSchoolToDelete(null)
+              }}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Organisation Modal */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ChevronDown, Save, RotateCcw } from "lucide-react"
 
 export function TermDatesContent() {
@@ -11,12 +12,9 @@ export function TermDatesContent() {
   const [selectedSchool, setSelectedSchool] = useState("")
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("")
   const [censusDates, setCensusDates] = useState({
-    autumn1: "",
-    autumn2: "",
-    spring1: "",
-    spring2: "",
-    summer1: "",
-    summer2: "",
+    autumn: "",
+    spring: "",
+    summer: "",
   })
   const [termDates, setTermDates] = useState({
     autumn1: { start: "", end: "" },
@@ -133,12 +131,9 @@ export function TermDatesContent() {
       summer2: { start: "", end: "" },
     })
     setCensusDates({
-      autumn1: "",
-      autumn2: "",
-      spring1: "",
-      spring2: "",
-      summer1: "",
-      summer2: "",
+      autumn: "",
+      spring: "",
+      summer: "",
     })
   }
 
@@ -196,17 +191,21 @@ export function TermDatesContent() {
         summer2: { start: "", end: "" },
       })
       setCensusDates({
-        autumn1: "",
-        autumn2: "",
-        spring1: "",
-        spring2: "",
-        summer1: "",
-        summer2: "",
+        autumn: "",
+        spring: "",
+        summer: "",
       })
     }
   }
 
   const yearStatus = getYearStatus()
+
+  // Check if there's something to save
+  const hasTermDatesToSave = selectedSchool && selectedAcademicYear && 
+    Object.values(termDates).some((term) => term.start || term.end)
+  
+  const hasCensusDatesToSave = selectedSchool && selectedAcademicYear && 
+    Object.values(censusDates).some((date) => date)
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -225,17 +224,16 @@ export function TermDatesContent() {
             </div>
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                onClick={handleReset}
-                className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] bg-transparent"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button
                 onClick={activeTab === "termdates" ? handleSave : handleSaveCensusDate}
-                className="bg-[#121051] hover:bg-[#B30089] hover:text-white text-white"
+                className={`text-white ${
+                  (activeTab === "termdates" && !hasTermDatesToSave) || 
+                  (activeTab === "censusdates" && !hasCensusDatesToSave)
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-[#B30089]"
+                }`}
                 style={{ backgroundColor: "#121051" }}
+                disabled={(activeTab === "termdates" && !hasTermDatesToSave) || 
+                         (activeTab === "censusdates" && !hasCensusDatesToSave)}
               >
                 <Save className="w-4 h-4 mr-2" />
                 {activeTab === "termdates" ? "Save Term Dates" : "Save Census Dates"}
@@ -245,48 +243,95 @@ export function TermDatesContent() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="px-6 pt-6 pb-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="flex flex-wrap items-end gap-6">
               {/* School Selection */}
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-slate-700 mb-2">Select School</label>
-                <div className="relative">
-                  <select
-                    value={selectedSchool}
-                    onChange={(e) => handleSchoolChange(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Please select a school...</option>
-                    {schools.map((school) => (
-                      <option key={school} value={school}>
-                        {school}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                </div>
+              <div className="flex flex-col w-[280px]">
+                <label className="text-sm font-medium text-slate-700 mb-2">Select school</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2 h-11 w-full px-3 bg-white border border-slate-200 rounded-lg text-sm text-left hover:border-[#121051] transition-colors">
+                      <span className="flex-1 truncate text-slate-700">
+                        {selectedSchool || "Select school..."}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[280px] p-0 shadow-lg" align="start">
+                    <div className="max-h-[300px] overflow-auto">
+                      {schools.map((school) => (
+                        <div
+                          key={school}
+                          onClick={() => handleSchoolChange(school)}
+                          className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
+                            selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                          }`}
+                        >
+                          <span className="text-sm">{school}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Academic Year Selection */}
-              <div className="flex flex-col">
+              <div className="flex flex-col w-[200px]">
                 <label className="text-sm font-medium text-slate-700 mb-2">Academic Year</label>
-                <div className="relative">
-                  <select
-                    value={selectedAcademicYear}
-                    onChange={(e) => handleAcademicYearChange(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={!selectedSchool}
-                  >
-                    <option value="">Please select academic year...</option>
-                    {academicYears.map((year) => (
-                      <option key={year.value} value={year.value}>
-                        {year.label}
-                        {year.isCurrent ? " (Current)" : ""}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button 
+                      className={`flex items-center gap-2 h-11 w-full px-3 border border-slate-200 rounded-lg text-sm text-left transition-colors ${
+                        !selectedSchool 
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                          : "bg-white text-slate-700 hover:border-[#121051]"
+                      }`}
+                      disabled={!selectedSchool}
+                    >
+                      <span className="flex-1 truncate">
+                        {selectedAcademicYear || "Select year..."}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 flex-shrink-0 ${!selectedSchool ? "text-slate-300" : "text-slate-400"}`} />
+                    </button>
+                  </PopoverTrigger>
+                  {selectedSchool && (
+                    <PopoverContent className="w-[200px] p-0 shadow-lg" align="start">
+                      <div className="max-h-[300px] overflow-auto">
+                        {academicYears.map((year) => (
+                          <div
+                            key={year.value}
+                            onClick={() => handleAcademicYearChange(year.value)}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
+                              selectedAcademicYear === year.value ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            }`}
+                          >
+                            <span className="text-sm">{year.label}</span>
+                            {year.isCurrent && (
+                              <span className={`text-xs px-2 py-0.5 rounded ${
+                                selectedAcademicYear === year.value ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                              }`}>
+                                Current
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  )}
+                </Popover>
               </div>
+
+              {/* Clear Selection Button */}
+              {(selectedSchool || selectedAcademicYear) && (
+                <button
+                  onClick={() => {
+                    handleSchoolChange("")
+                    handleAcademicYearChange("")
+                  }}
+                  className="text-sm text-[#121051] hover:underline h-11 flex items-center"
+                >
+                  Clear Selection
+                </button>
+              )}
             </div>
           </div>
 
@@ -413,81 +458,68 @@ export function TermDatesContent() {
         </Card>
       )}
 
-      {/* Census Dates Configuration - shows all terms at once like Term Dates */}
+      {/* Census Dates Configuration - shows 3 census periods */}
       {selectedSchool && selectedAcademicYear && activeTab === "censusdates" && (
         <Card className="flex-1">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg">Census Dates for {selectedSchool}</CardTitle>
-                <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear}</p>
-              </div>
-              {yearStatus && (
-                <span className={`px-3 py-1 text-xs rounded-full font-medium ${yearStatus.color}`}>
-                  {yearStatus.text}
-                </span>
-              )}
+            <div>
+              <CardTitle className="text-lg">Census Dates for {selectedSchool}</CardTitle>
+              <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear}</p>
             </div>
           </CardHeader>
           <CardContent className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {termLabels.map((term) => (
-                <div key={term.key} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  <div className="mb-4">
-                    <h3 className="font-medium text-slate-900">{term.label}</h3>
-                    <p className="text-sm text-slate-600">{term.description}</p>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Autumn Census */}
+              <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Autumn Census</h3>
+                  <p className="text-sm text-slate-500">September - December</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                  <Input
+                    type="date"
+                    value={censusDates.autumn}
+                    onChange={(e) => handleCensusDateChange("autumn", e.target.value)}
+                    className="w-full"
+                    placeholder="day-month-year"
+                  />
+                </div>
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
-                    <Input
-                      type="date"
-                      value={censusDates[term.key as keyof typeof censusDates]}
-                      onChange={(e) => handleCensusDateChange(term.key, e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
+              {/* Spring Census */}
+              <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Spring Census</h3>
+                  <p className="text-sm text-slate-500">January - March</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                  <Input
+                    type="date"
+                    value={censusDates.spring}
+                    onChange={(e) => handleCensusDateChange("spring", e.target.value)}
+                    className="w-full"
+                    placeholder="day-month-year"
+                  />
+                </div>
+              </div>
 
-                  {/* Date preview */}
-                  {censusDates[term.key as keyof typeof censusDates] && (
-                    <div className="mt-3 p-2 bg-blue-50 rounded-md">
-                      <p className="text-xs text-blue-900">
-                        {new Date(censusDates[term.key as keyof typeof censusDates]).toLocaleDateString("en-GB", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Summary Information */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Census Dates Summary</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-blue-700 font-medium">Total Terms:</span>
-                  <span className="ml-2 text-blue-900">6 half terms</span>
+              {/* Summer Census */}
+              <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Summer Census</h3>
+                  <p className="text-sm text-slate-500">April - July</p>
                 </div>
                 <div>
-                  <span className="text-blue-700 font-medium">Academic Year:</span>
-                  <span className="ml-2 text-blue-900">{selectedAcademicYear}</span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Year Status:</span>
-                  <span className="ml-2 text-blue-900">
-                    {yearStatus?.text.replace(" Academic Year", "").replace("Current Active Year", "Current")}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Completion:</span>
-                  <span className="ml-2 text-blue-900">
-                    {Object.values(censusDates).filter((date) => date).length}/6 census dates
-                  </span>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Census Date</label>
+                  <Input
+                    type="date"
+                    value={censusDates.summer}
+                    onChange={(e) => handleCensusDateChange("summer", e.target.value)}
+                    className="w-full"
+                    placeholder="day-month-year"
+                  />
                 </div>
               </div>
             </div>
@@ -495,30 +527,38 @@ export function TermDatesContent() {
         </Card>
       )}
 
-      {/* Placeholder when no school or year selected */}
-      {(!selectedSchool || !selectedAcademicYear) && (
-        <Card className="flex-1">
-          <CardContent className="flex-1 flex items-center justify-center p-12">
-            <div className="bg-white border border-slate-200 rounded-lg p-12 shadow-sm max-w-md w-full">
-              <div className="text-center flex flex-col items-center justify-center">
-                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <p className="text-slate-600 text-sm text-center">
-                  {!selectedSchool ? "Please select an organisation" : "Please select an academic year"}
-                </p>
+      {/* Census Dates Summary */}
+      {selectedSchool && selectedAcademicYear && activeTab === "censusdates" && (
+        <Card className="border-l-4" style={{ borderLeftColor: "#121051" }}>
+          <CardContent className="py-4">
+            <h4 className="font-semibold mb-3" style={{ color: "#121051" }}>Census Dates Summary</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Total Census:</span>
+                <span className="ml-2 text-slate-700">3 census dates</span>
+              </div>
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Academic Year:</span>
+                <span className="ml-2 text-slate-700">{selectedAcademicYear}</span>
+              </div>
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Status:</span>
+                <span className="ml-2 text-slate-700">
+                  {Object.values(censusDates).filter((date) => date).length === 3 ? "Complete" : "Incomplete"}
+                </span>
+              </div>
+              <div>
+                <span style={{ color: "#121051" }} className="font-medium">Completion:</span>
+                <span className="ml-2 text-slate-700">
+                  {Object.values(censusDates).filter((date) => date).length} / 3 dates
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
+
+      
     </div>
   )
 }
