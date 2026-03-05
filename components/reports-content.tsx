@@ -83,6 +83,21 @@ export function ReportsContent() {
 
   return (
     <div className="h-full bg-slate-50 overflow-auto space-y-4">
+      {/* Card 1: Dashboard Selector */}
+      <Card className="bg-white">
+        <CardContent className="p-4">
+          <div>
+            <div className="text-slate-900 font-medium text-sm mb-2">Dashboard</div>
+            <div className="relative">
+              <select className="w-60 p-2 border border-slate-300 rounded bg-white appearance-none pr-8">
+                <option>Attendance</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Dashboard Buttons */}
       <Card className="bg-white">
         <CardContent className="p-4">
