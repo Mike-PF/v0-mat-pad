@@ -106,12 +106,14 @@ export function ReportsContent() {
                 <SelectItem value="safeguarding">Safeguarding</SelectItem>
               </SelectContent>
             </Select>
-            <button
-              className="text-sm text-[#121051] hover:underline"
-              onClick={() => setSelectedDashboard("")}
-            >
-              Clear Selection
-            </button>
+            {selectedDashboard && (
+              <button
+                className="text-sm text-[#121051] hover:underline"
+                onClick={() => setSelectedDashboard("")}
+              >
+                Clear Selection
+              </button>
+            )}
           </div>
         </CardContent>
       </Card>
