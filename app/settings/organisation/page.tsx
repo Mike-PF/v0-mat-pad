@@ -999,13 +999,14 @@ export default function OrganisationPage() {
                           {/* Header with Deactivate Button */}
                           <div className="flex items-center justify-between mb-8">
                             <h3 className="text-lg font-medium text-slate-900">Power BI Workspace</h3>
-                            <button
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => setPowerBiActivated(false)}
-                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
-                              title="Deactivate Power BI Integration"
+                              className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                              Deactivate
+                            </Button>
                           </div>
 
                           <div className="space-y-8">
