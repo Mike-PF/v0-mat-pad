@@ -224,13 +224,41 @@ export default function OrganisationPage() {
   const [powerBiWorkspaceName, setPowerBiWorkspaceName] = useState("")
   const [powerBiEmail, setPowerBiEmail] = useState("")
   const [powerBiPassword, setPowerBiPassword] = useState("")
-  const [powerBiUsers, setPowerBiUsers] = useState<{id: string, email: string, name: string}[]>([
+  const [powerBiUsers, setPowerBiUsers] = useState<{id: string, email: string, name: string, invited?: boolean}[]>([
     { id: "1", email: "john.smith@stclaremat.org", name: "John Smith" },
     { id: "2", email: "sarah.jones@stclaremat.org", name: "Sarah Jones" },
   ])
+
+  const handleAddPowerBiUser = async () => {
+    if (!newPowerBiUserEmail) return
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newPowerBiUserEmail)) {
+      setPowerBiUserError("Please enter a valid email address.")
+      return
+    }
+    if (powerBiUsers.some(u => u.email === newPowerBiUserEmail)) {
+      setPowerBiUserError("This user has already been added.")
+      return
+    }
+    setAddingPowerBiUser(true)
+    // Simulate auto-creating user account and sending invite email
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    const namePart = newPowerBiUserEmail.split("@")[0]
+    const name = namePart.replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    setPowerBiUsers(prev => [...prev, {
+      id: Date.now().toString(),
+      email: newPowerBiUserEmail,
+      name,
+      invited: true,
+    }])
+    setNewPowerBiUserEmail("")
+    setAddingPowerBiUser(false)
+  }
   const [newPowerBiUserEmail, setNewPowerBiUserEmail] = useState("")
   const [showPowerBiPassword, setShowPowerBiPassword] = useState(false)
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
+  const [addingPowerBiUser, setAddingPowerBiUser] = useState(false)
+  const [powerBiUserError, setPowerBiUserError] = useState("")
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -1065,32 +1093,30 @@ export default function OrganisationPage() {
                               <h4 className="text-sm font-medium text-slate-900 mb-4">Workspace Users</h4>
                               
                               {/* Add User */}
-                              <div className="flex gap-2 mb-4">
-                                <Input
-                                  type="email"
-                                  value={newPowerBiUserEmail}
-                                  onChange={(e) => setNewPowerBiUserEmail(e.target.value)}
-                                  placeholder="Enter email address to add user"
-                                  className="h-9 max-w-md"
-                                />
-                                <Button 
-                                  onClick={() => {
-                                    if (newPowerBiUserEmail) {
-                                      setPowerBiUsers([...powerBiUsers, { 
-                                        id: Date.now().toString(), 
-                                        email: newPowerBiUserEmail, 
-                                        name: newPowerBiUserEmail.split('@')[0] 
-                                      }])
-                                      setNewPowerBiUserEmail("")
-                                    }
-                                  }}
-                                  size="sm"
-                                  className="text-white h-9"
-                                  style={{ backgroundColor: "#121051" }}
-                                >
-                                  <Plus className="w-4 h-4 mr-1" />
-                                  Add User
-                                </Button>
+                              <div className="mb-4">
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="email"
+                                    value={newPowerBiUserEmail}
+                                    onChange={(e) => { setNewPowerBiUserEmail(e.target.value); setPowerBiUserError("") }}
+                                    placeholder="Enter email address to add user"
+                                    className="h-9 max-w-md"
+                                    onKeyDown={(e) => e.key === "Enter" && !addingPowerBiUser && handleAddPowerBiUser()}
+                                  />
+                                  <Button 
+                                    onClick={handleAddPowerBiUser}
+                                    disabled={addingPowerBiUser || !newPowerBiUserEmail}
+                                    size="sm"
+                                    className="text-white h-9"
+                                    style={{ backgroundColor: "#121051" }}
+                                  >
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    {addingPowerBiUser ? "Adding..." : "Add User"}
+                                  </Button>
+                                </div>
+                                {powerBiUserError && (
+                                  <p className="text-xs text-red-500 mt-1">{powerBiUserError}</p>
+                                )}
                               </div>
 
                               {/* Users List */}
@@ -1100,6 +1126,7 @@ export default function OrganisationPage() {
                                     <tr>
                                       <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Name</th>
                                       <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Email</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Status</th>
                                       <th className="text-right text-xs font-medium text-slate-500 px-4 py-3">Actions</th>
                                     </tr>
                                   </thead>
@@ -1108,10 +1135,21 @@ export default function OrganisationPage() {
                                       <tr key={user.id} className="border-b border-slate-100 last:border-0">
                                         <td className="px-4 py-3 text-sm text-slate-900">{user.name}</td>
                                         <td className="px-4 py-3 text-sm text-slate-600">{user.email}</td>
+                                        <td className="px-4 py-3">
+                                          {user.invited ? (
+                                            <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                              Invite sent
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                              Active
+                                            </span>
+                                          )}
+                                        </td>
                                         <td className="px-4 py-3 text-right">
                                           <button
                                             onClick={() => setPowerBiUsers(powerBiUsers.filter(u => u.id !== user.id))}
-                                            className="text-red-500 hover:text-red-700 transition-colors"
+                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
                                           >
                                             <Trash2 className="w-4 h-4" />
                                           </button>
@@ -1120,7 +1158,7 @@ export default function OrganisationPage() {
                                     ))}
                                     {powerBiUsers.length === 0 && (
                                       <tr>
-                                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500">
+                                        <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-500">
                                           No users added yet
                                         </td>
                                       </tr>
