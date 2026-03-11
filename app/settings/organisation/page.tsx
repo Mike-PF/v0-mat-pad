@@ -229,6 +229,8 @@ export default function OrganisationPage() {
     { id: "2", email: "sarah.jones@stclaremat.org", name: "Sarah Jones" },
   ])
   const [newPowerBiUserEmail, setNewPowerBiUserEmail] = useState("")
+  const [showPowerBiPassword, setShowPowerBiPassword] = useState(false)
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -1007,7 +1009,7 @@ export default function OrganisationPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setPowerBiActivated(false)}
+                              onClick={() => setDeactivateDialogOpen(true)}
                               className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
                             >
                               Deactivate
@@ -1038,12 +1040,22 @@ export default function OrganisationPage() {
                                 </div>
                                 <div>
                                   <label className="text-xs text-slate-500 block mb-1">Password</label>
-                                  <Input
-                                    type="password"
-                                    value={powerBiPassword}
-                                    readOnly
-                                    className="h-9 max-w-md bg-slate-50 text-slate-600 cursor-default"
-                                  />
+                                  <div className="flex items-center gap-2 max-w-md">
+                                    <Input
+                                      type={showPowerBiPassword ? "text" : "password"}
+                                      value={powerBiPassword}
+                                      readOnly
+                                      className="h-9 bg-slate-50 text-slate-600 cursor-default"
+                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setShowPowerBiPassword(!showPowerBiPassword)}
+                                      className="h-9 px-3 border-slate-200 text-slate-600 hover:bg-slate-50 shrink-0"
+                                    >
+                                      {showPowerBiPassword ? "Hide" : "Show"}
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -1244,6 +1256,40 @@ export default function OrganisationPage() {
               style={{ backgroundColor: "#121051" }}
             >
               Done
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deactivate Power BI Confirmation Dialog */}
+      <Dialog open={deactivateDialogOpen} onOpenChange={(open) => !open && setDeactivateDialogOpen(false)}>
+        <DialogContent className="max-w-md">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Deactivate</h2>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to deactivate the Power BI integration for <span className="font-semibold text-slate-900">{selectedData?.name}</span>? This will remove all workspace access.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setDeactivateDialogOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setPowerBiActivated(false)
+                setPowerBiWorkspaceName("")
+                setPowerBiEmail("")
+                setPowerBiPassword("")
+                setDeactivateDialogOpen(false)
+              }}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Deactivate
             </Button>
           </div>
         </DialogContent>
