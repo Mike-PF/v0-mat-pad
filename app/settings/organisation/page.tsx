@@ -1138,7 +1138,7 @@ export default function OrganisationPage() {
                               </div>
 
                               {/* Users List */}
-                              <div className="border border-slate-200 rounded-lg overflow-hidden overflow-x-auto">
+                              <div className="border border-slate-200 rounded-lg overflow-hidden">
                                 <table className="w-full">
                                   <thead className="bg-slate-50 border-b border-slate-200">
                                     <tr>
