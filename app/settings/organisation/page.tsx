@@ -224,10 +224,24 @@ export default function OrganisationPage() {
   const [powerBiWorkspaceName, setPowerBiWorkspaceName] = useState("")
   const [powerBiEmail, setPowerBiEmail] = useState("")
   const [powerBiPassword, setPowerBiPassword] = useState("")
-  const [powerBiUsers, setPowerBiUsers] = useState<{id: string, email: string, name: string, invited?: boolean}[]>([
-    { id: "1", email: "john.smith@stclaremat.org", name: "John Smith" },
-    { id: "2", email: "sarah.jones@stclaremat.org", name: "Sarah Jones" },
+  const [powerBiUsers, setPowerBiUsers] = useState<{id: string, email: string, name: string, workspaceEmail: string, password: string, invited?: boolean}[]>([
+    { id: "1", email: "john.smith@stclaremat.org", name: "John Smith", workspaceEmail: "jsmith@stclare-pbi.onmicrosoft.com", password: "Sc@M4T2024!js" },
+    { id: "2", email: "sarah.jones@stclaremat.org", name: "Sarah Jones", workspaceEmail: "sjones@stclare-pbi.onmicrosoft.com", password: "Sc@M4T2024!sj" },
   ])
+
+  const generateWorkspaceEmail = (email: string) => {
+    const namePart = email.split("@")[0].toLowerCase().replace(/[._]/g, "")
+    return `${namePart}@stclare-pbi.onmicrosoft.com`
+  }
+
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$"
+    let password = "Sc@"
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return password
+  }
 
   const handleAddPowerBiUser = async () => {
     if (!newPowerBiUserEmail) return
@@ -245,10 +259,14 @@ export default function OrganisationPage() {
     await new Promise(resolve => setTimeout(resolve, 1200))
     const namePart = newPowerBiUserEmail.split("@")[0]
     const name = namePart.replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    const workspaceEmail = generateWorkspaceEmail(newPowerBiUserEmail)
+    const password = generatePassword()
     setPowerBiUsers(prev => [...prev, {
       id: Date.now().toString(),
       email: newPowerBiUserEmail,
       name,
+      workspaceEmail,
+      password,
       invited: true,
     }])
     setNewPowerBiUserEmail("")
@@ -1120,12 +1138,14 @@ export default function OrganisationPage() {
                               </div>
 
                               {/* Users List */}
-                              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                              <div className="border border-slate-200 rounded-lg overflow-hidden overflow-x-auto">
                                 <table className="w-full">
                                   <thead className="bg-slate-50 border-b border-slate-200">
                                     <tr>
                                       <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Name</th>
                                       <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Email</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Workspace Email</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Password</th>
                                       <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Status</th>
                                       <th className="text-right text-xs font-medium text-slate-500 px-4 py-3">Actions</th>
                                     </tr>
@@ -1135,6 +1155,8 @@ export default function OrganisationPage() {
                                       <tr key={user.id} className="border-b border-slate-100 last:border-0">
                                         <td className="px-4 py-3 text-sm text-slate-900">{user.name}</td>
                                         <td className="px-4 py-3 text-sm text-slate-600">{user.email}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-600">{user.workspaceEmail}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-600 font-mono">{user.password}</td>
                                         <td className="px-4 py-3">
                                           {user.invited ? (
                                             <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -1158,7 +1180,7 @@ export default function OrganisationPage() {
                                     ))}
                                     {powerBiUsers.length === 0 && (
                                       <tr>
-                                        <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-500">
+                                        <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500">
                                           No users added yet
                                         </td>
                                       </tr>
