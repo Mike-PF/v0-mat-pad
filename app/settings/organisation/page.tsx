@@ -983,7 +983,7 @@ export default function OrganisationPage() {
                         <div className="flex flex-col items-center justify-center py-16">
                           <h3 className="text-lg font-medium text-slate-900 mb-3">Power BI Integration</h3>
                           <p className="text-sm text-slate-500 text-center max-w-md mb-8">
-                            Activate Power BI integration to connect your {selectedData?.name} workspace and manage user access to reports.
+                            Activate Power BI integration to connect {selectedData?.name} workspace and manage user access to reports.
                           </p>
                           <Button 
                             onClick={() => setPowerBiActivated(true)}
