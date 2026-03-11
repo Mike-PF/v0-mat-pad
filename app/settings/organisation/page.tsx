@@ -981,12 +981,9 @@ export default function OrganisationPage() {
                       {!powerBiActivated ? (
                         /* Not Activated State */
                         <div className="flex flex-col items-center justify-center py-16">
-                          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-                            <Settings className="w-8 h-8 text-slate-400" />
-                          </div>
                           <h3 className="text-lg font-medium text-slate-900 mb-3">Power BI Integration</h3>
                           <p className="text-sm text-slate-500 text-center max-w-md mb-8">
-                            Activate Power BI integration to connect your organisation's workspace and manage user access to reports.
+                            Activate Power BI integration to connect your {selectedData?.name} workspace and manage user access to reports.
                           </p>
                           <Button 
                             onClick={() => setPowerBiActivated(true)}
