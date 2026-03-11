@@ -1001,9 +1001,10 @@ export default function OrganisationPage() {
                             <h3 className="text-lg font-medium text-slate-900">Power BI Workspace</h3>
                             <button
                               onClick={() => setPowerBiActivated(false)}
-                              className="text-sm text-red-500 hover:text-red-700 hover:underline"
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                              title="Deactivate Power BI Integration"
                             >
-                              Deactivate
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
 
