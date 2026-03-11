@@ -986,7 +986,12 @@ export default function OrganisationPage() {
                             Activate Power BI integration to connect {selectedData?.name} workspace and manage user access to reports.
                           </p>
                           <Button 
-                            onClick={() => setPowerBiActivated(true)}
+                            onClick={() => {
+                              setPowerBiActivated(true)
+                              setPowerBiWorkspaceName("St Clare MAT - Power BI Workspace")
+                              setPowerBiEmail("powerbi.admin@stclaremat.org")
+                              setPowerBiPassword("Sc@M4T2024!pbi")
+                            }}
                             className="text-white"
                             style={{ backgroundColor: "#121051" }}
                           >
@@ -1018,9 +1023,8 @@ export default function OrganisationPage() {
                                   <label className="text-xs text-slate-500 block mb-1">Workspace Name</label>
                                   <Input
                                     value={powerBiWorkspaceName}
-                                    onChange={(e) => setPowerBiWorkspaceName(e.target.value)}
-                                    placeholder="Enter workspace name"
-                                    className="h-9 max-w-md"
+                                    readOnly
+                                    className="h-9 max-w-md bg-slate-50 text-slate-600 cursor-default"
                                   />
                                 </div>
                                 <div>
@@ -1028,9 +1032,8 @@ export default function OrganisationPage() {
                                   <Input
                                     type="email"
                                     value={powerBiEmail}
-                                    onChange={(e) => setPowerBiEmail(e.target.value)}
-                                    placeholder="Enter Power BI user email"
-                                    className="h-9 max-w-md"
+                                    readOnly
+                                    className="h-9 max-w-md bg-slate-50 text-slate-600 cursor-default"
                                   />
                                 </div>
                                 <div>
@@ -1038,9 +1041,8 @@ export default function OrganisationPage() {
                                   <Input
                                     type="password"
                                     value={powerBiPassword}
-                                    onChange={(e) => setPowerBiPassword(e.target.value)}
-                                    placeholder="Enter password"
-                                    className="h-9 max-w-md"
+                                    readOnly
+                                    className="h-9 max-w-md bg-slate-50 text-slate-600 cursor-default"
                                   />
                                 </div>
                               </div>
