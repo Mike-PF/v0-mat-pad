@@ -218,6 +218,65 @@ export default function OrganisationPage() {
   const [manageSchoolsSearch, setManageSchoolsSearch] = useState("")
   const [deleteSchoolDialogOpen, setDeleteSchoolDialogOpen] = useState(false)
   const [schoolToDelete, setSchoolToDelete] = useState<SchoolData | null>(null)
+  
+  // Power BI state
+  const [powerBiActivated, setPowerBiActivated] = useState(false)
+  const [powerBiWorkspaceName, setPowerBiWorkspaceName] = useState("")
+  const [powerBiEmail, setPowerBiEmail] = useState("")
+  const [powerBiPassword, setPowerBiPassword] = useState("")
+  const [powerBiUsers, setPowerBiUsers] = useState<{id: string, email: string, name: string, workspaceEmail: string, password: string, invited?: boolean}[]>([
+    { id: "1", email: "john.smith@stclaremat.org", name: "John Smith", workspaceEmail: "jsmith@stclare-pbi.onmicrosoft.com", password: "Sc@M4T2024!js" },
+    { id: "2", email: "sarah.jones@stclaremat.org", name: "Sarah Jones", workspaceEmail: "sjones@stclare-pbi.onmicrosoft.com", password: "Sc@M4T2024!sj" },
+  ])
+
+  const generateWorkspaceEmail = (email: string) => {
+    const namePart = email.split("@")[0].toLowerCase().replace(/[._]/g, "")
+    return `${namePart}@stclare-pbi.onmicrosoft.com`
+  }
+
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$"
+    let password = "Sc@"
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return password
+  }
+
+  const handleAddPowerBiUser = async () => {
+    if (!newPowerBiUserEmail) return
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newPowerBiUserEmail)) {
+      setPowerBiUserError("Please enter a valid email address.")
+      return
+    }
+    if (powerBiUsers.some(u => u.email === newPowerBiUserEmail)) {
+      setPowerBiUserError("This user has already been added.")
+      return
+    }
+    setAddingPowerBiUser(true)
+    // Simulate auto-creating user account and sending invite email
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    const namePart = newPowerBiUserEmail.split("@")[0]
+    const name = namePart.replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    const workspaceEmail = generateWorkspaceEmail(newPowerBiUserEmail)
+    const password = generatePassword()
+    setPowerBiUsers(prev => [...prev, {
+      id: Date.now().toString(),
+      email: newPowerBiUserEmail,
+      name,
+      workspaceEmail,
+      password,
+      invited: true,
+    }])
+    setNewPowerBiUserEmail("")
+    setAddingPowerBiUser(false)
+  }
+  const [newPowerBiUserEmail, setNewPowerBiUserEmail] = useState("")
+  const [showPowerBiPassword, setShowPowerBiPassword] = useState(false)
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
+  const [addingPowerBiUser, setAddingPowerBiUser] = useState(false)
+  const [powerBiUserError, setPowerBiUserError] = useState("")
 
   // Get all schools (from MATs and standalone)
   const getAllSchools = (): SchoolData[] => {
@@ -967,31 +1026,169 @@ export default function OrganisationPage() {
                   {/* Power BI Tab */}
                   {settingsTab === "powerbi" && (
                     <div className="space-y-6">
-                      {isEditing && editingItem ? (
-                        <div className="space-y-4">
-                          <div>
-<label className="text-xs text-slate-500 block mb-1">Login Email</label>
-                              <Input
-                                type="email"
-                                value={editingItem.powerBiLoginEmail || ""}
-                                onChange={(e) => setEditingItem({ ...editingItem, powerBiLoginEmail: e.target.value })}
-                                placeholder="Enter Power BI login email"
-                              className="h-9"
-                            />
-                            <p className="text-xs text-slate-500 mt-1">
-                              The email address used to log in to Power BI Premium
-                            </p>
-                          </div>
+                      {!powerBiActivated ? (
+                        /* Not Activated State */
+                        <div className="flex flex-col items-center justify-center py-16">
+                          <h3 className="text-lg font-medium text-slate-900 mb-3">Power BI Integration</h3>
+                          <p className="text-sm text-slate-500 text-center max-w-md mb-8">
+                            Activate Power BI integration to connect {selectedData?.name} workspace and manage user access to reports.
+                          </p>
+                          <Button 
+                            onClick={() => {
+                              setPowerBiActivated(true)
+                              setPowerBiWorkspaceName("St Clare MAT - Power BI Workspace")
+                              setPowerBiEmail("powerbi.admin@stclaremat.org")
+                              setPowerBiPassword("Sc@M4T2024!pbi")
+                            }}
+                            className="text-white"
+                            style={{ backgroundColor: "#121051" }}
+                          >
+                            Activate
+                          </Button>
                         </div>
                       ) : (
-                        <div className="space-y-4">
-                          <div>
-                            <span className="text-xs text-slate-500">Login Email</span>
-                            {selectedData.powerBiLoginEmail ? (
-                              <p className="text-sm text-slate-900">{selectedData.powerBiLoginEmail}</p>
-                            ) : (
-                              <p className="text-sm text-slate-400 italic">No email configured</p>
-                            )}
+                        /* Activated State */
+                        <div>
+                          {/* Header with Deactivate Button */}
+                          <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-lg font-medium text-slate-900">Power BI Workspace</h3>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setDeactivateDialogOpen(true)}
+                              className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                            >
+                              Deactivate
+                            </Button>
+                          </div>
+
+                          <div className="space-y-8">
+                            {/* Workspace Settings Section */}
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-900 mb-4">Workspace Settings</h4>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-xs text-slate-500 block mb-1">Workspace Name</label>
+                                  <Input
+                                    value={powerBiWorkspaceName}
+                                    readOnly
+                                    className="h-9 max-w-md bg-slate-50 text-slate-600 cursor-default"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-slate-500 block mb-1">User Email</label>
+                                  <Input
+                                    type="email"
+                                    value={powerBiEmail}
+                                    readOnly
+                                    className="h-9 max-w-md bg-slate-50 text-slate-600 cursor-default"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-slate-500 block mb-1">Password</label>
+                                  <div className="flex items-center gap-2 max-w-md">
+                                    <Input
+                                      type={showPowerBiPassword ? "text" : "password"}
+                                      value={powerBiPassword}
+                                      readOnly
+                                      className="h-9 bg-slate-50 text-slate-600 cursor-default"
+                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setShowPowerBiPassword(!showPowerBiPassword)}
+                                      className="h-9 px-3 border-slate-200 text-slate-600 hover:bg-slate-50 shrink-0"
+                                    >
+                                      {showPowerBiPassword ? "Hide" : "Show"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Workspace Users Section */}
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-900 mb-4">Workspace Users</h4>
+                              
+                              {/* Add User */}
+                              <div className="mb-4">
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="email"
+                                    value={newPowerBiUserEmail}
+                                    onChange={(e) => { setNewPowerBiUserEmail(e.target.value); setPowerBiUserError("") }}
+                                    placeholder="Enter email address to add user"
+                                    className="h-9 max-w-md"
+                                    onKeyDown={(e) => e.key === "Enter" && !addingPowerBiUser && handleAddPowerBiUser()}
+                                  />
+                                  <Button 
+                                    onClick={handleAddPowerBiUser}
+                                    disabled={addingPowerBiUser || !newPowerBiUserEmail}
+                                    size="sm"
+                                    className="text-white h-9"
+                                    style={{ backgroundColor: "#121051" }}
+                                  >
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    {addingPowerBiUser ? "Adding..." : "Add User"}
+                                  </Button>
+                                </div>
+                                {powerBiUserError && (
+                                  <p className="text-xs text-red-500 mt-1">{powerBiUserError}</p>
+                                )}
+                              </div>
+
+                              {/* Users List */}
+                              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                                <table className="w-full">
+                                  <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Name</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Email</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Workspace Email</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Password</th>
+                                      <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">Status</th>
+                                      <th className="text-right text-xs font-medium text-slate-500 px-4 py-3">Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {powerBiUsers.map((user) => (
+                                      <tr key={user.id} className="border-b border-slate-100 last:border-0">
+                                        <td className="px-4 py-3 text-sm text-slate-900">{user.name}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-600">{user.email}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-600">{user.workspaceEmail}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-600 font-mono">{user.password}</td>
+                                        <td className="px-4 py-3">
+                                          {user.invited ? (
+                                            <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                              Invite sent
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                              Active
+                                            </span>
+                                          )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                          <button
+                                            onClick={() => setPowerBiUsers(powerBiUsers.filter(u => u.id !== user.id))}
+                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                    {powerBiUsers.length === 0 && (
+                                      <tr>
+                                        <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500">
+                                          No users added yet
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1119,6 +1316,40 @@ export default function OrganisationPage() {
               style={{ backgroundColor: "#121051" }}
             >
               Done
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deactivate Power BI Confirmation Dialog */}
+      <Dialog open={deactivateDialogOpen} onOpenChange={(open) => !open && setDeactivateDialogOpen(false)}>
+        <DialogContent className="max-w-md">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Deactivate</h2>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to deactivate the Power BI integration for <span className="font-semibold text-slate-900">{selectedData?.name}</span>? This will remove all workspace access.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setDeactivateDialogOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setPowerBiActivated(false)
+                setPowerBiWorkspaceName("")
+                setPowerBiEmail("")
+                setPowerBiPassword("")
+                setDeactivateDialogOpen(false)
+              }}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Deactivate
             </Button>
           </div>
         </DialogContent>
