@@ -440,6 +440,16 @@ export default function DashboardSettingsPage() {
                           </Tooltip>
                         </td>
                         <td className="py-4 px-4">
+                          <Input
+                            value={report.description}
+                            onChange={(e) =>
+                              setReports(reports.map(r => r.id === report.id ? { ...r, description: e.target.value } : r))
+                            }
+                            placeholder="Report description..."
+                            className="h-9 w-[220px] bg-slate-50 border-slate-200"
+                          />
+                        </td>
+                        <td className="py-4 px-4">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div>
@@ -544,16 +554,6 @@ export default function DashboardSettingsPage() {
                               </TooltipContent>
                             )}
                           </Tooltip>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Input
-                            value={report.description}
-                            onChange={(e) =>
-                              setReports(reports.map(r => r.id === report.id ? { ...r, description: e.target.value } : r))
-                            }
-                            placeholder="Report description..."
-                            className="h-9 w-[220px] bg-slate-50 border-slate-200"
-                          />
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
