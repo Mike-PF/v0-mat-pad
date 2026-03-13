@@ -37,6 +37,7 @@ interface SchoolData {
   id: string
   urn: string
   name: string
+  abbreviation: string
   headTeacher: string
   address: string
   phone: string
@@ -53,6 +54,7 @@ interface SchoolData {
 interface MATData {
   id: string
   name: string
+  abbreviation: string
   ceo: string
   address: string
   phone: string
@@ -71,6 +73,7 @@ const initialMATs: MATData[] = [
   {
     id: "mat-1",
     name: "St Clare Catholic Multi Academy Trust",
+    abbreviation: "SCMAT",
     ceo: "Dr. Sarah Mitchell",
     address: "123 Trust House, Liverpool, L1 1AA",
     phone: "0151 123 4567",
@@ -86,6 +89,7 @@ const initialMATs: MATData[] = [
         id: "school-1",
         urn: "138337",
         name: "All Saints' Catholic High School",
+        abbreviation: "ASHS",
         headTeacher: "Mr. James Wilson",
         address: "School Lane, Liverpool, L2 2BB",
         phone: "0151 234 5678",
@@ -102,6 +106,7 @@ const initialMATs: MATData[] = [
         id: "school-2",
         urn: "140826",
         name: "Emmaus Catholic and CofE Primary School",
+        abbreviation: "ECP",
         headTeacher: "Mrs. Helen Brown",
         address: "Church Road, Liverpool, L3 3CC",
         phone: "0151 345 6789",
@@ -117,6 +122,7 @@ const initialMATs: MATData[] = [
         id: "school-3",
         urn: "138361",
         name: "Notre Dame High School",
+        abbreviation: "NDHS",
         headTeacher: "Dr. Michael O'Connor",
         address: "Notre Dame Drive, Liverpool, L4 4DD",
         phone: "0151 456 7890",
@@ -134,6 +140,7 @@ const initialMATs: MATData[] = [
   {
     id: "mat-2",
     name: "Holy Family Catholic Academy Trust",
+    abbreviation: "HFCAT",
     ceo: "Mr. David Thompson",
     address: "456 Academy Way, Manchester, M1 1AA",
     phone: "0161 123 4567",
@@ -148,6 +155,7 @@ const initialMATs: MATData[] = [
         id: "school-4",
         urn: "140439",
         name: "Sacred Heart School",
+        abbreviation: "SHS",
         headTeacher: "Mrs. Patricia Kelly",
         address: "Heart Lane, Manchester, M2 2BB",
         phone: "0161 234 5678",
@@ -169,6 +177,7 @@ const initialStandaloneSchools: SchoolData[] = [
     id: "standalone-1",
     urn: "148974",
     name: "St Alban's Catholic Primary and Nursery School",
+    abbreviation: "SACPNS",
     headTeacher: "Mr. Robert Evans",
     address: "Alban Road, Leeds, LS1 1AA",
     phone: "0113 123 4567",
@@ -184,6 +193,7 @@ const initialStandaloneSchools: SchoolData[] = [
     id: "standalone-2",
     urn: "144606",
     name: "Holy Trinity Catholic and Church of England School",
+    abbreviation: "HTCCE",
     headTeacher: "Mrs. Angela Davies",
     address: "Trinity Street, Birmingham, B1 1AA",
     phone: "0121 123 4567",
@@ -775,6 +785,16 @@ export default function OrganisationPage() {
                               className="h-9"
                             />
                           </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Organisation Abbreviation</label>
+                            <Input
+                              value={editingItem.abbreviation}
+                              onChange={(e) => setEditingItem({ ...editingItem, abbreviation: e.target.value })}
+                              maxLength={10}
+                              placeholder="e.g. SCMAT"
+                              className="h-9"
+                            />
+                          </div>
                           {"urn" in editingItem ? (
                             <>
                               <div>
@@ -865,6 +885,10 @@ export default function OrganisationPage() {
                               <p className="text-sm text-slate-900">{(selectedData as MATData).ceo}</p>
                             </div>
                           )}
+                          <div>
+                            <span className="text-xs text-slate-500">Organisation Abbreviation</span>
+                            <p className="text-sm text-slate-900">{selectedData.abbreviation}</p>
+                          </div>
                           <div className="col-span-2">
                             <span className="text-xs text-slate-500">Address</span>
                             <p className="text-sm text-slate-900">{selectedData.address}</p>
@@ -909,29 +933,29 @@ export default function OrganisationPage() {
                     <div className="space-y-6">
                       {isEditing && editingItem ? (
                         <>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-8">
                             <div>
-                              <label className="text-xs text-slate-500 block mb-1">Logo</label>
-                              <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden">
-                                  {editingItem.logo ? (
+                              <label className="text-xs text-slate-500 block mb-4 font-semibold uppercase tracking-wider">Logo</label>
+                              <div className="flex flex-col items-start gap-4">
+                                <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center border-2 border-slate-200 overflow-hidden shadow-sm">
+                                  {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? (
                                     <Image
                                       src={editingItem.logo}
                                       alt="Logo"
-                                      width={48}
-                                      height={48}
-                                      className="object-contain"
+                                      width={160}
+                                      height={160}
+                                      className="object-contain w-full h-full p-4"
                                     />
                                   ) : (
-                                    <span className="text-xs text-slate-400">No logo</span>
+                                    <span className="text-sm text-slate-400 text-center px-2">No logo uploaded</span>
                                   )}
                                 </div>
-                                <div className="flex-1">
-                                  <label 
+                                <div className="flex flex-wrap gap-2">
+                                  <label
                                     htmlFor="logo-upload"
-                                    className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-md cursor-pointer hover:bg-slate-50 transition-colors"
+                                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium bg-white border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
                                   >
-                                    Upload Logo
+                                    {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? "Change Logo" : "Upload Logo"}
                                   </label>
                                   <input
                                     id="logo-upload"
@@ -944,13 +968,23 @@ export default function OrganisationPage() {
                                         const url = URL.createObjectURL(file)
                                         setEditingItem({ ...editingItem, logo: url })
                                       }
+                                      e.target.value = ""
                                     }}
                                   />
-                                  <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 2MB</p>
+                                  {editingItem.logo && editingItem.logo !== "/placeholder.svg" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingItem({ ...editingItem, logo: "/placeholder.svg" })}
+                                      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
                                 </div>
+                                <p className="text-xs text-slate-500">PNG, JPG, SVG up to 5MB</p>
                               </div>
                             </div>
-                            <div>
+                            <div className="grid grid-cols-2 gap-6">
                               <label className="text-xs text-slate-500 block mb-1">Primary Color</label>
                               <div className="flex gap-2">
                                 <Input
@@ -985,40 +1019,46 @@ export default function OrganisationPage() {
                           </div>
                         </>
                       ) : (
-                        <div className="flex items-center gap-6">
-                            <div>
-                              <span className="text-xs text-slate-500 block mb-1">Logo</span>
-                              <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
+                        <div className="grid grid-cols-1 gap-8">
+                          <div>
+                            <span className="text-xs text-slate-500 block mb-4 font-semibold uppercase tracking-wider">Logo</span>
+                            <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center border-2 border-slate-200 overflow-hidden shadow-sm">
+                              {selectedData.logo && selectedData.logo !== "/placeholder.svg" ? (
                                 <Image
                                   src={selectedData.logo}
                                   alt="Logo"
-                                  width={48}
-                                  height={48}
-                                  className="object-contain"
+                                  width={160}
+                                  height={160}
+                                  className="object-contain w-full h-full p-4"
                                 />
-                              </div>
+                              ) : (
+                                <span className="text-sm text-slate-400 text-center px-2">No logo uploaded</span>
+                              )}
                             </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-6">
                             <div>
-                              <span className="text-xs text-slate-500 block mb-1">Primary Color</span>
-                              <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500 block mb-2 font-semibold uppercase tracking-wider">Primary Color</span>
+                              <div className="flex items-center gap-3">
                                 <div 
-                                  className="w-8 h-8 rounded border border-slate-200"
+                                  className="w-12 h-12 rounded-lg border-2 border-slate-200 shadow-sm"
                                   style={{ backgroundColor: selectedData.primaryColor }}
                                 />
-                                <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
+                                <span className="text-sm font-mono text-slate-700">{selectedData.primaryColor}</span>
                               </div>
                             </div>
                             <div>
-                              <span className="text-xs text-slate-500 block mb-1">Secondary Color</span>
-                              <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500 block mb-2 font-semibold uppercase tracking-wider">Secondary Color</span>
+                              <div className="flex items-center gap-3">
                                 <div 
-                                  className="w-8 h-8 rounded border border-slate-200"
+                                  className="w-12 h-12 rounded-lg border-2 border-slate-200 shadow-sm"
                                   style={{ backgroundColor: selectedData.secondaryColor }}
                                 />
-                                <span className="text-sm text-slate-700">{selectedData.secondaryColor}</span>
+                                <span className="text-sm font-mono text-slate-700">{selectedData.secondaryColor}</span>
                               </div>
                             </div>
                           </div>
+                        </div>
                       )}
                     </div>
                   )}
