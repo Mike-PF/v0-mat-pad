@@ -18,6 +18,7 @@ import {
 import { LoadingModal } from "@/components/ui/loading-modal"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
 import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
+import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
 
 // Report categories with reports and descriptions
 const reportCategories = [
@@ -107,6 +108,11 @@ const reportCategories = [
         id: "eyfs-headlines",
         name: "EYFS Headlines & Trends",
         description: "A comprehensive overview of Early Years Foundation Stage outcomes including Good Level of Development, all ELG areas, and literacy and mathematics ELGs. Track MAT performance against national figures with year-on-year and three-year trends across all seven areas of learning."
+      },
+      {
+        id: "eyfs-pupil-group",
+        name: "EYFS Pupil Group Results",
+        description: "Explore EYFS outcomes broken down by pupil group including FSM eligibility, SEN provision, first language, term of birth and ethnicity. Compare school-level results against national and MAT benchmarks across all 17 Early Learning Goals."
       },
     ]
   },
@@ -360,6 +366,10 @@ export function ReportsContent() {
             ) : selectedReport === "eyfs-headlines" ? (
               <div className="bg-white rounded-lg overflow-hidden">
                 <EyfsHeadlinesReport />
+              </div>
+            ) : selectedReport === "eyfs-pupil-group" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsPopilGroupReport />
               </div>
             ) : (
               <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
