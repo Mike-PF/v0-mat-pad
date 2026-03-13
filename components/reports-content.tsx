@@ -326,23 +326,22 @@ export function ReportsContent() {
         <div className="h-full flex flex-col bg-slate-50">
           {/* Header with report info */}
           <div 
-            className="px-6 py-4 flex items-center justify-between border-b border-white/10"
+            className="px-6 py-2 flex items-center gap-4 border-b border-white/10"
             style={{ backgroundColor: selectedCategory?.color || "#121051" }}
           >
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToMenu}
-                className="text-white hover:bg-white/20"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              <div>
-                <h2 className="text-lg font-semibold text-white">{selectedReportData?.name}</h2>
-                <p className="text-sm text-white/70">{selectedCategory?.name}</p>
-              </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToMenu}
+              className="text-white hover:bg-white/20 h-8"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-white">{selectedReportData?.name}</h2>
+              <span className="text-white/50">•</span>
+              <p className="text-sm text-white/70">{selectedCategory?.name}</p>
             </div>
           </div>
 
