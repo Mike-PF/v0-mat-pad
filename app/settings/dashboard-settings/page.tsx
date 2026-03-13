@@ -218,6 +218,20 @@ export default function DashboardSettingsPage() {
     ))
   }
 
+  const handleClone = (id: string) => {
+    const source = reports.find(r => r.id === id)
+    if (!source) return
+    const cloned = {
+      ...source,
+      id: Date.now().toString(),
+      reportType: "own" as const,
+      displayName: `${source.displayName} (Copy)`,
+      powerBiName: `${source.powerBiName}_copy`,
+    }
+    setReports([...reports, cloned])
+    setOriginalReports([...originalReports, { ...cloned }])
+  }
+
   const handleIngest = () => {
     // In a real app, this would trigger an ingest process
     console.log("Ingesting reports...")
@@ -527,6 +541,16 @@ export default function DashboardSettingsPage() {
                             >
                               Save
                             </Button>
+                            {report.reportType === "system" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleClone(report.id)}
+                                className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                              >
+                                Clone
+                              </Button>
+                            )}
                             {report.reportType !== "system" && (
                               <Button
                                 variant="outline"
