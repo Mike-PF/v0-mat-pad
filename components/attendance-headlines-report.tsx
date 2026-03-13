@@ -26,7 +26,7 @@ export function AttendanceHeadlinesReport() {
     { label: "Auth. absence", value: "2.0%", subText: "NAT. 3.7% ▼ 2.5", color: "text-blue-500", highlight: true },
     { label: "Unauth. absence", value: "0.8%", subText: "NAT. 1.5% ▼ 0.8", color: "text-amber-500", highlight: true },
     { label: "Persistent absence", value: "0.0%", subText: "NAT. 15.6% ▼ 15.6", color: "text-green-600", highlight: true },
-    { label: "Severe absence", value: "0.0%", subText: "NAT. 0.3% ▼ 0.3", color: "text-green-600", highlight: true },
+    { label: "Severe absence", value: "0.0%", subText: "NAT. 0.3% ▼ 0.3", color: "text-green-600", highlight: true }
   ]
 
   return (
@@ -146,12 +146,12 @@ export function AttendanceHeadlinesReport() {
                 </div>
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <p>🟢 95+%</p>
-              <p>🟡 90-95%</p>
-              <p>🟠 80-90%</p>
-              <p>🔴 50-80%</p>
-              <p>⚫ <50%</p>
+            <div className="mt-3 flex flex-wrap gap-3 text-xs">
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500"></span> 95+%</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-400"></span> 90-95%</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-400"></span> 80-90%</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500"></span> 50-80%</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-slate-800"></span> {'<'}50%</span>
             </div>
           </Card>
 
