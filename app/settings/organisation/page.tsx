@@ -937,25 +937,25 @@ export default function OrganisationPage() {
                             <div>
                               <label className="text-xs text-slate-500 block mb-1">Logo</label>
                               <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden">
-                                  {editingItem.logo ? (
+                                <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+                                  {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? (
                                     <Image
                                       src={editingItem.logo}
                                       alt="Logo"
-                                      width={48}
-                                      height={48}
-                                      className="object-contain"
+                                      width={64}
+                                      height={64}
+                                      className="object-contain w-full h-full p-1"
                                     />
                                   ) : (
-                                    <span className="text-xs text-slate-400">No logo</span>
+                                    <span className="text-xs text-slate-400 text-center px-1">No logo</span>
                                   )}
                                 </div>
-                                <div className="flex-1">
-                                  <label 
+                                <div className="flex flex-col gap-2">
+                                  <label
                                     htmlFor="logo-upload"
                                     className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-md cursor-pointer hover:bg-slate-50 transition-colors"
                                   >
-                                    Upload Logo
+                                    {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? "Re-upload Logo" : "Upload Logo"}
                                   </label>
                                   <input
                                     id="logo-upload"
@@ -968,9 +968,19 @@ export default function OrganisationPage() {
                                         const url = URL.createObjectURL(file)
                                         setEditingItem({ ...editingItem, logo: url })
                                       }
+                                      e.target.value = ""
                                     }}
                                   />
-                                  <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 2MB</p>
+                                  {editingItem.logo && editingItem.logo !== "/placeholder.svg" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingItem({ ...editingItem, logo: "/placeholder.svg" })}
+                                      className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                                    >
+                                      Remove Logo
+                                    </button>
+                                  )}
+                                  <p className="text-xs text-slate-400">PNG, JPG up to 2MB</p>
                                 </div>
                               </div>
                             </div>
@@ -1011,15 +1021,19 @@ export default function OrganisationPage() {
                       ) : (
                         <div className="flex items-center gap-6">
                             <div>
-                              <span className="text-xs text-slate-500 block mb-1">Logo</span>
-                              <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
-                                <Image
-                                  src={selectedData.logo}
-                                  alt="Logo"
-                                  width={48}
-                                  height={48}
-                                  className="object-contain"
-                                />
+                              <span className="text-xs text-slate-500 block mb-2">Logo</span>
+                              <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden">
+                                {selectedData.logo && selectedData.logo !== "/placeholder.svg" ? (
+                                  <Image
+                                    src={selectedData.logo}
+                                    alt="Logo"
+                                    width={64}
+                                    height={64}
+                                    className="object-contain w-full h-full p-1"
+                                  />
+                                ) : (
+                                  <span className="text-xs text-slate-400 text-center px-1">No logo uploaded</span>
+                                )}
                               </div>
                             </div>
                             <div>
