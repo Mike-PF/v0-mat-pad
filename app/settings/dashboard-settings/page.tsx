@@ -28,26 +28,28 @@ import {
 } from "@/components/ui/tooltip"
 import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
 
+const reportAreaOptions = ["Attendance", "Attainment", "Behaviour", "Finance", "Safeguarding", "SEND", "Staffing", "Curriculum", "Pastoral", "Other"]
+
 // Sample Power BI reports data
 const initialReports = [
-  { id: "1", reportType: "own" as const, powerBiName: "2", displayName: "2222", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "2", reportType: "system" as const, powerBiName: "attendance_PBI_test", displayName: "attendance_PBI_test...!", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "3", reportType: "system" as const, powerBiName: "attendance_PBI_test1", displayName: "attendance_PBI_test11", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "4", reportType: "own" as const, powerBiName: "Dans Test Report", displayName: "Dans Test Report", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "5", reportType: "own" as const, powerBiName: "Dashboard Test", displayName: "Dashboard Test", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "6", reportType: "system" as const, powerBiName: "DataModel", displayName: "DataModel", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "7", reportType: "own" as const, powerBiName: "Josh Test", displayName: "Josh Test", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "8", reportType: "own" as const, powerBiName: "3", displayName: "Kates Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "9", reportType: "own" as const, powerBiName: "test", displayName: "test", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "10", reportType: "system" as const, powerBiName: "Behaviour Analytics", displayName: "Behaviour Analytics", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "11", reportType: "system" as const, powerBiName: "Finance Overview", displayName: "Finance Overview", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "12", reportType: "system" as const, powerBiName: "Staff Performance", displayName: "Staff Performance Dashboard", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "13", reportType: "system" as const, powerBiName: "Pupil Progress", displayName: "Pupil Progress Tracker", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "14", reportType: "system" as const, powerBiName: "Safeguarding Report", displayName: "Safeguarding Report", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "15", reportType: "system" as const, powerBiName: "SEND Overview", displayName: "SEND Overview Dashboard", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "16", reportType: "own" as const, powerBiName: "Curriculum Analysis", displayName: "Curriculum Analysis", organisations: [] as string[], roles: [] as string[], active: false },
-  { id: "17", reportType: "system" as const, powerBiName: "Parent Engagement", displayName: "Parent Engagement Metrics", organisations: [] as string[], roles: [] as string[], active: true },
-  { id: "18", reportType: "system" as const, powerBiName: "Budget Forecast", displayName: "Budget Forecast 2024", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "1", reportType: "own" as const, powerBiName: "2", displayName: "2222", reportArea: "", description: "", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "2", reportType: "system" as const, powerBiName: "attendance_PBI_test", displayName: "attendance_PBI_test...!", reportArea: "Attendance", description: "Test attendance report for PBI integration.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "3", reportType: "system" as const, powerBiName: "attendance_PBI_test1", displayName: "attendance_PBI_test11", reportArea: "Attendance", description: "Secondary attendance test report.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "4", reportType: "own" as const, powerBiName: "Dans Test Report", displayName: "Dans Test Report", reportArea: "", description: "", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "5", reportType: "own" as const, powerBiName: "Dashboard Test", displayName: "Dashboard Test", reportArea: "", description: "", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "6", reportType: "system" as const, powerBiName: "DataModel", displayName: "DataModel", reportArea: "Other", description: "Underlying data model report.", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "7", reportType: "own" as const, powerBiName: "Josh Test", displayName: "Josh Test", reportArea: "", description: "", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "8", reportType: "own" as const, powerBiName: "3", displayName: "Kates Dashboard", reportArea: "", description: "", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "9", reportType: "own" as const, powerBiName: "test", displayName: "test", reportArea: "", description: "", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "10", reportType: "system" as const, powerBiName: "Behaviour Analytics", displayName: "Behaviour Analytics", reportArea: "Behaviour", description: "Tracks behaviour incidents, exclusions and trends across the trust.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "11", reportType: "system" as const, powerBiName: "Finance Overview", displayName: "Finance Overview", reportArea: "Finance", description: "High-level financial overview including budget vs actuals.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "12", reportType: "system" as const, powerBiName: "Staff Performance", displayName: "Staff Performance Dashboard", reportArea: "Staffing", description: "Staff performance metrics and appraisal tracking.", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "13", reportType: "system" as const, powerBiName: "Pupil Progress", displayName: "Pupil Progress Tracker", reportArea: "Attainment", description: "Monitors pupil progress against targets and national benchmarks.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "14", reportType: "system" as const, powerBiName: "Safeguarding Report", displayName: "Safeguarding Report", reportArea: "Safeguarding", description: "Safeguarding concerns, referrals and case management overview.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "15", reportType: "system" as const, powerBiName: "SEND Overview", displayName: "SEND Overview Dashboard", reportArea: "SEND", description: "SEND pupil data including EHCP plans, provisions and outcomes.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "16", reportType: "own" as const, powerBiName: "Curriculum Analysis", displayName: "Curriculum Analysis", reportArea: "Curriculum", description: "", organisations: [] as string[], roles: [] as string[], active: false },
+  { id: "17", reportType: "system" as const, powerBiName: "Parent Engagement", displayName: "Parent Engagement Metrics", reportArea: "Pastoral", description: "Tracks parent communication, attendance at events and engagement scores.", organisations: [] as string[], roles: [] as string[], active: true },
+  { id: "18", reportType: "system" as const, powerBiName: "Budget Forecast", displayName: "Budget Forecast 2024", reportArea: "Finance", description: "Three-year budget forecast and financial planning projections.", organisations: [] as string[], roles: [] as string[], active: true },
   ]
 
 type Report = typeof initialReports[number]
@@ -120,6 +122,8 @@ export default function DashboardSettingsPage() {
     if (!original) return false
     return (
       report.displayName !== original.displayName ||
+    report.reportArea !== original.reportArea ||
+    report.description !== original.description ||
       report.active !== original.active ||
       JSON.stringify(report.organisations) !== JSON.stringify(original.organisations) ||
       JSON.stringify(report.roles) !== JSON.stringify(original.roles)
@@ -227,6 +231,8 @@ export default function DashboardSettingsPage() {
       reportType: "own" as const,
       displayName: `${source.displayName} (Copy)`,
       powerBiName: `${source.powerBiName}_copy`,
+      reportArea: source.reportArea,
+      description: source.description,
     }
     setReports([...reports, cloned])
     setOriginalReports([...originalReports, { ...cloned }])
@@ -279,8 +285,10 @@ export default function DashboardSettingsPage() {
                     <tr className="border-b border-slate-200">
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Power BI Report Name</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Dashboard Name</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">School</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Description</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Roles</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
                       <th className="py-3 px-4"></th>
@@ -299,6 +307,23 @@ export default function DashboardSettingsPage() {
                         </td>
                         <td className="py-4 px-4">
                           <span className="text-sm text-[#121051] font-medium">{report.powerBiName}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Select
+                            value={report.reportArea || ""}
+                            onValueChange={(value) =>
+                              setReports(reports.map(r => r.id === report.id ? { ...r, reportArea: value } : r))
+                            }
+                          >
+                            <SelectTrigger className="h-9 w-[160px] bg-slate-50 border-slate-200">
+                              <SelectValue placeholder="Select area..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {reportAreaOptions.map(area => (
+                                <SelectItem key={area} value={area}>{area}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </td>
                         <td className="py-4 px-4">
                           <Input
@@ -521,6 +546,16 @@ export default function DashboardSettingsPage() {
                           </Tooltip>
                         </td>
                         <td className="py-4 px-4">
+                          <Input
+                            value={report.description}
+                            onChange={(e) =>
+                              setReports(reports.map(r => r.id === report.id ? { ...r, description: e.target.value } : r))
+                            }
+                            placeholder="Report description..."
+                            className="h-9 w-[220px] bg-slate-50 border-slate-200"
+                          />
+                        </td>
+                        <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-slate-600">{report.active ? "Yes" : "No"}</span>
                             <Switch
@@ -555,7 +590,7 @@ export default function DashboardSettingsPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                                className="border-slate-200 text-slate-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
                               >
                                 Delete
                               </Button>
