@@ -429,38 +429,32 @@ export function ReportsContent() {
     <>
       <LoadingModal isOpen={isLoadingReport} message="Loading report..." />
       <div className="h-full bg-slate-50 overflow-auto">
-        {/* Header */}
-        <div className="bg-white border-b border-slate-200 px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
-              <p className="text-sm text-slate-500 mt-1">
-                Select a report from the categories below. {reportCategories.reduce((acc, c) => acc + c.reports.length, 0)} reports available.
-              </p>
+        {/* Categories and Reports */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header and Search */}
+          <div className="p-6 pb-4 border-b border-slate-200">
+            <h1 className="text-2xl font-bold text-slate-900 mb-4">Reports</h1>
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search reports..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-10 bg-slate-50 border-slate-200"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
-          {/* Search */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search reports..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-slate-50 border-slate-200"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* Categories and Reports */}
-        <div className="p-6 space-y-3">
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-3 w-full">
 
           {/* Favourites Section */}
           {!searchQuery && (
@@ -601,6 +595,7 @@ export function ReportsContent() {
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </>
