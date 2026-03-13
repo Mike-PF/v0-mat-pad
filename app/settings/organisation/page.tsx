@@ -37,6 +37,7 @@ interface SchoolData {
   id: string
   urn: string
   name: string
+  abbreviation: string
   headTeacher: string
   address: string
   phone: string
@@ -53,6 +54,7 @@ interface SchoolData {
 interface MATData {
   id: string
   name: string
+  abbreviation: string
   ceo: string
   address: string
   phone: string
@@ -71,6 +73,7 @@ const initialMATs: MATData[] = [
   {
     id: "mat-1",
     name: "St Clare Catholic Multi Academy Trust",
+    abbreviation: "SCMAT",
     ceo: "Dr. Sarah Mitchell",
     address: "123 Trust House, Liverpool, L1 1AA",
     phone: "0151 123 4567",
@@ -86,6 +89,7 @@ const initialMATs: MATData[] = [
         id: "school-1",
         urn: "138337",
         name: "All Saints' Catholic High School",
+        abbreviation: "ASHS",
         headTeacher: "Mr. James Wilson",
         address: "School Lane, Liverpool, L2 2BB",
         phone: "0151 234 5678",
@@ -102,6 +106,7 @@ const initialMATs: MATData[] = [
         id: "school-2",
         urn: "140826",
         name: "Emmaus Catholic and CofE Primary School",
+        abbreviation: "ECP",
         headTeacher: "Mrs. Helen Brown",
         address: "Church Road, Liverpool, L3 3CC",
         phone: "0151 345 6789",
@@ -117,6 +122,7 @@ const initialMATs: MATData[] = [
         id: "school-3",
         urn: "138361",
         name: "Notre Dame High School",
+        abbreviation: "NDHS",
         headTeacher: "Dr. Michael O'Connor",
         address: "Notre Dame Drive, Liverpool, L4 4DD",
         phone: "0151 456 7890",
@@ -134,6 +140,7 @@ const initialMATs: MATData[] = [
   {
     id: "mat-2",
     name: "Holy Family Catholic Academy Trust",
+    abbreviation: "HFCAT",
     ceo: "Mr. David Thompson",
     address: "456 Academy Way, Manchester, M1 1AA",
     phone: "0161 123 4567",
@@ -148,6 +155,7 @@ const initialMATs: MATData[] = [
         id: "school-4",
         urn: "140439",
         name: "Sacred Heart School",
+        abbreviation: "SHS",
         headTeacher: "Mrs. Patricia Kelly",
         address: "Heart Lane, Manchester, M2 2BB",
         phone: "0161 234 5678",
@@ -169,6 +177,7 @@ const initialStandaloneSchools: SchoolData[] = [
     id: "standalone-1",
     urn: "148974",
     name: "St Alban's Catholic Primary and Nursery School",
+    abbreviation: "SACPNS",
     headTeacher: "Mr. Robert Evans",
     address: "Alban Road, Leeds, LS1 1AA",
     phone: "0113 123 4567",
@@ -184,6 +193,7 @@ const initialStandaloneSchools: SchoolData[] = [
     id: "standalone-2",
     urn: "144606",
     name: "Holy Trinity Catholic and Church of England School",
+    abbreviation: "HTCCE",
     headTeacher: "Mrs. Angela Davies",
     address: "Trinity Street, Birmingham, B1 1AA",
     phone: "0121 123 4567",
@@ -775,6 +785,16 @@ export default function OrganisationPage() {
                               className="h-9"
                             />
                           </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">Organisation Abbreviation</label>
+                            <Input
+                              value={editingItem.abbreviation}
+                              onChange={(e) => setEditingItem({ ...editingItem, abbreviation: e.target.value })}
+                              maxLength={10}
+                              placeholder="e.g. SCMAT"
+                              className="h-9"
+                            />
+                          </div>
                           {"urn" in editingItem ? (
                             <>
                               <div>
@@ -865,6 +885,10 @@ export default function OrganisationPage() {
                               <p className="text-sm text-slate-900">{(selectedData as MATData).ceo}</p>
                             </div>
                           )}
+                          <div>
+                            <span className="text-xs text-slate-500">Organisation Abbreviation</span>
+                            <p className="text-sm text-slate-900">{selectedData.abbreviation}</p>
+                          </div>
                           <div className="col-span-2">
                             <span className="text-xs text-slate-500">Address</span>
                             <p className="text-sm text-slate-900">{selectedData.address}</p>
