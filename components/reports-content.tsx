@@ -355,14 +355,20 @@ export function ReportsContent() {
             </Button>
           </div>
           {/* Report content area */}
-          <div className="flex-1 p-6 bg-slate-50">
-            <div className="bg-white rounded-xl border border-slate-200 h-full flex items-center justify-center">
-              <div className="text-center text-slate-500">
-                <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
-                <p className="text-sm mt-2">Embedded report will display here</p>
+          <div className="flex-1 overflow-auto bg-white">
+            {selectedReport === "attendance-headlines" ? (
+              <AttendanceHeadlinesReport />
+            ) : (
+              <div className="h-full p-6 bg-slate-50">
+                <div className="bg-white rounded-xl border border-slate-200 h-full flex items-center justify-center">
+                  <div className="text-center text-slate-500">
+                    <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                    <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
+                    <p className="text-sm mt-2">Embedded report will display here</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </>
