@@ -547,7 +547,7 @@ export function ReportsContent() {
         </CardContent>
       </Card>
         )}
-      </Card>
+      </div>
     </>
   )
 }
