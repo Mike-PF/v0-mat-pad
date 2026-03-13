@@ -933,29 +933,29 @@ export default function OrganisationPage() {
                     <div className="space-y-6">
                       {isEditing && editingItem ? (
                         <>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-8">
                             <div>
-                              <label className="text-xs text-slate-500 block mb-1">Logo</label>
-                              <div className="flex items-center gap-4">
-                                <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+                              <label className="text-xs text-slate-500 block mb-4 font-semibold uppercase tracking-wider">Logo</label>
+                              <div className="flex flex-col items-start gap-4">
+                                <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center border-2 border-slate-200 overflow-hidden shadow-sm">
                                   {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? (
                                     <Image
                                       src={editingItem.logo}
                                       alt="Logo"
-                                      width={64}
-                                      height={64}
-                                      className="object-contain w-full h-full p-1"
+                                      width={160}
+                                      height={160}
+                                      className="object-contain w-full h-full p-4"
                                     />
                                   ) : (
-                                    <span className="text-xs text-slate-400 text-center px-1">No logo</span>
+                                    <span className="text-sm text-slate-400 text-center px-2">No logo uploaded</span>
                                   )}
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap gap-2">
                                   <label
                                     htmlFor="logo-upload"
-                                    className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-md cursor-pointer hover:bg-slate-50 transition-colors"
+                                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium bg-white border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
                                   >
-                                    {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? "Re-upload Logo" : "Upload Logo"}
+                                    {editingItem.logo && editingItem.logo !== "/placeholder.svg" ? "Change Logo" : "Upload Logo"}
                                   </label>
                                   <input
                                     id="logo-upload"
@@ -975,16 +975,16 @@ export default function OrganisationPage() {
                                     <button
                                       type="button"
                                       onClick={() => setEditingItem({ ...editingItem, logo: "/placeholder.svg" })}
-                                      className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                                      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                                     >
-                                      Remove Logo
+                                      Remove
                                     </button>
                                   )}
-                                  <p className="text-xs text-slate-400">PNG, JPG up to 2MB</p>
                                 </div>
+                                <p className="text-xs text-slate-500">PNG, JPG, SVG up to 5MB</p>
                               </div>
                             </div>
-                            <div>
+                            <div className="grid grid-cols-2 gap-6">
                               <label className="text-xs text-slate-500 block mb-1">Primary Color</label>
                               <div className="flex gap-2">
                                 <Input
@@ -1019,44 +1019,46 @@ export default function OrganisationPage() {
                           </div>
                         </>
                       ) : (
-                        <div className="flex items-center gap-6">
-                            <div>
-                              <span className="text-xs text-slate-500 block mb-2">Logo</span>
-                              <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden">
-                                {selectedData.logo && selectedData.logo !== "/placeholder.svg" ? (
-                                  <Image
-                                    src={selectedData.logo}
-                                    alt="Logo"
-                                    width={64}
-                                    height={64}
-                                    className="object-contain w-full h-full p-1"
-                                  />
-                                ) : (
-                                  <span className="text-xs text-slate-400 text-center px-1">No logo uploaded</span>
-                                )}
-                              </div>
+                        <div className="grid grid-cols-1 gap-8">
+                          <div>
+                            <span className="text-xs text-slate-500 block mb-4 font-semibold uppercase tracking-wider">Logo</span>
+                            <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center border-2 border-slate-200 overflow-hidden shadow-sm">
+                              {selectedData.logo && selectedData.logo !== "/placeholder.svg" ? (
+                                <Image
+                                  src={selectedData.logo}
+                                  alt="Logo"
+                                  width={160}
+                                  height={160}
+                                  className="object-contain w-full h-full p-4"
+                                />
+                              ) : (
+                                <span className="text-sm text-slate-400 text-center px-2">No logo uploaded</span>
+                              )}
                             </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-6">
                             <div>
-                              <span className="text-xs text-slate-500 block mb-1">Primary Color</span>
-                              <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500 block mb-2 font-semibold uppercase tracking-wider">Primary Color</span>
+                              <div className="flex items-center gap-3">
                                 <div 
-                                  className="w-8 h-8 rounded border border-slate-200"
+                                  className="w-12 h-12 rounded-lg border-2 border-slate-200 shadow-sm"
                                   style={{ backgroundColor: selectedData.primaryColor }}
                                 />
-                                <span className="text-sm text-slate-700">{selectedData.primaryColor}</span>
+                                <span className="text-sm font-mono text-slate-700">{selectedData.primaryColor}</span>
                               </div>
                             </div>
                             <div>
-                              <span className="text-xs text-slate-500 block mb-1">Secondary Color</span>
-                              <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500 block mb-2 font-semibold uppercase tracking-wider">Secondary Color</span>
+                              <div className="flex items-center gap-3">
                                 <div 
-                                  className="w-8 h-8 rounded border border-slate-200"
+                                  className="w-12 h-12 rounded-lg border-2 border-slate-200 shadow-sm"
                                   style={{ backgroundColor: selectedData.secondaryColor }}
                                 />
-                                <span className="text-sm text-slate-700">{selectedData.secondaryColor}</span>
+                                <span className="text-sm font-mono text-slate-700">{selectedData.secondaryColor}</span>
                               </div>
                             </div>
                           </div>
+                        </div>
                       )}
                     </div>
                   )}
