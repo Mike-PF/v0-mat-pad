@@ -82,7 +82,7 @@ export function AttendanceHeadlinesReport() {
   const [dateTo, setDateTo] = useState("2026-01-08")
 
   return (
-    <div className="w-full bg-white font-sans text-slate-800">
+    <div className="w-full bg-slate-50 min-h-full">
 
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="bg-[#2395A4] px-6 py-4">
@@ -113,6 +113,13 @@ export function AttendanceHeadlinesReport() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Filters applied */}
+      <div className="bg-white border-b border-slate-200 px-6 py-2">
+        <p className="text-xs text-slate-600">
+          Filters applied: SEN status- All | FSM6- 1 | Attendance band- 95+%
+        </p>
       </div>
 
       {/* ── Filters applied ──────────────────────────────────────── */}
