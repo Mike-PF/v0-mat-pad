@@ -16,6 +16,7 @@ import {
   Star
 } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading-modal"
+import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
 
 // Report categories with reports and descriptions
 const reportCategories = [
@@ -406,18 +407,22 @@ export function ReportsContent() {
           </div>
 
           {/* Report content */}
-          <div className="flex-1 p-6 overflow-auto">
-            <Card className="bg-white h-full">
-              <CardContent className="p-0 h-full">
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                    <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
-                    <p className="text-sm mt-2 max-w-md mx-auto text-slate-400">{selectedReportData?.description}</p>
+          <div className="flex-1 overflow-auto bg-white">
+            {selectedReport === "attendance-headlines" ? (
+              <AttendanceHeadlinesReport />
+            ) : (
+              <Card className="bg-white h-full m-6">
+                <CardContent className="p-0 h-full">
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center text-slate-500">
+                      <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                      <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
+                      <p className="text-sm mt-2 max-w-md mx-auto text-slate-400">{selectedReportData?.description}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </>
