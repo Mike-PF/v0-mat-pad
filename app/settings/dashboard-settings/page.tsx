@@ -27,6 +27,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { LoadingModal } from "@/components/ui/loading-modal"
 
 const reportAreaOptions = ["Attendance", "Attainment", "Behaviour", "Finance", "Safeguarding", "SEND", "Staffing", "Curriculum", "Pastoral", "Other"]
 
@@ -105,6 +107,7 @@ export default function DashboardSettingsPage() {
   const [schoolSearch, setSchoolSearch] = useState<Record<string, string>>({})
   const [roleSearch, setRoleSearch] = useState<Record<string, string>>({})
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [savingIds, setSavingIds] = useState<Set<string>>(new Set())
 
   const filteredReports = reports.filter(report => 
     report.powerBiName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -212,14 +215,13 @@ export default function DashboardSettingsPage() {
     ))
   }
 
-  const handleSave = (id: string) => {
-    // In a real app, this would save to the backend
-    const report = reports.find(r => r.id === id)
-    console.log("Saving report:", report)
-    // Update original to match current (mark as saved)
-    setOriginalReports(originalReports.map(r => 
+  const handleSave = async (id: string) => {
+    setSavingIds(prev => new Set(prev).add(id))
+    await new Promise(resolve => setTimeout(resolve, 800))
+    setOriginalReports(prev => prev.map(r =>
       r.id === id ? { ...reports.find(rep => rep.id === id)! } : r
     ))
+    setSavingIds(prev => { const next = new Set(prev); next.delete(id); return next })
   }
 
   const handleClone = (id: string) => {
@@ -245,6 +247,10 @@ export default function DashboardSettingsPage() {
 
   return (
     <TooltipProvider delayDuration={300}>
+      <LoadingModal 
+        isOpen={savingIds.size > 0} 
+        message={savingIds.size === 1 ? "Saving report..." : `Saving ${savingIds.size} reports...`}
+      />
     <div className="flex h-screen bg-slate-100">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
       
@@ -570,9 +576,9 @@ export default function DashboardSettingsPage() {
                             <Button
                               onClick={() => handleSave(report.id)}
                               size="sm"
-                              disabled={!hasChanges(report)}
-                              className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100"
-                              style={{ backgroundColor: hasChanges(report) ? "#121051" : undefined }}
+                              disabled={!hasChanges(report) || savingIds.has(report.id)}
+                              className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100 min-w-[64px]"
+                              style={{ backgroundColor: hasChanges(report) || savingIds.has(report.id) ? "#121051" : undefined }}
                             >
                               Save
                             </Button>

@@ -7,6 +7,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 
 import {
   Dialog,
@@ -1165,11 +1166,17 @@ export default function OrganisationPage() {
                                     onClick={handleAddPowerBiUser}
                                     disabled={addingPowerBiUser || !newPowerBiUserEmail}
                                     size="sm"
-                                    className="text-white h-9"
+                                    className="text-white h-9 min-w-[100px]"
                                     style={{ backgroundColor: "#121051" }}
                                   >
-                                    <Plus className="w-4 h-4 mr-1" />
-                                    {addingPowerBiUser ? "Adding..." : "Add User"}
+                                    {addingPowerBiUser ? (
+                                      <Spinner size="sm" className="border-white/40 border-t-white" />
+                                    ) : (
+                                      <>
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Add User
+                                      </>
+                                    )}
                                   </Button>
                                 </div>
                                 {powerBiUserError && (
