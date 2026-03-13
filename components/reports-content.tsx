@@ -20,6 +20,7 @@ import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-rep
 import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
 import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
 import { EyfsGoalsBySchoolReport } from "@/components/eyfs-goals-by-school-report"
+import { EyfsGoalsByPupilGroupReport } from "@/components/eyfs-goals-by-pupilgroup-report"
 
 // Report categories with reports and descriptions
 const reportCategories = [
@@ -119,6 +120,11 @@ const reportCategories = [
         id: "eyfs-goals-by-school",
         name: "EYFS - Early Years Goals by school",
         description: "Detailed performance data for all 17 Early Learning Goals across schools within your MAT. Color-coded table showing Good Level of Development and all individual ELG outcomes with performance benchmarked against national averages."
+      },
+      {
+        id: "eyfs-goals-by-pupilgroup",
+        name: "EYFS - Early Years Goals by pupil group",
+        description: "All 17 Early Learning Goals broken down by pupil group — FSM eligibility, SEN provision, first language and term of birth. Color-coded by performance relative to national averages so you can quickly identify where specific groups need support."
       },
     ]
   },
@@ -380,6 +386,10 @@ export function ReportsContent() {
             ) : selectedReport === "eyfs-goals-by-school" ? (
               <div className="bg-white rounded-lg overflow-hidden">
                 <EyfsGoalsBySchoolReport />
+              </div>
+            ) : selectedReport === "eyfs-goals-by-pupilgroup" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsGoalsByPupilGroupReport />
               </div>
             ) : (
               <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
