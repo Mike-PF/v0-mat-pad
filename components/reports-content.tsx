@@ -314,6 +314,10 @@ export function ReportsContent() {
     .flatMap(c => c.reports)
     .find(r => r.id === selectedReport)
 
+  const selectedCategory = reportCategories.find(c => 
+    c.reports.some(r => r.id === selectedReport)
+  )
+
   // Report selected with navigation visible
   if (selectedReport) {
     return (
