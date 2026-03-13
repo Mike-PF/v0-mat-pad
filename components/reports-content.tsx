@@ -268,7 +268,6 @@ export function ReportsContent() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["favourites", ...reportCategories.map(c => c.id)])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoadingReport, setIsLoadingReport] = useState(false)
-  const [isFullScreen, setIsFullScreen] = useState(false)
   const [favourites, setFavourites] = useState<string[]>([])
 
   const handleReportSelect = (reportId: string) => {
@@ -281,7 +280,6 @@ export function ReportsContent() {
 
   const handleBackToMenu = () => {
     setSelectedReport(null)
-    setIsFullScreen(false)
   }
 
   const toggleCategory = (categoryId: string) => {
@@ -316,65 +314,6 @@ export function ReportsContent() {
     .flatMap(c => c.reports)
     .find(r => r.id === selectedReport)
 
-  const selectedCategory = reportCategories.find(c => 
-    c.reports.some(r => r.id === selectedReport)
-  )
-
-  // Full screen report view
-  if (selectedReport && isFullScreen) {
-    return (
-      <>
-        <LoadingModal isOpen={isLoadingReport} message="Loading report..." />
-        <div className="h-full flex flex-col bg-white">
-          {/* Minimal header bar */}
-          <div 
-            className="flex items-center justify-between px-6 py-4 border-b border-white/10"
-            style={{ backgroundColor: selectedCategory?.color || "#121051" }}
-          >
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToMenu}
-                className="text-white hover:bg-white/20"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Reports
-              </Button>
-              <span className="text-white/60">|</span>
-              <span className="text-white font-medium">{selectedReportData?.name}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsFullScreen(false)}
-              className="text-white hover:bg-white/20"
-            >
-              <Minimize2 className="w-4 h-4 mr-2" />
-              Exit Full Screen
-            </Button>
-          </div>
-          {/* Report content area */}
-          <div className="flex-1 overflow-auto bg-slate-50 p-4">
-            {selectedReport === "attendance-headlines" ? (
-              <div className="bg-white rounded-lg overflow-hidden">
-                <AttendanceHeadlinesReport />
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
-                <div className="text-center text-slate-500">
-                  <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                  <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
-                  <p className="text-sm mt-2">Embedded report will display here</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </>
-    )
-  }
-
   // Report selected with navigation visible
   if (selectedReport) {
     return (
@@ -401,15 +340,6 @@ export function ReportsContent() {
                 <p className="text-sm text-white/70">{selectedCategory?.name}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsFullScreen(true)}
-              className="text-white hover:bg-white/20"
-            >
-              <Maximize2 className="w-4 h-4 mr-2" />
-              Full Screen
-            </Button>
           </div>
 
           {/* Report content */}
