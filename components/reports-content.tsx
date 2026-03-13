@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading-modal"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
+import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
 
 // Report categories with reports and descriptions
 const reportCategories = [
@@ -101,6 +102,11 @@ const reportCategories = [
         id: "progress-tracker",
         name: "In-Year Progress Tracker",
         description: "Monitor pupil progress against expected trajectories using your chosen assessment framework. Identify pupils falling behind expected progress and those exceeding expectations. Essential for termly pupil progress meetings and intervention planning discussions."
+      },
+      {
+        id: "eyfs-headlines",
+        name: "EYFS Headlines & Trends",
+        description: "A comprehensive overview of Early Years Foundation Stage outcomes including Good Level of Development, all ELG areas, and literacy and mathematics ELGs. Track MAT performance against national figures with year-on-year and three-year trends across all seven areas of learning."
       },
     ]
   },
@@ -350,6 +356,10 @@ export function ReportsContent() {
             {selectedReport === "attendance-headlines" ? (
               <div className="bg-white rounded-lg overflow-hidden">
                 <AttendanceHeadlinesReport />
+              </div>
+            ) : selectedReport === "eyfs-headlines" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsHeadlinesReport />
               </div>
             ) : (
               <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
