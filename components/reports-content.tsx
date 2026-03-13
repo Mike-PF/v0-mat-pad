@@ -328,7 +328,7 @@ export function ReportsContent() {
         <div className="h-full flex flex-col bg-white">
           {/* Minimal header bar */}
           <div 
-            className="flex items-center justify-between px-4 py-2 border-b"
+            className="flex items-center justify-between px-6 py-4 border-b border-white/10"
             style={{ backgroundColor: selectedCategory?.color || "#121051" }}
           >
             <div className="flex items-center gap-3">
@@ -355,17 +355,17 @@ export function ReportsContent() {
             </Button>
           </div>
           {/* Report content area */}
-          <div className="flex-1 overflow-auto bg-white">
+          <div className="flex-1 overflow-auto bg-slate-50 p-4">
             {selectedReport === "attendance-headlines" ? (
-              <AttendanceHeadlinesReport />
+              <div className="bg-white rounded-lg overflow-hidden">
+                <AttendanceHeadlinesReport />
+              </div>
             ) : (
-              <div className="h-full p-6 bg-slate-50">
-                <div className="bg-white rounded-xl border border-slate-200 h-full flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                    <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
-                    <p className="text-sm mt-2">Embedded report will display here</p>
-                  </div>
+              <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
+                <div className="text-center text-slate-500">
+                  <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                  <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
+                  <p className="text-sm mt-2">Embedded report will display here</p>
                 </div>
               </div>
             )}
@@ -383,7 +383,7 @@ export function ReportsContent() {
         <div className="h-full flex flex-col bg-slate-50">
           {/* Header with report info */}
           <div 
-            className="px-6 py-4 flex items-center justify-between"
+            className="px-6 py-4 flex items-center justify-between border-b border-white/10"
             style={{ backgroundColor: selectedCategory?.color || "#121051" }}
           >
             <div className="flex items-center gap-4">
@@ -413,21 +413,19 @@ export function ReportsContent() {
           </div>
 
           {/* Report content */}
-          <div className="flex-1 overflow-auto bg-white">
+          <div className="flex-1 overflow-auto bg-slate-50 p-4">
             {selectedReport === "attendance-headlines" ? (
-              <AttendanceHeadlinesReport />
+              <div className="bg-white rounded-lg overflow-hidden">
+                <AttendanceHeadlinesReport />
+              </div>
             ) : (
-              <Card className="bg-white h-full m-6">
-                <CardContent className="p-0 h-full">
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center text-slate-500">
-                      <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                      <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
-                      <p className="text-sm mt-2 max-w-md mx-auto text-slate-400">{selectedReportData?.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
+                <div className="text-center text-slate-500">
+                  <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                  <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
+                  <p className="text-sm mt-2">Embedded report will display here</p>
+                </div>
+              </div>
             )}
           </div>
         </div>
