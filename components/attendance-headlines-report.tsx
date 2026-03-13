@@ -64,17 +64,14 @@ function HBar({ label, items }: {
   )
 }
 
-function FilterDropdown({ label, value }: { label: string; value: string }) {
+function FilterSelect({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-slate-100 py-1">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-700 truncate">{label}</span>
-        <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 ml-1" />
-      </div>
-      <div className="flex items-center justify-between mt-0.5">
-        <span className="text-xs text-slate-500">{value}</span>
-        <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 ml-1" />
-      </div>
+    <div className="flex flex-col gap-0.5 min-w-[120px]">
+      <span className="text-[10px] text-white/70 uppercase tracking-wide">{label}</span>
+      <button className="flex items-center justify-between gap-2 bg-white text-slate-700 text-xs rounded px-2.5 py-1.5 border border-white/20 transition-colors hover:bg-slate-50">
+        <span>{value}</span>
+        <ChevronDown className="w-3 h-3 shrink-0 text-slate-400" />
+      </button>
     </div>
   )
 }
@@ -88,40 +85,31 @@ export function AttendanceHeadlinesReport() {
     <div className="w-full bg-white font-sans text-slate-800">
 
       {/* ── Header ───────────────────────────────────────────────── */}
-      <div className="bg-[#2395A4] px-4 py-3 flex items-end justify-between gap-4">
-        <h1 className="text-white font-bold text-base self-center whitespace-nowrap shrink-0">
-          Attendance headlines - 01/09/2024 to 31/08/2025
-        </h1>
-        <div className="flex items-end gap-3 shrink-0">
-          <div>
-            <p className="text-white/80 text-xs mb-1">phase, schoolID</p>
-            <div className="bg-white rounded px-2 py-1 flex items-center justify-between gap-4 text-sm min-w-[130px] cursor-pointer">
-              <span>Primary</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </div>
-          </div>
-          <div>
-            <p className="text-white/80 text-xs mb-1">yearend, nat_term, HT</p>
-            <div className="bg-white rounded px-2 py-1 flex items-center justify-between gap-4 text-sm min-w-[110px] cursor-pointer">
-              <span>2025</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </div>
-          </div>
-          <div>
-            <p className="text-white/80 text-xs mb-1">date</p>
-            <div className="bg-white rounded px-2 py-1 flex items-center gap-2 text-xs">
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={e => setDateFrom(e.target.value)}
-                className="border-none outline-none text-xs w-32"
-              />
-              <input
-                type="date"
-                value={dateTo}
-                onChange={e => setDateTo(e.target.value)}
-                className="border-none outline-none text-xs w-32"
-              />
+      <div className="bg-[#2395A4] px-6 py-4">
+        <div className="flex items-start justify-between gap-6">
+          <h1 className="text-lg font-bold text-white whitespace-nowrap mt-1">
+            Attendance headlines - 01/09/2024 to 31/08/2025
+          </h1>
+          <div className="flex items-start gap-4 flex-wrap justify-end">
+            <FilterSelect label="Phase / School" value="Primary" />
+            <FilterSelect label="Year End" value="2025" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] text-white/70 uppercase tracking-wide">Date Range</span>
+              <div className="flex items-center gap-1 bg-white text-slate-700 text-xs rounded px-2.5 py-1.5 border border-white/20">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={e => setDateFrom(e.target.value)}
+                  className="border-none outline-none text-xs bg-transparent w-28"
+                />
+                <span className="text-slate-400">–</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={e => setDateTo(e.target.value)}
+                  className="border-none outline-none text-xs bg-transparent w-28"
+                />
+              </div>
             </div>
           </div>
         </div>

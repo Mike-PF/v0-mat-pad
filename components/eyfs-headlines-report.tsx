@@ -169,7 +169,7 @@ function FilterSelect({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 min-w-[120px]">
       <span className="text-[10px] text-white/70 uppercase tracking-wide">{label}</span>
-      <button className="flex items-center justify-between gap-2 bg-white/15 hover:bg-white/25 text-white text-xs rounded px-2.5 py-1.5 border border-white/20 transition-colors">
+      <button className="flex items-center justify-between gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs rounded px-2.5 py-1.5 border border-white/20 transition-colors">
         <span>{value}</span>
         <ChevronDown className="w-3 h-3 shrink-0" />
       </button>
