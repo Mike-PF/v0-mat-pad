@@ -332,8 +332,8 @@ export function AttendanceHeadlinesReport() {
         </div>
 
         {/* ── Right sidebar ─────────────────────────────────────── */}
-        <div className="w-44 shrink-0 border-l border-slate-200 p-3">
-          <p className="text-xs text-slate-500 mb-3 leading-tight">
+        <div className="w-44 shrink-0 border-l border-slate-200 p-3 space-y-3">
+          <p className="text-xs text-slate-500 leading-tight">
             Also need gender and NCY/reg group (reg group nested in NCY)
           </p>
           {[
@@ -345,7 +345,14 @@ export function AttendanceHeadlinesReport() {
             { label: "ever_in_care....", value: "All" },
             { label: "sen_status, s...", value: "All" },
             { label: "eal",             value: "All" },
-          ].map((f) => <FilterDropdown key={f.label} {...f} />)}
+          ].map((f) => (
+            <div key={f.label} className="text-xs">
+              <p className="text-slate-600 font-medium mb-0.5">{f.label}</p>
+              <div className="px-2 py-1 border border-slate-200 rounded bg-slate-50 text-slate-700 truncate">
+                {f.value}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
