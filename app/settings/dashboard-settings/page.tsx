@@ -333,6 +333,16 @@ export default function DashboardSettingsPage() {
                           />
                         </td>
                         <td className="py-4 px-4">
+                          <Input
+                            value={report.description}
+                            onChange={(e) =>
+                              setReports(reports.map(r => r.id === report.id ? { ...r, description: e.target.value } : r))
+                            }
+                            placeholder="Report description..."
+                            className="h-9 w-[220px] bg-slate-50 border-slate-200"
+                          />
+                        </td>
+                        <td className="py-4 px-4">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div>
@@ -440,26 +450,6 @@ export default function DashboardSettingsPage() {
                           </Tooltip>
                         </td>
                         <td className="py-4 px-4">
-                          <Input
-                            value={report.description}
-                            onChange={(e) =>
-                              setReports(reports.map(r => r.id === report.id ? { ...r, description: e.target.value } : r))
-                            }
-                            placeholder="Report description..."
-                            className="h-9 w-[220px] bg-slate-50 border-slate-200"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
-                          <Input
-                            value={report.description}
-                            onChange={(e) =>
-                              setReports(reports.map(r => r.id === report.id ? { ...r, description: e.target.value } : r))
-                            }
-                            placeholder="Report description..."
-                            className="h-9 w-[220px] bg-slate-50 border-slate-200"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div>
@@ -471,10 +461,10 @@ export default function DashboardSettingsPage() {
                                     >
                                       <span className="flex-1 truncate text-slate-700">
                                         {report.organisations.length === 0 
-                                          ? "Select School"
-                                          : report.organisations.length > 0 
-                                            ? `${report.organisations.length} selected`
-                                            : "Select School..."}
+                                          ? "Select School First"
+                                          : report.roles.length > 0 
+                                            ? `${report.roles.length} selected`
+                                            : "Select Roles..."}
                                       </span>
                                       <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                                     </button>
@@ -483,88 +473,84 @@ export default function DashboardSettingsPage() {
                                     <div className="p-2 border-b">
                                       <Input
                                         placeholder="Search..."
-                                        value={schoolSearch[report.id] || ""}
-                                        onChange={(e) => setSchoolSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
+                                        value={roleSearch[report.id] || ""}
+                                        onChange={(e) => setRoleSearch(prev => ({ ...prev, [report.id]: e.target.value }))}
                                         className="h-8"
                                         autoFocus
                                       />
                                     </div>
                                     <div className="max-h-[300px] overflow-auto">
-                                      {/* MAT Section - Single Select */}
-                                      {matOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
-                                        <>
-                                          <div className="px-3 py-2 border-b border-slate-200">
-                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Multi-Academy Trusts</span>
+                                      {report.organisations.map((orgId, index) => {
+                                        const org = availableOrganisations.find(o => o.id === orgId)
+                                        const orgRoles = (rolesByOrganisation[orgId] || []).filter(role => 
+                                          role.name.toLowerCase().includes((roleSearch[report.id] || "").toLowerCase())
+                                        )
+                                        if (orgRoles.length === 0) return null
+                                        return (
+                                          <div key={orgId}>
+                                            {(report.organisations.length > 1) && (
+                                              <div className="px-3 py-2 border-b border-slate-200">
+                                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                                  {org?.name}
+                                                </span>
+                                              </div>
+                                            )}
+                                            {orgRoles.map((role) => (
+                                              <label
+                                                key={role.id}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors"
+                                              >
+                                                <Checkbox
+                                                  checked={report.roles.includes(role.id)}
+                                                  onCheckedChange={() => handleRoleToggle(report.id, role.id)}
+                                                  className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                                />
+                                                <span className="text-sm text-slate-900">{role.name}</span>
+                                              </label>
+                                            ))}
+                                            {index < report.organisations.length - 1 && report.organisations.length > 1 && (
+                                              <div className="border-b border-slate-200" />
+                                            )}
                                           </div>
-                                          {matOrganisations
-                                            .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
-                                            .map((org) => (
-                                            <div
-                                              key={org.id}
-                                              onClick={() => handleMATSelect(report.id, org.id)}
-                                              className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
-                                                report.organisations.includes(org.id) ? "bg-[#B30089]" : "hover:bg-slate-50"
-                                              }`}
-                                            >
-                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white font-medium" : "text-slate-900"}`}>
-                                                {org.name}
-                                              </span>
-                                              <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white" : "text-slate-400"}`}>
-                                                {org.schoolCount} {org.schoolCount === 1 ? "school" : "schools"}
-                                              </span>
-                                            </div>
-                                          ))}
-                                        </>
-                                      )}
-                                      {/* Schools Section - Multi Select (disabled if MAT is selected) */}
-                                      {schoolOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length > 0 && (
-                                        <>
-                                          <div className="px-3 py-2 border-b border-slate-200">
-                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Schools</span>
-                                          </div>
-                                          {schoolOrganisations
-                                            .filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase()))
-                                            .map((org) => (
-                                            <label
-                                              key={org.id}
-                                              className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${
-                                                hasMATSelected(report) 
-                                                  ? "opacity-50 cursor-not-allowed" 
-                                                  : "hover:bg-slate-50 cursor-pointer"
-                                              }`}
-                                            >
-                                              <Checkbox
-                                                checked={report.organisations.includes(org.id)}
-                                                onCheckedChange={() => handleSchoolToggle(report.id, org.id)}
-                                                disabled={hasMATSelected(report)}
-                                                className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
-                                              />
-                                              <span className="text-sm text-slate-900">{org.name}</span>
-                                            </label>
-                                          ))}
-                                        </>
-                                      )}
-                                      {availableOrganisations.filter(org => org.name.toLowerCase().includes((schoolSearch[report.id] || "").toLowerCase())).length === 0 && (
-                                        <div className="p-3 text-sm text-slate-500 text-center">No results found</div>
+                                        )
+                                      })}
+                                      {report.organisations.every(orgId => 
+                                        (rolesByOrganisation[orgId] || []).filter(role => 
+                                          role.name.toLowerCase().includes((roleSearch[report.id] || "").toLowerCase())
+                                        ).length === 0
+                                      ) && (
+                                        <div className="px-3 py-2 text-sm text-slate-500">No roles found</div>
                                       )}
                                     </div>
                                   </PopoverContent>
                                 </Popover>
                               </div>
                             </TooltipTrigger>
-                            {report.organisations.length > 0 && (
-                              <TooltipContent side="top" className="max-w-[300px]">
-                                <ul className="space-y-1">
+                            {report.roles.length > 0 && (
+                              <TooltipContent side="top" className="max-w-[350px]">
+                                <div className="space-y-2">
                                   {report.organisations.map(orgId => {
                                     const org = availableOrganisations.find(o => o.id === orgId)
+                                    const orgRoles = rolesByOrganisation[orgId] || []
+                                    const selectedOrgRoles = orgRoles.filter(r => report.roles.includes(r.id))
+                                    if (selectedOrgRoles.length === 0) return null
                                     return (
-                                      <li key={orgId} className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                        {org?.name}
-                                      </li>
+                                      <div key={orgId}>
+                                        {report.organisations.length > 1 && (
+                                          <div className="text-xs font-semibold text-slate-300 mb-1">{org?.name}</div>
+                                        )}
+                                        <ul className="space-y-0.5">
+                                          {selectedOrgRoles.map(role => (
+                                            <li key={role.id} className="flex items-center gap-2 text-sm">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                              {role.name}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
                                     )
                                   })}
-                                </ul>
+                                </div>
                               </TooltipContent>
                             )}
                           </Tooltip>
