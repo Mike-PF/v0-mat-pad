@@ -127,11 +127,11 @@ export function EyfsGoalsBySchoolReport() {
           <div>
             <h3 className="font-semibold text-slate-900 mb-2">This report also needs a colour key:</h3>
             <div className="space-y-1 text-xs text-slate-700">
-              <p><span className="font-semibold">Red:</span> >= 5% below national average</p>
-              <p><span className="font-semibold">Orange:</span> >= 1% and <5% below national average</p>
-              <p><span className="font-semibold">Yellow:</span> <1% below national average</p>
-              <p><span className="font-semibold">Light green:</span> <2% above national average</p>
-              <p><span className="font-semibold">Dark green:</span> >= 2% above national average</p>
+              <p><span className="font-semibold">Red:</span> {'>'}= 5%p below national average</p>
+              <p><span className="font-semibold">Orange:</span> {'>'}= 1%p and {'<'}5%p below national average</p>
+              <p><span className="font-semibold">Yellow:</span> {'<'}1% below national average</p>
+              <p><span className="font-semibold">Light green:</span> {'<'}2%p above national average</p>
+              <p><span className="font-semibold">Dark green:</span> {'>'}= 2%p above national average</p>
             </div>
           </div>
           <div className="border-l border-slate-300 pl-6">
