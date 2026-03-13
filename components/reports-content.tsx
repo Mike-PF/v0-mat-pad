@@ -11,12 +11,28 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Filter, FilterX, Download, ArrowUp, ArrowDown, ChevronDown } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
 
 export function ReportsContent() {
   const [selectedDashboard, setSelectedDashboard] = useState("")
   const [selectedReport, setSelectedReport] = useState("attendanceDash")
   const [selectedScope, setSelectedScope] = useState("whole-mat")
   const [selectedCharacteristics, setSelectedCharacteristics] = useState("characteristics")
+  const [isLoadingReport, setIsLoadingReport] = useState(false)
+
+  const handleDashboardChange = (value: string) => {
+    setSelectedDashboard(value)
+    if (value) {
+      setIsLoadingReport(true)
+      setTimeout(() => setIsLoadingReport(false), 800)
+    }
+  }
+
+  const handleReportChange = (id: string) => {
+    setSelectedReport(id)
+    setIsLoadingReport(true)
+    setTimeout(() => setIsLoadingReport(false), 600)
+  }
 
   const dashboardButtons = [
     { id: "attendanceDash", label: "Attendance Summary Dashboard", active: true },
@@ -95,7 +111,7 @@ export function ReportsContent() {
       <Card className="bg-white">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <Select value={selectedDashboard || ""} onValueChange={setSelectedDashboard}>
+            <Select value={selectedDashboard || ""} onValueChange={handleDashboardChange}>
               <SelectTrigger className="w-60 h-9 bg-white border-slate-200 hover:border-[#121051] transition-colors">
                 <SelectValue placeholder="Select dashboard" />
               </SelectTrigger>
@@ -133,7 +149,7 @@ export function ReportsContent() {
                       ? "bg-[#121051] text-white hover:bg-[#1a1a6c]"
                       : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
                   }`}
-                  onClick={() => setSelectedReport(button.id)}
+                  onClick={() => handleReportChange(button.id)}
                 >
                   {button.label}
                 </Button>
@@ -145,7 +161,15 @@ export function ReportsContent() {
 
       {/* Card 3: Attendance Headlines Dashboard - Only show when dashboard is selected */}
       {selectedDashboard && (
-      <Card className="bg-white overflow-hidden">
+      <Card className="bg-white overflow-hidden relative">
+        {isLoadingReport && (
+          <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-xl">
+            <div className="flex flex-col items-center gap-3">
+              <Spinner size="lg" />
+              <span className="text-sm text-slate-500">Loading report...</span>
+            </div>
+          </div>
+        )}
         <CardContent className="p-0">
           {/* Teal Header */}
           <div className="bg-[#2395A4] text-white px-6 py-4 flex items-center justify-between">
