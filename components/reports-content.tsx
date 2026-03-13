@@ -22,7 +22,7 @@ const reportCategories = [
   {
     id: "attendance",
     name: "Attendance",
-    color: "#5BBF5",
+    color: "#5B9BF5",
     reports: [
       {
         id: "attendance-headlines",
@@ -133,7 +133,7 @@ const reportCategories = [
   {
     id: "contextual",
     name: "Contextual",
-    color: "#F7940",
+    color: "#F79400",
     reports: [
       {
         id: "census-summary",
@@ -214,7 +214,7 @@ const reportCategories = [
   {
     id: "finance",
     name: "Finance",
-    color: "#6ADD5",
+    color: "#6AD0D5",
     reports: [
       {
         id: "budget-summary",
@@ -241,7 +241,7 @@ const reportCategories = [
   {
     id: "estates",
     name: "Estates",
-    color: "#F755A",
+    color: "#F7555A",
     reports: [
       {
         id: "capacity-planning",
