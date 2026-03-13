@@ -90,11 +90,10 @@ export function AttendanceHeadlinesReport() {
             Attendance headlines - 01/09/2024 to 31/08/2025
           </h1>
           <div className="flex items-start gap-4 flex-wrap justify-end">
-            <FilterSelect label="Phase" value="Primary" />
-            <FilterSelect label="School" value="All schools" />
-            <FilterSelect label="Year" value="2025" />
+            <FilterSelect label="phase, schoolID" value="Primary" />
+            <FilterSelect label="yearend, nat_term, HT" value="2025" />
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] text-white/70 uppercase tracking-wide">Date</span>
+              <span className="text-[10px] text-white/70 uppercase tracking-wide">date</span>
               <div className="flex items-center gap-1.5 bg-white text-slate-700 text-xs rounded px-2.5 py-1.5 border border-white/20">
                 <input
                   type="date"
@@ -102,7 +101,6 @@ export function AttendanceHeadlinesReport() {
                   onChange={e => setDateFrom(e.target.value)}
                   className="border-none outline-none text-xs bg-transparent"
                 />
-                <span className="text-slate-400">–</span>
                 <input
                   type="date"
                   value={dateTo}
