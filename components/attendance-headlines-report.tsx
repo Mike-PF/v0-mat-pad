@@ -78,39 +78,22 @@ function FilterSelect({ label, value }: { label: string; value: string }) {
 
 // --- Component ---
 export function AttendanceHeadlinesReport() {
-  const [dateFrom, setDateFrom] = useState("2024-03-14")
-  const [dateTo, setDateTo] = useState("2026-01-08")
+  const [dateFrom, setDateFrom] = useState("14/03/2024")
+  const [dateTo, setDateTo] = useState("08/01/2026")
 
   return (
     <div className="w-full bg-slate-50 min-h-full">
-
-      {/* ── Header ───────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="bg-[#2395A4] px-6 py-4">
         <div className="flex items-start justify-between gap-6">
           <h1 className="text-lg font-bold text-white whitespace-nowrap mt-1">
             Attendance headlines - 01/09/2024 to 31/08/2025
           </h1>
           <div className="flex items-start gap-4 flex-wrap justify-end">
-            <FilterSelect label="Phase / School" value="Primary" />
-            <FilterSelect label="Year End" value="2025" />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] text-white/70 uppercase tracking-wide">Date Range</span>
-              <div className="flex items-center gap-1 bg-white text-slate-700 text-xs rounded px-2.5 py-1.5 border border-white/20">
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={e => setDateFrom(e.target.value)}
-                  className="border-none outline-none text-xs bg-transparent w-28"
-                />
-                <span className="text-slate-400">–</span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={e => setDateTo(e.target.value)}
-                  className="border-none outline-none text-xs bg-transparent w-28"
-                />
-              </div>
-            </div>
+            <FilterSelect label="Phase" value="Primary" />
+            <FilterSelect label="Year" value="2025" />
+            <FilterSelect label="Start date" value={dateFrom} />
+            <FilterSelect label="End date" value={dateTo} />
           </div>
         </div>
       </div>
@@ -122,13 +105,9 @@ export function AttendanceHeadlinesReport() {
         </p>
       </div>
 
-      {/* ── Filters applied ──────────────────────────────────────── */}
-      <div className="px-4 py-1.5 border-b border-slate-200 text-xs text-slate-600">
-        Filters applied: SEN status- All | FSM6- 1 | Attendance band- 95+%
-      </div>
-
+      {/* ── Main content ──────────────────────────────────────── */}
       <div className="flex min-h-0">
-        {/* ── Main ─────────────────────────────────────────────────── */}
+        {/* Main */}
         <div className="flex-1 min-w-0 p-4 space-y-4 overflow-x-auto">
 
           {/* KPI row */}
