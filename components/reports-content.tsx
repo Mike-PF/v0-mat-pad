@@ -461,6 +461,7 @@ export function ReportsContent() {
 
         {/* Categories and Reports */}
         <div className="p-6 space-y-3 overflow-y-auto flex-1">
+          <div className="max-w-md">
 
           {/* Favourites Section */}
           {!searchQuery && (
@@ -602,6 +603,7 @@ export function ReportsContent() {
             </div>
           )}
         </div>
+          </div>
       </div>
     </>
   )
