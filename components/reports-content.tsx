@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Filter, FilterX, Download, ArrowUp, ArrowDown, ChevronDown } from "lucide-react"
-import { Spinner } from "@/components/ui/spinner"
+import { LoadingModal } from "@/components/ui/loading-modal"
 
 export function ReportsContent() {
   const [selectedDashboard, setSelectedDashboard] = useState("")
@@ -106,7 +106,9 @@ export function ReportsContent() {
   ]
 
   return (
-    <div className="h-full bg-slate-50 overflow-auto space-y-4">
+    <>
+      <LoadingModal isOpen={isLoadingReport} message="Loading report..." />
+      <div className="h-full bg-slate-50 overflow-auto space-y-4">
       {/* Card 1: Dashboard Selector */}
       <Card className="bg-white">
         <CardContent className="p-4">
@@ -161,15 +163,7 @@ export function ReportsContent() {
 
       {/* Card 3: Attendance Headlines Dashboard - Only show when dashboard is selected */}
       {selectedDashboard && (
-      <Card className="bg-white overflow-hidden relative">
-        {isLoadingReport && (
-          <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-xl">
-            <div className="flex flex-col items-center gap-3">
-              <Spinner size="lg" />
-              <span className="text-sm text-slate-500">Loading report...</span>
-            </div>
-          </div>
-        )}
+      <Card className="bg-white overflow-hidden">
         <CardContent className="p-0">
           {/* Teal Header */}
           <div className="bg-[#2395A4] text-white px-6 py-4 flex items-center justify-between">
@@ -552,7 +546,8 @@ export function ReportsContent() {
           </div>
         </CardContent>
       </Card>
-      )}
-    </div>
+        )}
+      </Card>
+    </>
   )
 }

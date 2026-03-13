@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/tooltip"
 import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
+import { LoadingModal } from "@/components/ui/loading-modal"
 
 const reportAreaOptions = ["Attendance", "Attainment", "Behaviour", "Finance", "Safeguarding", "SEND", "Staffing", "Curriculum", "Pastoral", "Other"]
 
@@ -246,6 +247,10 @@ export default function DashboardSettingsPage() {
 
   return (
     <TooltipProvider delayDuration={300}>
+      <LoadingModal 
+        isOpen={savingIds.size > 0} 
+        message={savingIds.size === 1 ? "Saving report..." : `Saving ${savingIds.size} reports...`}
+      />
     <div className="flex h-screen bg-slate-100">
       <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
       
@@ -575,9 +580,7 @@ export default function DashboardSettingsPage() {
                               className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100 min-w-[64px]"
                               style={{ backgroundColor: hasChanges(report) || savingIds.has(report.id) ? "#121051" : undefined }}
                             >
-                              {savingIds.has(report.id) ? (
-                                <Spinner size="sm" className="border-white/40 border-t-white" />
-                              ) : "Save"}
+                              Save
                             </Button>
                             {report.reportType === "system" && (
                               <Button
