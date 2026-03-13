@@ -22,7 +22,7 @@ const reportCategories = [
   {
     id: "attendance",
     name: "Attendance",
-    color: "#2395A4",
+    color: "#5BBF5",
     reports: [
       {
         id: "attendance-headlines",
@@ -69,7 +69,7 @@ const reportCategories = [
   {
     id: "attainment",
     name: "Attainment",
-    color: "#B30089",
+    color: "#715DBF",
     reports: [
       {
         id: "ks2-outcomes",
@@ -106,7 +106,7 @@ const reportCategories = [
   {
     id: "behaviour",
     name: "Behaviour",
-    color: "#E65100",
+    color: "#B3008B",
     reports: [
       {
         id: "behaviour-overview",
@@ -133,7 +133,7 @@ const reportCategories = [
   {
     id: "contextual",
     name: "Contextual",
-    color: "#121051",
+    color: "#F7940",
     reports: [
       {
         id: "census-summary",
@@ -165,7 +165,7 @@ const reportCategories = [
   {
     id: "safeguarding",
     name: "Safeguarding",
-    color: "#D32F2F",
+    color: "#5BBE80",
     reports: [
       {
         id: "cpoms-overview",
@@ -187,7 +187,7 @@ const reportCategories = [
   {
     id: "workforce",
     name: "Workforce",
-    color: "#7B1FA2",
+    color: "#2395A4",
     reports: [
       {
         id: "staff-absence",
@@ -214,7 +214,7 @@ const reportCategories = [
   {
     id: "finance",
     name: "Finance",
-    color: "#1976D2",
+    color: "#6ADD5",
     reports: [
       {
         id: "budget-summary",
@@ -241,7 +241,7 @@ const reportCategories = [
   {
     id: "estates",
     name: "Estates",
-    color: "#388E3C",
+    color: "#F755A",
     reports: [
       {
         id: "capacity-planning",
