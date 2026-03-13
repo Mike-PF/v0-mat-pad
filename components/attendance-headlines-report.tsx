@@ -20,13 +20,13 @@ export function AttendanceHeadlinesReport() {
   const [endDate, setEndDate] = useState("08/01/2026")
 
   const metrics = [
-    { label: "Total pupils", value: "31", color: "bg-teal-600" },
-    { label: "Attendance", value: "97.3%", subText: "NAT. 94.8% ▼ 2.5", color: "text-teal-600", highlight: true },
-    { label: "Absence", value: "2.7%", subText: "NAT. 5.2% ▼ 2.5", color: "text-orange-500", highlight: true },
-    { label: "Auth. absence", value: "2.0%", subText: "NAT. 3.7% ▼ 2.5", color: "text-blue-500", highlight: true },
-    { label: "Unauth. absence", value: "0.8%", subText: "NAT. 1.5% ▼ 0.8", color: "text-amber-500", highlight: true },
-    { label: "Persistent absence", value: "0.0%", subText: "NAT. 15.6% ▼ 15.6", color: "text-green-600", highlight: true },
-    { label: "Severe absence", value: "0.0%", subText: "NAT. 0.3% ▼ 0.3", color: "text-green-600", highlight: true }
+    { label: "Total pupils", value: "31", color: "bg-teal-600", isTotal: true },
+    { label: "Attendance", value: "97.3%", natValue: "94.8%", diff: "+2.5", isPositive: true, color: "text-teal-600" },
+    { label: "Absence", value: "2.7%", natValue: "5.2%", diff: "-2.5", isPositive: true, color: "text-orange-500" },
+    { label: "Auth. absence", value: "2.0%", natValue: "3.7%", diff: "-2.5", isPositive: true, color: "text-blue-500" },
+    { label: "Unauth. absence", value: "0.8%", natValue: "1.5%", diff: "-0.8", isPositive: true, color: "text-amber-500" },
+    { label: "Persistent absence", value: "0.0%", natValue: "15.6%", diff: "-15.6", isPositive: true, color: "text-green-600" },
+    { label: "Severe absence", value: "0.0%", natValue: "0.3%", diff: "-0.3", isPositive: true, color: "text-green-600" }
   ]
 
   return (
@@ -97,12 +97,12 @@ export function AttendanceHeadlinesReport() {
             <div
               key={idx}
               className={`rounded-lg p-4 ${
-                metric.label === "Total pupils"
+                metric.isTotal
                   ? "bg-teal-600 text-white col-span-1 md:col-span-1 lg:col-span-1"
                   : "bg-white border border-slate-200"
               }`}
             >
-              {metric.label === "Total pupils" ? (
+              {metric.isTotal ? (
                 <>
                   <p className="text-sm opacity-90 mb-2">{metric.label}</p>
                   <p className="text-4xl font-bold">{metric.value}</p>
@@ -110,9 +110,14 @@ export function AttendanceHeadlinesReport() {
               ) : (
                 <>
                   <p className="text-xs text-slate-500 mb-1">{metric.label}</p>
-                  <p className={`text-2xl font-bold ${metric.color}`}>{metric.value}</p>
+                  <p className={`text-2xl font-bold ${metric.color}`}>
+                    <span className="mr-1">MAT</span>{metric.value}
+                  </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    <span>NAT.</span> {metric.subText}
+                    <span>NAT. {metric.natValue}</span>{" "}
+                    <span className={metric.isPositive ? "text-green-600" : "text-red-500"}>
+                      {metric.isPositive ? String.fromCharCode(9650) : String.fromCharCode(9660)} {metric.diff}
+                    </span>
                   </p>
                 </>
               )}
