@@ -87,11 +87,11 @@ export function EyfsGoalsBySchoolReport() {
                 <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG10<br />% Writ</th>
                 <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG11<br />% Number</th>
                 <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG12<br />% Num pat</th>
-                <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG13<br />% Past & pres</th>
+                <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG13<br />% Past {'&'} pres</th>
                 <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG14<br />% Peop, cult</th>
                 <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG15<br />% Nat world</th>
                 <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG16<br />% Create mat</th>
-                <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG17<br />% Imag & exp</th>
+                <th className="px-2 py-2 text-center font-semibold text-slate-700 whitespace-nowrap">ELG17<br />% Imag {'&'} exp</th>
               </tr>
             </thead>
             <tbody>
@@ -138,7 +138,7 @@ export function EyfsGoalsBySchoolReport() {
             <h3 className="font-semibold text-slate-900 mb-2">Key</h3>
             <div className="space-y-1 text-xs text-slate-700">
               <p><span className="font-semibold">% achieving a good level of development</span><br />% achieving a good level of development</p>
-              <p><span className="font-semibold">% at exp. level in communication, language & literacy</span><br />% at exp. level in communication, language & literacy</p>
+              <p><span className="font-semibold">% at exp. level in communication, language {'&'} literacy</span><br />% at exp. level in communication, language {'&'} literacy</p>
               <p><span className="font-semibold">% at exp. level in all ELGs</span><br />Av. No. of ELGs at exp. level</p>
               <p><span className="font-semibold">All prime area ELGs</span><br />All prime area ELGs</p>
             </div>
