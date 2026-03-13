@@ -1,291 +1,363 @@
 "use client"
 
+import { useState } from "react"
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
+  BarChart, Bar, LabelList,
+} from "recharts"
 import { ChevronDown } from "lucide-react"
 
-export function AttendanceHeadlinesReport() {
+// --- Data ---
+const trendData = [
+  { term: "Spr. 2024", mat: 96.8, nat: 95.1 },
+  { term: "Sum.", mat: 97.2, nat: 95.3 },
+  { term: "Aut.", mat: 97.0, nat: 94.9 },
+  { term: "Spr. 2025", mat: 97.5, nat: 95.0 },
+  { term: "Sum.", mat: 97.1, nat: 95.2 },
+  { term: "Aut.", mat: 97.4, nat: 94.8 },
+  { term: "Spr. 2026", mat: 97.3, nat: 94.8 },
+]
+
+const bandData = [
+  { name: "95+%",   value: 31, pct: "38.27%", color: "#4ade80" },
+  { name: "90-95%", value: 14, pct: "17.28%", color: "#a78bfa" },
+  { name: "80-90%", value: 26, pct: "32.1%",  color: "#c084fc" },
+  { name: "50-80%", value: 8,  pct: "9.88%",  color: "#fb923c" },
+  { name: "<50%",   value: 2,  pct: "2.47%",  color: "#fbbf24" },
+]
+
+const ncyData = [
+  { ncy: "1", pct: "1.5%", above: 65, below: 35 },
+  { ncy: "2", pct: "1.6%", above: 62, below: 38 },
+  { ncy: "3", pct: "1.9%", above: 55, below: 45 },
+  { ncy: "4", pct: "2.0%", above: 60, below: 40 },
+  { ncy: "5", pct: "1.8%", above: 58, below: 42 },
+  { ncy: "6", pct: "2.0%", above: 60, below: 40 },
+]
+
+// --- Helpers ---
+function HBar({ label, items }: {
+  label: string
+  items: { name: string; value: number; count: number; color: string }[]
+}) {
   return (
-    <div className="w-full h-full bg-white overflow-auto">
-      {/* Teal Header Bar */}
-      <div className="bg-teal-600 text-white px-6 py-3 sticky top-0">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold">Attendance headlines - 01/09/2024 to 31/08/2025</h1>
+    <div>
+      <p className="text-xs font-semibold text-slate-700 mb-2">{label}</p>
+      <div className="space-y-1.5">
+        {items.map((d) => (
+          <div key={d.name} className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 w-12 text-right shrink-0">{d.name}</span>
+            <div className="relative h-5 flex-1 bg-slate-100 rounded-sm overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full rounded-sm"
+                style={{ width: `${Math.min(d.value * 15, 100)}%`, backgroundColor: d.color }}
+              />
+              <span className="absolute inset-0 flex items-center pl-1 text-xs font-medium text-white drop-shadow">
+                {d.value}% ({d.count})
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs opacity-75">phase_school6</label>
-              <div className="flex items-center gap-2 bg-white text-slate-900 px-3 py-1.5 rounded">
-                <span className="text-sm">Primary</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FilterDropdown({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-slate-100 py-1">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-700 truncate">{label}</span>
+        <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 ml-1" />
+      </div>
+      <div className="flex items-center justify-between mt-0.5">
+        <span className="text-xs text-slate-500">{value}</span>
+        <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 ml-1" />
+      </div>
+    </div>
+  )
+}
+
+// --- Component ---
+export function AttendanceHeadlinesReport() {
+  const [dateFrom, setDateFrom] = useState("2024-03-14")
+  const [dateTo, setDateTo] = useState("2026-01-08")
+
+  return (
+    <div className="w-full bg-white font-sans text-slate-800">
+
+      {/* ── Header ───────────────────────────────────────────────── */}
+      <div className="bg-[#2395A4] px-4 py-3 flex items-end justify-between gap-4">
+        <h1 className="text-white font-bold text-base self-center whitespace-nowrap shrink-0">
+          Attendance headlines - 01/09/2024 to 31/08/2025
+        </h1>
+        <div className="flex items-end gap-3 shrink-0">
+          <div>
+            <p className="text-white/80 text-xs mb-1">phase, schoolID</p>
+            <div className="bg-white rounded px-2 py-1 flex items-center justify-between gap-4 text-sm min-w-[130px] cursor-pointer">
+              <span>Primary</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs opacity-75">year/not_form_HT</label>
-              <input type="text" value="2025" className="bg-white text-slate-900 px-3 py-1.5 rounded w-20 text-sm" readOnly />
+          </div>
+          <div>
+            <p className="text-white/80 text-xs mb-1">yearend, nat_term, HT</p>
+            <div className="bg-white rounded px-2 py-1 flex items-center justify-between gap-4 text-sm min-w-[110px] cursor-pointer">
+              <span>2025</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs opacity-75">From</label>
-              <input type="date" value="2024-03-14" className="bg-white text-slate-900 px-3 py-1.5 rounded text-sm" readOnly />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs opacity-75">To</label>
-              <input type="date" value="2026-01-08" className="bg-white text-slate-900 px-3 py-1.5 rounded text-sm" readOnly />
+          </div>
+          <div>
+            <p className="text-white/80 text-xs mb-1">date</p>
+            <div className="bg-white rounded px-2 py-1 flex items-center gap-2 text-xs">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={e => setDateFrom(e.target.value)}
+                className="border-none outline-none text-xs w-32"
+              />
+              <input
+                type="date"
+                value={dateTo}
+                onChange={e => setDateTo(e.target.value)}
+                className="border-none outline-none text-xs w-32"
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters Applied Text */}
-      <div className="px-6 py-2 bg-slate-50 border-b border-slate-200">
-        <p className="text-xs text-slate-600">
-          Filters applied: SEN status - All | FSM6 - 1 | Attendance band - 95+%
-        </p>
+      {/* ── Filters applied ──────────────────────────────────────── */}
+      <div className="px-4 py-1.5 border-b border-slate-200 text-xs text-slate-600">
+        Filters applied: SEN status- All | FSM6- 1 | Attendance band- 95+%
       </div>
 
-      {/* Main Content */}
-      <div className="p-6">
-        {/* Metrics Row */}
-        <div className="grid grid-cols-7 gap-4 mb-6">
-          {/* Total Pupils Card */}
-          <div className="bg-teal-600 text-white rounded-lg p-4">
-            <p className="text-xs opacity-90 font-medium">Total pupils</p>
-            <p className="text-4xl font-bold mt-2">31</p>
-          </div>
+      <div className="flex min-h-0">
+        {/* ── Main ─────────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 p-4 space-y-4 overflow-x-auto">
 
-          {/* Attendance */}
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium">Attendance</p>
-            <p className="text-2xl font-bold text-teal-600 mt-1">
-              <span className="text-xs">MAT</span> 97.3%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nat. 94.8% <span className="text-green-600">▼ 2.5</span>
-            </p>
-          </div>
-
-          {/* Absence */}
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium">Absence</p>
-            <p className="text-2xl font-bold text-orange-500 mt-1">
-              <span className="text-xs">MAT</span> 2.7%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nat. 5.2% <span className="text-green-600">▼ 2.5</span>
-            </p>
-          </div>
-
-          {/* Auth. absence */}
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium">Auth. absence</p>
-            <p className="text-2xl font-bold text-blue-600 mt-1">
-              <span className="text-xs">MAT</span> 2.0%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nat. 3.7% <span className="text-green-600">▼ 2.5</span>
-            </p>
-          </div>
-
-          {/* Unauth. absence */}
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium">Unauth. absence</p>
-            <p className="text-2xl font-bold text-amber-600 mt-1">
-              <span className="text-xs">MAT</span> 0.8%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nat. 1.5% <span className="text-green-600">▼ 0.8</span>
-            </p>
-          </div>
-
-          {/* Persistent absence */}
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium">Persistent absence</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">
-              <span className="text-xs">MAT</span> 0.0%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nat. 15.6% <span className="text-green-600">▼ 15.6</span>
-            </p>
-          </div>
-
-          {/* Severe absence */}
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium">Severe absence</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">
-              <span className="text-xs">MAT</span> 0.0%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nat. 0.3% <span className="text-green-600">▼ 0.3</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Charts Section Grid */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Attendance Trends Chart */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-white">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Attendance trends</h3>
-              <div className="h-48 bg-slate-50 rounded flex items-center justify-center text-slate-400">
-                <p className="text-xs">Line chart placeholder</p>
+          {/* KPI row */}
+          <div className="flex gap-2">
+            <div className="bg-[#2395A4] text-white rounded p-3 flex flex-col min-w-[80px] shrink-0">
+              <span className="text-xs font-semibold leading-tight">Total pupils</span>
+              <span className="text-4xl font-bold mt-1">31</span>
+            </div>
+            {[
+              { label: "Attendance",         mat: "97.3%", nat: "94.8%", diff: "2.5",   up: true  },
+              { label: "Absence",            mat: "2.7%",  nat: "5.2%",  diff: "-2.5",  up: false },
+              { label: "Auth. absence",      mat: "2.0%",  nat: "3.7%",  diff: "-2.5",  up: false },
+              { label: "Unauth. absence",    mat: "0.8%",  nat: "1.5%",  diff: "-0.8",  up: false },
+              { label: "Persistent absence", mat: "0.0%",  nat: "15.6%", diff: "-15.6", up: false },
+              { label: "Severe absence",     mat: "0.0%",  nat: "0.3%",  diff: "-0.3",  up: false },
+            ].map((m) => (
+              <div key={m.label} className="border border-[#2395A4] rounded p-2 flex-1 min-w-0">
+                <p className="text-xs font-semibold text-[#2395A4] truncate">{m.label}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  MAT <span className="text-xl font-bold text-[#2395A4]">{m.mat}</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1 flex-wrap">
+                  Nat. {m.nat}
+                  <span className="text-green-600">{m.up ? "▲" : "▼"} {m.diff}</span>
+                </p>
               </div>
-              <div className="mt-3 flex gap-4 text-xs">
-                <span className="flex items-center gap-2">
-                  <span className="w-3 h-0.5 bg-blue-600"></span> MAT (selected pupils)
+            ))}
+          </div>
+
+          {/* Charts row 1 */}
+          <div className="grid grid-cols-4 gap-3">
+
+            {/* Attendance trends */}
+            <div className="border border-slate-200 rounded p-3">
+              <p className="text-xs font-semibold text-slate-700 text-center mb-2">Attendance trends</p>
+              <div className="flex gap-3 justify-center mb-1">
+                <span className="flex items-center gap-1 text-xs text-slate-500">
+                  <span className="inline-block w-4 h-0.5 bg-[#2395A4]" />MAT (selected pupils)
                 </span>
-                <span className="flex items-center gap-2">
-                  <span className="w-3 h-0.5 bg-slate-400"></span> National (all pupils)
+                <span className="flex items-center gap-1 text-xs text-slate-500">
+                  <span className="inline-block w-4 h-0.5 bg-[#121051]" />National (all pupils)
                 </span>
               </div>
+              <ResponsiveContainer width="100%" height={155}>
+                <LineChart data={trendData} margin={{ top: 4, right: 8, bottom: 30, left: 28 }}>
+                  <XAxis dataKey="term" tick={{ fontSize: 8 }} interval={0} angle={-30} textAnchor="end" />
+                  <YAxis domain={[94.5, 100]} tick={{ fontSize: 8 }} tickFormatter={v => `${v}%`} />
+                  <Tooltip formatter={(v: number) => `${v}%`} />
+                  <Line type="monotone" dataKey="mat" stroke="#2395A4" strokeWidth={2} dot={{ r: 3, fill: "#2395A4" }} />
+                  <Line type="monotone" dataKey="nat" stroke="#121051" strokeWidth={2} dot={{ r: 3, fill: "#121051" }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
 
-            {/* % Absence by School */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-white">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by school</h3>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-20">School B</span>
-                  <div className="flex-1 bg-red-300 rounded h-5"></div>
-                  <span>2.6% (26)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-20">School A</span>
-                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "75%" }}></div>
-                  <span>3.5% (5)</span>
-                </div>
+            {/* % pupils by attendance band */}
+            <div className="border border-slate-200 rounded p-3">
+              <p className="text-xs font-semibold text-slate-700 text-center mb-1">% pupils by attendance band</p>
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie
+                    data={bandData}
+                    cx="50%" cy="45%"
+                    innerRadius={42} outerRadius={65}
+                    dataKey="value"
+                    label={({ cx, cy, midAngle, outerRadius, index }) => {
+                      const RADIAN = Math.PI / 180
+                      const d = bandData[index]
+                      const x = cx + (outerRadius + 22) * Math.cos(-midAngle * RADIAN)
+                      const y = cy + (outerRadius + 22) * Math.sin(-midAngle * RADIAN)
+                      return (
+                        <text x={x} y={y} fontSize={8} textAnchor="middle" fill="#555">
+                          {d.value} ({d.pct})
+                        </text>
+                      )
+                    }}
+                    labelLine={false}
+                  >
+                    {bandData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                  </Pie>
+                  <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle" fontSize={18} fontWeight="bold" fill="#121051">31</text>
+                  <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" fontSize={8} fill="#666">(38.27%)</text>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap gap-x-2 gap-y-0.5 justify-center">
+                {bandData.map((b) => (
+                  <span key={b.name} className="flex items-center gap-1 text-xs text-slate-500">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
+                    {b.name}
+                  </span>
+                ))}
               </div>
             </div>
 
-            {/* % Absence by SEN Status */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-white">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by SEN status</h3>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-12">E</span>
-                  <div className="flex-1 bg-red-300 rounded h-5"></div>
-                  <span>3.7% (2)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-12">K</span>
-                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "85%" }}></div>
-                  <span>3.0% (11)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-12">NULL</span>
-                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "70%" }}></div>
-                  <span>2.4% (15)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-12">N</span>
-                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "65%" }}></div>
-                  <span>2.7% (3)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* % Pupils by Attendance Band */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-white">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">% pupils by attendance band</h3>
-              <div className="flex items-center justify-center h-48">
-                <div className="w-40 h-40 rounded-full border-8 border-slate-300 flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">31</p>
-                    <p className="text-xs text-slate-500">(38.27%)</p>
+            {/* PA / SA counts */}
+            <div className="border border-slate-200 rounded p-3 space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-slate-700 leading-tight mb-2">No. of persistently absent pupils</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 w-5 shrink-0">PA</span>
+                    <div className="flex-1 bg-[#d8b4fe] rounded-sm h-5 flex items-center pr-1 justify-end">
+                      <span className="text-xs font-medium text-slate-700">31</span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-200 rounded-sm h-5 flex items-center pr-1 justify-end ml-7">
+                    <span className="text-xs text-slate-500">31</span>
                   </div>
                 </div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2 justify-center text-xs">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span> 95+%
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-yellow-400"></span> 90-95%
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-orange-400"></span> 80-90%
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-red-500"></span> 50-80%
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-slate-800"></span> &lt;50%
-                </span>
-              </div>
-            </div>
-
-            {/* % Absence by Gender */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-white">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by gender</h3>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-12">0</span>
-                  <div className="flex-1 bg-green-400 rounded h-5"></div>
-                  <span>2.8% (30)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-12">1</span>
-                  <div className="flex-1 bg-green-400 rounded h-5" style={{ width: "20%" }}></div>
-                  <span>0.8% (1)</span>
+              <div>
+                <p className="text-xs font-semibold text-slate-700 leading-tight mb-2">No. of severely absent pupils</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 w-5 shrink-0">SA</span>
+                    <div className="flex-1 bg-slate-300 rounded-sm h-5 flex items-center pr-1 justify-end">
+                      <span className="text-xs font-medium text-slate-700">31</span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-200 rounded-sm h-5 flex items-center pr-1 justify-end ml-7">
+                    <span className="text-xs text-slate-500">31</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* % Absence by Pupil Premium */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-white">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by pupil premium</h3>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-12">0</span>
-                  <div className="flex-1 bg-red-400 rounded h-5"></div>
-                  <span>4.0% (4)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-12">1</span>
-                  <div className="flex-1 bg-red-300 rounded h-5" style={{ width: "85%" }}></div>
-                  <span>2.5% (27)</span>
-                </div>
-              </div>
+            {/* % attendance by NCY */}
+            <div className="border border-slate-200 rounded p-3">
+              <p className="text-xs font-semibold text-slate-700 text-center mb-1">% attendance by NCY</p>
+              <ResponsiveContainer width="100%" height={185}>
+                <BarChart data={ncyData} margin={{ top: 18, right: 4, bottom: 0, left: -24 }}>
+                  <XAxis dataKey="ncy" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <Bar dataKey="above" stackId="a" fill="#a78bfa" radius={[0,0,0,0]}>
+                    <LabelList dataKey="pct" position="top" style={{ fontSize: 8, fill: "#555" }} />
+                  </Bar>
+                  <Bar dataKey="below" stackId="a" fill="#c4b5fd" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Row Charts */}
-        <div className="grid grid-cols-3 gap-6 mt-6">
-          {/* No. of Persistently Absent Pupils */}
-          <div className="border border-slate-200 rounded-lg p-4 bg-white">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">No. of persistently absent pupils</h3>
-            <div className="h-32 bg-slate-50 rounded flex items-center justify-center text-slate-400">
-              <p className="text-xs">PA</p>
-            </div>
-            <p className="text-center mt-2 font-bold text-lg">31</p>
-          </div>
-
-          {/* % Attendance by NCY */}
-          <div className="border border-slate-200 rounded-lg p-4 bg-white">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">% attendance by NCY</h3>
-            <div className="h-32 bg-slate-50 rounded flex items-center justify-center">
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="flex flex-col items-center gap-1">
-                    <div className="w-4 bg-gradient-to-t from-red-500 to-green-500 rounded" style={{ height: `${20 + i * 5}px` }}></div>
-                    <span className="text-xs">{i}</span>
+          {/* Charts row 2 – absence breakdowns */}
+          <div className="grid grid-cols-5 gap-3">
+            {/* % absence by school */}
+            <div>
+              <p className="text-xs font-semibold text-slate-700 mb-2">% absence by school</p>
+              <p className="text-xs text-slate-400 mb-1 rotate-0">Primary</p>
+              <div className="space-y-1.5">
+                {[
+                  { name: "School B", value: 2.6, count: 26 },
+                  { name: "School A", value: 3.5, count: 5 },
+                ].map((d) => (
+                  <div key={d.name} className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 w-14 text-right shrink-0">{d.name}</span>
+                    <div className="relative flex-1 h-6 bg-[#fca5a5] rounded-sm overflow-hidden">
+                      <div className="absolute left-0 h-full bg-[#ef4444] rounded-sm" style={{ width: `${d.value * 20}%` }} />
+                      <span className="absolute inset-0 flex items-center pl-1 text-xs font-medium text-white drop-shadow">
+                        {d.value}% ({d.count})
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* % absence by SEN status */}
+            <HBar label="% absence by SEN status" items={[
+              { name: "E",    value: 3.7, count: 2,  color: "#ef4444" },
+              { name: "K",    value: 3.0, count: 11, color: "#ef4444" },
+              { name: "NULL", value: 2.4, count: 15, color: "#ef4444" },
+              { name: "N",    value: 2.7, count: 3,  color: "#4ade80" },
+            ]} />
+
+            {/* % absence by gender + EAL */}
+            <div className="space-y-4">
+              <HBar label="% absence by gender" items={[
+                { name: "0", value: 2.8, count: 30, color: "#ef4444" },
+                { name: "1", value: 0.8, count: 1,  color: "#4ade80" },
+              ]} />
+              <HBar label="% absence by EAL" items={[
+                { name: "0", value: 2.8, count: 30, color: "#ef4444" },
+                { name: "1", value: 0.8, count: 1,  color: "#4ade80" },
+              ]} />
+            </div>
+
+            {/* % absence by pupil premium + FSM */}
+            <div className="space-y-4">
+              <HBar label="% absence by pupil premium" items={[
+                { name: "1", value: 4.0, count: 4,  color: "#ef4444" },
+                { name: "0", value: 2.5, count: 27, color: "#ef4444" },
+              ]} />
+              <HBar label="% absence by FSM" items={[
+                { name: "1", value: 2.7, count: 31, color: "#ef4444" },
+              ]} />
+            </div>
+
+            {/* % absence by ethnicity */}
+            <HBar label="% absence by ethnicity" items={[
+              { name: "Any oth...",  value: 2.1, count: 11, color: "#fca5a5" },
+              { name: "White a...",  value: 3.1, count: 18, color: "#fca5a5" },
+              { name: "NULL",        value: 2.1, count: 11, color: "#ef4444" },
+              { name: "White - ...", value: 3.4, count: 1,  color: "#fca5a5" },
+              { name: "White a...",  value: 3.4, count: 1,  color: "#4ade80" },
+              { name: "Any oth...",  value: 0.8, count: 1,  color: "#4ade80" },
+            ]} />
           </div>
 
-          {/* No. of Severely Absent Pupils */}
-          <div className="border border-slate-200 rounded-lg p-4 bg-white">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">No. of severely absent pupils</h3>
-            <div className="h-32 bg-slate-50 rounded flex items-center justify-center text-slate-400">
-              <p className="text-xs">SA</p>
-            </div>
-            <p className="text-center mt-2 font-bold text-lg">31</p>
-          </div>
+        </div>
+
+        {/* ── Right sidebar ─────────────────────────────────────── */}
+        <div className="w-44 shrink-0 border-l border-slate-200 p-3">
+          <p className="text-xs text-slate-500 mb-3 leading-tight">
+            Also need gender and NCY/reg group (reg group nested in NCY)
+          </p>
+          {[
+            { label: "ethnicity",       value: "All" },
+            { label: "disadvantaged",   value: "All" },
+            { label: "ppi",             value: "All" },
+            { label: "fsm6",            value: "1"   },
+            { label: "fsm",             value: "All" },
+            { label: "ever_in_care....", value: "All" },
+            { label: "sen_status, s...", value: "All" },
+            { label: "eal",             value: "All" },
+          ].map((f) => <FilterDropdown key={f.label} {...f} />)}
         </div>
       </div>
     </div>
