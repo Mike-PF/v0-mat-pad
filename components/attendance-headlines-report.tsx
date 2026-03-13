@@ -1,256 +1,291 @@
 "use client"
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 
 export function AttendanceHeadlinesReport() {
-  const [phase, setPhase] = useState("Primary")
-  const [year, setYear] = useState("2025")
-  const [startDate, setStartDate] = useState("14/03/2024")
-  const [endDate, setEndDate] = useState("08/01/2026")
-
-  const metrics = [
-    { label: "Total pupils", value: "31", color: "bg-teal-600", isTotal: true },
-    { label: "Attendance", value: "97.3%", natValue: "94.8%", diff: "+2.5", isPositive: true, color: "text-teal-600" },
-    { label: "Absence", value: "2.7%", natValue: "5.2%", diff: "-2.5", isPositive: true, color: "text-orange-500" },
-    { label: "Auth. absence", value: "2.0%", natValue: "3.7%", diff: "-2.5", isPositive: true, color: "text-blue-500" },
-    { label: "Unauth. absence", value: "0.8%", natValue: "1.5%", diff: "-0.8", isPositive: true, color: "text-amber-500" },
-    { label: "Persistent absence", value: "0.0%", natValue: "15.6%", diff: "-15.6", isPositive: true, color: "text-green-600" },
-    { label: "Severe absence", value: "0.0%", natValue: "0.3%", diff: "-0.3", isPositive: true, color: "text-green-600" }
-  ]
-
   return (
-    <div className="w-full bg-white">
-      {/* Header Bar */}
-      <div className="bg-teal-600 text-white px-6 py-4">
+    <div className="w-full h-full bg-white overflow-auto">
+      {/* Teal Header Bar */}
+      <div className="bg-teal-600 text-white px-6 py-3 sticky top-0">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">Attendance headlines - 01/09/2024 to 31/08/2025</h1>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold">Attendance headlines - 01/09/2024 to 31/08/2025</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Phase, schools</span>
-              <Select value={phase} onValueChange={setPhase}>
-                <SelectTrigger className="w-32 bg-white text-slate-900 h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Primary">Primary</SelectItem>
-                  <SelectItem value="Secondary">Secondary</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs opacity-75">phase_school6</label>
+              <div className="flex items-center gap-2 bg-white text-slate-900 px-3 py-1.5 rounded">
+                <span className="text-sm">Primary</span>
+                <ChevronDown className="w-4 h-4" />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Yearend, not_form_HT</span>
-              <Select value={year} onValueChange={setYear}>
-                <SelectTrigger className="w-20 bg-white text-slate-900 h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2024">2024</SelectItem>
-                  <SelectItem value="2025">2025</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs opacity-75">year/not_form_HT</label>
+              <input type="text" value="2025" className="bg-white text-slate-900 px-3 py-1.5 rounded w-20 text-sm" readOnly />
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-white text-slate-900 px-3 py-1.5 rounded text-sm h-9 w-32"
-              />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs opacity-75">From</label>
+              <input type="date" value="2024-03-14" className="bg-white text-slate-900 px-3 py-1.5 rounded text-sm" readOnly />
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-white text-slate-900 px-3 py-1.5 rounded text-sm h-9 w-32"
-              />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs opacity-75">To</label>
+              <input type="date" value="2026-01-08" className="bg-white text-slate-900 px-3 py-1.5 rounded text-sm" readOnly />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters Applied */}
-      <div className="bg-slate-50 px-6 py-3 border-b border-slate-200">
-        <p className="text-sm text-slate-600">
-          <span className="font-medium">Filters applied:</span> SEN status- All | FSM6- | | Attendance band- 95+%
+      {/* Filters Applied Text */}
+      <div className="px-6 py-2 bg-slate-50 border-b border-slate-200">
+        <p className="text-xs text-slate-600">
+          Filters applied: SEN status - All | FSM6 - 1 | Attendance band - 95+%
         </p>
       </div>
 
-      {/* Content */}
-      <div className="p-6 space-y-6">
-        {/* Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-          {metrics.map((metric, idx) => (
-            <div
-              key={idx}
-              className={`rounded-lg p-4 ${
-                metric.isTotal
-                  ? "bg-teal-600 text-white col-span-1 md:col-span-1 lg:col-span-1"
-                  : "bg-white border border-slate-200"
-              }`}
-            >
-              {metric.isTotal ? (
-                <>
-                  <p className="text-sm opacity-90 mb-2">{metric.label}</p>
-                  <p className="text-4xl font-bold">{metric.value}</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs text-slate-500 mb-1">{metric.label}</p>
-                  <p className={`text-2xl font-bold ${metric.color}`}>
-                    <span className="mr-1">MAT</span>{metric.value}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    <span>NAT. {metric.natValue}</span>{" "}
-                    <span className={metric.isPositive ? "text-green-600" : "text-red-500"}>
-                      {metric.isPositive ? String.fromCharCode(9650) : String.fromCharCode(9660)} {metric.diff}
-                    </span>
-                  </p>
-                </>
-              )}
-            </div>
-          ))}
+      {/* Main Content */}
+      <div className="p-6">
+        {/* Metrics Row */}
+        <div className="grid grid-cols-7 gap-4 mb-6">
+          {/* Total Pupils Card */}
+          <div className="bg-teal-600 text-white rounded-lg p-4">
+            <p className="text-xs opacity-90 font-medium">Total pupils</p>
+            <p className="text-4xl font-bold mt-2">31</p>
+          </div>
+
+          {/* Attendance */}
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium">Attendance</p>
+            <p className="text-2xl font-bold text-teal-600 mt-1">
+              <span className="text-xs">MAT</span> 97.3%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Nat. 94.8% <span className="text-green-600">▼ 2.5</span>
+            </p>
+          </div>
+
+          {/* Absence */}
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium">Absence</p>
+            <p className="text-2xl font-bold text-orange-500 mt-1">
+              <span className="text-xs">MAT</span> 2.7%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Nat. 5.2% <span className="text-green-600">▼ 2.5</span>
+            </p>
+          </div>
+
+          {/* Auth. absence */}
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium">Auth. absence</p>
+            <p className="text-2xl font-bold text-blue-600 mt-1">
+              <span className="text-xs">MAT</span> 2.0%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Nat. 3.7% <span className="text-green-600">▼ 2.5</span>
+            </p>
+          </div>
+
+          {/* Unauth. absence */}
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium">Unauth. absence</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">
+              <span className="text-xs">MAT</span> 0.8%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Nat. 1.5% <span className="text-green-600">▼ 0.8</span>
+            </p>
+          </div>
+
+          {/* Persistent absence */}
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium">Persistent absence</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">
+              <span className="text-xs">MAT</span> 0.0%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Nat. 15.6% <span className="text-green-600">▼ 15.6</span>
+            </p>
+          </div>
+
+          {/* Severe absence */}
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium">Severe absence</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">
+              <span className="text-xs">MAT</span> 0.0%
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Nat. 0.3% <span className="text-green-600">▼ 0.3</span>
+            </p>
+          </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Attendance Trends */}
-          <Card className="p-6 lg:col-span-1">
-            <h3 className="font-semibold text-slate-900 mb-4">Attendance trends</h3>
-            <div className="h-40 bg-slate-50 rounded flex items-center justify-center text-slate-400">
-              <div className="text-center">
-                <p className="text-sm">Line chart placeholder</p>
-                <p className="text-xs text-slate-400 mt-1">MAT (selected pupils) • National (all pupils)</p>
+        {/* Charts Section Grid */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Attendance Trends Chart */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">Attendance trends</h3>
+              <div className="h-48 bg-slate-50 rounded flex items-center justify-center text-slate-400">
+                <p className="text-xs">Line chart placeholder</p>
+              </div>
+              <div className="mt-3 flex gap-4 text-xs">
+                <span className="flex items-center gap-2">
+                  <span className="w-3 h-0.5 bg-blue-600"></span> MAT (selected pupils)
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-3 h-0.5 bg-slate-400"></span> National (all pupils)
+                </span>
               </div>
             </div>
-            <div className="mt-3 text-xs text-slate-500">
-              <p>• MAT (selected pupils) • National (all pupils)</p>
-            </div>
-          </Card>
 
-          {/* Attendance Band Pie Chart */}
-          <Card className="p-6 lg:col-span-1">
-            <h3 className="font-semibold text-slate-900 mb-4">% pupils by attendance band</h3>
-            <div className="h-40 bg-slate-50 rounded flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 via-purple-400 to-green-400 mx-auto flex items-center justify-center">
-                  <span className="text-sm font-semibold text-white">31 (38.27%)</span>
+            {/* % Absence by School */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by school</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-20">School B</span>
+                  <div className="flex-1 bg-red-300 rounded h-5"></div>
+                  <span>2.6% (26)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-20">School A</span>
+                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "75%" }}></div>
+                  <span>3.5% (5)</span>
                 </div>
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500"></span> 95+%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-400"></span> 90-95%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-400"></span> 80-90%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500"></span> 50-80%</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-slate-800"></span> {'<'}50%</span>
-            </div>
-          </Card>
 
-          {/* Persistent Absence */}
-          <Card className="p-6 lg:col-span-1">
-            <h3 className="font-semibold text-slate-900 mb-2">No. of persistently absent pupils</h3>
-            <p className="text-sm text-slate-500 mb-4">PA</p>
-            <div className="h-24 bg-slate-100 rounded mb-2" />
-            <h3 className="font-semibold text-slate-900 text-sm mt-4 mb-2">No. of severely absent pupils</h3>
-            <p className="text-sm text-slate-500 mb-4">SA</p>
-            <div className="h-12 bg-slate-100 rounded" />
-          </Card>
+            {/* % Absence by SEN Status */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by SEN status</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-12">E</span>
+                  <div className="flex-1 bg-red-300 rounded h-5"></div>
+                  <span>3.7% (2)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12">K</span>
+                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "85%" }}></div>
+                  <span>3.0% (11)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12">NULL</span>
+                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "70%" }}></div>
+                  <span>2.4% (15)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12">N</span>
+                  <div className="flex-1 bg-red-200 rounded h-5" style={{ width: "65%" }}></div>
+                  <span>2.7% (3)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* % Pupils by Attendance Band */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">% pupils by attendance band</h3>
+              <div className="flex items-center justify-center h-48">
+                <div className="w-40 h-40 rounded-full border-8 border-slate-300 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">31</p>
+                    <p className="text-xs text-slate-500">(38.27%)</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2 justify-center text-xs">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span> 95+%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-yellow-400"></span> 90-95%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-orange-400"></span> 80-90%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-red-500"></span> 50-80%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-slate-800"></span> &lt;50%
+                </span>
+              </div>
+            </div>
+
+            {/* % Absence by Gender */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by gender</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-12">0</span>
+                  <div className="flex-1 bg-green-400 rounded h-5"></div>
+                  <span>2.8% (30)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12">1</span>
+                  <div className="flex-1 bg-green-400 rounded h-5" style={{ width: "20%" }}></div>
+                  <span>0.8% (1)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* % Absence by Pupil Premium */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">% absence by pupil premium</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-12">0</span>
+                  <div className="flex-1 bg-red-400 rounded h-5"></div>
+                  <span>4.0% (4)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12">1</span>
+                  <div className="flex-1 bg-red-300 rounded h-5" style={{ width: "85%" }}></div>
+                  <span>2.5% (27)</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Lower Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Absence by School */}
-          <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">% absence by school</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">School B</span>
-                <div className="h-6 w-32 bg-red-300 rounded" />
-                <span className="text-sm font-medium">2.6% (26)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">School A</span>
-                <div className="h-6 w-28 bg-red-200 rounded" />
-                <span className="text-sm font-medium">3.5% (5)</span>
-              </div>
+        {/* Bottom Row Charts */}
+        <div className="grid grid-cols-3 gap-6 mt-6">
+          {/* No. of Persistently Absent Pupils */}
+          <div className="border border-slate-200 rounded-lg p-4 bg-white">
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">No. of persistently absent pupils</h3>
+            <div className="h-32 bg-slate-50 rounded flex items-center justify-center text-slate-400">
+              <p className="text-xs">PA</p>
             </div>
-          </Card>
+            <p className="text-center mt-2 font-bold text-lg">31</p>
+          </div>
 
-          {/* Absence by Gender */}
-          <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">% absence by gender</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">0</p>
-                <div className="h-6 bg-green-300 rounded" />
-                <p className="text-xs text-slate-500 mt-1">2.8% (30)</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">1</p>
-                <div className="h-6 bg-green-200 rounded w-12" />
-                <p className="text-xs text-slate-500 mt-1">0.8% (1)</p>
+          {/* % Attendance by NCY */}
+          <div className="border border-slate-200 rounded-lg p-4 bg-white">
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">% attendance by NCY</h3>
+            <div className="h-32 bg-slate-50 rounded flex items-center justify-center">
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <div className="w-4 bg-gradient-to-t from-red-500 to-green-500 rounded" style={{ height: `${20 + i * 5}px` }}></div>
+                    <span className="text-xs">{i}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </Card>
-        </div>
+          </div>
 
-        {/* Additional Breakdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">% absence by SEN status</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-24 bg-red-300 rounded" />
-                <span>3.7% (2)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-20 bg-red-200 rounded" />
-                <span>3.0% (11)</span>
-              </div>
+          {/* No. of Severely Absent Pupils */}
+          <div className="border border-slate-200 rounded-lg p-4 bg-white">
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">No. of severely absent pupils</h3>
+            <div className="h-32 bg-slate-50 rounded flex items-center justify-center text-slate-400">
+              <p className="text-xs">SA</p>
             </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">% absence by FSM</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-20 bg-red-200 rounded" />
-                <span>2.7% (31)</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">% absence by ethnicity</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-24 bg-red-300 rounded" />
-                <span>2.1% (11)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-24 bg-red-300 rounded" />
-                <span>3.1% (18)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-8 bg-red-100 rounded" />
-                <span>0.8% (1)</span>
-              </div>
-            </div>
-          </Card>
+            <p className="text-center mt-2 font-bold text-lg">31</p>
+          </div>
         </div>
       </div>
     </div>
