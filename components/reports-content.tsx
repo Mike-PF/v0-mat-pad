@@ -12,7 +12,8 @@ import {
   LayoutGrid,
   ArrowLeft,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Star
 } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading-modal"
 
@@ -263,10 +264,11 @@ const reportCategories = [
 
 export function ReportsContent() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(reportCategories.map(c => c.id))
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(["favourites", ...reportCategories.map(c => c.id)])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoadingReport, setIsLoadingReport] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
+  const [favourites, setFavourites] = useState<string[]>([])
 
   const handleReportSelect = (reportId: string) => {
     setIsLoadingReport(true)
@@ -282,16 +284,28 @@ export function ReportsContent() {
   }
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(categoryId) 
+    setExpandedCategories(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     )
   }
 
+  const toggleFavourite = (e: React.MouseEvent, reportId: string) => {
+    e.stopPropagation()
+    setFavourites(prev =>
+      prev.includes(reportId)
+        ? prev.filter(id => id !== reportId)
+        : [...prev, reportId]
+    )
+  }
+
+  const allReports = reportCategories.flatMap(c => c.reports.map(r => ({ ...r, categoryColor: c.color, categoryName: c.name })))
+  const favouriteReports = allReports.filter(r => favourites.includes(r.id))
+
   const filteredCategories = reportCategories.map(category => ({
     ...category,
-    reports: category.reports.filter(report => 
+    reports: category.reports.filter(report =>
       report.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       report.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -446,7 +460,67 @@ export function ReportsContent() {
         </div>
 
         {/* Categories and Reports */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-3">
+
+          {/* Favourites Section */}
+          {!searchQuery && (
+            <Card className="bg-white overflow-hidden">
+              <button
+                onClick={() => toggleCategory("favourites")}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  <span className="text-base font-semibold text-slate-900">Favourites</span>
+                  <span className="text-sm text-slate-400">({favouriteReports.length} reports)</span>
+                </div>
+                {expandedCategories.includes("favourites") ? (
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                )}
+              </button>
+              {expandedCategories.includes("favourites") && (
+                <div className="border-t border-slate-100">
+                  {favouriteReports.length === 0 ? (
+                    <div className="px-5 py-8 text-center">
+                      <Star className="w-8 h-8 mx-auto text-slate-200 mb-3" />
+                      <p className="text-sm text-slate-400">No favourites yet.</p>
+                      <p className="text-xs text-slate-400 mt-1">Click the star on any report to add it here.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-5">
+                      {favouriteReports.map((report) => (
+                        <button
+                          key={report.id}
+                          onClick={() => handleReportSelect(report.id)}
+                          className="text-left p-4 rounded-lg border border-amber-100 hover:border-amber-300 hover:shadow-sm transition-all bg-amber-50/40 group relative"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: report.categoryColor }} />
+                            <div className="flex-1 min-w-0 pr-6">
+                              <h3 className="font-medium text-slate-900 group-hover:text-[#121051] transition-colors line-clamp-1">{report.name}</h3>
+                              <p className="text-xs text-slate-400 mt-0.5">{report.categoryName}</p>
+                              <p className="text-sm text-slate-500 mt-2 line-clamp-3">{report.description}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => toggleFavourite(e, report.id)}
+                            className="absolute top-3 right-3 text-amber-400 hover:text-amber-500 transition-colors"
+                            aria-label="Remove from favourites"
+                          >
+                            <Star className="w-4 h-4 fill-amber-400" />
+                          </button>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Category Sections */}
           {filteredCategories.map((category) => (
             <Card key={category.id} className="bg-white overflow-hidden">
               {/* Category Header */}
@@ -455,11 +529,11 @@ export function ReportsContent() {
                 className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div 
+                  <div
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: category.color }}
                   />
-                  <span className="text-lg font-semibold text-slate-900">{category.name}</span>
+                  <span className="text-base font-semibold text-slate-900">{category.name}</span>
                   <span className="text-sm text-slate-400">({category.reports.length} reports)</span>
                 </div>
                 {expandedCategories.includes(category.id) ? (
@@ -473,28 +547,42 @@ export function ReportsContent() {
               {expandedCategories.includes(category.id) && (
                 <div className="border-t border-slate-100">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-5">
-                    {category.reports.map((report) => (
-                      <button
-                        key={report.id}
-                        onClick={() => handleReportSelect(report.id)}
-                        className="text-left p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all bg-white group"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div 
-                            className="w-2 h-2 rounded-full mt-2 shrink-0"
-                            style={{ backgroundColor: category.color }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-slate-900 group-hover:text-[#121051] transition-colors line-clamp-1">
-                              {report.name}
-                            </h3>
-                            <p className="text-sm text-slate-500 mt-2 line-clamp-3">
-                              {report.description}
-                            </p>
+                    {category.reports.map((report) => {
+                      const isFavourite = favourites.includes(report.id)
+                      return (
+                        <button
+                          key={report.id}
+                          onClick={() => handleReportSelect(report.id)}
+                          className="text-left p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all bg-white group relative"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-2 h-2 rounded-full mt-2 shrink-0"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <div className="flex-1 min-w-0 pr-6">
+                              <h3 className="font-medium text-slate-900 group-hover:text-[#121051] transition-colors line-clamp-1">
+                                {report.name}
+                              </h3>
+                              <p className="text-sm text-slate-500 mt-2 line-clamp-3">
+                                {report.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                          <button
+                            onClick={(e) => toggleFavourite(e, report.id)}
+                            className={`absolute top-3 right-3 transition-colors ${
+                              isFavourite
+                                ? "text-amber-400 hover:text-amber-500"
+                                : "text-slate-200 hover:text-amber-300 opacity-0 group-hover:opacity-100"
+                            }`}
+                            aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
+                          >
+                            <Star className={`w-4 h-4 ${isFavourite ? "fill-amber-400" : ""}`} />
+                          </button>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
