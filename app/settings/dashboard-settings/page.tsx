@@ -308,7 +308,7 @@ export default function DashboardSettingsPage() {
                             className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white"
                             style={{ backgroundColor: report.reportType === "system" ? "#121051" : "#B30089" }}
                           >
-                            {report.reportType === "system" ? "System" : "Own"}
+                            {report.reportType === "system" ? "System" : "Custom"}
                           </span>
                         </td>
                         <td className="py-4 px-4">
