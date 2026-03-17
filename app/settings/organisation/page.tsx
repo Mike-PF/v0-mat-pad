@@ -41,6 +41,7 @@ interface SchoolData {
   name: string
   abbreviation: string
   headTeacher: string
+  phase?: string
   address: string
   phone: string
   email: string
@@ -93,6 +94,7 @@ const initialMATs: MATData[] = [
         name: "All Saints' Catholic High School",
         abbreviation: "ASHS",
         headTeacher: "Mr. James Wilson",
+        phase: "Secondary",
         address: "School Lane, Liverpool, L2 2BB",
         phone: "0151 234 5678",
         email: "office@allsaints.org",
@@ -110,6 +112,7 @@ const initialMATs: MATData[] = [
         name: "Emmaus Catholic and CofE Primary School",
         abbreviation: "ECP",
         headTeacher: "Mrs. Helen Brown",
+        phase: "Primary",
         address: "Church Road, Liverpool, L3 3CC",
         phone: "0151 345 6789",
         email: "office@emmaus.org",
@@ -126,6 +129,7 @@ const initialMATs: MATData[] = [
         name: "Notre Dame High School",
         abbreviation: "NDHS",
         headTeacher: "Dr. Michael O'Connor",
+        phase: "Secondary",
         address: "Notre Dame Drive, Liverpool, L4 4DD",
         phone: "0151 456 7890",
         email: "office@notredame.org",
@@ -848,6 +852,26 @@ export default function OrganisationPage() {
                                   className="h-9"
                                 />
                               </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Phase</label>
+                                <Select
+                                  value={(editingItem as SchoolData).phase ?? ""}
+                                  onValueChange={(val) => setEditingItem({ ...editingItem, phase: val })}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Select phase..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Nursery">Nursery</SelectItem>
+                                    <SelectItem value="Primary">Primary</SelectItem>
+                                    <SelectItem value="Secondary">Secondary</SelectItem>
+                                    <SelectItem value="All Through">All Through</SelectItem>
+                                    <SelectItem value="Special">Special</SelectItem>
+                                    <SelectItem value="PRU">PRU</SelectItem>
+                                    <SelectItem value="16-19">16-19</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </>
                           ) : (
                             <div className="col-span-2">
@@ -912,6 +936,10 @@ export default function OrganisationPage() {
                               <div>
                                 <span className="text-xs text-slate-500">Head Teacher</span>
                                 <p className="text-sm text-slate-900">{(selectedData as SchoolData).headTeacher}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Phase</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).phase ?? "—"}</p>
                               </div>
                             </>
                           ) : (
