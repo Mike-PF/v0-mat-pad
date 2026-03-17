@@ -30,7 +30,8 @@ import {
   ChevronRight,
   ArrowLeft,
   Trash2,
-  Search
+  Search,
+  Unlink
 } from "lucide-react"
 
 // MAT and School data structure
@@ -368,6 +369,24 @@ export default function OrganisationPage() {
     setDrillDownSchoolId(null) // Reset drill down when selecting new item
   }
 
+  const handleUnlinkSchool = () => {
+    if (!drillDownSchoolId || !selectedId) return
+    const mat = mats.find(m => m.id === selectedId)
+    if (!mat) return
+    const school = mat.schools.find(s => s.id === drillDownSchoolId)
+    if (!school) return
+    // Remove from MAT
+    setMats(prev => prev.map(m =>
+      m.id === selectedId
+        ? { ...m, schools: m.schools.filter(s => s.id !== drillDownSchoolId) }
+        : m
+    ))
+    // Add as standalone school with matId cleared
+    setStandaloneSchools(prev => [...prev, { ...school, matId: undefined }])
+    // Navigate back to MAT view
+    setDrillDownSchoolId(null)
+  }
+
   const handleEditClick = () => {
     const data = getSelectedData()
     if (data) {
@@ -593,7 +612,7 @@ export default function OrganisationPage() {
                     </>
                   ) : (
                     <>
-                      {selectedType === "mat" && (
+                      {selectedType === "mat" && !isViewingSchoolInMAT && (
                         <Button 
                           size="sm"
                           onClick={() => {
@@ -604,6 +623,17 @@ export default function OrganisationPage() {
                           style={{ backgroundColor: "#121051" }}
                         >
                           Manage Schools
+                        </Button>
+                      )}
+                      {isViewingSchoolInMAT && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleUnlinkSchool}
+                          className="border-slate-300 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-colors"
+                        >
+                          <Unlink className="w-4 h-4 mr-1" />
+                          Unlink
                         </Button>
                       )}
                       <Button 
