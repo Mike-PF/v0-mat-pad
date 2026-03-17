@@ -43,6 +43,12 @@ const reportCategories = [
         isSystem: true
       },
       {
+        id: "custom-monday-absence-tracker",
+        name: "Monday Absence Tracker",
+        description: "Created by James Wilson to track Monday morning absence patterns across primary schools, with focus on Year 5 and 6 pupils who have shown recurring patterns.",
+        isSystem: false
+      },
+      {
         id: "pupil-summary",
         name: "Pupil Summary Dashboard",
         description: "Individual pupil-level attendance data with filters for specific cohorts. Track attendance patterns for vulnerable groups including SEN, FSM, and looked-after children. Export functionality enables sharing data with external agencies and parents for collaborative support.",
@@ -90,6 +96,12 @@ const reportCategories = [
         name: "KS2 Outcomes Dashboard",
         description: "Analysis of Key Stage 2 results including reading, writing, maths, and combined scores. Compare your MAT's performance against national figures and track progress over multiple years. Breakdown by pupil characteristics identifies gaps requiring focused curriculum intervention.",
         isSystem: true
+      },
+      {
+        id: "custom-ks2-writing-deep-dive",
+        name: "KS2 Writing Deep Dive",
+        description: "Custom report created by Sarah Thompson to analyse writing outcomes by genre and assess the impact of the new handwriting intervention programme across Year 3 and 4 classes.",
+        isSystem: false
       },
       {
         id: "ks4-outcomes",
@@ -175,6 +187,12 @@ const reportCategories = [
         name: "Positive Recognition Tracker",
         description: "Monitor the balance of positive to negative behaviour points across your MAT. Identify schools and classes with strong positive cultures and those requiring support to increase recognition and praise. Promotes a consistent approach to celebrating pupil success.",
         isSystem: true
+      },
+      {
+        id: "custom-lunchtime-incidents",
+        name: "Lunchtime Incident Analysis",
+        description: "Built by Helen Carter to monitor behaviour incidents occurring during lunch breaks, comparing supervised vs unsupervised areas and tracking the effectiveness of the new playground zones initiative.",
+        isSystem: false
       },
     ]
   },
