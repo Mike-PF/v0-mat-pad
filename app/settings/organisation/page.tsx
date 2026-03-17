@@ -1361,15 +1361,35 @@ export default function OrganisationPage() {
                         <td className="py-3 px-4 text-sm text-slate-600">{school.urn}</td>
                         <td className="py-3 px-4 text-sm text-slate-900">{school.name}</td>
                         <td className="py-3 px-4">
-                          <button
-                            onClick={() => {
-                              setSchoolToDelete(school)
-                              setDeleteSchoolDialogOpen(true)
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 justify-end">
+                            <button
+                              onClick={() => {
+                                if (!selectedId) return
+                                setMats(prev => prev.map(m =>
+                                  m.id === selectedId
+                                    ? { ...m, schools: m.schools.filter(s => s.id !== school.id) }
+                                    : m
+                                ))
+                                setStandaloneSchools(prev => [...prev, { ...school, matId: undefined }])
+                                if (drillDownSchoolId === school.id) setDrillDownSchoolId(null)
+                              }}
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded transition-colors"
+                              title="Unlink school from MAT"
+                            >
+                              <Unlink className="w-3.5 h-3.5" />
+                              Unlink
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSchoolToDelete(school)
+                                setDeleteSchoolDialogOpen(true)
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                              title="Delete school"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
