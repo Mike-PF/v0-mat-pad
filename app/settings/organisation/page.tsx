@@ -627,13 +627,15 @@ export default function OrganisationPage() {
                       )}
                       {isViewingSchoolInMAT && (
                         <Button
-                          variant="outline"
                           size="sm"
-                          onClick={handleUnlinkSchool}
-                          className="border-slate-300 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-colors"
+                          onClick={() => {
+                            setManageSchoolsSearch("")
+                            setManageSchoolsOpen(true)
+                          }}
+                          className="text-white"
+                          style={{ backgroundColor: "#121051" }}
                         >
-                          <Unlink className="w-4 h-4 mr-1" />
-                          Unlink
+                          Manage Schools
                         </Button>
                       )}
                       <Button 
