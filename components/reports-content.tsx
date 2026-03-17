@@ -24,7 +24,7 @@ import { EyfsGoalsByPupilGroupReport } from "@/components/eyfs-goals-by-pupilgro
 
 // Report categories with reports and descriptions
 // isSystem: true = MATpad system report, false/undefined = custom user-built report
-// status: 'active' | 'no-access' | 'upgrade-required' - controls report availability
+// status: 'active' | 'insufficient-roles' | 'upgrade-required' - controls report availability
 const reportCategories = [
   {
     id: "attendance",
@@ -72,7 +72,7 @@ const reportCategories = [
         name: "School Comparisons",
         description: "Benchmark attendance performance across all schools in your MAT using standardised metrics. Identify schools outperforming expectations and those requiring additional support, enabling targeted resource allocation and sharing of best practice across the trust.",
         isSystem: true,
-        status: "no-access"
+        status: "insufficient-roles"
       },
       {
         id: "attendance-heatmap",
@@ -611,7 +611,7 @@ export function ReportsContent() {
                       const isFavourite = favourites.includes(report.id)
                       const isSystem = 'isSystem' in report && report.isSystem
                       const status = 'status' in report ? report.status : 'active'
-                      const isInactive = status === 'no-access' || status === 'upgrade-required'
+                      const isInactive = status === 'insufficient-roles' || status === 'upgrade-required'
                       return (
                         <div
                           key={report.id}
@@ -647,9 +647,9 @@ export function ReportsContent() {
                                     Custom
                                   </span>
                                 )}
-                                {status === 'no-access' && (
+                                {status === 'insufficient-roles' && (
                                   <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-300 text-slate-600">
-                                    No Access
+                                    Insufficient Roles
                                   </span>
                                 )}
                                 {status === 'upgrade-required' && (
