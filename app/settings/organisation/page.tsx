@@ -30,7 +30,8 @@ import {
   ChevronRight,
   ArrowLeft,
   Trash2,
-  Search
+  Search,
+  Unlink
 } from "lucide-react"
 
 // MAT and School data structure
@@ -229,6 +230,8 @@ export default function OrganisationPage() {
   const [manageSchoolsSearch, setManageSchoolsSearch] = useState("")
   const [deleteSchoolDialogOpen, setDeleteSchoolDialogOpen] = useState(false)
   const [schoolToDelete, setSchoolToDelete] = useState<SchoolData | null>(null)
+  const [unlinkSchoolDialogOpen, setUnlinkSchoolDialogOpen] = useState(false)
+  const [schoolToUnlink, setSchoolToUnlink] = useState<SchoolData | null>(null)
   
   // Power BI state
   const [powerBiActivated, setPowerBiActivated] = useState(false)
@@ -366,6 +369,24 @@ export default function OrganisationPage() {
     setPickerOpen(false)
     setPickerSearch("") // Clear search when selecting
     setDrillDownSchoolId(null) // Reset drill down when selecting new item
+  }
+
+  const handleUnlinkSchool = () => {
+    if (!drillDownSchoolId || !selectedId) return
+    const mat = mats.find(m => m.id === selectedId)
+    if (!mat) return
+    const school = mat.schools.find(s => s.id === drillDownSchoolId)
+    if (!school) return
+    // Remove from MAT
+    setMats(prev => prev.map(m =>
+      m.id === selectedId
+        ? { ...m, schools: m.schools.filter(s => s.id !== drillDownSchoolId) }
+        : m
+    ))
+    // Add as standalone school with matId cleared
+    setStandaloneSchools(prev => [...prev, { ...school, matId: undefined }])
+    // Navigate back to MAT view
+    setDrillDownSchoolId(null)
   }
 
   const handleEditClick = () => {
@@ -593,8 +614,21 @@ export default function OrganisationPage() {
                     </>
                   ) : (
                     <>
-                      {selectedType === "mat" && (
+                      {selectedType === "mat" && !isViewingSchoolInMAT && (
                         <Button 
+                          size="sm"
+                          onClick={() => {
+                            setManageSchoolsSearch("")
+                            setManageSchoolsOpen(true)
+                          }}
+                          className="text-white"
+                          style={{ backgroundColor: "#121051" }}
+                        >
+                          Manage Schools
+                        </Button>
+                      )}
+                      {isViewingSchoolInMAT && (
+                        <Button
                           size="sm"
                           onClick={() => {
                             setManageSchoolsSearch("")
@@ -1331,15 +1365,29 @@ export default function OrganisationPage() {
                         <td className="py-3 px-4 text-sm text-slate-600">{school.urn}</td>
                         <td className="py-3 px-4 text-sm text-slate-900">{school.name}</td>
                         <td className="py-3 px-4">
-                          <button
-                            onClick={() => {
-                              setSchoolToDelete(school)
-                              setDeleteSchoolDialogOpen(true)
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 justify-end">
+                            <button
+                              onClick={() => {
+                                setSchoolToUnlink(school)
+                                setUnlinkSchoolDialogOpen(true)
+                              }}
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded transition-colors"
+                              title="Unlink school from MAT"
+                            >
+                              <Unlink className="w-3.5 h-3.5" />
+                              Unlink
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSchoolToDelete(school)
+                                setDeleteSchoolDialogOpen(true)
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded transition-colors"
+                              title="Delete school"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1437,6 +1485,46 @@ export default function OrganisationPage() {
               style={{ backgroundColor: "#121051" }}
             >
               Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unlink School Confirmation Dialog */}
+      <Dialog open={unlinkSchoolDialogOpen} onOpenChange={(open) => !open && setUnlinkSchoolDialogOpen(false)}>
+        <DialogContent className="max-w-md">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Unlink School</h2>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to unlink <span className="font-semibold text-slate-900">{schoolToUnlink?.name}</span> from this MAT? It will become a standalone organisation.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setUnlinkSchoolDialogOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedId && schoolToUnlink) {
+                  setMats(prev => prev.map(m =>
+                    m.id === selectedId
+                      ? { ...m, schools: m.schools.filter(s => s.id !== schoolToUnlink.id) }
+                      : m
+                  ))
+                  setStandaloneSchools(prev => [...prev, { ...schoolToUnlink, matId: undefined }])
+                  if (drillDownSchoolId === schoolToUnlink.id) setDrillDownSchoolId(null)
+                }
+                setUnlinkSchoolDialogOpen(false)
+                setSchoolToUnlink(null)
+              }}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Unlink
             </Button>
           </div>
         </DialogContent>
