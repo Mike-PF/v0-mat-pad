@@ -550,7 +550,7 @@ export function ReportsContent() {
                                       System
                                     </span>
                                   ) : (
-                                    <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700">
+                                    <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-100 text-pink-700">
                                       Custom
                                     </span>
                                   )}
@@ -627,7 +627,7 @@ export function ReportsContent() {
                                     System
                                   </span>
                                 ) : (
-                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700">
+                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-100 text-pink-700">
                                     Custom
                                   </span>
                                 )}
