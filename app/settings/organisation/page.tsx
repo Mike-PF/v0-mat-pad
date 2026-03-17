@@ -230,6 +230,8 @@ export default function OrganisationPage() {
   const [manageSchoolsSearch, setManageSchoolsSearch] = useState("")
   const [deleteSchoolDialogOpen, setDeleteSchoolDialogOpen] = useState(false)
   const [schoolToDelete, setSchoolToDelete] = useState<SchoolData | null>(null)
+  const [unlinkSchoolDialogOpen, setUnlinkSchoolDialogOpen] = useState(false)
+  const [schoolToUnlink, setSchoolToUnlink] = useState<SchoolData | null>(null)
   
   // Power BI state
   const [powerBiActivated, setPowerBiActivated] = useState(false)
@@ -1366,14 +1368,8 @@ export default function OrganisationPage() {
                           <div className="flex items-center gap-1 justify-end">
                             <button
                               onClick={() => {
-                                if (!selectedId) return
-                                setMats(prev => prev.map(m =>
-                                  m.id === selectedId
-                                    ? { ...m, schools: m.schools.filter(s => s.id !== school.id) }
-                                    : m
-                                ))
-                                setStandaloneSchools(prev => [...prev, { ...school, matId: undefined }])
-                                if (drillDownSchoolId === school.id) setDrillDownSchoolId(null)
+                                setSchoolToUnlink(school)
+                                setUnlinkSchoolDialogOpen(true)
                               }}
                               className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded transition-colors"
                               title="Unlink school from MAT"
@@ -1489,6 +1485,46 @@ export default function OrganisationPage() {
               style={{ backgroundColor: "#121051" }}
             >
               Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unlink School Confirmation Dialog */}
+      <Dialog open={unlinkSchoolDialogOpen} onOpenChange={(open) => !open && setUnlinkSchoolDialogOpen(false)}>
+        <DialogContent className="max-w-md">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Confirm Unlink School</h2>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to unlink <span className="font-semibold text-slate-900">{schoolToUnlink?.name}</span> from this MAT? It will become a standalone organisation.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setUnlinkSchoolDialogOpen(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedId && schoolToUnlink) {
+                  setMats(prev => prev.map(m =>
+                    m.id === selectedId
+                      ? { ...m, schools: m.schools.filter(s => s.id !== schoolToUnlink.id) }
+                      : m
+                  ))
+                  setStandaloneSchools(prev => [...prev, { ...schoolToUnlink, matId: undefined }])
+                  if (drillDownSchoolId === schoolToUnlink.id) setDrillDownSchoolId(null)
+                }
+                setUnlinkSchoolDialogOpen(false)
+                setSchoolToUnlink(null)
+              }}
+              className="px-4 text-white"
+              style={{ backgroundColor: "#121051" }}
+            >
+              Unlink
             </Button>
           </div>
         </DialogContent>
