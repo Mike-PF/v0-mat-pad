@@ -24,6 +24,7 @@ import { EyfsGoalsByPupilGroupReport } from "@/components/eyfs-goals-by-pupilgro
 
 // Report categories with reports and descriptions
 // isSystem: true = MATpad system report, false/undefined = custom user-built report
+// status: 'active' | 'no-access' | 'upgrade-required' - controls report availability
 const reportCategories = [
   {
     id: "attendance",
@@ -70,13 +71,15 @@ const reportCategories = [
         id: "school-comparisons",
         name: "School Comparisons",
         description: "Benchmark attendance performance across all schools in your MAT using standardised metrics. Identify schools outperforming expectations and those requiring additional support, enabling targeted resource allocation and sharing of best practice across the trust.",
-        isSystem: true
+        isSystem: true,
+        status: "no-access"
       },
       {
         id: "attendance-heatmap",
         name: "Attendance Heatmap",
         description: "Visual representation of attendance patterns across days of the week and times of year. Quickly identify problematic patterns such as Monday absences or post-holiday dips. Interactive filters allow analysis by school, year group, and pupil characteristics.",
-        isSystem: true
+        isSystem: true,
+        status: "upgrade-required"
       },
       {
         id: "absence-codes",
@@ -304,6 +307,7 @@ const reportCategories = [
         id: "staffing-costs",
         name: "Staffing Cost Analysis",
         description: "Breakdown of staffing expenditure as a proportion of total budget with benchmarking against similar MATs. Analyse the balance between teaching and non-teaching staff costs and identify schools with unsustainable staffing structures requiring intervention.",
+        status: "upgrade-required",
         isSystem: true
       },
       {
@@ -424,7 +428,7 @@ export function ReportsContent() {
             </Button>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-white">{selectedReportData?.name}</h2>
-              <span className="text-white/50">•</span>
+              <span className="text-white/50">���</span>
               <p className="text-sm text-white/70">{selectedCategory?.name}</p>
             </div>
           </div>
@@ -606,49 +610,73 @@ export function ReportsContent() {
                     {category.reports.map((report) => {
                       const isFavourite = favourites.includes(report.id)
                       const isSystem = 'isSystem' in report && report.isSystem
+                      const status = 'status' in report ? report.status : 'active'
+                      const isInactive = status === 'no-access' || status === 'upgrade-required'
                       return (
-                        <button
+                        <div
                           key={report.id}
-                          onClick={() => handleReportSelect(report.id)}
-                          className="text-left p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all bg-white group relative"
+                          className={`text-left p-4 rounded-lg border transition-all relative ${
+                            isInactive 
+                              ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed" 
+                              : "border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white cursor-pointer group"
+                          }`}
+                          onClick={() => !isInactive && handleReportSelect(report.id)}
                         >
                           <div className="flex items-start gap-3">
                             <div
-                              className="w-2 h-2 rounded-full mt-2 shrink-0"
+                              className={`w-2 h-2 rounded-full mt-2 shrink-0 ${isInactive ? "opacity-50" : ""}`}
                               style={{ backgroundColor: category.color }}
                             />
                             <div className="flex-1 min-w-0 pr-6">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-medium text-slate-900 group-hover:text-[#121051] transition-colors line-clamp-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <h3 className={`font-medium transition-colors line-clamp-1 ${
+                                  isInactive ? "text-slate-400" : "text-slate-900 group-hover:text-[#121051]"
+                                }`}>
                                   {report.name}
                                 </h3>
                                 {isSystem ? (
-                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#121051]/10 text-[#121051]">
+                                  <span className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                    isInactive ? "bg-slate-200 text-slate-400" : "bg-[#121051]/10 text-[#121051]"
+                                  }`}>
                                     System
                                   </span>
                                 ) : (
-                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-100 text-pink-700">
+                                  <span className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                    isInactive ? "bg-slate-200 text-slate-400" : "bg-pink-100 text-pink-700"
+                                  }`}>
                                     Custom
                                   </span>
                                 )}
+                                {status === 'no-access' && (
+                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-300 text-slate-600">
+                                    No Access
+                                  </span>
+                                )}
+                                {status === 'upgrade-required' && (
+                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700">
+                                    Upgrade Required
+                                  </span>
+                                )}
                               </div>
-                              <p className="text-sm text-slate-500 mt-1 line-clamp-3">
+                              <p className={`text-sm mt-1 line-clamp-3 ${isInactive ? "text-slate-400" : "text-slate-500"}`}>
                                 {report.description}
                               </p>
                             </div>
                           </div>
-                          <button
-                            onClick={(e) => toggleFavourite(e, report.id)}
-                            className={`absolute top-3 right-3 transition-colors ${
-                              isFavourite
-                                ? "text-amber-400 hover:text-amber-500"
-                                : "text-slate-200 hover:text-amber-300 opacity-0 group-hover:opacity-100"
-                            }`}
-                            aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
-                          >
-                            <Star className={`w-4 h-4 ${isFavourite ? "fill-amber-400" : ""}`} />
-                          </button>
-                        </button>
+                          {!isInactive && (
+                            <button
+                              onClick={(e) => toggleFavourite(e, report.id)}
+                              className={`absolute top-3 right-3 transition-colors ${
+                                isFavourite
+                                  ? "text-amber-400 hover:text-amber-500"
+                                  : "text-slate-200 hover:text-amber-300 opacity-0 group-hover:opacity-100"
+                              }`}
+                              aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
+                            >
+                              <Star className={`w-4 h-4 ${isFavourite ? "fill-amber-400" : ""}`} />
+                            </button>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
