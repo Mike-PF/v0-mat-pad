@@ -86,6 +86,19 @@ export function Sidebar({}: SidebarProps) {
       {/* Bottom section */}
       <div className="p-2 pb-4 space-y-1 border-t border-white/10">
 
+        {/* Logged in user */}
+        <div
+          className="w-full flex items-center justify-center h-11"
+          title="Gareth Hutchings"
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold tracking-wide select-none border-2"
+            style={{ backgroundColor: ACCENT, borderColor: ACCENT }}
+          >
+            GH
+          </div>
+        </div>
+
         {/* Account Switcher */}
         <div className="relative">
           <button
