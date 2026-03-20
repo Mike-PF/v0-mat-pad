@@ -58,10 +58,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
               {/* Icon */}
               <div
                 className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all",
-                  active
-                    ? "text-white"
-                    : "text-white/50 group-hover:text-white"
+                  "flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all text-white"
                 )}
                 style={active ? { backgroundColor: "hsl(314 100% 35%)" } : undefined}
                 onMouseEnter={(e) => {
