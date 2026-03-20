@@ -51,7 +51,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
               {active && (
                 <span
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full"
-                  style={{ backgroundColor: "hsl(314 100% 55%)" }}
+                  style={{ backgroundColor: "hsl(314 100% 35%)" }}
                 />
               )}
 
