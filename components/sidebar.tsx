@@ -51,7 +51,7 @@ export function Sidebar({}: SidebarProps) {
 
   return (
     <div
-      className="flex flex-col relative w-56"
+      className="flex flex-col relative w-[60px]"
       style={{ backgroundColor: "#121051" }}
     >
       {/* Nav Items */}
@@ -64,9 +64,7 @@ export function Sidebar({}: SidebarProps) {
               key={item.label}
               href={item.href}
               title={item.label}
-            className={cn(
-              "flex items-center gap-1 rounded-lg h-11 transition-all duration-150 group relative overflow-hidden px-1",
-            )}
+              className="flex items-center justify-center rounded-lg h-11 transition-all duration-150 group relative overflow-hidden"
               style={active ? { backgroundColor: "hsl(314 100% 35% / 0.18)" } : undefined}
             >
               {/* Active indicator bar */}
@@ -80,16 +78,6 @@ export function Sidebar({}: SidebarProps) {
               <IconCircle active={active}>
                 <Icon className="w-5 h-5" />
               </IconCircle>
-
-              {/* Label */}
-              <span
-                className={cn(
-                  "text-sm font-medium whitespace-nowrap transition-colors ml-2",
-                  active ? "text-white" : "text-white/60 group-hover:text-white/90"
-                )}
-              >
-                {item.label}
-              </span>
             </a>
           )
         })}
@@ -102,25 +90,19 @@ export function Sidebar({}: SidebarProps) {
         <div className="relative">
           <button
             onClick={() => setSwitcherOpen((o) => !o)}
-            className="w-full flex items-center rounded-lg h-11 transition-colors group px-1 gap-1"
+            className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
+            title="Switch school account"
             aria-label="Switch school account"
           >
             <IconCircle>
               <ArrowLeftRight className="w-5 h-5" />
             </IconCircle>
-            {/* School details */}
-            <div className="flex flex-col items-start ml-2 min-w-0">
-              <span className="text-[10px] text-white/40 leading-none">School account</span>
-              <span className="text-sm font-medium text-white/80 group-hover:text-white truncate max-w-[110px] leading-tight mt-0.5">
-                {activeSchool.abbr}
-              </span>
-            </div>
           </button>
 
           {/* Dropdown */}
           {switcherOpen && (
             <div
-              className="absolute bottom-full mb-2 left-0 right-0 rounded-lg overflow-hidden shadow-xl border border-white/10 z-50"
+              className="absolute bottom-full mb-2 -left-2 rounded-lg overflow-hidden shadow-xl border border-white/10 z-50 min-w-max"
               style={{ backgroundColor: "#0e0c3e" }}
             >
               {schools.map((school) => (
@@ -130,7 +112,7 @@ export function Sidebar({}: SidebarProps) {
                     setActiveSchool(school)
                     setSwitcherOpen(false)
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-white/8 transition-colors group"
+                  className="flex items-center gap-2 px-3 py-2.5 text-left hover:bg-white/8 transition-colors group whitespace-nowrap"
                 >
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-white text-[10px] font-bold"
@@ -138,7 +120,7 @@ export function Sidebar({}: SidebarProps) {
                   >
                     {school.abbr.charAt(0)}
                   </div>
-                  <span className="text-xs text-white/70 group-hover:text-white truncate flex-1">
+                  <span className="text-xs text-white/70 group-hover:text-white">
                     {school.name}
                   </span>
                   {activeSchool.id === school.id && (
@@ -153,15 +135,13 @@ export function Sidebar({}: SidebarProps) {
         {/* Logout */}
         <button
           onClick={() => {}}
-          className="w-full flex items-center rounded-lg h-11 transition-colors group px-1 gap-1"
+          className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
+          title="Logout"
           aria-label="Logout"
         >
           <IconCircle>
             <LogOut className="w-5 h-5" />
           </IconCircle>
-          <span className="text-sm font-medium text-white/60 group-hover:text-white transition-colors ml-2">
-            Logout
-          </span>
         </button>
       </div>
     </div>
