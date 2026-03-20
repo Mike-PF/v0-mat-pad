@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Settings, ClipboardList, FileBarChart, LogOut, ArrowLeftRight, Check } from "lucide-react"
+import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -44,7 +44,7 @@ export function Sidebar({}: SidebarProps) {
     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
-    { icon: FileBarChart, label: "Reports", href: "/reports" },
+    { icon: BarChart3, label: "Reports", href: "/reports" },
   ]
 
   const isActive = (href: string) => pathname.startsWith(href)
@@ -64,19 +64,19 @@ export function Sidebar({}: SidebarProps) {
               key={item.label}
               href={item.href}
               title={item.label}
-              className="flex items-center justify-center rounded-lg h-11 transition-all duration-150 group relative overflow-hidden"
-              style={active ? { backgroundColor: "hsl(314 100% 35% / 0.18)" } : undefined}
+              className="flex items-center justify-center rounded-lg h-11 transition-all duration-150 group relative overflow-hidden hover:bg-white/8"
+              style={active ? { backgroundColor: ACCENT } : undefined}
             >
               {/* Active indicator bar */}
               {active && (
                 <span
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full"
-                  style={{ backgroundColor: ACCENT }}
+                  style={{ backgroundColor: "#fff" }}
                 />
               )}
 
               <IconCircle active={active}>
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" style={{ color: active ? "#121051" : "#fff" }} />
               </IconCircle>
             </a>
           )
