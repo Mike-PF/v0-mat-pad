@@ -1,6 +1,6 @@
 "use client"
 
-import { Upload, Settings, ClipboardList, FileBarChart, Menu } from "lucide-react"
+import { Upload, Settings, ClipboardList, FileBarChart, ChevronLeft, ChevronRight } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -19,48 +19,91 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
     { icon: FileBarChart, label: "Reports", href: "/reports" },
   ]
 
-  const isActive = (href: string) => {
-    return pathname.startsWith(href)
-  }
+  const isActive = (href: string) => pathname.startsWith(href)
 
   return (
-    <div className={cn("bg-slate-600 transition-all duration-300 flex flex-col", expanded ? "w-64" : "w-16")}>
-      {/* Menu Toggle */}
-      <div className="h-16 flex items-center justify-end px-4">
-        <button onClick={onToggle} className="text-slate-50 hover:bg-slate-500 p-2 rounded-lg transition-colors">
-          <Menu className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Menu Items */}
-      <nav className="flex-1 px-2">
+    <div
+      className={cn(
+        "flex flex-col transition-all duration-300 ease-in-out relative",
+        expanded ? "w-56" : "w-[60px]"
+      )}
+      style={{ backgroundColor: "#121051" }}
+    >
+      {/* Nav Items */}
+      <nav className="flex-1 pt-4 px-2 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
           return (
-            <div key={item.label} className="mb-2">
-              <a
-                href={item.href}
+            <a
+              key={item.label}
+              href={item.href}
+              title={!expanded ? item.label : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-lg h-11 transition-all duration-150 group relative overflow-hidden",
+                expanded ? "px-3" : "justify-center px-0",
+                active
+                  ? "bg-white/10"
+                  : "hover:bg-white/8"
+              )}
+            >
+              {/* Active indicator bar */}
+              {active && (
+                <span
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full"
+                  style={{ backgroundColor: "hsl(314 100% 55%)" }}
+                />
+              )}
+
+              {/* Icon */}
+              <div
                 className={cn(
-                  "flex items-center rounded-lg h-10 transition-colors group",
-                  active ? "bg-slate-500" : "hover:bg-slate-500",
-                  expanded ? "px-3" : "justify-center",
+                  "flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-colors",
+                  active
+                    ? "text-white"
+                    : "text-white/50 group-hover:text-white/80"
                 )}
+                style={active ? { backgroundColor: "hsl(314 100% 35%)" } : undefined}
               >
-                <div
+                <Icon className="w-4 h-4" />
+              </div>
+
+              {/* Label */}
+              {expanded && (
+                <span
                   className={cn(
-                    "flex items-center justify-center rounded-lg min-h-6 w-6 border border-slate-400",
-                    active ? "bg-white" : "bg-slate-200 group-hover:bg-white",
+                    "text-sm font-medium whitespace-nowrap transition-colors",
+                    active ? "text-white" : "text-white/60 group-hover:text-white/90"
                   )}
                 >
-                  <Icon className="w-4 h-4 text-slate-700" />
-                </div>
-                {expanded && <span className="ml-3 text-white font-medium">{item.label}</span>}
-              </a>
-            </div>
+                  {item.label}
+                </span>
+              )}
+            </a>
           )
         })}
       </nav>
+
+      {/* Collapse toggle at bottom */}
+      <div className="p-2 pb-4">
+        <button
+          onClick={onToggle}
+          className={cn(
+            "w-full flex items-center rounded-lg h-9 transition-colors text-white/40 hover:text-white/80 hover:bg-white/8",
+            expanded ? "px-3 gap-3" : "justify-center"
+          )}
+          aria-label={expanded ? "Collapse menu" : "Expand menu"}
+        >
+          {expanded ? (
+            <>
+              <ChevronLeft className="w-4 h-4 shrink-0" />
+              <span className="text-sm font-medium">Collapse</span>
+            </>
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+        </button>
+      </div>
     </div>
   )
 }
