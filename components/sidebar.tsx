@@ -1,6 +1,6 @@
 "use client"
 
-import { Upload, Settings, ClipboardList, FileBarChart, ChevronLeft, ChevronRight } from "lucide-react"
+import { Upload, Settings, ClipboardList, FileBarChart, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -91,8 +91,38 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
         })}
       </nav>
 
-      {/* Collapse toggle at bottom */}
-      <div className="p-2 pb-4">
+      {/* Bottom section with logout and collapse */}
+      <div className="p-2 pb-4 space-y-1 border-t border-white/10">
+        <button
+          onClick={() => {
+            // TODO: Replace with actual logout logic
+            console.log("Logout clicked")
+          }}
+          className={cn(
+            "w-full flex items-center rounded-lg h-9 transition-colors text-white/50 hover:text-white group",
+            expanded ? "px-3 gap-3" : "justify-center"
+          )}
+          title={!expanded ? "Logout" : undefined}
+          aria-label="Logout"
+        >
+          <div
+            className="flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all text-white"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "hsl(314 100% 35%)"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent"
+            }}
+          >
+            <LogOut className="w-5 h-5" />
+          </div>
+          {expanded && (
+            <span className="text-sm font-medium group-hover:text-white transition-colors">
+              Logout
+            </span>
+          )}
+        </button>
+
         <button
           onClick={onToggle}
           className={cn(
