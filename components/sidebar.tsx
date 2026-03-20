@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Settings, ClipboardList, FileBarChart, ChevronLeft, ChevronRight, LogOut, ArrowLeftRight, Check } from "lucide-react"
+import { Upload, Settings, ClipboardList, FileBarChart, LogOut, ArrowLeftRight, Check } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -13,10 +13,7 @@ const schools = [
   { id: "3", name: "Notre Dame High School", abbr: "NDHS" },
 ]
 
-interface SidebarProps {
-  expanded: boolean
-  onToggle: () => void
-}
+interface SidebarProps {}
 
 function IconCircle({
   active,
@@ -38,7 +35,7 @@ function IconCircle({
   )
 }
 
-export function Sidebar({ expanded, onToggle }: SidebarProps) {
+export function Sidebar({}: SidebarProps) {
   const pathname = usePathname()
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [activeSchool, setActiveSchool] = useState(schools[0])
@@ -54,10 +51,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
 
   return (
     <div
-      className={cn(
-        "flex flex-col transition-all duration-300 ease-in-out relative",
-        expanded ? "w-56" : "w-[60px]"
-      )}
+      className="flex flex-col relative w-56"
       style={{ backgroundColor: "#121051" }}
     >
       {/* Nav Items */}
@@ -69,11 +63,10 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
             <a
               key={item.label}
               href={item.href}
-              title={!expanded ? item.label : undefined}
-              className={cn(
-                "flex items-center gap-1 rounded-lg h-11 transition-all duration-150 group relative overflow-hidden",
-                expanded ? "px-1" : "justify-center px-0",
-              )}
+              title={item.label}
+            className={cn(
+              "flex items-center gap-1 rounded-lg h-11 transition-all duration-150 group relative overflow-hidden px-1",
+            )}
               style={active ? { backgroundColor: "hsl(314 100% 35% / 0.18)" } : undefined}
             >
               {/* Active indicator bar */}
@@ -89,16 +82,14 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
               </IconCircle>
 
               {/* Label */}
-              {expanded && (
-                <span
-                  className={cn(
-                    "text-sm font-medium whitespace-nowrap transition-colors ml-2",
-                    active ? "text-white" : "text-white/60 group-hover:text-white/90"
-                  )}
-                >
-                  {item.label}
-                </span>
-              )}
+              <span
+                className={cn(
+                  "text-sm font-medium whitespace-nowrap transition-colors ml-2",
+                  active ? "text-white" : "text-white/60 group-hover:text-white/90"
+                )}
+              >
+                {item.label}
+              </span>
             </a>
           )
         })}
@@ -111,24 +102,19 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
         <div className="relative">
           <button
             onClick={() => setSwitcherOpen((o) => !o)}
-            className={cn(
-              "w-full flex items-center rounded-lg h-11 transition-colors group",
-              expanded ? "px-1 gap-1" : "justify-center"
-            )}
-            title={!expanded ? `Switch school (${activeSchool.abbr})` : undefined}
+            className="w-full flex items-center rounded-lg h-11 transition-colors group px-1 gap-1"
             aria-label="Switch school account"
           >
             <IconCircle>
               <ArrowLeftRight className="w-5 h-5" />
             </IconCircle>
-            {expanded && (
-              <div className="flex flex-col items-start ml-2 min-w-0">
-                <span className="text-[10px] text-white/40 leading-none">School account</span>
-                <span className="text-sm font-medium text-white/80 group-hover:text-white truncate max-w-[110px] leading-tight mt-0.5">
-                  {activeSchool.abbr}
-                </span>
-              </div>
-            )}
+            {/* School details */}
+            <div className="flex flex-col items-start ml-2 min-w-0">
+              <span className="text-[10px] text-white/40 leading-none">School account</span>
+              <span className="text-sm font-medium text-white/80 group-hover:text-white truncate max-w-[110px] leading-tight mt-0.5">
+                {activeSchool.abbr}
+              </span>
+            </div>
           </button>
 
           {/* Dropdown */}
@@ -153,7 +139,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
                     {school.abbr.charAt(0)}
                   </div>
                   <span className="text-xs text-white/70 group-hover:text-white truncate flex-1">
-                    {expanded ? school.name : school.abbr}
+                    {school.name}
                   </span>
                   {activeSchool.id === school.id && (
                     <Check className="w-3.5 h-3.5 shrink-0" style={{ color: ACCENT }} />
@@ -167,40 +153,15 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
         {/* Logout */}
         <button
           onClick={() => {}}
-          className={cn(
-            "w-full flex items-center rounded-lg h-11 transition-colors group",
-            expanded ? "px-1 gap-1" : "justify-center"
-          )}
-          title={!expanded ? "Logout" : undefined}
+          className="w-full flex items-center rounded-lg h-11 transition-colors group px-1 gap-1"
           aria-label="Logout"
         >
           <IconCircle>
             <LogOut className="w-5 h-5" />
           </IconCircle>
-          {expanded && (
-            <span className="text-sm font-medium text-white/60 group-hover:text-white transition-colors ml-2">
-              Logout
-            </span>
-          )}
-        </button>
-
-        {/* Collapse toggle */}
-        <button
-          onClick={onToggle}
-          className={cn(
-            "w-full flex items-center rounded-lg h-9 transition-colors text-white/30 hover:text-white/70",
-            expanded ? "px-3 gap-3" : "justify-center"
-          )}
-          aria-label={expanded ? "Collapse menu" : "Expand menu"}
-        >
-          {expanded ? (
-            <>
-              <ChevronLeft className="w-4 h-4 shrink-0" />
-              <span className="text-sm font-medium">Collapse</span>
-            </>
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
+          <span className="text-sm font-medium text-white/60 group-hover:text-white transition-colors ml-2">
+            Logout
+          </span>
         </button>
       </div>
     </div>
