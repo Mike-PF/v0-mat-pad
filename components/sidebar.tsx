@@ -26,7 +26,7 @@ function IconCircle({
   return (
     <div
       className="flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all text-white"
-      style={{ backgroundColor: active || hovered ? ACCENT : "transparent" }}
+      style={{ backgroundColor: active || (hovered && !active) ? ACCENT : "transparent" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
