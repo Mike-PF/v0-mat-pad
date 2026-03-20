@@ -58,14 +58,24 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
               {/* Icon */}
               <div
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-colors",
+                  "flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all",
                   active
                     ? "text-white"
-                    : "text-white/50 group-hover:text-white/80"
+                    : "text-white/50 group-hover:text-white"
                 )}
                 style={active ? { backgroundColor: "hsl(314 100% 35%)" } : undefined}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = "hsl(314 100% 35%)"
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = "transparent"
+                  }
+                }}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-5 h-5" />
               </div>
 
               {/* Label */}
