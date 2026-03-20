@@ -76,7 +76,7 @@ export function Sidebar({}: SidebarProps) {
               )}
 
               <IconCircle active={active}>
-                <Icon className="w-5 h-5" style={{ color: active ? "#121051" : "#fff" }} />
+                <Icon className="w-5 h-5" style={{ color: "#fff" }} />
               </IconCircle>
             </a>
           )
