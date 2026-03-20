@@ -1,16 +1,14 @@
 "use client"
 
-import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { ReportsContent } from "@/components/reports-content"
+import { AIChatPopup } from "@/components/ai-chat-popup"
 
 export default function ReportsPage() {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
-
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+      <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="p-4">
@@ -21,6 +19,8 @@ export default function ReportsPage() {
           <ReportsContent />
         </div>
       </div>
+
+      <AIChatPopup />
     </div>
   )
 }
