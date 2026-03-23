@@ -72,7 +72,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {!isSettingsPage && !isReportsPage && (
+        {!isSettingsPage && !isReportsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">
