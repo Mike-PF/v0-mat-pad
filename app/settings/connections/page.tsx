@@ -297,7 +297,7 @@ const systems = [
 const subscriptionTierAccess = {
   essentials: ["arbor", "bromcom"],
   insight: ["arbor", "bromcom", "cpoms", "sampeople"],
-  enterprise: ["arbor", "bromcom", "cpoms", "sampeople", "weareevery", "sisra", "wonde"], // All connectors for enterprise
+  enterprise: ["arbor", "bromcom", "cpoms", "sampeople", "weareevery", "sisra", "wonde", "evolve", "safesmart"],
 }
 
 export default function ConnectionsPage() {
