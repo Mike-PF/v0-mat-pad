@@ -337,7 +337,6 @@ export default function ProfilePage() {
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
                   <Button
-                    variant="destructive"
                     onClick={() => deleteTarget && handleDeleteSSO(deleteTarget)}
                   >
                     Remove
