@@ -3,7 +3,6 @@
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { ReportsContent } from "@/components/reports-content"
-import { AIChatPopup } from "@/components/ai-chat-popup"
 
 export default function ReportsPage() {
   return (
@@ -19,8 +18,6 @@ export default function ReportsPage() {
           <ReportsContent />
         </div>
       </div>
-
-      <AIChatPopup />
     </div>
   )
 }
