@@ -227,6 +227,7 @@ export default function OrganisationPage() {
   const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise" | null>(null)
   const [addons, setAddons] = useState<{ reportBuilder: boolean }>({ reportBuilder: false })
   const [reportBuilderUsers, setReportBuilderUsers] = useState(2)
+  const [subscriptionSaved, setSubscriptionSaved] = useState(false)
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
   const [newOrgName, setNewOrgName] = useState("")
@@ -808,18 +809,16 @@ export default function OrganisationPage() {
                 >
                   Branding
                 </button>
-                {addons.reportBuilder && (
-                  <button
-                    onClick={() => setSettingsTab("powerbi")}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                      settingsTab === "powerbi"
-                        ? "border-[#121051] text-[#121051]"
-                        : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                    }`}
-                  >
-                    Power BI
-                  </button>
-                )}
+                <button
+                  onClick={() => setSettingsTab("powerbi")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    settingsTab === "powerbi"
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  Power BI
+                </button>
               </div>
             )}
 
@@ -978,11 +977,17 @@ export default function OrganisationPage() {
                       </div>
 
                       {(activeSubscription || addons.reportBuilder) && (
-                        <div className="flex justify-end pt-2">
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                          {subscriptionSaved && (
+                            <span className="text-sm text-green-600 font-medium">Subscription saved successfully</span>
+                          )}
                           <Button
                             className="text-white"
                             style={{ backgroundColor: "#121051" }}
-                            onClick={() => {}}
+                            onClick={() => {
+                              setSubscriptionSaved(true)
+                              setTimeout(() => setSubscriptionSaved(false), 3000)
+                            }}
                           >
                             Save Subscription
                           </Button>
@@ -1309,7 +1314,27 @@ export default function OrganisationPage() {
                   {/* Power BI Tab */}
                   {settingsTab === "powerbi" && (
                     <div className="space-y-6">
-                      {!powerBiActivated ? (
+                      {!addons.reportBuilder ? (
+                        /* Report Builder Add-on Required */
+                        <div className="flex flex-col items-center justify-center py-16">
+                          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-medium text-slate-900 mb-2">Report Builder Required</h3>
+                          <p className="text-sm text-slate-500 text-center max-w-md mb-6">
+                            Power BI integration requires the Report Builder add-on. Enable it in your subscription to unlock custom report building and advanced visualisations.
+                          </p>
+                          <Button 
+                            onClick={() => setSettingsTab("subscription")}
+                            className="text-white"
+                            style={{ backgroundColor: "#121051" }}
+                          >
+                            View Subscription Options
+                          </Button>
+                        </div>
+                      ) : !powerBiActivated ? (
                         /* Not Activated State */
                         <div className="flex flex-col items-center justify-center py-16">
                           <h3 className="text-lg font-medium text-slate-900 mb-3">Power BI Integration</h3>
