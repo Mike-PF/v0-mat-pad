@@ -31,6 +31,12 @@ export function TopNavigation() {
       ]
     }
 
+    if (pathname.startsWith("/profile")) {
+      return [
+        { id: "profile", label: "Profile", href: "/profile" },
+      ]
+    }
+
     // Default tabs for forms and other pages
     return [
       { id: "dashboard", label: "Dashboard", href: "/forms" },
@@ -50,7 +56,8 @@ export function TopNavigation() {
           const isActive =
             pathname === tab.href ||
             (tab.href === "/settings/organisation" && pathname === "/settings") ||
-            (tab.href === "/reports" && pathname === "/reports")
+            (tab.href === "/reports" && pathname === "/reports") ||
+            (tab.href === "/profile" && pathname.startsWith("/profile"))
 
           return (
             <a
