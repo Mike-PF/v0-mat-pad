@@ -23,7 +23,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { 
-  Building2,
   Shield,
   Star,
   Trash2,
@@ -345,7 +344,6 @@ export default function ProfilePage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Building2 className="w-5 h-5 text-slate-400" />
                   <h2 className="text-lg font-semibold text-slate-900">Organisations</h2>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">
