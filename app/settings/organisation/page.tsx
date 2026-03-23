@@ -223,7 +223,8 @@ export default function OrganisationPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
-  const [settingsTab, setSettingsTab] = useState<"basic" | "branding" | "powerbi">("basic")
+  const [settingsTab, setSettingsTab] = useState<"subscription" | "basic" | "branding" | "powerbi">("subscription")
+  const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise" | null>(null)
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
   const [newOrgName, setNewOrgName] = useState("")
@@ -776,6 +777,16 @@ export default function OrganisationPage() {
             {selectedData && (
               <div className="px-4 flex border-b">
                 <button
+                  onClick={() => setSettingsTab("subscription")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    settingsTab === "subscription"
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  Subscription
+                </button>
+                <button
                   onClick={() => setSettingsTab("basic")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     settingsTab === "basic"
@@ -811,6 +822,105 @@ export default function OrganisationPage() {
             {/* Content */}
             <CardContent className="flex-1 overflow-auto p-6">
                 <div className="max-w-3xl">
+                  {/* Subscription Tab */}
+                  {settingsTab === "subscription" && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-900 mb-1">Subscription Plan</h3>
+                        <p className="text-sm text-slate-500 mb-6">Select the subscription tier for {selectedData?.name}.</p>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        {/* Essentials */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSubscription("essentials")}
+                          className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
+                            activeSubscription === "essentials"
+                              ? "border-[#121051] bg-[#121051]/5"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          {activeSubscription === "essentials" && (
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                          )}
+                          <span className="text-base font-semibold text-slate-900 mb-1">Essentials</span>
+                          <span className="text-xs text-slate-500 leading-relaxed">Core data management and reporting tools for smaller organisations.</span>
+                          <ul className="mt-4 space-y-1.5">
+                            {["Data uploads", "Standard reports", "Single organisation"].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+
+                        {/* Insight */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSubscription("insight")}
+                          className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
+                            activeSubscription === "insight"
+                              ? "border-[#121051] bg-[#121051]/5"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          {activeSubscription === "insight" && (
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                          )}
+                          <span className="text-base font-semibold text-slate-900 mb-1">Insight</span>
+                          <span className="text-xs text-slate-500 leading-relaxed">Advanced analytics and Power BI integration for growing trusts.</span>
+                          <ul className="mt-4 space-y-1.5">
+                            {["Everything in Essentials", "Power BI integration", "Multi-school reporting", "Advanced analytics"].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+
+                        {/* Enterprise */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSubscription("enterprise")}
+                          className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
+                            activeSubscription === "enterprise"
+                              ? "border-[#121051] bg-[#121051]/5"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          {activeSubscription === "enterprise" && (
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                          )}
+                          <span className="text-base font-semibold text-slate-900 mb-1">Enterprise</span>
+                          <span className="text-xs text-slate-500 leading-relaxed">Full platform access with dedicated support for large MATs.</span>
+                          <ul className="mt-4 space-y-1.5">
+                            {["Everything in Insight", "Dedicated support", "Custom integrations", "Unlimited users", "SLA guarantee"].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+                      </div>
+
+                      {activeSubscription && (
+                        <div className="flex justify-end pt-2">
+                          <Button
+                            className="text-white"
+                            style={{ backgroundColor: "#121051" }}
+                            onClick={() => {}}
+                          >
+                            Save Subscription
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Basic Information Tab */}
                   {settingsTab === "basic" && (
                     <div className="space-y-6">
