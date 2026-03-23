@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { X, Pencil, Lock } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
@@ -302,8 +302,16 @@ const subscriptionTierAccess = {
 
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [activeSubscription] = useState<"essentials" | "insight" | "enterprise">("essentials") // synced from organisation settings
+  const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise">("essentials")
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
+
+  // Load subscription from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("organisationSubscription")
+    if (saved === "essentials" || saved === "insight" || saved === "enterprise") {
+      setActiveSubscription(saved)
+    }
+  }, [])
   const [connections, setConnections] = useState(schoolConnections)
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
   const [credentials, setCredentials] = useState(credentialsConnections)
