@@ -203,9 +203,7 @@ export default function ProfilePage() {
                   <Button
                     size="sm"
                     onClick={() => setShowAddSSO(true)}
-                    className="flex items-center gap-1.5"
                   >
-                    <Plus className="w-4 h-4" />
                     Add SSO
                   </Button>
                 </div>
