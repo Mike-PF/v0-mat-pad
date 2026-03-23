@@ -985,8 +985,10 @@ export default function OrganisationPage() {
                             className="text-white"
                             style={{ backgroundColor: "#121051" }}
                             onClick={() => {
+                              console.log("[v0] Saving subscription:", activeSubscription)
                               if (activeSubscription) {
                                 localStorage.setItem("organisationSubscription", activeSubscription)
+                                console.log("[v0] Saved to localStorage:", localStorage.getItem("organisationSubscription"))
                               }
                               localStorage.setItem("reportBuilderEnabled", String(addons.reportBuilder))
                               localStorage.setItem("reportBuilderUsers", String(reportBuilderUsers))

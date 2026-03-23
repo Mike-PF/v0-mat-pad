@@ -308,8 +308,10 @@ export default function ConnectionsPage() {
   // Load subscription from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("organisationSubscription")
+    console.log("[v0] Connections page loaded, subscription from localStorage:", saved)
     if (saved === "essentials" || saved === "insight" || saved === "enterprise") {
       setActiveSubscription(saved)
+      console.log("[v0] Set activeSubscription to:", saved)
     }
   }, [])
   const [connections, setConnections] = useState(schoolConnections)
