@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
@@ -985,13 +985,9 @@ export default function OrganisationPage() {
                             className="text-white"
                             style={{ backgroundColor: "#121051" }}
                             onClick={() => {
-                              console.log("[v0] Saving subscription:", activeSubscription)
                               if (activeSubscription) {
                                 localStorage.setItem("organisationSubscription", activeSubscription)
-                                console.log("[v0] Saved to localStorage:", localStorage.getItem("organisationSubscription"))
                               }
-                              localStorage.setItem("reportBuilderEnabled", String(addons.reportBuilder))
-                              localStorage.setItem("reportBuilderUsers", String(reportBuilderUsers))
                               setSubscriptionSaved(true)
                               setTimeout(() => setSubscriptionSaved(false), 3000)
                             }}

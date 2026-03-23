@@ -305,14 +305,18 @@ export default function ConnectionsPage() {
   const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise">("essentials")
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
 
-  // Load subscription from localStorage on mount
+  // Load subscription from localStorage on mount and when window gets focus
   useEffect(() => {
-    const saved = localStorage.getItem("organisationSubscription")
-    console.log("[v0] Connections page loaded, subscription from localStorage:", saved)
-    if (saved === "essentials" || saved === "insight" || saved === "enterprise") {
-      setActiveSubscription(saved)
-      console.log("[v0] Set activeSubscription to:", saved)
+    const loadSubscription = () => {
+      const saved = localStorage.getItem("organisationSubscription")
+      if (saved === "essentials" || saved === "insight" || saved === "enterprise") {
+        setActiveSubscription(saved)
+      }
     }
+    
+    loadSubscription()
+    window.addEventListener("focus", loadSubscription)
+    return () => window.removeEventListener("focus", loadSubscription)
   }, [])
   const [connections, setConnections] = useState(schoolConnections)
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
