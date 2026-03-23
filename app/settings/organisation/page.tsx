@@ -851,7 +851,7 @@ export default function OrganisationPage() {
                           <span className="text-base font-semibold text-slate-900 mb-1">Essentials</span>
                           <span className="text-xs text-slate-500 leading-relaxed">Core data management and reporting tools for smaller organisations.</span>
                           <ul className="mt-4 space-y-1.5">
-                            {["Data uploads", "Standard reports", "Single organisation"].map(f => (
+                            {["Core dashboards", "Attendance & behaviour", "Key stage performance", "Standard reporting", "Baseline benchmarking"].map(f => (
                               <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
                                 {f}
@@ -876,7 +876,7 @@ export default function OrganisationPage() {
                           <span className="text-base font-semibold text-slate-900 mb-1">Insight</span>
                           <span className="text-xs text-slate-500 leading-relaxed">Advanced analytics and Power BI integration for growing trusts.</span>
                           <ul className="mt-4 space-y-1.5">
-                            {["Everything in Essentials", "Power BI integration", "Multi-school reporting", "Advanced analytics"].map(f => (
+                            {["Everything in Essentials", "Full reporting suite", "Cross-school benchmarking", "MAT-level visibility"].map(f => (
                               <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
                                 {f}
@@ -901,7 +901,7 @@ export default function OrganisationPage() {
                           <span className="text-base font-semibold text-slate-900 mb-1">Enterprise</span>
                           <span className="text-xs text-slate-500 leading-relaxed">Full platform access with dedicated support for large MATs.</span>
                           <ul className="mt-4 space-y-1.5">
-                            {["Everything in Insight", "Dedicated support", "Custom integrations", "Unlimited users", "SLA guarantee"].map(f => (
+                            {["Everything in Insight", "MAT-wide dashboards", "Advanced analytics", "Enhanced integrations"].map(f => (
                               <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
                                 {f}
