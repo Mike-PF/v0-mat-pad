@@ -43,7 +43,7 @@ export function Sidebar({}: SidebarProps) {
   const menuItems = [
     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: Settings, label: "Settings", href: "/settings" },
-    { icon: Cable, label: "Connections", href: "/connections" },
+    { icon: Cable, label: "Connections", href: "/settings/connections" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: BarChart3, label: "Reports", href: "/reports" },
   ]
