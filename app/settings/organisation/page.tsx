@@ -226,6 +226,7 @@ export default function OrganisationPage() {
   const [settingsTab, setSettingsTab] = useState<"subscription" | "basic" | "branding" | "powerbi">("subscription")
   const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise" | null>(null)
   const [addons, setAddons] = useState<{ reportBuilder: boolean }>({ reportBuilder: false })
+  const [reportBuilderUsers, setReportBuilderUsers] = useState(2)
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
   const [newOrgName, setNewOrgName] = useState("")
@@ -917,25 +918,61 @@ export default function OrganisationPage() {
 
                         <div className="space-y-3">
                           <div
-                            onClick={() => setAddons(prev => ({ ...prev, reportBuilder: !prev.reportBuilder }))}
-                            className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            className={`rounded-lg border-2 transition-all ${
                               addons.reportBuilder
                                 ? "border-[#121051] bg-[#121051]/5"
                                 : "border-slate-200 bg-white hover:border-slate-300"
                             }`}
                           >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-slate-900">Report Builder</span>
-                                {addons.reportBuilder && (
-                                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Enabled</span>
+                            <div
+                              onClick={() => setAddons(prev => ({ ...prev, reportBuilder: !prev.reportBuilder }))}
+                              className="flex items-center justify-between p-4 cursor-pointer"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-slate-900">Report Builder</span>
+                                  {addons.reportBuilder && (
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Enabled</span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 mt-0.5">Enables the Power BI tab for custom report building and advanced visualisations.</p>
+                              </div>
+                              <div className={`w-10 h-6 rounded-full p-0.5 transition-colors ${addons.reportBuilder ? "bg-[#121051]" : "bg-slate-300"}`}>
+                                <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${addons.reportBuilder ? "translate-x-4" : "translate-x-0"}`} />
+                              </div>
+                            </div>
+
+                            {addons.reportBuilder && (
+                              <div className="px-4 pb-4 pt-0 border-t border-slate-200/50">
+                                <div className="flex items-center justify-between mt-3">
+                                  <div>
+                                    <span className="text-xs font-medium text-slate-700">Users</span>
+                                    <p className="text-xs text-slate-500">2 users included. Purchase additional users as needed.</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setReportBuilderUsers(Math.max(2, reportBuilderUsers - 1)) }}
+                                      className="w-7 h-7 flex items-center justify-center rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      disabled={reportBuilderUsers <= 2}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="w-8 text-center text-sm font-medium text-slate-900">{reportBuilderUsers}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setReportBuilderUsers(reportBuilderUsers + 1) }}
+                                      className="w-7 h-7 flex items-center justify-center rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                                {reportBuilderUsers > 2 && (
+                                  <p className="text-xs text-slate-500 mt-2 text-right">{reportBuilderUsers - 2} additional user{reportBuilderUsers > 3 ? "s" : ""} selected</p>
                                 )}
                               </div>
-                              <p className="text-xs text-slate-500 mt-0.5">Enables the Power BI tab for custom report building and advanced visualisations.</p>
-                            </div>
-                            <div className={`w-10 h-6 rounded-full p-0.5 transition-colors ${addons.reportBuilder ? "bg-[#121051]" : "bg-slate-300"}`}>
-                              <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${addons.reportBuilder ? "translate-x-4" : "translate-x-0"}`} />
-                            </div>
+                            )}
                           </div>
                         </div>
                       </div>
