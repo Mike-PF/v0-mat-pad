@@ -89,13 +89,6 @@ export function TopNavigation() {
         <div className="flex items-center gap-4">
           {/* MATpad Logo */}
           <img src="/matpad-logo.svg" alt="MATpad" className="h-8 w-auto opacity-70 hover:opacity-100 transition-opacity" />
-          
-          {/* GitHub Profile */}
-          <button className="flex items-center p-1.5 hover:bg-slate-50 rounded-lg">
-            <div className="bg-slate-100 rounded-full h-9 w-9 flex items-center justify-center text-sm font-medium text-slate-700">
-              GH
-            </div>
-          </button>
         </div>
       </div>
     </div>
