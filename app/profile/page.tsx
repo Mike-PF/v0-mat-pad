@@ -18,7 +18,6 @@ import {
   Plus,
 } from 'lucide-react'
 import { TopNavigation } from '@/components/top-navigation'
-import { MobileNav } from '@/components/mobile-nav'
 
 const userData = {
   name: 'Gareth Hutchings',
@@ -73,7 +72,6 @@ function getRoleBadgeColor(role: string): string {
 }
 
 export default function ProfilePage() {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [ssoLogins, setSsoLogins] = useState(userData.ssoLogins)
   const [ssoDefaults, setSsoDefaults] = useState<Record<string, string>>(() => {
     const defaults: Record<string, string> = {}
@@ -132,7 +130,6 @@ export default function ProfilePage() {
 
   return (
     <div className="flex h-screen bg-white">
-      <MobileNav isExpanded={sidebarExpanded} setIsExpanded={setSidebarExpanded} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNavigation />
         <main className="flex-1 overflow-auto">
