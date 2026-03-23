@@ -6,11 +6,9 @@ import { TopNavigation } from "@/components/top-navigation"
 import { TermDatesContent } from "@/components/term-dates-content"
 
 export default function TermDatesPage() {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
-
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+      <Sidebar />
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">

@@ -7,7 +7,6 @@ import { FormsReportPanel } from "@/components/forms-report-panel"
 import { QuestionSection } from "@/components/question-section"
 
 export default function FormsPage() {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [selectedForm, setSelectedForm] = useState("")
   const [selectedSchool, setSelectedSchool] = useState("")
   const [selectedTerm, setSelectedTerm] = useState("")
@@ -43,7 +42,7 @@ export default function FormsPage() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+      <Sidebar />
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
