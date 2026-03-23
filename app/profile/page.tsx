@@ -202,7 +202,6 @@ export default function ProfilePage() {
                   </div>
                   <Button
                     size="sm"
-                    variant="outline"
                     onClick={() => setShowAddSSO(true)}
                     className="flex items-center gap-1.5"
                   >
