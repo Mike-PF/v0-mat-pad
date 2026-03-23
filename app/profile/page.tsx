@@ -106,7 +106,7 @@ export default function ProfilePage() {
     return defaults
   })
   const [showAddSSO, setShowAddSSO] = useState(false)
-  const [newSSOProvider, setNewSSOProvider] = useState("")
+  const [newSSOProvider, setNewSSOProvider] = useState<"Microsoft" | "Google" | "">("")
   const [newSSOEmail, setNewSSOEmail] = useState("")
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
@@ -132,11 +132,12 @@ export default function ProfilePage() {
   const handleAddSSO = () => {
     if (!newSSOProvider.trim() || !newSSOEmail.trim()) return
     const newId = `sso-${Date.now()}`
+    const providerLabel = newSSOProvider === "Microsoft" ? "Microsoft Entra ID" : "Google Workspace"
     setSsoLogins(prev => [
       ...prev,
       {
         id: newId,
-        provider: newSSOProvider.trim(),
+        provider: providerLabel,
         url: "",
         email: newSSOEmail.trim(),
         linkedAt: new Date().toISOString().split("T")[0],
@@ -247,35 +248,74 @@ export default function ProfilePage() {
             </Card>
 
             {/* Add SSO Dialog */}
-            <Dialog open={showAddSSO} onOpenChange={setShowAddSSO}>
+            <Dialog open={showAddSSO} onOpenChange={(open) => { setShowAddSSO(open); if (!open) { setNewSSOProvider(""); setNewSSOEmail("") } }}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add SSO Login</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="sso-provider">Provider Name</Label>
-                    <Input
-                      id="sso-provider"
-                      placeholder="e.g. Microsoft Entra ID"
-                      value={newSSOProvider}
-                      onChange={e => setNewSSOProvider(e.target.value)}
-                    />
+                <div className="space-y-5 py-2">
+                  <div className="space-y-2">
+                    <Label>Select Provider</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Microsoft */}
+                      <button
+                        type="button"
+                        onClick={() => setNewSSOProvider("Microsoft")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          newSSOProvider === "Microsoft"
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        {/* Microsoft logo */}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" className="w-8 h-8">
+                          <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
+                          <rect x="12" y="1" width="10" height="10" fill="#7FBA00"/>
+                          <rect x="1" y="12" width="10" height="10" fill="#00A4EF"/>
+                          <rect x="12" y="12" width="10" height="10" fill="#FFB900"/>
+                        </svg>
+                        <span className="text-sm font-medium text-slate-700">Microsoft</span>
+                      </button>
+
+                      {/* Google */}
+                      <button
+                        type="button"
+                        onClick={() => setNewSSOProvider("Google")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          newSSOProvider === "Google"
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        {/* Google logo */}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-8 h-8">
+                          <path fill="#4285F4" d="M46.145 24.5c0-1.64-.148-3.22-.421-4.744H24v8.981h12.435c-.536 2.89-2.167 5.338-4.617 6.983v5.805h7.476c4.374-4.03 6.851-9.967 6.851-16.025z"/>
+                          <path fill="#34A853" d="M24 47c6.238 0 11.467-2.069 15.294-5.603l-7.476-5.805C29.718 37.105 27.02 38 24 38c-5.999 0-11.082-4.05-12.898-9.495H3.384v5.994C7.19 42.473 15.036 47 24 47z"/>
+                          <path fill="#FBBC05" d="M11.102 28.505A14.927 14.927 0 0 1 10.5 24c0-1.566.27-3.088.602-4.505V13.5H3.384A23.01 23.01 0 0 0 1 24c0 3.71.89 7.222 2.384 10.5l7.718-5.995z"/>
+                          <path fill="#EA4335" d="M24 9.5c3.379 0 6.41 1.162 8.795 3.442l6.598-6.597C35.461 2.643 30.232 0 24 0 15.036 0 7.19 4.527 3.384 11.5l7.718 5.995C12.918 13.05 18.001 9.5 24 9.5z"/>
+                        </svg>
+                        <span className="text-sm font-medium text-slate-700">Google</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="sso-email">Email Address</Label>
-                    <Input
-                      id="sso-email"
-                      type="email"
-                      placeholder="e.g. you@organisation.com"
-                      value={newSSOEmail}
-                      onChange={e => setNewSSOEmail(e.target.value)}
-                    />
-                  </div>
+
+                  {newSSOProvider && (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="sso-email">Email Address</Label>
+                      <Input
+                        id="sso-email"
+                        type="email"
+                        placeholder="e.g. you@organisation.com"
+                        value={newSSOEmail}
+                        onChange={e => setNewSSOEmail(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  )}
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddSSO(false)}>Cancel</Button>
-                  <Button onClick={handleAddSSO} disabled={!newSSOProvider.trim() || !newSSOEmail.trim()}>
+                  <Button variant="outline" onClick={() => { setShowAddSSO(false); setNewSSOProvider(""); setNewSSOEmail("") }}>Cancel</Button>
+                  <Button onClick={handleAddSSO} disabled={!newSSOProvider || !newSSOEmail.trim()}>
                     Add SSO
                   </Button>
                 </DialogFooter>
