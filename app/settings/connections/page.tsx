@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
-import { X, Pencil } from "lucide-react"
+import { X, Pencil, Lock } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import {
@@ -293,9 +293,31 @@ const systems = [
   },
 ]
 
+// Systems allowed per subscription tier
+const subscriptionTierAccess = {
+  essentials: ["arbor", "bromcom"],
+  insight: ["arbor", "bromcom", "cpoms", "sampeople"],
+  enterprise: ["arbor", "bromcom", "cpoms", "sampeople", "weareevery", "sisra", "wonde", "evolve", "safesmart"],
+}
+
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise">("essentials")
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
+
+  // Load subscription from localStorage on mount and when window gets focus
+  useEffect(() => {
+    const loadSubscription = () => {
+      const saved = localStorage.getItem("organisationSubscription")
+      if (saved === "essentials" || saved === "insight" || saved === "enterprise") {
+        setActiveSubscription(saved)
+      }
+    }
+    
+    loadSubscription()
+    window.addEventListener("focus", loadSubscription)
+    return () => window.removeEventListener("focus", loadSubscription)
+  }, [])
   const [connections, setConnections] = useState(schoolConnections)
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
   const [credentials, setCredentials] = useState(credentialsConnections)
@@ -668,35 +690,51 @@ export default function ConnectionsPage() {
 
         <div className="flex-1 px-4 pb-6 overflow-auto">
           <div className="space-y-2">
-            {systems.map((system) => (
-              <div
-                key={system.id}
-                onClick={() => handleOpenModal(system)}
-                className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md hover:border-slate-300 hover:bg-slate-50 cursor-pointer transition-all duration-150"
-              >
-                <div className="w-24 flex-shrink-0 flex items-center justify-center">
-                  {system.logoImage ? (
-                    <Image
-                      src={system.logoImage}
-                      alt={`${system.name} logo`}
-                      width={80}
-                      height={40}
-                      className="object-contain"
-                    />
-                  ) : (
-                    <span className={`text-sm font-semibold ${system.logoColor}`}>
-                      {system.logoText}
-                    </span>
-                  )}
+            {systems.map((system) => {
+              const allowedSystems = subscriptionTierAccess[activeSubscription]
+              const isLocked = !allowedSystems.includes(system.id)
+              return (
+                <div
+                  key={system.id}
+                  onClick={() => !isLocked && handleOpenModal(system)}
+                  className={`flex items-start gap-4 p-4 bg-white border rounded-lg transition-all duration-150 ${
+                    isLocked
+                      ? "border-slate-200 opacity-50 cursor-not-allowed"
+                      : "border-slate-200 hover:shadow-md hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+                  }`}
+                >
+                  <div className="w-24 flex-shrink-0 flex items-center justify-center">
+                    {system.logoImage ? (
+                      <Image
+                        src={system.logoImage}
+                        alt={`${system.name} logo`}
+                        width={80}
+                        height={40}
+                        className={`object-contain ${isLocked ? "grayscale" : ""}`}
+                      />
+                    ) : (
+                      <span className={`text-sm font-semibold ${system.logoColor}`}>
+                        {system.logoText}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-slate-900">{system.name}</h3>
+                      {isLocked && (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                          <Lock className="w-3 h-3" />
+                          {activeSubscription === "essentials" ? "Insight or above required" : "Enterprise required"}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {system.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900 mb-1">{system.name}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    {system.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>

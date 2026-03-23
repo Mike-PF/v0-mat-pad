@@ -43,7 +43,7 @@ export function Sidebar({}: SidebarProps) {
   const menuItems = [
     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: Settings, label: "Settings", href: "/settings" },
-    { icon: Cable, label: "Connections", href: "/connections" },
+    { icon: Cable, label: "Connections", href: "/settings/connections" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: BarChart3, label: "Reports", href: "/reports" },
   ]
@@ -86,19 +86,19 @@ export function Sidebar({}: SidebarProps) {
 
       {/* Bottom section */}
       <div className="p-2 pb-4 space-y-1 border-t border-white/10">
-
         {/* Logged in user */}
-        <div
-          className="w-full flex items-center justify-center h-11"
-          title="Gareth Hutchings"
+        <a
+          href="/profile"
+          className="w-full flex items-center justify-center h-11 group"
+          title="View Profile - Gareth Hutchings"
         >
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold tracking-wide select-none border-2"
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold tracking-wide select-none border-2 transition-all group-hover:scale-105 group-hover:shadow-lg"
             style={{ backgroundColor: ACCENT, borderColor: ACCENT }}
           >
             GH
           </div>
-        </div>
+        </a>
 
         {/* Account Switcher */}
         <div className="relative">

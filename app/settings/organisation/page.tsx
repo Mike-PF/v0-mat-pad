@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
@@ -223,7 +223,11 @@ export default function OrganisationPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editingItem, setEditingItem] = useState<MATData | SchoolData | null>(null)
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
-  const [settingsTab, setSettingsTab] = useState<"basic" | "branding" | "powerbi">("basic")
+  const [settingsTab, setSettingsTab] = useState<"subscription" | "basic" | "branding" | "powerbi">("subscription")
+  const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise" | null>(null)
+  const [addons, setAddons] = useState<{ reportBuilder: boolean }>({ reportBuilder: false })
+  const [reportBuilderUsers, setReportBuilderUsers] = useState(2)
+  const [subscriptionSaved, setSubscriptionSaved] = useState(false)
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [newOrgType, setNewOrgType] = useState<"mat" | "school">("school")
   const [newOrgName, setNewOrgName] = useState("")
@@ -776,6 +780,16 @@ export default function OrganisationPage() {
             {selectedData && (
               <div className="px-4 flex border-b">
                 <button
+                  onClick={() => setSettingsTab("subscription")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    settingsTab === "subscription"
+                      ? "border-[#121051] text-[#121051]"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  Subscription
+                </button>
+                <button
                   onClick={() => setSettingsTab("basic")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     settingsTab === "basic"
@@ -811,6 +825,181 @@ export default function OrganisationPage() {
             {/* Content */}
             <CardContent className="flex-1 overflow-auto p-6">
                 <div className="max-w-3xl">
+                  {/* Subscription Tab */}
+                  {settingsTab === "subscription" && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-900 mb-1">Subscription Plan</h3>
+                        <p className="text-sm text-slate-500 mb-6">Select the subscription tier for {selectedData?.name}.</p>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        {/* Essentials */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSubscription("essentials")}
+                          className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
+                            activeSubscription === "essentials"
+                              ? "border-[#121051] bg-[#121051]/5"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          {activeSubscription === "essentials" && (
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                          )}
+                          <span className="text-base font-semibold text-slate-900 mb-1">Essentials</span>
+                          <span className="text-xs text-slate-500 leading-relaxed">Core data management and reporting tools for smaller organisations.</span>
+                          <ul className="mt-4 space-y-1.5">
+                            {["Core dashboards", "Attendance & behaviour", "Key stage performance", "Standard reporting", "Baseline benchmarking"].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+
+                        {/* Insight */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSubscription("insight")}
+                          className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
+                            activeSubscription === "insight"
+                              ? "border-[#121051] bg-[#121051]/5"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          {activeSubscription === "insight" && (
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                          )}
+                          <span className="text-base font-semibold text-slate-900 mb-1">Insight</span>
+                          <span className="text-xs text-slate-500 leading-relaxed">Advanced analytics and Power BI integration for growing trusts.</span>
+                          <ul className="mt-4 space-y-1.5">
+                            {["Everything in Essentials", "Full reporting suite", "Cross-school benchmarking", "MAT-level visibility"].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+
+                        {/* Enterprise */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSubscription("enterprise")}
+                          className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
+                            activeSubscription === "enterprise"
+                              ? "border-[#121051] bg-[#121051]/5"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          {activeSubscription === "enterprise" && (
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                          )}
+                          <span className="text-base font-semibold text-slate-900 mb-1">Enterprise</span>
+                          <span className="text-xs text-slate-500 leading-relaxed">Full platform access with dedicated support for large MATs.</span>
+                          <ul className="mt-4 space-y-1.5">
+                            {["Everything in Insight", "MAT-wide dashboards", "Advanced analytics", "Enhanced integrations"].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+                      </div>
+
+                      {/* Add-ons Section */}
+                      <div className="border-t border-slate-200 pt-6 mt-6">
+                        <h3 className="text-base font-semibold text-slate-900 mb-1">Add-ons</h3>
+                        <p className="text-sm text-slate-500 mb-4">Enhance your subscription with additional features.</p>
+
+                        <div className="space-y-3">
+                          <div
+                            className={`rounded-lg border-2 transition-all ${
+                              addons.reportBuilder
+                                ? "border-[#121051] bg-[#121051]/5"
+                                : "border-slate-200 bg-white hover:border-slate-300"
+                            }`}
+                          >
+                            <div
+                              onClick={() => setAddons(prev => ({ ...prev, reportBuilder: !prev.reportBuilder }))}
+                              className="flex items-center justify-between p-4 cursor-pointer"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-slate-900">Report Builder</span>
+                                  {addons.reportBuilder && (
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Enabled</span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 mt-0.5">Enables the Power BI tab for custom report building and advanced visualisations.</p>
+                              </div>
+                              <div className={`w-10 h-6 rounded-full p-0.5 transition-colors ${addons.reportBuilder ? "bg-[#121051]" : "bg-slate-300"}`}>
+                                <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${addons.reportBuilder ? "translate-x-4" : "translate-x-0"}`} />
+                              </div>
+                            </div>
+
+                            {addons.reportBuilder && (
+                              <div className="px-4 pb-4 pt-0 border-t border-slate-200/50">
+                                <div className="flex items-center justify-between mt-3">
+                                  <div>
+                                    <span className="text-xs font-medium text-slate-700">Users</span>
+                                    <p className="text-xs text-slate-500">2 users included. Purchase additional users as needed.</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setReportBuilderUsers(Math.max(2, reportBuilderUsers - 1)) }}
+                                      className="w-7 h-7 flex items-center justify-center rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      disabled={reportBuilderUsers <= 2}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="w-8 text-center text-sm font-medium text-slate-900">{reportBuilderUsers}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setReportBuilderUsers(reportBuilderUsers + 1) }}
+                                      className="w-7 h-7 flex items-center justify-center rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                                {reportBuilderUsers > 2 && (
+                                  <p className="text-xs text-slate-500 mt-2 text-right">{reportBuilderUsers - 2} additional user{reportBuilderUsers > 3 ? "s" : ""} selected</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {(activeSubscription || addons.reportBuilder) && (
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                          {subscriptionSaved && (
+                            <span className="text-sm text-green-600 font-medium">Subscription saved successfully</span>
+                          )}
+                          <Button
+                            className="text-white"
+                            style={{ backgroundColor: "#121051" }}
+                            onClick={() => {
+                              if (activeSubscription) {
+                                localStorage.setItem("organisationSubscription", activeSubscription)
+                              }
+                              localStorage.setItem("reportBuilderEnabled", String(addons.reportBuilder))
+                              setSubscriptionSaved(true)
+                              setTimeout(() => setSubscriptionSaved(false), 3000)
+                            }}
+                          >
+                            Save Subscription
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Basic Information Tab */}
                   {settingsTab === "basic" && (
                     <div className="space-y-6">
@@ -1129,7 +1318,27 @@ export default function OrganisationPage() {
                   {/* Power BI Tab */}
                   {settingsTab === "powerbi" && (
                     <div className="space-y-6">
-                      {!powerBiActivated ? (
+                      {!addons.reportBuilder ? (
+                        /* Report Builder Add-on Required */
+                        <div className="flex flex-col items-center justify-center py-16">
+                          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-medium text-slate-900 mb-2">Report Builder Required</h3>
+                          <p className="text-sm text-slate-500 text-center max-w-md mb-6">
+                            Power BI integration requires the Report Builder add-on. Enable it in your subscription to unlock custom report building and advanced visualisations.
+                          </p>
+                          <Button 
+                            onClick={() => setSettingsTab("subscription")}
+                            className="text-white"
+                            style={{ backgroundColor: "#121051" }}
+                          >
+                            View Subscription Options
+                          </Button>
+                        </div>
+                      ) : !powerBiActivated ? (
                         /* Not Activated State */
                         <div className="flex flex-col items-center justify-center py-16">
                           <h3 className="text-lg font-medium text-slate-900 mb-3">Power BI Integration</h3>

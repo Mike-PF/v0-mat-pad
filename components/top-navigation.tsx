@@ -31,6 +31,12 @@ export function TopNavigation() {
       ]
     }
 
+    if (pathname.startsWith("/profile")) {
+      return [
+        { id: "profile", label: "Profile", href: "/profile" },
+      ]
+    }
+
     // Default tabs for forms and other pages
     return [
       { id: "dashboard", label: "Dashboard", href: "/forms" },
@@ -50,7 +56,8 @@ export function TopNavigation() {
           const isActive =
             pathname === tab.href ||
             (tab.href === "/settings/organisation" && pathname === "/settings") ||
-            (tab.href === "/reports" && pathname === "/reports")
+            (tab.href === "/reports" && pathname === "/reports") ||
+            (tab.href === "/profile" && pathname.startsWith("/profile"))
 
           return (
             <a
@@ -72,7 +79,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {!isSettingsPage && !isReportsPage && (
+        {!isSettingsPage && !isReportsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">
@@ -89,13 +96,6 @@ export function TopNavigation() {
         <div className="flex items-center gap-4">
           {/* MATpad Logo */}
           <img src="/matpad-logo.svg" alt="MATpad" className="h-8 w-auto opacity-70 hover:opacity-100 transition-opacity" />
-          
-          {/* GitHub Profile */}
-          <button className="flex items-center p-1.5 hover:bg-slate-50 rounded-lg">
-            <div className="bg-slate-100 rounded-full h-9 w-9 flex items-center justify-center text-sm font-medium text-slate-700">
-              GH
-            </div>
-          </button>
         </div>
       </div>
     </div>
