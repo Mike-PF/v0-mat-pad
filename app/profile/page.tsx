@@ -18,6 +18,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { TopNavigation } from '@/components/top-navigation'
+import { Sidebar } from '@/components/sidebar'
 
 const userData = {
   name: 'Gareth Hutchings',
@@ -72,6 +73,7 @@ function getRoleBadgeColor(role: string): string {
 }
 
 export default function ProfilePage() {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [ssoLogins, setSsoLogins] = useState(userData.ssoLogins)
   const [ssoDefaults, setSsoDefaults] = useState<Record<string, string>>(() => {
     const defaults: Record<string, string> = {}
@@ -129,10 +131,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex h-screen bg-white">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopNavigation />
-        <main className="flex-1 overflow-auto">
+    <div className="flex h-screen bg-slate-50">
+      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+
+      <div className="flex-1 flex flex-col">
+        <div className="p-4">
+          <TopNavigation />
+        </div>
+
+        <main className="flex-1 overflow-auto px-4 pb-6">
           <div className="max-w-4xl mx-auto p-6 md:p-8">
             {/* Profile Header */}
             <div className="mb-8">
