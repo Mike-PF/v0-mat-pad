@@ -293,12 +293,16 @@ const systems = [
   },
 ]
 
-// Systems allowed on the Essentials plan
-const essentialsAllowed = ["arbor", "bromcom"]
+// Systems allowed per subscription tier
+const subscriptionTierAccess = {
+  essentials: ["arbor", "bromcom"],
+  insight: ["arbor", "bromcom", "cpoms", "sampeople"],
+  enterprise: ["arbor", "bromcom", "cpoms", "sampeople", "weareevery", "sisra", "wonde"], // All connectors for enterprise
+}
 
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [activeSubscription] = useState<"essentials" | "insight" | "enterprise">("essentials") // synced from organisation settings
+  const [activeSubscription] = useState<"essentials" | "insight" | "enterprise">("insight") // synced from organisation settings
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
   const [connections, setConnections] = useState(schoolConnections)
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
@@ -673,7 +677,8 @@ export default function ConnectionsPage() {
         <div className="flex-1 px-4 pb-6 overflow-auto">
           <div className="space-y-2">
             {systems.map((system) => {
-              const isLocked = activeSubscription === "essentials" && !essentialsAllowed.includes(system.id)
+              const allowedSystems = subscriptionTierAccess[activeSubscription]
+              const isLocked = !allowedSystems.includes(system.id)
               return (
                 <div
                   key={system.id}
@@ -705,7 +710,7 @@ export default function ConnectionsPage() {
                       {isLocked && (
                         <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                           <Lock className="w-3 h-3" />
-                          Insight or above required
+                          {activeSubscription === "essentials" ? "Insight or above required" : "Enterprise required"}
                         </span>
                       )}
                     </div>
