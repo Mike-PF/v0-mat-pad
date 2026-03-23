@@ -302,7 +302,7 @@ const subscriptionTierAccess = {
 
 export default function ConnectionsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [activeSubscription] = useState<"essentials" | "insight" | "enterprise">("insight") // synced from organisation settings
+  const [activeSubscription] = useState<"essentials" | "insight" | "enterprise">("essentials") // synced from organisation settings
   const [selectedSystem, setSelectedSystem] = useState<typeof systems[0] | null>(null)
   const [connections, setConnections] = useState(schoolConnections)
   const [originalConnections, setOriginalConnections] = useState(schoolConnections)
