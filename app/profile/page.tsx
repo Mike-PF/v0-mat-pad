@@ -25,7 +25,6 @@ import { Label } from "@/components/ui/label"
 import { 
   Building2,
   Shield,
-  Link2,
   Star,
   Trash2,
   Plus,
@@ -197,7 +196,6 @@ export default function ProfilePage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Link2 className="w-5 h-5 text-slate-400" />
                     <h2 className="text-lg font-semibold text-slate-900">SSO Logins</h2>
                   </div>
                   <Button
