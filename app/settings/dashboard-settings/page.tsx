@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
@@ -100,6 +100,7 @@ const rolesByOrganisation: Record<string, { id: string; name: string }[]> = {
 
 export default function DashboardSettingsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [reportBuilderEnabled, setReportBuilderEnabled] = useState(false)
   const [reports, setReports] = useState(initialReports)
   const [originalReports, setOriginalReports] = useState(initialReports)
   const [searchQuery, setSearchQuery] = useState("")
@@ -109,10 +110,24 @@ export default function DashboardSettingsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set())
 
-  const filteredReports = reports.filter(report => 
-    report.powerBiName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    report.displayName.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Load Report Builder status from localStorage
+  useEffect(() => {
+    const loadReportBuilder = () => {
+      const saved = localStorage.getItem("reportBuilderEnabled")
+      setReportBuilderEnabled(saved === "true")
+    }
+    loadReportBuilder()
+    window.addEventListener("focus", loadReportBuilder)
+    return () => window.removeEventListener("focus", loadReportBuilder)
+  }, [])
+
+  // Filter reports: exclude custom reports (own) when Report Builder is disabled
+  const filteredReports = reports
+    .filter(report => reportBuilderEnabled || report.reportType === "system")
+    .filter(report => 
+      report.powerBiName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   
   const totalPages = Math.ceil(filteredReports.length / itemsPerPage)
   const paginatedReports = filteredReports.slice(
@@ -275,13 +290,15 @@ export default function DashboardSettingsPage() {
                   }}
                   className="w-[300px] h-9 bg-white border-slate-200"
                 />
-                <Button 
-                  onClick={handleIngest}
-                  className="text-white"
-                  style={{ backgroundColor: "#121051" }}
-                >
-                  Pull Reports
-                </Button>
+                {reportBuilderEnabled && (
+                  <Button 
+                    onClick={handleIngest}
+                    className="text-white"
+                    style={{ backgroundColor: "#121051" }}
+                  >
+                    Pull Reports
+                  </Button>
+                )}
               </div>
 
               {/* Table */}
@@ -582,7 +599,7 @@ export default function DashboardSettingsPage() {
                             >
                               Save
                             </Button>
-                            {report.reportType === "system" && (
+                            {reportBuilderEnabled && report.reportType === "system" && (
                               <Button
                                 variant="outline"
                                 size="sm"

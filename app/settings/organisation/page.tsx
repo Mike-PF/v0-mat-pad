@@ -988,6 +988,7 @@ export default function OrganisationPage() {
                               if (activeSubscription) {
                                 localStorage.setItem("organisationSubscription", activeSubscription)
                               }
+                              localStorage.setItem("reportBuilderEnabled", String(addons.reportBuilder))
                               setSubscriptionSaved(true)
                               setTimeout(() => setSubscriptionSaved(false), 3000)
                             }}
