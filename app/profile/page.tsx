@@ -322,19 +322,11 @@ export default function ProfilePage() {
                         className="p-4 bg-slate-50 rounded-lg border border-slate-200"
                       >
                         <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-semibold"
-                              style={{ backgroundColor: ACCENT }}
-                            >
-                              {org.abbreviation.charAt(0)}
-                            </div>
-                            <div>
-                              <h3 className="font-medium text-slate-900">{org.name}</h3>
-                              <span className="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
-                                {org.type}
-                              </span>
-                            </div>
+                          <div>
+                            <h3 className="font-medium text-slate-900">{org.name}</h3>
+                            <span className="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
+                              {org.type}
+                            </span>
                           </div>
                         </div>
                         
