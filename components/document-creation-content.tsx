@@ -1107,15 +1107,6 @@ export function DocumentCreationContent() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="border-b border-slate-200">
-                <div className="flex gap-1">
-                  <button className="px-6 py-3 text-sm font-medium border-b-2 text-slate-900 border-primary">
-                    Data Point
-                  </button>
-                </div>
-              </div>
-            </CardContent>
           </Card>
 
           {/* Document Editor */}
