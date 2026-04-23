@@ -1078,7 +1078,7 @@ export function DocumentCreationContent() {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
                   <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
@@ -1093,17 +1093,6 @@ export function DocumentCreationContent() {
                     value={documentName}
                     onChange={(e) => setDocumentName(e.target.value)}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Word Document</label>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowUploadModal(true)}
-                    disabled={isProcessing}
-                    className="w-full justify-start text-left font-normal hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
-                  >
-                    {isProcessing ? "Processing..." : uploadedFile ? uploadedFile.name : "Upload Document"}
-                  </Button>
                 </div>
               </div>
             </CardHeader>
