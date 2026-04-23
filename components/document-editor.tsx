@@ -584,7 +584,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
                   onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
                   title={`Click to copy {{${variable}}}`}
                   className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors"
-                  style={{ color: ACCENT }}
+                  style={{ color: NAVY }}
                 >
                   {variable}
                 </button>
