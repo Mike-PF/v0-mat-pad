@@ -725,26 +725,26 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
               </div>
             ) : (
                   sectionVariables.map((variable) => (
-                    <div key={variable} className="relative group">
+                    <div key={variable} className="relative">
                       <button
                         onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
-                        className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors"
+                        className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors group"
                         style={{ color: NAVY }}
                       >
                         {variable}
-                      </button>
-                      {/* Hover tooltip */}
-                      {exampleData[variable] && (
-                        <div className="absolute left-full top-0 ml-2 z-50 hidden group-hover:block pointer-events-none">
-                          <div className="bg-slate-900 text-white rounded-md shadow-lg p-3 w-56">
-                            <p className="text-xs text-slate-400 mb-1">Example value</p>
-                            <p className="text-sm font-medium break-all">{exampleData[variable]}</p>
-                            <p className="text-xs text-slate-400 mt-2 border-t border-slate-700 pt-2">{`{{${variable}}}`}</p>
+                        {/* Inline tooltip - appears on button hover */}
+                        {exampleData[variable] && (
+                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden group-hover:block pointer-events-auto">
+                            <div className="bg-slate-900 text-white rounded-md shadow-lg p-3 w-56 whitespace-normal">
+                              <p className="text-xs text-slate-400 mb-1">Example value</p>
+                              <p className="text-sm font-medium break-all">{exampleData[variable]}</p>
+                              <p className="text-xs text-slate-400 mt-2 border-t border-slate-700 pt-2 font-mono">{`{{${variable}}}`}</p>
+                            </div>
+                            {/* Arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
                           </div>
-                          {/* Arrow */}
-                          <div className="absolute right-full top-3 border-4 border-transparent border-r-slate-900" style={{ marginRight: "-1px" }} />
-                        </div>
-                      )}
+                        )}
+                      </button>
                     </div>
                   ))
             )}
