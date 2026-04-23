@@ -334,7 +334,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Template Variables Sidebar */}
-        <div className="w-72 bg-white border-r border-slate-200 overflow-y-auto">
+        <div className="w-72 h-full bg-white border-r border-slate-200 overflow-y-auto">
           <div className="p-4">
             <h2 className="text-base font-semibold text-slate-800 mb-4">Template Variables</h2>
 
