@@ -1055,64 +1055,75 @@ export function DocumentCreationContent() {
           isProcessing={isProcessing}
         />
 
-        <div className="space-y-6">
-          {/* Existing Configuration Panel */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <button onClick={handleExitEditor} className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
-                <ChevronLeft className="w-4 h-4" />
-                Back to List
-              </button>
-              <button className="px-4 py-2 bg-slate-200 text-slate-900 rounded-lg text-sm font-medium hover:bg-slate-300">
-                Save Configuration
-              </button>
-            </div>
+        <div className="space-y-4">
+          {/* Configuration Panel — matches existing isCreatingNew panel style */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExitEditor}
+                  className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to List
+                </Button>
+                <Button
+                  onClick={handleSaveFromEditor}
+                  className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Configuration
+                </Button>
+              </div>
 
-            {/* Organization and Document Name Row */}
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
-                <input
-                  type="text"
-                  value={selectedSchoolUrn || ""}
-                  disabled
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50"
-                />
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
+                  <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
+                    {selectedOrganization?.name || selectedSchoolUrn}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
+                  <Input
+                    type="text"
+                    placeholder="Enter document name..."
+                    value={documentName}
+                    onChange={(e) => setDocumentName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Word Document</label>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowUploadModal(true)}
+                    disabled={isProcessing}
+                    className="w-full justify-start text-left font-normal hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                  >
+                    {isProcessing ? "Processing..." : uploadedFile ? uploadedFile.name : "Upload Document"}
+                  </Button>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
-                <input
-                  type="text"
-                  value={documentName}
-                  onChange={(e) => setDocumentName(e.target.value)}
-                  placeholder="Enter document name..."
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-                />
+            </CardHeader>
+            <CardContent>
+              <div className="border-b border-slate-200">
+                <div className="flex gap-1">
+                  <button className="px-6 py-3 text-sm font-medium border-b-2 text-slate-900 border-primary">
+                    Data Point
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Word Document</label>
-                <button className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50">
-                  Upload Document
-                </button>
-              </div>
-            </div>
-
-            {/* Data Point Tab */}
-            <div className="border-b border-slate-200">
-              <button className="px-4 py-3 text-sm font-medium text-slate-600 border-b-2 border-slate-400">
-                Data Point
-              </button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Document Editor */}
-          <div className="border-t pt-6">
-            <DocumentEditor
-              documentName={documentName}
-              onExit={handleExitEditor}
-              onSave={handleSaveFromEditor}
-            />
-          </div>
+          <DocumentEditor
+            documentName={documentName}
+            onExit={handleExitEditor}
+            onSave={handleSaveFromEditor}
+          />
         </div>
       </>
     )
