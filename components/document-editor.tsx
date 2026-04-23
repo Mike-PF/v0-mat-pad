@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   ZoomOut,
   ZoomIn,
@@ -223,6 +223,18 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
   // Template variables sidebar state
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
 
   const sectionNames = Object.keys(templateVariables)
 
@@ -486,108 +498,99 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Template Variables Sidebar — two-panel */}
-        <div className="w-80 h-full bg-white border-r border-slate-200 flex flex-col">
+        {/* Template Variables Sidebar */}
+        <div className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
 
-          {/* Header + Search */}
+          {/* Header */}
           <div className="p-4 border-b border-slate-200 flex-shrink-0">
-            <h2 className="text-base font-semibold text-slate-800 mb-3">Template Variables</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder={selectedSection ? `Search in ${selectedSection}...` : "Search sections..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-300"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
-                >
-                  <X className="w-3 h-3 text-slate-400" />
-                </button>
-              )}
-            </div>
-          </div>
+            <h2 className="text-sm font-semibold text-slate-800 mb-3">Template Variables</h2>
 
-          {/* Panel A — Section list (no section selected) */}
-          {!selectedSection && (
-            <div className="flex-1 overflow-y-auto">
-              {filteredSections.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-sm px-4">
-                  No sections matching &quot;{searchQuery}&quot;
-                </div>
-              ) : (
-                filteredSections.map((section) => (
-                  <button
-                    key={section}
-                    onClick={() => { setSelectedSection(section); setSearchQuery("") }}
-                    className="w-full flex items-center justify-between px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors group"
-                  >
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                      {section}
-                    </span>
-                    <div className="flex items-center gap-2">
+            {/* Section Dropdown */}
+            <div className="relative mb-3" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm border border-slate-200 rounded-md hover:border-slate-300 transition-colors bg-white"
+              >
+                <span className={selectedSection ? "text-slate-900 font-medium" : "text-slate-400"}>
+                  {selectedSection ?? "Select a section..."}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  {sectionNames.map((section) => (
+                    <button
+                      key={section}
+                      onClick={() => {
+                        setSelectedSection(section)
+                        setSearchQuery("")
+                        setDropdownOpen(false)
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-sm hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 ${
+                        selectedSection === section ? "bg-slate-50 font-medium" : ""
+                      }`}
+                    >
+                      <span style={{ color: selectedSection === section ? NAVY : undefined }}>
+                        {section}
+                      </span>
                       <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
                         {templateVariables[section].length}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
-                    </div>
-                  </button>
-                ))
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          )}
 
-          {/* Panel B — Variables for selected section */}
-          {selectedSection && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Back to sections */}
-              <button
-                onClick={() => { setSelectedSection(null); setSearchQuery("") }}
-                className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors flex-shrink-0"
-              >
-                <ChevronRight className="w-4 h-4 rotate-180" />
-                All Sections
-                <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                  {sectionVariables.length}
-                </span>
-              </button>
-
-              {/* Section title */}
-              <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex-shrink-0">
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: NAVY }}
-                >
-                  {selectedSection}
-                </span>
-              </div>
-
-              {/* Variables list */}
-              <div className="flex-1 overflow-y-auto">
-                {sectionVariables.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400 text-sm px-4">
-                    No variables matching &quot;{searchQuery}&quot;
-                  </div>
-                ) : (
-                  sectionVariables.map((variable) => (
-                    <button
-                      key={variable}
-                      onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
-                      title={`Click to copy {{${variable}}}`}
-                      className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors truncate"
-                      style={{ color: ACCENT }}
-                    >
-                      {variable}
-                    </button>
-                  ))
+            {/* Search — only shown when a section is selected */}
+            {selectedSection && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder={`Search in ${selectedSection}...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-300"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+                  >
+                    <X className="w-3 h-3 text-slate-400" />
+                  </button>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Variables list */}
+          <div className="flex-1 overflow-y-auto">
+            {!selectedSection ? (
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 text-sm text-center px-6 gap-2">
+                <ChevronDown className="w-8 h-8 text-slate-300" />
+                Select a section above to browse its data points
+              </div>
+            ) : sectionVariables.length === 0 ? (
+              <div className="text-center py-8 text-slate-400 text-sm px-4">
+                No variables matching &quot;{searchQuery}&quot;
+              </div>
+            ) : (
+              sectionVariables.map((variable) => (
+                <button
+                  key={variable}
+                  onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
+                  title={`Click to copy {{${variable}}}`}
+                  className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors"
+                  style={{ color: ACCENT }}
+                >
+                  {variable}
+                </button>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Document Canvas */}
