@@ -1,6 +1,7 @@
 "use client"
 import { useState, useMemo, useEffect } from "react"
 import React from "react"
+import Image from "next/image"
 
 // Removed duplicate import: import React from "react"
 // Removed duplicate import: import type React from "react"
@@ -2458,6 +2459,26 @@ export function DocumentCreationContent() {
                         )
                       })}
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Current Panel - Template Variables Screenshot */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Current Panel</CardTitle>
+                  <p className="text-sm text-slate-600">Template variables and structure reference</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative w-full h-auto">
+                    <Image
+                      src="/images/template-variables.png"
+                      alt="Template Variables Reference"
+                      width={1200}
+                      height={800}
+                      className="w-full h-auto rounded-lg border border-slate-200"
+                      priority
+                    />
                   </div>
                 </CardContent>
               </Card>
