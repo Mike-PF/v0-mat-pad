@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
+import { DocumentEditor } from "@/components/document-editor"
 
 const mats = [
   { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
@@ -213,6 +214,7 @@ export function DocumentCreationContent() {
   const [documents, setDocuments] = useState(mockSavedDocuments)
   const [selectedDocument, setSelectedDocument] = useState<any>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
+  const [showDocumentEditor, setShowDocumentEditor] = useState(false)
   const [documentName, setDocumentName] = useState("")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
@@ -373,8 +375,9 @@ export function DocumentCreationContent() {
     }
 
     setIsCreatingNew(true)
+    setShowDocumentEditor(true)
     setSelectedDocument(null)
-    setDocumentName("")
+    setDocumentName("New Document")
     setSelectedSP("")
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -385,6 +388,18 @@ export function DocumentCreationContent() {
     // setQuestionAssignments({})
     // setQaData({})
     setSelectingTagMode(null) // Clear selection mode on create new
+  }
+
+  const handleExitEditor = () => {
+    setShowDocumentEditor(false)
+    setIsCreatingNew(false)
+  }
+
+  const handleSaveFromEditor = () => {
+    // For now just exit
+    setShowDocumentEditor(false)
+    setNotificationMessage("Document saved successfully!")
+    setShowNotification(true)
   }
 
   const handleEditDocument = (doc: any) => {
@@ -1026,6 +1041,19 @@ export function DocumentCreationContent() {
 
     setConditionalTagSearch("")
     setShowIfModal(true)
+  }
+
+  // Show document editor when creating new document
+  if (showDocumentEditor) {
+    return (
+      <div className="h-full">
+        <DocumentEditor
+          documentName={documentName}
+          onExit={handleExitEditor}
+          onSave={handleSaveFromEditor}
+        />
+      </div>
+    )
   }
 
   return (
