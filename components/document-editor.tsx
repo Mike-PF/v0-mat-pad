@@ -187,6 +187,152 @@ const templateVariables: Record<string, string[]> = {
   ],
 }
 
+// Example values shown on hover for each variable
+const exampleData: Record<string, string> = {
+  // School
+  "logo": "https://example.com/school-logo.png",
+  "school.name": "Catholic Diocese of Hallam",
+  "school.urn": "123456",
+  "school.dfeNumber": "373/4001",
+  "school.establishmentNumber": "4001",
+  "school.ukprn": "10012345",
+  "school.type": "Academy Converter",
+  "school.status": "Open",
+  "school.openDate": "01/09/2012",
+  "school.closeDate": "—",
+  "school.website": "www.exampleschool.org.uk",
+  "school.telephone": "0114 234 5678",
+  "school.email": "admin@exampleschool.org.uk",
+  "school.headteacher": "Mrs J. Smith",
+  "school.headteacherTitle": "Headteacher",
+  "school.trustName": "Diocese of Hallam Academy Trust",
+  "school.trustCode": "TR01234",
+  "school.localAuthority": "Sheffield",
+  "school.parliamentaryConstituency": "Sheffield Central",
+  "school.ward": "Broomhill",
+  "school.region": "Yorkshire and The Humber",
+  // Stats
+  "school.stats.pupils": "1,243",
+  "school.stats.male": "628",
+  "school.stats.female": "615",
+  "school.stats.fsmPct": "18.4%",
+  "school.stats.y11Students": "210",
+  "school.stats.y7Students": "198",
+  "school.stats.y8Students": "205",
+  "school.stats.y9Students": "207",
+  "school.stats.y10Students": "212",
+  "school.stats.sixthFormStudents": "211",
+  "school.stats.pupilCapacity": "1,300",
+  "school.stats.teacherCount": "78",
+  "school.stats.teacherFte": "74.3",
+  "school.stats.taCount": "22",
+  "school.stats.taFte": "18.6",
+  "school.stats.pupilTeacherRatio": "16.8",
+  "school.stats.meanClassSize": "27.4",
+  "school.stats.senWithStatement": "12",
+  "school.stats.senWithoutStatement": "84",
+  "school.stats.englishNotFirstLanguage": "9.2%",
+  "school.stats.ethnicityWhiteBritish": "72.3%",
+  "school.stats.ethnicityOther": "27.7%",
+  // Detail
+  "school.detail.laName": "Sheffield",
+  "school.detail.phase": "Secondary",
+  "school.detail.gender": "Mixed",
+  "school.detail.religiousCharacter": "Roman Catholic",
+  "school.detail.admissionsPolicy": "Selective",
+  "school.detail.ageRangeLow": "11",
+  "school.detail.ageRangeHigh": "18",
+  "school.detail.nurseryProvision": "No",
+  "school.detail.sixthFormProvision": "Yes",
+  "school.detail.boarders": "No boarders",
+  "school.detail.specialClasses": "No",
+  "school.detail.urbanRural": "Urban major conurbation",
+  // Address
+  "school.address.street": "123 School Lane",
+  "school.address.locality": "Broomhill",
+  "school.address.town": "Sheffield",
+  "school.address.county": "South Yorkshire",
+  "school.address.postcode": "S10 2LN",
+  "school.address.country": "England",
+  "school.address.easting": "432910",
+  "school.address.northing": "387420",
+  "school.address.latitude": "53.3811",
+  "school.address.longitude": "-1.4921",
+  // Ofsted
+  "school.ofsted.overall": "Good",
+  "school.ofsted.lastInspectionDate": "14/03/2023",
+  "school.ofsted.nextInspectionDate": "2026–2027",
+  "school.ofsted.qualityOfEducation": "Good",
+  "school.ofsted.behaviourAndAttitudes": "Outstanding",
+  "school.ofsted.personalDevelopment": "Good",
+  "school.ofsted.leadershipAndManagement": "Good",
+  "school.ofsted.earlyYearsProvision": "N/A",
+  "school.ofsted.sixthFormProvision": "Good",
+  "school.ofsted.safeguarding": "Effective",
+  "school.ofsted.previousOverall": "Requires Improvement",
+  "school.ofsted.previousInspectionDate": "09/11/2018",
+  "ofstedBehaviourAttitudeLastInspection_Mapped": "Outstanding",
+  "ofstedBehaviourAttitudeLevelAssuranceOF_Mapped": "High",
+  "ofstedOverallEffectivenessSEFGradeOF_Mapped": "Good",
+  "ofstedQualityOfEducationLevelOfAssuranceOF_Mapped": "Good",
+  // National
+  "school.national.yearM1SecondaryFSM": "23.1%",
+  "school.national.progress8": "+0.42",
+  "school.national.attainment8": "51.3",
+  "school.national.ebacc": "24.8%",
+  "school.national.ebaccAPS": "3.98",
+  "school.national.englishMathsGrade5": "54.2%",
+  "school.national.englishMathsGrade4": "71.8%",
+  "school.national.stayingInEducation": "94%",
+  "school.national.destinations": "92%",
+  // Attendance
+  "school.attendance.overall": "95.2%",
+  "school.attendance.authorised": "2.1%",
+  "school.attendance.unauthorised": "0.7%",
+  "school.attendance.persistentAbsence": "11.4%",
+  "school.attendance.severeAbsence": "1.2%",
+  "school.attendance.exclusions": "3.4 per 100 pupils",
+  "school.attendance.suspensions": "8.1 per 100 pupils",
+  "school.attendance.permanentExclusions": "0.02 per 100 pupils",
+  "school.attendance.lateArrival": "1.3%",
+  "school.attendance.missedSessions": "4,210",
+  // Finance
+  "school.finance.totalIncome": "£7,842,000",
+  "school.finance.totalExpenditure": "£7,614,000",
+  "school.finance.revenueReserve": "£228,000",
+  "school.finance.perPupilFunding": "£6,310",
+  "school.finance.staffCosts": "£5,421,000",
+  "school.finance.teachingStaffCosts": "£3,980,000",
+  "school.finance.supplyStaffCosts": "£142,000",
+  "school.finance.premisesCosts": "£384,000",
+  "school.finance.educationalSupplies": "£198,000",
+  "school.finance.energyCosts": "£112,000",
+  "school.finance.cateringCosts": "£87,000",
+  // Workforce
+  "school.workforce.headcountTeachers": "78",
+  "school.workforce.fteTeachers": "74.3",
+  "school.workforce.headcountTAs": "22",
+  "school.workforce.fteTAs": "18.6",
+  "school.workforce.headcountAdmin": "11",
+  "school.workforce.fteAdmin": "9.2",
+  "school.workforce.vacancies": "2",
+  "school.workforce.turnoverRate": "8.4%",
+  "school.workforce.absenceRate": "2.9%",
+  "school.workforce.qualifiedTeachers": "97.4%",
+  // Performance
+  "school.performance.ks2Reading": "72%",
+  "school.performance.ks2Writing": "68%",
+  "school.performance.ks2Maths": "74%",
+  "school.performance.ks2Combined": "63%",
+  "school.performance.ks4Progress8": "+0.42",
+  "school.performance.ks4Attainment8": "51.3",
+  "school.performance.ks4EnglishMaths": "71.8%",
+  "school.performance.ks4EBacc": "24.8%",
+  "school.performance.ks5ALevel": "B-",
+  "school.performance.ks5Academic": "33.2",
+  "school.performance.ks5Applied": "Dist*",
+}
+
 // Sample document content for display
 const sampleDocumentContent = [
   { title: "The 'Double Serialisation' Failure", page: 16 },
@@ -578,17 +724,29 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
                 No variables matching &quot;{searchQuery}&quot;
               </div>
             ) : (
-              sectionVariables.map((variable) => (
-                <button
-                  key={variable}
-                  onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
-                  title={`Click to copy {{${variable}}}`}
-                  className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors"
-                  style={{ color: NAVY }}
-                >
-                  {variable}
-                </button>
-              ))
+                  sectionVariables.map((variable) => (
+                    <div key={variable} className="relative group">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
+                        className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors"
+                        style={{ color: NAVY }}
+                      >
+                        {variable}
+                      </button>
+                      {/* Hover tooltip */}
+                      {exampleData[variable] && (
+                        <div className="absolute left-full top-0 ml-2 z-50 hidden group-hover:block pointer-events-none">
+                          <div className="bg-slate-900 text-white rounded-md shadow-lg p-3 w-56">
+                            <p className="text-xs text-slate-400 mb-1">Example value</p>
+                            <p className="text-sm font-medium break-all">{exampleData[variable]}</p>
+                            <p className="text-xs text-slate-400 mt-2 border-t border-slate-700 pt-2">{`{{${variable}}}`}</p>
+                          </div>
+                          {/* Arrow */}
+                          <div className="absolute right-full top-3 border-4 border-transparent border-r-slate-900" style={{ marginRight: "-1px" }} />
+                        </div>
+                      )}
+                    </div>
+                  ))
             )}
           </div>
         </div>
