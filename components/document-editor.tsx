@@ -21,6 +21,7 @@ import {
   Undo,
   Redo,
   ChevronDown,
+  ChevronRight,
   Indent,
   Outdent,
   Pilcrow,
@@ -30,26 +31,160 @@ import { Button } from "@/components/ui/button"
 const ACCENT = "hsl(314 100% 35%)"
 const NAVY = "#121051"
 
-// Template variables organized by category
-const templateVariables = {
-  School: ["logo", "school.name", "school.urn"],
+// Template variables organized by category - expanded for scale
+const templateVariables: Record<string, string[]> = {
+  School: [
+    "logo",
+    "school.name",
+    "school.urn",
+    "school.dfeNumber",
+    "school.establishmentNumber",
+    "school.ukprn",
+    "school.type",
+    "school.status",
+    "school.openDate",
+    "school.closeDate",
+    "school.website",
+    "school.telephone",
+    "school.email",
+    "school.headteacher",
+    "school.headteacherTitle",
+    "school.trustName",
+    "school.trustCode",
+    "school.localAuthority",
+    "school.parliamentaryConstituency",
+    "school.ward",
+    "school.region",
+  ],
   Stats: [
     "school.stats.pupils",
     "school.stats.male",
     "school.stats.female",
     "school.stats.fsmPct",
     "school.stats.y11Students",
+    "school.stats.y7Students",
+    "school.stats.y8Students",
+    "school.stats.y9Students",
+    "school.stats.y10Students",
+    "school.stats.sixthFormStudents",
+    "school.stats.pupilCapacity",
+    "school.stats.teacherCount",
+    "school.stats.teacherFte",
+    "school.stats.taCount",
+    "school.stats.taFte",
+    "school.stats.pupilTeacherRatio",
+    "school.stats.meanClassSize",
+    "school.stats.senWithStatement",
+    "school.stats.senWithoutStatement",
+    "school.stats.englishNotFirstLanguage",
+    "school.stats.ethnicityWhiteBritish",
+    "school.stats.ethnicityOther",
   ],
-  Detail: ["school.detail.laName", "school.detail.phase"],
-  Address: ["school.address.town"],
+  Detail: [
+    "school.detail.laName",
+    "school.detail.phase",
+    "school.detail.gender",
+    "school.detail.religiousCharacter",
+    "school.detail.admissionsPolicy",
+    "school.detail.ageRangeLow",
+    "school.detail.ageRangeHigh",
+    "school.detail.nurseryProvision",
+    "school.detail.sixthFormProvision",
+    "school.detail.boarders",
+    "school.detail.specialClasses",
+    "school.detail.urbanRural",
+  ],
+  Address: [
+    "school.address.street",
+    "school.address.locality",
+    "school.address.town",
+    "school.address.county",
+    "school.address.postcode",
+    "school.address.country",
+    "school.address.easting",
+    "school.address.northing",
+    "school.address.latitude",
+    "school.address.longitude",
+  ],
   Ofsted: [
     "school.ofsted.overall",
+    "school.ofsted.lastInspectionDate",
+    "school.ofsted.nextInspectionDate",
+    "school.ofsted.qualityOfEducation",
+    "school.ofsted.behaviourAndAttitudes",
+    "school.ofsted.personalDevelopment",
+    "school.ofsted.leadershipAndManagement",
+    "school.ofsted.earlyYearsProvision",
+    "school.ofsted.sixthFormProvision",
+    "school.ofsted.safeguarding",
+    "school.ofsted.previousOverall",
+    "school.ofsted.previousInspectionDate",
     "ofstedBehaviourAttitudeLastInspection_Mapped",
     "ofstedBehaviourAttitudeLevelAssuranceOF_Mapped",
     "ofstedOverallEffectivenessSEFGradeOF_Mapped",
     "ofstedQualityOfEducationLevelOfAssuranceOF_Mapped",
   ],
-  National: ["school.national.yearM1SecondaryFSM"],
+  National: [
+    "school.national.yearM1SecondaryFSM",
+    "school.national.progress8",
+    "school.national.attainment8",
+    "school.national.ebacc",
+    "school.national.ebaccAPS",
+    "school.national.englishMathsGrade5",
+    "school.national.englishMathsGrade4",
+    "school.national.stayingInEducation",
+    "school.national.destinations",
+  ],
+  Attendance: [
+    "school.attendance.overall",
+    "school.attendance.authorised",
+    "school.attendance.unauthorised",
+    "school.attendance.persistentAbsence",
+    "school.attendance.severeAbsence",
+    "school.attendance.exclusions",
+    "school.attendance.suspensions",
+    "school.attendance.permanentExclusions",
+    "school.attendance.lateArrival",
+    "school.attendance.missedSessions",
+  ],
+  Finance: [
+    "school.finance.totalIncome",
+    "school.finance.totalExpenditure",
+    "school.finance.revenueReserve",
+    "school.finance.perPupilFunding",
+    "school.finance.staffCosts",
+    "school.finance.teachingStaffCosts",
+    "school.finance.supplyStaffCosts",
+    "school.finance.premisesCosts",
+    "school.finance.educationalSupplies",
+    "school.finance.energyCosts",
+    "school.finance.cateringCosts",
+  ],
+  Workforce: [
+    "school.workforce.headcountTeachers",
+    "school.workforce.fteTeachers",
+    "school.workforce.headcountTAs",
+    "school.workforce.fteTAs",
+    "school.workforce.headcountAdmin",
+    "school.workforce.fteAdmin",
+    "school.workforce.vacancies",
+    "school.workforce.turnoverRate",
+    "school.workforce.absenceRate",
+    "school.workforce.qualifiedTeachers",
+  ],
+  Performance: [
+    "school.performance.ks2Reading",
+    "school.performance.ks2Writing",
+    "school.performance.ks2Maths",
+    "school.performance.ks2Combined",
+    "school.performance.ks4Progress8",
+    "school.performance.ks4Attainment8",
+    "school.performance.ks4EnglishMaths",
+    "school.performance.ks4EBacc",
+    "school.performance.ks5ALevel",
+    "school.performance.ks5Academic",
+    "school.performance.ks5Applied",
+  ],
 }
 
 // Sample document content for display
@@ -84,6 +219,11 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
   const [showStyleDropdown, setShowStyleDropdown] = useState(false)
   const [showFontDropdown, setShowFontDropdown] = useState(false)
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false)
+  
+  // Template variables sidebar state
+  const [searchQuery, setSearchQuery] = useState("")
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["School"]))
+  const sectionRefs = {} as Record<string, HTMLDivElement | null>
 
   const styles = ["Normal Text", "Heading 1", "Heading 2", "Heading 3", "Title", "Subtitle"]
   const fonts = ["Aptos", "Arial", "Calibri", "Times New Roman", "Verdana", "Georgia"]
@@ -91,6 +231,44 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 10, 200))
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 10, 50))
+  
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(section)) {
+        newSet.delete(section)
+      } else {
+        newSet.add(section)
+      }
+      return newSet
+    })
+  }
+  
+  const scrollToSection = (section: string) => {
+    setExpandedSections(prev => new Set([...prev, section]))
+    setTimeout(() => {
+      sectionRefs[section]?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 100)
+  }
+  
+  // Filter variables based on search
+  const filteredVariables = Object.entries(templateVariables).reduce((acc, [category, variables]) => {
+    if (!searchQuery) {
+      acc[category] = variables
+    } else {
+      const filtered = variables.filter(v => 
+        v.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      if (filtered.length > 0) {
+        acc[category] = filtered
+      }
+    }
+    return acc
+  }, {} as Record<string, string[]>)
+  
+  const totalVariables = Object.values(templateVariables).flat().length
+  const filteredCount = Object.values(filteredVariables).flat().length
 
   return (
     <div className="flex flex-col h-full bg-slate-100">
@@ -334,33 +512,107 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Template Variables Sidebar */}
-        <div className="w-72 h-full bg-white border-r border-slate-200 overflow-y-auto">
-          <div className="p-4">
-            <h2 className="text-base font-semibold text-slate-800 mb-4">Template Variables</h2>
-
-            {Object.entries(templateVariables).map(([category, variables]) => (
-              <div key={category} className="mb-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-2 pb-2 border-b border-slate-200">
-                  {category}
-                </h3>
-                <div className="space-y-1">
-                  {variables.map((variable) => (
-                    <button
-                      key={variable}
-                      className="block w-full text-left text-sm py-1 px-1 rounded hover:bg-slate-50 transition-colors"
-                      style={{ color: ACCENT }}
-                      onClick={() => {
-                        // Copy variable to clipboard or insert into document
-                        navigator.clipboard.writeText(`{{${variable}}}`)
-                      }}
-                      title={`Click to copy {{${variable}}}`}
-                    >
-                      {variable}
-                    </button>
-                  ))}
-                </div>
+        <div className="w-80 h-full bg-white border-r border-slate-200 flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-slate-200 flex-shrink-0">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-slate-800">Template Variables</h2>
+              <span className="text-xs text-slate-500">{filteredCount} of {totalVariables}</span>
+            </div>
+            
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search variables..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-300"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+                >
+                  <X className="w-3 h-3 text-slate-400" />
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Quick Navigation */}
+          <div className="px-4 py-2 border-b border-slate-200 flex-shrink-0">
+            <div className="flex flex-wrap gap-1">
+              {Object.keys(filteredVariables).map((section) => (
+                <button
+                  key={section}
+                  onClick={() => scrollToSection(section)}
+                  className="px-2 py-0.5 text-xs rounded-full transition-colors"
+                  style={{
+                    backgroundColor: expandedSections.has(section) ? ACCENT : "transparent",
+                    color: expandedSections.has(section) ? "white" : ACCENT,
+                    border: `1px solid ${ACCENT}`,
+                  }}
+                >
+                  {section}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Variables List */}
+          <div className="flex-1 overflow-y-auto p-2">
+            {Object.entries(filteredVariables).map(([category, variables]) => (
+              <div
+                key={category}
+                ref={(el) => { sectionRefs[category] = el }}
+                className="mb-2"
+              >
+                {/* Section Header - Clickable to expand/collapse */}
+                <button
+                  onClick={() => toggleSection(category)}
+                  className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-md transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <ChevronRight
+                      className={`w-4 h-4 text-slate-500 transition-transform ${
+                        expandedSections.has(category) ? "rotate-90" : ""
+                      }`}
+                    />
+                    <span className="text-sm font-semibold text-slate-700">{category}</span>
+                  </div>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                    {variables.length}
+                  </span>
+                </button>
+                
+                {/* Variables - Only show when expanded */}
+                {expandedSections.has(category) && (
+                  <div className="ml-6 mt-1 space-y-0.5 border-l-2 border-slate-100 pl-2">
+                    {variables.map((variable) => (
+                      <button
+                        key={variable}
+                        className="block w-full text-left text-sm py-1.5 px-2 rounded hover:bg-slate-50 transition-colors truncate"
+                        style={{ color: ACCENT }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(`{{${variable}}}`)
+                        }}
+                        title={`Click to copy {{${variable}}}`}
+                      >
+                        {variable}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
+            
+            {Object.keys(filteredVariables).length === 0 && (
+              <div className="text-center py-8 text-slate-400 text-sm">
+                No variables found matching "{searchQuery}"
+              </div>
+            )}
           </div>
         </div>
 
