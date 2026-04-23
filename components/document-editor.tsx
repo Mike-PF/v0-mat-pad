@@ -222,8 +222,21 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
   
   // Template variables sidebar state
   const [searchQuery, setSearchQuery] = useState("")
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["School"]))
-  const sectionRefs = {} as Record<string, HTMLDivElement | null>
+  const [selectedSection, setSelectedSection] = useState<string | null>(null)
+
+  const sectionNames = Object.keys(templateVariables)
+
+  // Filter sections by search query
+  const filteredSections = searchQuery
+    ? sectionNames.filter((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    : sectionNames
+
+  // If a section is selected, filter its variables too
+  const sectionVariables = selectedSection
+    ? (templateVariables[selectedSection] ?? []).filter((v) =>
+        searchQuery ? v.toLowerCase().includes(searchQuery.toLowerCase()) : true
+      )
+    : []
 
   const styles = ["Normal Text", "Heading 1", "Heading 2", "Heading 3", "Title", "Subtitle"]
   const fonts = ["Aptos", "Arial", "Calibri", "Times New Roman", "Verdana", "Georgia"]
@@ -231,44 +244,6 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 10, 200))
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 10, 50))
-  
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(section)) {
-        newSet.delete(section)
-      } else {
-        newSet.add(section)
-      }
-      return newSet
-    })
-  }
-  
-  const scrollToSection = (section: string) => {
-    setExpandedSections(prev => new Set([...prev, section]))
-    setTimeout(() => {
-      sectionRefs[section]?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 100)
-  }
-  
-  // Filter variables based on search
-  const filteredVariables = Object.entries(templateVariables).reduce((acc, [category, variables]) => {
-    if (!searchQuery) {
-      acc[category] = variables
-    } else {
-      const filtered = variables.filter(v => 
-        v.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      if (filtered.length > 0) {
-        acc[category] = filtered
-      }
-    }
-    return acc
-  }, {} as Record<string, string[]>)
-  
-  const totalVariables = Object.values(templateVariables).flat().length
-  const filteredCount = Object.values(filteredVariables).flat().length
 
   return (
     <div className="flex flex-col h-full bg-slate-100">
@@ -511,21 +486,17 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Template Variables Sidebar */}
+        {/* Template Variables Sidebar — two-panel */}
         <div className="w-80 h-full bg-white border-r border-slate-200 flex flex-col">
-          {/* Header */}
+
+          {/* Header + Search */}
           <div className="p-4 border-b border-slate-200 flex-shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-slate-800">Template Variables</h2>
-              <span className="text-xs text-slate-500">{filteredCount} of {totalVariables}</span>
-            </div>
-            
-            {/* Search */}
+            <h2 className="text-base font-semibold text-slate-800 mb-3">Template Variables</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search variables..."
+                placeholder={selectedSection ? `Search in ${selectedSection}...` : "Search sections..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-300"
@@ -540,80 +511,83 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
               )}
             </div>
           </div>
-          
-          {/* Quick Navigation */}
-          <div className="px-4 py-2 border-b border-slate-200 flex-shrink-0">
-            <div className="flex flex-wrap gap-1">
-              {Object.keys(filteredVariables).map((section) => (
-                <button
-                  key={section}
-                  onClick={() => scrollToSection(section)}
-                  className="px-2 py-0.5 text-xs rounded-full transition-colors"
-                  style={{
-                    backgroundColor: expandedSections.has(section) ? ACCENT : "transparent",
-                    color: expandedSections.has(section) ? "white" : ACCENT,
-                    border: `1px solid ${ACCENT}`,
-                  }}
-                >
-                  {section}
-                </button>
-              ))}
+
+          {/* Panel A — Section list (no section selected) */}
+          {!selectedSection && (
+            <div className="flex-1 overflow-y-auto">
+              {filteredSections.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-sm px-4">
+                  No sections matching &quot;{searchQuery}&quot;
+                </div>
+              ) : (
+                filteredSections.map((section) => (
+                  <button
+                    key={section}
+                    onClick={() => { setSelectedSection(section); setSearchQuery("") }}
+                    className="w-full flex items-center justify-between px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors group"
+                  >
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                      {section}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                        {templateVariables[section].length}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
-          </div>
-          
-          {/* Variables List */}
-          <div className="flex-1 overflow-y-auto p-2">
-            {Object.entries(filteredVariables).map(([category, variables]) => (
-              <div
-                key={category}
-                ref={(el) => { sectionRefs[category] = el }}
-                className="mb-2"
+          )}
+
+          {/* Panel B — Variables for selected section */}
+          {selectedSection && (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Back to sections */}
+              <button
+                onClick={() => { setSelectedSection(null); setSearchQuery("") }}
+                className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors flex-shrink-0"
               >
-                {/* Section Header - Clickable to expand/collapse */}
-                <button
-                  onClick={() => toggleSection(category)}
-                  className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-md transition-colors"
+                <ChevronRight className="w-4 h-4 rotate-180" />
+                All Sections
+                <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                  {sectionVariables.length}
+                </span>
+              </button>
+
+              {/* Section title */}
+              <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: NAVY }}
                 >
-                  <div className="flex items-center gap-2">
-                    <ChevronRight
-                      className={`w-4 h-4 text-slate-500 transition-transform ${
-                        expandedSections.has(category) ? "rotate-90" : ""
-                      }`}
-                    />
-                    <span className="text-sm font-semibold text-slate-700">{category}</span>
+                  {selectedSection}
+                </span>
+              </div>
+
+              {/* Variables list */}
+              <div className="flex-1 overflow-y-auto">
+                {sectionVariables.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm px-4">
+                    No variables matching &quot;{searchQuery}&quot;
                   </div>
-                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                    {variables.length}
-                  </span>
-                </button>
-                
-                {/* Variables - Only show when expanded */}
-                {expandedSections.has(category) && (
-                  <div className="ml-6 mt-1 space-y-0.5 border-l-2 border-slate-100 pl-2">
-                    {variables.map((variable) => (
-                      <button
-                        key={variable}
-                        className="block w-full text-left text-sm py-1.5 px-2 rounded hover:bg-slate-50 transition-colors truncate"
-                        style={{ color: ACCENT }}
-                        onClick={() => {
-                          navigator.clipboard.writeText(`{{${variable}}}`)
-                        }}
-                        title={`Click to copy {{${variable}}}`}
-                      >
-                        {variable}
-                      </button>
-                    ))}
-                  </div>
+                ) : (
+                  sectionVariables.map((variable) => (
+                    <button
+                      key={variable}
+                      onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
+                      title={`Click to copy {{${variable}}}`}
+                      className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors truncate"
+                      style={{ color: ACCENT }}
+                    >
+                      {variable}
+                    </button>
+                  ))
                 )}
               </div>
-            ))}
-            
-            {Object.keys(filteredVariables).length === 0 && (
-              <div className="text-center py-8 text-slate-400 text-sm">
-                No variables found matching "{searchQuery}"
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Document Canvas */}
