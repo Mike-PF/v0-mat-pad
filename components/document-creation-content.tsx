@@ -1055,9 +1055,9 @@ export function DocumentCreationContent() {
           isProcessing={isProcessing}
         />
 
-        <div className="space-y-4">
+        <div className="space-y-4 flex flex-col h-[calc(100vh-200px)]">
           {/* Configuration Panel — matches existing isCreatingNew panel style */}
-          <Card>
+          <Card className="flex-shrink-0">
             <CardHeader>
               <div className="flex items-center justify-between mb-4">
                 <Button
@@ -1099,11 +1099,13 @@ export function DocumentCreationContent() {
           </Card>
 
           {/* Document Editor */}
-          <DocumentEditor
-            documentName={documentName}
-            onExit={handleExitEditor}
-            onSave={handleSaveFromEditor}
-          />
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <DocumentEditor
+              documentName={documentName}
+              onExit={handleExitEditor}
+              onSave={handleSaveFromEditor}
+            />
+          </div>
         </div>
       </>
     )
