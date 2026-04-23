@@ -370,7 +370,10 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [hoveredVariable, setHoveredVariable] = useState<string | null>(null)
+  const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const sidebarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -381,6 +384,23 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
   }, [])
+
+  const handleVariableHover = (variable: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const sidebarRect = sidebarRef.current?.getBoundingClientRect()
+    if (sidebarRect) {
+      setTooltipPosition({
+        top: rect.top,
+        left: sidebarRect.right + 8,
+      })
+    }
+    setHoveredVariable(variable)
+  }
+
+  const handleVariableLeave = () => {
+    setHoveredVariable(null)
+    setTooltipPosition(null)
+  }
 
   const sectionNames = Object.keys(templateVariables)
 
@@ -645,7 +665,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Template Variables Sidebar */}
-        <div className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
+        <div ref={sidebarRef} className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
 
           {/* Header */}
           <div className="p-4 border-b border-slate-200 flex-shrink-0">
@@ -713,7 +733,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
           </div>
 
           {/* Variables list */}
-          <div className="flex-1 overflow-y-auto overflow-x-visible pr-2">
+          <div className="flex-1 overflow-y-auto">
             {!selectedSection ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-400 text-sm text-center px-6 gap-2">
                 <ChevronDown className="w-8 h-8 text-slate-300" />
@@ -724,31 +744,36 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
                 No variables matching &quot;{searchQuery}&quot;
               </div>
             ) : (
-                  sectionVariables.map((variable) => (
-                    <div key={variable} className="relative overflow-visible">
-                      <button
-                        onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
-                        className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors group relative"
-                        style={{ color: NAVY }}
-                      >
-                        {variable}
-                        {/* Inline tooltip - appears on button hover */}
-                        {exampleData[variable] && (
-                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden group-hover:block pointer-events-auto">
-                            <div className="bg-slate-900 text-white rounded-md shadow-lg p-3 w-56 whitespace-normal">
-                              <p className="text-xs text-slate-400 mb-1">Example value</p>
-                              <p className="text-sm font-medium break-all">{exampleData[variable]}</p>
-                              <p className="text-xs text-slate-400 mt-2 border-t border-slate-700 pt-2 font-mono">{`{{${variable}}}`}</p>
-                            </div>
-                            {/* Arrow */}
-                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                          </div>
-                        )}
-                      </button>
-                    </div>
-                  ))
+              sectionVariables.map((variable) => (
+                <button
+                  key={variable}
+                  onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
+                  onMouseEnter={(e) => handleVariableHover(variable, e)}
+                  onMouseLeave={handleVariableLeave}
+                  className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors"
+                  style={{ color: NAVY }}
+                >
+                  {variable}
+                </button>
+              ))
             )}
           </div>
+
+          {/* Fixed position tooltip - rendered outside scrollable area */}
+          {hoveredVariable && tooltipPosition && exampleData[hoveredVariable] && (
+            <div
+              className="fixed z-[100] pointer-events-none"
+              style={{ top: tooltipPosition.top, left: tooltipPosition.left }}
+            >
+              <div className="bg-slate-900 text-white rounded-md shadow-lg p-3 w-56">
+                <p className="text-xs text-slate-400 mb-1">Example value</p>
+                <p className="text-sm font-medium break-all">{exampleData[hoveredVariable]}</p>
+                <p className="text-xs text-slate-400 mt-2 border-t border-slate-700 pt-2 font-mono">{`{{${hoveredVariable}}}`}</p>
+              </div>
+              {/* Arrow */}
+              <div className="absolute right-full top-4 border-4 border-transparent border-r-slate-900" />
+            </div>
+          )}
         </div>
 
         {/* Document Canvas */}
