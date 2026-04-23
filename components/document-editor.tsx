@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import {
-  Menu,
   ZoomOut,
   ZoomIn,
   Search,
@@ -95,46 +94,44 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
 
   return (
     <div className="flex flex-col h-full bg-slate-100">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          <button className="p-1.5 hover:bg-slate-100 rounded">
-            <Menu className="w-5 h-5 text-slate-600" />
-          </button>
-
+      {/* Top Bar - Editor Controls */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
+        <div className="flex items-center gap-4">
           {/* Zoom Controls */}
           <div className="flex items-center gap-1 border-r border-slate-200 pr-3">
-            <span className="text-sm text-slate-600 min-w-[40px]">{zoom}%</span>
+            <span className="text-sm text-slate-600 min-w-[50px]">{zoom}%</span>
             <button
               onClick={handleZoomOut}
               className="p-1 hover:bg-slate-100 rounded"
+              title="Zoom out"
             >
               <ZoomOut className="w-4 h-4 text-slate-500" />
             </button>
             <button
               onClick={handleZoomIn}
               className="p-1 hover:bg-slate-100 rounded"
+              title="Zoom in"
             >
               <ZoomIn className="w-4 h-4 text-slate-500" />
             </button>
           </div>
 
           {/* Document Title */}
-          <span className="text-sm text-slate-700 font-medium truncate max-w-[200px]">
+          <span className="text-sm text-slate-700 font-medium">
             {documentName || "Untitled Document"}
           </span>
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           {(["Home", "Layout", "Insert"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`text-sm font-medium pb-1 border-b-2 transition-colors ${
                 activeTab === tab
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-600 hover:text-slate-800"
+                  ? "border-slate-900 text-slate-900"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
               {tab}
@@ -143,23 +140,23 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-slate-100 rounded">
+        <div className="flex items-center gap-3">
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Search">
             <Search className="w-4 h-4 text-slate-500" />
           </button>
-          <button className="p-2 hover:bg-slate-100 rounded">
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Print">
             <Printer className="w-4 h-4 text-slate-500" />
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded text-sm text-slate-600">
+          <button className="flex items-center gap-1 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded">
             <FolderOpen className="w-4 h-4" />
             Open file
           </button>
-          <button className="p-2 hover:bg-slate-100 rounded">
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Embed">
             <Code className="w-4 h-4 text-slate-500" />
           </button>
           <button
             onClick={onExit}
-            className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded text-sm text-slate-600"
+            className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
           >
             Exit
           </button>
