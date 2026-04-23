@@ -713,7 +713,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
           </div>
 
           {/* Variables list */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-visible pr-2">
             {!selectedSection ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-400 text-sm text-center px-6 gap-2">
                 <ChevronDown className="w-8 h-8 text-slate-300" />
@@ -725,10 +725,10 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
               </div>
             ) : (
                   sectionVariables.map((variable) => (
-                    <div key={variable} className="relative">
+                    <div key={variable} className="relative overflow-visible">
                       <button
                         onClick={() => navigator.clipboard.writeText(`{{${variable}}}`)}
-                        className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors group"
+                        className="w-full text-left px-4 py-2.5 border-b border-slate-100 text-sm hover:bg-slate-50 transition-colors group relative"
                         style={{ color: NAVY }}
                       >
                         {variable}
