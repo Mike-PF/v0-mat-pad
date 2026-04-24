@@ -216,6 +216,7 @@ export function DocumentCreationContent() {
   const [selectedDocument, setSelectedDocument] = useState<any>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [showDocumentEditor, setShowDocumentEditor] = useState(false)
+  const [configSaved, setConfigSaved] = useState(false)
   const [documentName, setDocumentName] = useState("")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
@@ -394,11 +395,19 @@ export function DocumentCreationContent() {
   const handleExitEditor = () => {
     setShowDocumentEditor(false)
     setIsCreatingNew(false)
+    setConfigSaved(false)
+  }
+
+  const handleSaveConfiguration = () => {
+    if (!documentName.trim()) return
+    setConfigSaved(true)
+    setNotificationMessage("Configuration saved!")
+    setShowNotification(true)
   }
 
   const handleSaveFromEditor = () => {
-    // For now just exit
     setShowDocumentEditor(false)
+    setConfigSaved(false)
     setNotificationMessage("Document saved successfully!")
     setShowNotification(true)
   }
@@ -1044,8 +1053,8 @@ export function DocumentCreationContent() {
     setShowIfModal(true)
   }
 
-  // Show both the configuration panel and document editor when creating new document
-  if (showDocumentEditor) {
+  // Stage 1: Configuration panel — shown before saving
+  if (showDocumentEditor && !configSaved) {
     return (
       <>
         <UploadModal
@@ -1054,60 +1063,63 @@ export function DocumentCreationContent() {
           onFileSelect={handleFileUpload}
           isProcessing={isProcessing}
         />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExitEditor}
+                className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to List
+              </Button>
+              <Button
+                onClick={handleSaveConfiguration}
+                disabled={!documentName.trim()}
+                className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Configuration
+              </Button>
+            </div>
 
-        <div className="space-y-4 flex flex-col h-[calc(100vh-200px)]">
-          {/* Configuration Panel — matches existing isCreatingNew panel style */}
-          <Card className="flex-shrink-0">
-            <CardHeader>
-              <div className="flex items-center justify-between mb-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExitEditor}
-                  className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to List
-                </Button>
-                <Button
-                  onClick={handleSaveFromEditor}
-                  className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Configuration
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
-                  <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
-                    {selectedOrganization?.name || selectedSchoolUrn}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
-                  <Input
-                    type="text"
-                    placeholder="Enter document name..."
-                    value={documentName}
-                    onChange={(e) => setDocumentName(e.target.value)}
-                  />
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
+                <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
+                  {selectedOrganization?.name || selectedSchoolUrn}
                 </div>
               </div>
-            </CardHeader>
-          </Card>
-
-          {/* Document Editor */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <DocumentEditor
-              documentName={documentName}
-              onExit={handleExitEditor}
-              onSave={handleSaveFromEditor}
-            />
-          </div>
-        </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
+                <Input
+                  type="text"
+                  placeholder="Enter document name..."
+                  value={documentName}
+                  onChange={(e) => setDocumentName(e.target.value)}
+                />
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
       </>
+    )
+  }
+
+  // Stage 2: Document editor — shown after configuration is saved
+  if (showDocumentEditor && configSaved) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-200px)]">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <DocumentEditor
+            documentName={documentName}
+            onExit={handleExitEditor}
+            onSave={handleSaveFromEditor}
+          />
+        </div>
+      </div>
     )
   }
 
