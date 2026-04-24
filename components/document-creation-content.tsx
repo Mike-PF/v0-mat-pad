@@ -1111,7 +1111,7 @@ export function DocumentCreationContent() {
   // Stage 2: Document editor — shown after configuration is saved
   if (showDocumentEditor && configSaved) {
     return (
-      <div className="flex flex-col h-[calc(100vh-200px)]">
+      <div className="flex flex-col h-[calc(100vh-120px)]">
         <div className="flex-1 min-h-0 overflow-hidden">
           <DocumentEditor
             documentName={documentName}
