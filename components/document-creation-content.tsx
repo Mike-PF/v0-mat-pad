@@ -220,7 +220,7 @@ export function DocumentCreationContent() {
   const [documentName, setDocumentName] = useState("")
   const [formList, setFormList] = useState("")
   const [sectionName, setSectionName] = useState("")
-  const [reportLevelSchool, setReportLevelSchool] = useState(false)
+  const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -1139,20 +1139,25 @@ export function DocumentCreationContent() {
             <div className="mt-4 flex items-center gap-3">
               <label className="text-sm font-medium text-slate-700">Report Level:</label>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600">School</span>
+                <span className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                  School
+                </span>
                 <button
                   type="button"
-                  onClick={() => setReportLevelSchool((v) => !v)}
+                  onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                    reportLevelSchool ? "bg-[#121051]" : "bg-slate-200"
+                    reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
                   }`}
                 >
                   <span
                     className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                      reportLevelSchool ? "translate-x-4" : "translate-x-1"
+                      reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
                     }`}
                   />
                 </button>
+                <span className={`text-sm ${reportLevel === "mat" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                  MAT
+                </span>
               </div>
             </div>
           </CardHeader>
