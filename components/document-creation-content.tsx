@@ -218,6 +218,9 @@ export function DocumentCreationContent() {
   const [showDocumentEditor, setShowDocumentEditor] = useState(false)
   const [configSaved, setConfigSaved] = useState(false)
   const [documentName, setDocumentName] = useState("")
+  const [formList, setFormList] = useState("")
+  const [sectionName, setSectionName] = useState("")
+  const [reportLevelSchool, setReportLevelSchool] = useState(false)
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -1077,7 +1080,7 @@ export function DocumentCreationContent() {
               </Button>
               <Button
                 onClick={handleSaveConfiguration}
-                disabled={!documentName.trim()}
+                disabled={!documentName.trim() || !sectionName}
                 className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4 mr-2" />
@@ -1085,7 +1088,7 @@ export function DocumentCreationContent() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-4 gap-6 items-end">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
                 <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
@@ -1100,6 +1103,56 @@ export function DocumentCreationContent() {
                   value={documentName}
                   onChange={(e) => setDocumentName(e.target.value)}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Form List</label>
+                <select
+                  value={formList}
+                  onChange={(e) => setFormList(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="">Select a form link</option>
+                  <option value="form-1">Autumn Term Form</option>
+                  <option value="form-2">Spring Term Form</option>
+                  <option value="form-3">Summer Term Form</option>
+                  <option value="form-4">Annual Review Form</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Section Name <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={sectionName}
+                  onChange={(e) => setSectionName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="">Select a section name</option>
+                  <option value="school">School</option>
+                  <option value="trust">Trust</option>
+                  <option value="la">Local Authority</option>
+                  <option value="national">National</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3">
+              <label className="text-sm font-medium text-slate-700">Report Level:</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">School</span>
+                <button
+                  type="button"
+                  onClick={() => setReportLevelSchool((v) => !v)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                    reportLevelSchool ? "bg-[#121051]" : "bg-slate-200"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                      reportLevelSchool ? "translate-x-4" : "translate-x-1"
+                    }`}
+                  />
+                </button>
               </div>
             </div>
           </CardHeader>
