@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check, Cable } from "lucide-react"
+import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check, Cable, MessageSquare } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -46,6 +46,7 @@ export function Sidebar({}: SidebarProps) {
     { icon: Cable, label: "Connections", href: "/connections" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: BarChart3, label: "Reports", href: "/reports" },
+    { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   ]
 
   const isActive = (href: string) => pathname.startsWith(href)

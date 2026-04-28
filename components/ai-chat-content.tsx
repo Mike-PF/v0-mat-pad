@@ -1,0 +1,504 @@
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+import { Plus, Mic, Send, Star, MoreHorizontal, Trash2, Edit2, Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+const NAVY = "#121051"
+const ACCENT = "#B30089"
+
+interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+}
+
+interface ChatSession {
+  id: string
+  title: string
+  messages: ChatMessage[]
+  isPinned: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Sample chat history
+const sampleChatSessions: ChatSession[] = [
+  {
+    id: "1",
+    title: "PairPoint Project",
+    messages: [
+      { id: "1a", role: "user", content: "Can you explain the PairPoint project?", timestamp: new Date("2024-01-15T10:00:00") },
+      { id: "1b", role: "assistant", content: "PairPoint is a collaborative initiative designed to connect mentors with mentees across educational institutions. The project focuses on peer-to-peer learning and support systems.", timestamp: new Date("2024-01-15T10:01:00") },
+    ],
+    isPinned: true,
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date("2024-01-15"),
+  },
+  {
+    id: "2",
+    title: "MATpad explanation",
+    messages: [
+      { id: "2a", role: "user", content: "What is MATpad and how does it work?", timestamp: new Date("2024-01-14T09:00:00") },
+      { id: "2b", role: "assistant", content: "MATpad is a comprehensive Multi-Academy Trust management platform that provides data analytics, reporting, and operational tools for educational trusts.", timestamp: new Date("2024-01-14T09:01:00") },
+    ],
+    isPinned: true,
+    createdAt: new Date("2024-01-14"),
+    updatedAt: new Date("2024-01-14"),
+  },
+  {
+    id: "3",
+    title: "1-Page Marketing Plan Sum...",
+    messages: [
+      { id: "3a", role: "user", content: "Summarize the 1-Page Marketing Plan book", timestamp: new Date("2024-01-13T14:00:00") },
+      { id: "3b", role: "assistant", content: "The 1-Page Marketing Plan by Allan Dib breaks down marketing into three phases: Before, During, and After. It emphasizes identifying your target market, crafting your message, and building systems for customer retention.", timestamp: new Date("2024-01-13T14:02:00") },
+    ],
+    isPinned: true,
+    createdAt: new Date("2024-01-13"),
+    updatedAt: new Date("2024-01-13"),
+  },
+  {
+    id: "4",
+    title: "Kubernetes Release Proposal",
+    messages: [
+      { id: "4a", role: "user", content: "Help me write a Kubernetes release proposal", timestamp: new Date("2024-01-12T11:00:00") },
+      { id: "4b", role: "assistant", content: "I'd be happy to help you draft a Kubernetes release proposal. Could you share the specific features or changes you're planning to include in this release?", timestamp: new Date("2024-01-12T11:01:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-12"),
+    updatedAt: new Date("2024-01-12"),
+  },
+  {
+    id: "5",
+    title: "Suffolk Data PME",
+    messages: [
+      { id: "5a", role: "user", content: "Analyze Suffolk data PME metrics", timestamp: new Date("2024-01-11T16:00:00") },
+      { id: "5b", role: "assistant", content: "Looking at the Suffolk PME data, I can see several key trends in pupil performance and engagement metrics.", timestamp: new Date("2024-01-11T16:02:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-11"),
+    updatedAt: new Date("2024-01-11"),
+  },
+  {
+    id: "6",
+    title: "NAPAM Tender Win Update",
+    messages: [
+      { id: "6a", role: "user", content: "Draft an update about the NAPAM tender win", timestamp: new Date("2024-01-10T09:30:00") },
+      { id: "6b", role: "assistant", content: "Here's a draft update for your NAPAM tender win announcement. The message highlights the key achievements and next steps for implementation.", timestamp: new Date("2024-01-10T09:32:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-10"),
+    updatedAt: new Date("2024-01-10"),
+  },
+  {
+    id: "7",
+    title: "Tender Strategy for Acas",
+    messages: [
+      { id: "7a", role: "user", content: "Help develop a tender strategy for Acas", timestamp: new Date("2024-01-09T13:00:00") },
+      { id: "7b", role: "assistant", content: "For the Acas tender, I recommend focusing on demonstrating your expertise in dispute resolution training and workplace mediation services.", timestamp: new Date("2024-01-09T13:03:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-09"),
+    updatedAt: new Date("2024-01-09"),
+  },
+  {
+    id: "8",
+    title: "Victim Single Needs Assessment",
+    messages: [
+      { id: "8a", role: "user", content: "Create a victim single needs assessment framework", timestamp: new Date("2024-01-08T10:00:00") },
+      { id: "8b", role: "assistant", content: "A comprehensive victim single needs assessment should include immediate safety concerns, emotional support needs, and long-term recovery planning.", timestamp: new Date("2024-01-08T10:05:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-08"),
+    updatedAt: new Date("2024-01-08"),
+  },
+  {
+    id: "9",
+    title: "Capacity Overload Analysis",
+    messages: [
+      { id: "9a", role: "user", content: "Analyze our team's capacity overload issues", timestamp: new Date("2024-01-07T15:00:00") },
+      { id: "9b", role: "assistant", content: "Based on the workload data, there are clear patterns of capacity overload during Q3 and Q4. I recommend implementing a resource allocation review.", timestamp: new Date("2024-01-07T15:04:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-07"),
+    updatedAt: new Date("2024-01-07"),
+  },
+  {
+    id: "10",
+    title: "Aero X",
+    messages: [
+      { id: "10a", role: "user", content: "Research Aero X company", timestamp: new Date("2024-01-06T11:00:00") },
+      { id: "10b", role: "assistant", content: "Aero X is an aerospace technology company specializing in advanced propulsion systems and satellite deployment solutions.", timestamp: new Date("2024-01-06T11:02:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-06"),
+    updatedAt: new Date("2024-01-06"),
+  },
+  {
+    id: "11",
+    title: "Accessing GPT via API",
+    messages: [
+      { id: "11a", role: "user", content: "How do I access GPT via API?", timestamp: new Date("2024-01-05T09:00:00") },
+      { id: "11b", role: "assistant", content: "To access GPT via API, you'll need to: 1) Create an OpenAI account, 2) Generate an API key, 3) Install the OpenAI library, and 4) Make authenticated requests to the API endpoint.", timestamp: new Date("2024-01-05T09:03:00") },
+    ],
+    isPinned: false,
+    createdAt: new Date("2024-01-05"),
+    updatedAt: new Date("2024-01-05"),
+  },
+]
+
+export function AIChatContent() {
+  const [sessions, setSessions] = useState<ChatSession[]>(sampleChatSessions)
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+  const [inputValue, setInputValue] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const [hoveredSessionId, setHoveredSessionId] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const activeSession = sessions.find((s) => s.id === activeSessionId)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    if (activeSession) {
+      scrollToBottom()
+    }
+  }, [activeSession?.messages])
+
+  const handleNewChat = () => {
+    setActiveSessionId(null)
+    setInputValue("")
+  }
+
+  const handleSelectSession = (sessionId: string) => {
+    setActiveSessionId(sessionId)
+    setInputValue("")
+  }
+
+  const handleTogglePin = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, isPinned: !s.isPinned } : s))
+    )
+  }
+
+  const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId))
+    if (activeSessionId === sessionId) {
+      setActiveSessionId(null)
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return
+
+    const userMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      role: "user",
+      content: inputValue.trim(),
+      timestamp: new Date(),
+    }
+
+    if (activeSessionId) {
+      // Add message to existing session
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === activeSessionId
+            ? { ...s, messages: [...s.messages, userMessage], updatedAt: new Date() }
+            : s
+        )
+      )
+    } else {
+      // Create new session
+      const newSession: ChatSession = {
+        id: `session-${Date.now()}`,
+        title: inputValue.trim().slice(0, 30) + (inputValue.length > 30 ? "..." : ""),
+        messages: [userMessage],
+        isPinned: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      setSessions((prev) => [newSession, ...prev])
+      setActiveSessionId(newSession.id)
+    }
+
+    setInputValue("")
+    setIsTyping(true)
+
+    // Simulate AI response
+    setTimeout(() => {
+      const assistantMessage: ChatMessage = {
+        id: `msg-${Date.now()}-response`,
+        role: "assistant",
+        content: "Thank you for your message. I'm here to help you with any questions about your school data, reports, or any other information you need. How can I assist you today?",
+        timestamp: new Date(),
+      }
+
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === (activeSessionId || `session-${Date.now() - 1500}`) ||
+          (s.messages.length === 1 && s.messages[0].id === userMessage.id)
+            ? { ...s, messages: [...s.messages, assistantMessage], updatedAt: new Date() }
+            : s
+        )
+      )
+      setIsTyping(false)
+    }, 1500)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
+  }
+
+  const pinnedSessions = sessions.filter((s) => s.isPinned)
+  const recentSessions = sessions.filter((s) => !s.isPinned)
+
+  return (
+    <div className="flex h-full bg-white">
+      {/* Left Sidebar - Chat History */}
+      <div className="w-64 border-r border-slate-200 flex flex-col bg-slate-50">
+        {/* New Chat Button */}
+        <div className="p-3 border-b border-slate-200">
+          <Button
+            onClick={handleNewChat}
+            variant="outline"
+            className="w-full justify-start gap-2 text-sm hover:bg-slate-100"
+          >
+            <Plus className="w-4 h-4" />
+            New Chat
+          </Button>
+        </div>
+
+        {/* Chat List */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Pinned Section */}
+          {pinnedSessions.length > 0 && (
+            <div className="py-2">
+              <div className="px-3 py-1 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                Pinned
+              </div>
+              {pinnedSessions.map((session) => (
+                <button
+                  key={session.id}
+                  onClick={() => handleSelectSession(session.id)}
+                  onMouseEnter={() => setHoveredSessionId(session.id)}
+                  onMouseLeave={() => setHoveredSessionId(null)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                    activeSessionId === session.id
+                      ? "bg-slate-200"
+                      : "hover:bg-slate-100"
+                  }`}
+                >
+                  <span className="flex-1 truncate text-slate-700">{session.title}</span>
+                  {(hoveredSessionId === session.id || activeSessionId === session.id) ? (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => handleTogglePin(session.id, e)}
+                        className="p-1 hover:bg-slate-200 rounded"
+                        title="Unpin"
+                      >
+                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteSession(session.id, e)}
+                        className="p-1 hover:bg-slate-200 rounded"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Recents Section */}
+          <div className="py-2">
+            <div className="px-3 py-1 text-xs font-medium text-slate-500 uppercase tracking-wider">
+              Recents
+            </div>
+            {recentSessions.map((session) => (
+              <button
+                key={session.id}
+                onClick={() => handleSelectSession(session.id)}
+                onMouseEnter={() => setHoveredSessionId(session.id)}
+                onMouseLeave={() => setHoveredSessionId(null)}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                  activeSessionId === session.id
+                    ? "bg-slate-200"
+                    : "hover:bg-slate-100"
+                }`}
+              >
+                <span className="flex-1 truncate text-slate-700">{session.title}</span>
+                {(hoveredSessionId === session.id || activeSessionId === session.id) && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => handleTogglePin(session.id, e)}
+                      className="p-1 hover:bg-slate-200 rounded"
+                      title="Pin"
+                    >
+                      <Star className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteSession(session.id, e)}
+                      className="p-1 hover:bg-slate-200 rounded"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {!activeSession ? (
+          // Empty state - New Chat
+          <div className="flex-1 flex flex-col items-center justify-center px-8">
+            <h1 className="text-3xl font-light text-slate-800 mb-12 italic">
+              Ready when you are.
+            </h1>
+
+            {/* Input Field */}
+            <div className="w-full max-w-2xl">
+              <div className="flex items-center gap-2 px-4 py-3 border border-slate-200 rounded-full shadow-sm bg-white">
+                <Plus className="w-5 h-5 text-slate-400" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Ask anything"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="flex-1 bg-transparent outline-none text-slate-700 placeholder-slate-400"
+                />
+                <button className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors">
+                  <Mic className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim()}
+                  className="p-2 rounded-full transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: NAVY, color: "white" }}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Company Knowledge Button */}
+              <div className="flex justify-center mt-6">
+                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-full text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+                  <Users className="w-4 h-4" />
+                  Company knowledge
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Active Chat
+          <>
+            {/* Chat Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h2 className="font-medium text-slate-800">{activeSession.title}</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => handleTogglePin(activeSession.id, e)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  title={activeSession.isPinned ? "Unpin" : "Pin"}
+                >
+                  <Star
+                    className={`w-4 h-4 ${
+                      activeSession.isPinned ? "text-amber-500 fill-amber-500" : "text-slate-400"
+                    }`}
+                  />
+                </button>
+                <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                  <MoreHorizontal className="w-4 h-4 text-slate-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="max-w-3xl mx-auto space-y-6">
+                {activeSession.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] px-4 py-3 rounded-2xl ${
+                        message.role === "user"
+                          ? "bg-slate-100 text-slate-800"
+                          : "bg-white border border-slate-200 text-slate-700"
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-white border border-slate-200 px-4 py-3 rounded-2xl">
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Input Area */}
+            <div className="px-6 py-4 border-t border-slate-200">
+              <div className="max-w-3xl mx-auto">
+                <div className="flex items-center gap-2 px-4 py-3 border border-slate-200 rounded-full bg-white">
+                  <Plus className="w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Ask anything"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="flex-1 bg-transparent outline-none text-slate-700 placeholder-slate-400"
+                  />
+                  <button className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors">
+                    <Mic className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim()}
+                    className="p-2 rounded-full transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: NAVY, color: "white" }}
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
