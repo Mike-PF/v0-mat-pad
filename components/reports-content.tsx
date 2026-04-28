@@ -15,8 +15,10 @@ import {
   Minimize2,
   Star,
   Sparkles,
-  Send
+  Send,
+  ExternalLink
 } from "lucide-react"
+import Link from "next/link"
 import { LoadingModal } from "@/components/ui/loading-modal"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
 import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
@@ -360,6 +362,9 @@ export function ReportsContent() {
   const [isLoadingReport, setIsLoadingReport] = useState(false)
   const [favourites, setFavourites] = useState<string[]>([])
   const [showAiChat, setShowAiChat] = useState(false)
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([])
+  const [chatInput, setChatInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
 
   const handleReportSelect = (reportId: string) => {
     setIsLoadingReport(true)
@@ -371,6 +376,60 @@ export function ReportsContent() {
 
   const handleBackToMenu = () => {
     setSelectedReport(null)
+  }
+
+  // Sample AI responses based on keywords
+  const getAiResponse = (question: string): string => {
+    const q = question.toLowerCase()
+    if (q.includes("attendance")) {
+      return "Based on your current data, the overall attendance rate across the trust is 94.7%, which is slightly above the national average of 94.2%. St Mary's Academy has the highest rate at 96.1%, while Riverside Primary is at 92.8% and may need attention."
+    }
+    if (q.includes("ks2") || q.includes("key stage 2")) {
+      return "KS2 Results Summary:\n\n- Reading: 74% at expected standard (national: 73%)\n- Writing: 69% at expected standard (national: 71%)\n- Maths: 76% at expected standard (national: 73%)\n\nThree schools exceeded national averages in all subjects. Two schools require improvement support in Writing."
+    }
+    if (q.includes("persistent absence") || q.includes("absence trends")) {
+      return "Persistent absence has decreased by 1.8% compared to last term. Current PA rate is 14.2% (down from 16.0%). Year 9 and Year 10 have the highest PA rates at 17.3% and 16.8% respectively. Intervention programmes in these year groups are recommended."
+    }
+    if (q.includes("progress 8") || q.includes("progress8")) {
+      return "The trust-wide Progress 8 score is +0.32, placing it above the national average. Four out of six secondary schools have positive Progress 8 scores. English and Maths are the strongest contributors, while open bucket subjects show room for improvement."
+    }
+    if (q.includes("exclusion") || q.includes("suspension")) {
+      return "This term there have been 8 fixed-term exclusions across the trust, down from 12 in the same period last year. No permanent exclusions have been recorded. The majority of incidents relate to persistent disruptive behaviour in Key Stage 3."
+    }
+    return "I can help you analyse your school data. Try asking about attendance rates, KS2 results, persistent absence trends, Progress 8 scores, or exclusions. You can also ask me to compare data across schools in your trust."
+  }
+
+  const handleSendChatMessage = () => {
+    if (!chatInput.trim()) return
+    const userMessage = chatInput.trim()
+    setChatMessages((prev) => [...prev, { role: "user", content: userMessage }])
+    setChatInput("")
+    setIsTyping(true)
+
+    // Simulate AI response delay
+    setTimeout(() => {
+      const response = getAiResponse(userMessage)
+      setChatMessages((prev) => [...prev, { role: "assistant", content: response }])
+      setIsTyping(false)
+    }, 1000)
+  }
+
+  const handleExampleQuestion = (question: string) => {
+    setChatMessages((prev) => [...prev, { role: "user", content: question }])
+    setIsTyping(true)
+
+    setTimeout(() => {
+      const response = getAiResponse(question)
+      setChatMessages((prev) => [...prev, { role: "assistant", content: response }])
+      setIsTyping(false)
+    }, 1000)
+  }
+
+  const handleChatKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSendChatMessage()
+    }
   }
 
   const toggleCategory = (categoryId: string) => {
@@ -715,43 +774,95 @@ export function ReportsContent() {
         {/* AI Chat Modal */}
         {showAiChat && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-end md:p-6">
-            <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[90vh]">
+            <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[600px]">
               {/* Header */}
               <div className="bg-gradient-to-r from-[#B30089] to-[#121051] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
                 <div>
                   <h3 className="text-white font-semibold">MATpad AI</h3>
                   <p className="text-white/80 text-sm">Ask about your data</p>
                 </div>
-                <button
-                  onClick={() => setShowAiChat(false)}
-                  className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/ai-chat"
+                    className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors flex items-center gap-1 text-xs"
+                    title="Open full AI Chat"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                  <button
+                    onClick={() => setShowAiChat(false)}
+                    className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Content */}
-              <div className="flex-1 flex flex-col overflow-auto">
-                {/* Chat Area - shows initial message */}
-                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
-                    <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
-                  </div>
-                  <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
-                  <p className="text-sm text-slate-600">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Chat Area */}
+                <div className="flex-1 overflow-y-auto p-4">
+                  {chatMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
+                        <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
+                      </div>
+                      <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
+                      <p className="text-sm text-slate-600 mb-6">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
 
-                  {/* Example questions */}
-                  <div className="w-full mt-6 space-y-2">
-                    <button className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200">
-                      What&apos;s our current attendance rate?
-                    </button>
-                    <button className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200">
-                      Compare KS2 results across schools
-                    </button>
-                    <button className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200">
-                      Show persistent absence trends
-                    </button>
-                  </div>
+                      {/* Example questions */}
+                      <div className="w-full space-y-2">
+                        <button 
+                          onClick={() => handleExampleQuestion("What's our current attendance rate?")}
+                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                        >
+                          What&apos;s our current attendance rate?
+                        </button>
+                        <button 
+                          onClick={() => handleExampleQuestion("Compare KS2 results across schools")}
+                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                        >
+                          Compare KS2 results across schools
+                        </button>
+                        <button 
+                          onClick={() => handleExampleQuestion("Show persistent absence trends")}
+                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                        >
+                          Show persistent absence trends
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {chatMessages.map((msg, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-line ${
+                              msg.role === "user"
+                                ? "bg-[#121051] text-white"
+                                : "bg-slate-100 text-slate-800"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))}
+                      {isTyping && (
+                        <div className="flex justify-start">
+                          <div className="bg-slate-100 rounded-lg px-4 py-3">
+                            <div className="flex gap-1">
+                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Input Area */}
@@ -760,9 +871,17 @@ export function ReportsContent() {
                     <input
                       type="text"
                       placeholder="Ask about your data..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={handleChatKeyDown}
                       className="flex-1 px-4 py-2 bg-slate-100 rounded-full text-sm outline-none placeholder-slate-400 focus:bg-slate-50 transition-colors"
                     />
-                    <button className="w-10 h-10 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: "#C0C0C0" }}>
+                    <button 
+                      onClick={handleSendChatMessage}
+                      disabled={!chatInput.trim()}
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
+                      style={{ backgroundColor: chatInput.trim() ? "#B30089" : "#C0C0C0" }}
+                    >
                       <Send className="w-4 h-4 text-white" />
                     </button>
                   </div>
