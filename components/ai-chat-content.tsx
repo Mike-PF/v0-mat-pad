@@ -27,10 +27,10 @@ interface ChatSession {
 const sampleChatSessions: ChatSession[] = [
   {
     id: "1",
-    title: "PairPoint Project",
+    title: "Ofsted Inspection Preparation",
     messages: [
-      { id: "1a", role: "user", content: "Can you explain the PairPoint project?", timestamp: new Date("2024-01-15T10:00:00") },
-      { id: "1b", role: "assistant", content: "PairPoint is a collaborative initiative designed to connect mentors with mentees across educational institutions. The project focuses on peer-to-peer learning and support systems.", timestamp: new Date("2024-01-15T10:01:00") },
+      { id: "1a", role: "user", content: "What should we focus on when preparing for an Ofsted inspection?", timestamp: new Date("2024-01-15T10:00:00") },
+      { id: "1b", role: "assistant", content: "For Ofsted preparation, focus on five key areas: quality of education, behaviour and attitudes, personal development, leadership and management, and early years provision if applicable. Ensure your self-evaluation form (SEF) is up to date and that all staff can articulate your school improvement plan clearly.", timestamp: new Date("2024-01-15T10:01:00") },
     ],
     isPinned: true,
     createdAt: new Date("2024-01-15"),
@@ -38,10 +38,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "2",
-    title: "MATpad explanation",
+    title: "MAT Performance Overview",
     messages: [
-      { id: "2a", role: "user", content: "What is MATpad and how does it work?", timestamp: new Date("2024-01-14T09:00:00") },
-      { id: "2b", role: "assistant", content: "MATpad is a comprehensive Multi-Academy Trust management platform that provides data analytics, reporting, and operational tools for educational trusts.", timestamp: new Date("2024-01-14T09:01:00") },
+      { id: "2a", role: "user", content: "Summarise the performance across our MAT for this academic year.", timestamp: new Date("2024-01-14T09:00:00") },
+      { id: "2b", role: "assistant", content: "Across the trust, Progress 8 scores have improved by 0.3 on average compared to last year. Three schools are now above national average for Attainment 8, and persistent absence has reduced by 2.1 percentage points trust-wide. The primary schools show strong KS2 reading results at 76% meeting expected standard.", timestamp: new Date("2024-01-14T09:01:00") },
     ],
     isPinned: true,
     createdAt: new Date("2024-01-14"),
@@ -49,10 +49,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "3",
-    title: "1-Page Marketing Plan Sum...",
+    title: "Pupil Premium Strategy 2024",
     messages: [
-      { id: "3a", role: "user", content: "Summarize the 1-Page Marketing Plan book", timestamp: new Date("2024-01-13T14:00:00") },
-      { id: "3b", role: "assistant", content: "The 1-Page Marketing Plan by Allan Dib breaks down marketing into three phases: Before, During, and After. It emphasizes identifying your target market, crafting your message, and building systems for customer retention.", timestamp: new Date("2024-01-13T14:02:00") },
+      { id: "3a", role: "user", content: "Help me draft a pupil premium strategy for the 2024-25 academic year.", timestamp: new Date("2024-01-13T14:00:00") },
+      { id: "3b", role: "assistant", content: "A strong pupil premium strategy should be structured around three pillars: teaching and learning quality, targeted academic support, and wider strategies for wellbeing and attendance. I can help you draft each section with reference to the EEF guidance toolkit. Shall we start with your current pupil premium cohort data?", timestamp: new Date("2024-01-13T14:02:00") },
     ],
     isPinned: true,
     createdAt: new Date("2024-01-13"),
@@ -60,10 +60,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "4",
-    title: "Kubernetes Release Proposal",
+    title: "Persistent Absence Analysis",
     messages: [
-      { id: "4a", role: "user", content: "Help me write a Kubernetes release proposal", timestamp: new Date("2024-01-12T11:00:00") },
-      { id: "4b", role: "assistant", content: "I'd be happy to help you draft a Kubernetes release proposal. Could you share the specific features or changes you're planning to include in this release?", timestamp: new Date("2024-01-12T11:01:00") },
+      { id: "4a", role: "user", content: "Which year groups have the highest persistent absence rates?", timestamp: new Date("2024-01-12T11:00:00") },
+      { id: "4b", role: "assistant", content: "Based on the current data, Year 10 has the highest persistent absence rate at 18.4%, followed by Year 8 at 15.9%. Both are above the national average of 14.2%. Year 7 and Year 12 are performing well below the national threshold. Would you like me to break this down by FSM eligibility or SEN status?", timestamp: new Date("2024-01-12T11:01:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-12"),
@@ -71,10 +71,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "5",
-    title: "Suffolk Data PME",
+    title: "SEND Provision Review",
     messages: [
-      { id: "5a", role: "user", content: "Analyze Suffolk data PME metrics", timestamp: new Date("2024-01-11T16:00:00") },
-      { id: "5b", role: "assistant", content: "Looking at the Suffolk PME data, I can see several key trends in pupil performance and engagement metrics.", timestamp: new Date("2024-01-11T16:02:00") },
+      { id: "5a", role: "user", content: "Review our current SEND provision and identify gaps.", timestamp: new Date("2024-01-11T16:00:00") },
+      { id: "5b", role: "assistant", content: "Looking at your SEND data, the proportion of pupils with EHCPs is 3.2%, slightly below the national average of 3.7%. There are indicators that identification of pupils with SEMH needs may be underrepresented. I would recommend reviewing referral pathways and ensuring class teachers are confident in early identification.", timestamp: new Date("2024-01-11T16:02:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-11"),
@@ -82,10 +82,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "6",
-    title: "NAPAM Tender Win Update",
+    title: "School Improvement Plan Draft",
     messages: [
-      { id: "6a", role: "user", content: "Draft an update about the NAPAM tender win", timestamp: new Date("2024-01-10T09:30:00") },
-      { id: "6b", role: "assistant", content: "Here's a draft update for your NAPAM tender win announcement. The message highlights the key achievements and next steps for implementation.", timestamp: new Date("2024-01-10T09:32:00") },
+      { id: "6a", role: "user", content: "Help me write the curriculum section of our school improvement plan.", timestamp: new Date("2024-01-10T09:30:00") },
+      { id: "6b", role: "assistant", content: "For the curriculum section, I suggest structuring it around intent, implementation, and impact — aligned with the Ofsted framework. Key priorities might include improving curriculum sequencing in humanities, increasing oracy provision across KS3, and embedding retrieval practice school-wide. Shall I draft specific targets and success criteria?", timestamp: new Date("2024-01-10T09:32:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-10"),
@@ -93,10 +93,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "7",
-    title: "Tender Strategy for Acas",
+    title: "KS2 SATs Results Breakdown",
     messages: [
-      { id: "7a", role: "user", content: "Help develop a tender strategy for Acas", timestamp: new Date("2024-01-09T13:00:00") },
-      { id: "7b", role: "assistant", content: "For the Acas tender, I recommend focusing on demonstrating your expertise in dispute resolution training and workplace mediation services.", timestamp: new Date("2024-01-09T13:03:00") },
+      { id: "7a", role: "user", content: "Break down our KS2 SATs results by subject and demographic.", timestamp: new Date("2024-01-09T13:00:00") },
+      { id: "7b", role: "assistant", content: "Your combined Reading, Writing and Maths score is 61%, which is 3 points below national average. Reading is your strongest subject at 74%. There is a notable gap for FSM pupils in Maths (48% vs 67% non-FSM). Gender gap in Writing is narrower than national, which is a positive indicator.", timestamp: new Date("2024-01-09T13:03:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-09"),
@@ -104,10 +104,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "8",
-    title: "Victim Single Needs Assessment",
+    title: "Staff Wellbeing Survey Analysis",
     messages: [
-      { id: "8a", role: "user", content: "Create a victim single needs assessment framework", timestamp: new Date("2024-01-08T10:00:00") },
-      { id: "8b", role: "assistant", content: "A comprehensive victim single needs assessment should include immediate safety concerns, emotional support needs, and long-term recovery planning.", timestamp: new Date("2024-01-08T10:05:00") },
+      { id: "8a", role: "user", content: "Analyse the results of our staff wellbeing survey.", timestamp: new Date("2024-01-08T10:00:00") },
+      { id: "8b", role: "assistant", content: "The survey results show 68% of staff feel supported by senior leadership, up from 54% last year. Workload remains the top concern, cited by 71% of respondents. CPD satisfaction has improved significantly following the introduction of protected development time on Thursday afternoons.", timestamp: new Date("2024-01-08T10:05:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-08"),
@@ -115,10 +115,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "9",
-    title: "Capacity Overload Analysis",
+    title: "Exclusions & Behaviour Data",
     messages: [
-      { id: "9a", role: "user", content: "Analyze our team's capacity overload issues", timestamp: new Date("2024-01-07T15:00:00") },
-      { id: "9b", role: "assistant", content: "Based on the workload data, there are clear patterns of capacity overload during Q3 and Q4. I recommend implementing a resource allocation review.", timestamp: new Date("2024-01-07T15:04:00") },
+      { id: "9a", role: "user", content: "Summarise our exclusions data for the autumn term.", timestamp: new Date("2024-01-07T15:00:00") },
+      { id: "9b", role: "assistant", content: "Autumn term saw 12 fixed-term exclusions and 0 permanent exclusions. This is a reduction of 4 compared to the same period last year. The majority of exclusions were in Year 9 and related to persistent disruptive behaviour. Internal suspensions totalled 34 days across the school.", timestamp: new Date("2024-01-07T15:04:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-07"),
@@ -126,10 +126,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "10",
-    title: "Aero X",
+    title: "Sixth Form Destinations Report",
     messages: [
-      { id: "10a", role: "user", content: "Research Aero X company", timestamp: new Date("2024-01-06T11:00:00") },
-      { id: "10b", role: "assistant", content: "Aero X is an aerospace technology company specializing in advanced propulsion systems and satellite deployment solutions.", timestamp: new Date("2024-01-06T11:02:00") },
+      { id: "10a", role: "user", content: "What were the post-16 destinations for last year's Year 13 cohort?", timestamp: new Date("2024-01-06T11:00:00") },
+      { id: "10b", role: "assistant", content: "Of last year's Year 13 cohort, 62% progressed to higher education, with 8% attending Russell Group universities. 21% entered employment or apprenticeships, 11% took a gap year, and 6% enrolled in further education or retraining. Overall destination data is above national average for this school type.", timestamp: new Date("2024-01-06T11:02:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-06"),
@@ -137,10 +137,10 @@ const sampleChatSessions: ChatSession[] = [
   },
   {
     id: "11",
-    title: "Accessing GPT via API",
+    title: "Curriculum Intent Statement",
     messages: [
-      { id: "11a", role: "user", content: "How do I access GPT via API?", timestamp: new Date("2024-01-05T09:00:00") },
-      { id: "11b", role: "assistant", content: "To access GPT via API, you'll need to: 1) Create an OpenAI account, 2) Generate an API key, 3) Install the OpenAI library, and 4) Make authenticated requests to the API endpoint.", timestamp: new Date("2024-01-05T09:03:00") },
+      { id: "11a", role: "user", content: "Help me write a curriculum intent statement for our school.", timestamp: new Date("2024-01-05T09:00:00") },
+      { id: "11b", role: "assistant", content: "Here is a draft curriculum intent statement: 'Our curriculum is designed to inspire curiosity, build cultural capital, and equip all pupils with the knowledge and skills to thrive beyond school. We believe in an ambitious, knowledge-rich curriculum that is carefully sequenced to ensure deep understanding and long-term retention across all subjects and year groups.' Would you like me to tailor this to your school context?", timestamp: new Date("2024-01-05T09:03:00") },
     ],
     isPinned: false,
     createdAt: new Date("2024-01-05"),
