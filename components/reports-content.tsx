@@ -13,7 +13,9 @@ import {
   ArrowLeft,
   Maximize2,
   Minimize2,
-  Star
+  Star,
+  Sparkles,
+  Send
 } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading-modal"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
@@ -357,6 +359,7 @@ export function ReportsContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoadingReport, setIsLoadingReport] = useState(false)
   const [favourites, setFavourites] = useState<string[]>([])
+  const [showAiChat, setShowAiChat] = useState(false)
 
   const handleReportSelect = (reportId: string) => {
     setIsLoadingReport(true)
@@ -698,6 +701,76 @@ export function ReportsContent() {
             </div>
           )}
         </div>
+
+        {/* AI Chat Floating Button */}
+        <button
+          onClick={() => setShowAiChat(true)}
+          className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-40"
+          style={{ backgroundColor: "#B30089" }}
+          aria-label="Open AI Chat"
+        >
+          <Sparkles className="w-8 h-8 text-white" />
+        </button>
+
+        {/* AI Chat Modal */}
+        {showAiChat && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-end md:p-6">
+            <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[90vh]">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#B30089] to-[#121051] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
+                <div>
+                  <h3 className="text-white font-semibold">MATpad AI</h3>
+                  <p className="text-white/80 text-sm">Ask about your data</p>
+                </div>
+                <button
+                  onClick={() => setShowAiChat(false)}
+                  className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 flex flex-col overflow-auto">
+                {/* Chat Area - shows initial message */}
+                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
+                    <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
+                  </div>
+                  <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
+                  <p className="text-sm text-slate-600">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
+
+                  {/* Example questions */}
+                  <div className="w-full mt-6 space-y-2">
+                    <button className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200">
+                      What&apos;s our current attendance rate?
+                    </button>
+                    <button className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200">
+                      Compare KS2 results across schools
+                    </button>
+                    <button className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200">
+                      Show persistent absence trends
+                    </button>
+                  </div>
+                </div>
+
+                {/* Input Area */}
+                <div className="border-t border-slate-200 p-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ask about your data..."
+                      className="flex-1 px-4 py-2 bg-slate-100 rounded-full text-sm outline-none placeholder-slate-400 focus:bg-slate-50 transition-colors"
+                    />
+                    <button className="w-10 h-10 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: "#C0C0C0" }}>
+                      <Send className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
