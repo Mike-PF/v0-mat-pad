@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Plus, Mic, Send, Star, MoreHorizontal, Trash2, Edit2, Users } from "lucide-react"
+import { Plus, Mic, Send, Star, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const NAVY = "#121051"
@@ -398,15 +398,6 @@ export function AIChatContent() {
                 >
                   <Send className="w-4 h-4" />
                 </button>
-              </div>
-
-              {/* Company Knowledge Button */}
-              <div className="flex justify-center mt-6">
-                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-full text-sm text-slate-600 hover:bg-slate-50 transition-colors">
-                  <Users className="w-4 h-4" />
-                  Company knowledge
-                </button>
-              </div>
             </div>
           </div>
         ) : (
