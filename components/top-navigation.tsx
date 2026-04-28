@@ -31,6 +31,12 @@ export function TopNavigation() {
       ]
     }
 
+    if (pathname.startsWith("/ai-chat")) {
+      return [
+        { id: "chat", label: "Chat", href: "/ai-chat" },
+      ]
+    }
+
     // Default tabs for forms and other pages
     return [
       { id: "dashboard", label: "Dashboard", href: "/forms" },
@@ -41,6 +47,7 @@ export function TopNavigation() {
   const tabs = getNavigationTabs()
   const isSettingsPage = pathname.startsWith("/settings")
   const isReportsPage = pathname.startsWith("/reports")
+  const isAiChatPage = pathname.startsWith("/ai-chat")
 
   return (
     <div className="w-full rounded-lg h-14 bg-white border border-slate-200 flex items-center justify-between px-4">
@@ -72,7 +79,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {!isSettingsPage && !isReportsPage && (
+        {!isSettingsPage && !isReportsPage && !isAiChatPage && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">
