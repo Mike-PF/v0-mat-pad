@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Plus, Mic, Send, Star, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
+import { Plus, Send, Star, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const NAVY = "#121051"
@@ -387,9 +387,6 @@ export function AIChatContent() {
                   onKeyDown={handleKeyDown}
                   className="flex-1 bg-transparent outline-none text-slate-700 placeholder-slate-400"
                 />
-                <button className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors">
-                  <Mic className="w-5 h-5" />
-                </button>
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim()}
@@ -474,9 +471,6 @@ export function AIChatContent() {
                     onKeyDown={handleKeyDown}
                     className="flex-1 bg-transparent outline-none text-slate-700 placeholder-slate-400"
                   />
-                  <button className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors">
-                    <Mic className="w-5 h-5" />
-                  </button>
                   <button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim()}
