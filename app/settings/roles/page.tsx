@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2, Pencil, ChevronDown } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
+import { PageHelpBanner } from "@/components/ui/help-video"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -283,6 +284,12 @@ export default function RolesPage() {
           </div>
 
           <main className="flex-1 px-4 pb-6 overflow-auto">
+            <PageHelpBanner
+              videoId="1234567890abcdef"
+              pageTitle="Creating & Editing Roles"
+              pageDescription="Learn how to configure role names, permissions, and assign users to this role."
+            />
+
             {/* Header with Role Name and Actions */}
             <div className="flex items-start justify-between mb-6">
               <div>
@@ -579,6 +586,12 @@ export default function RolesPage() {
         </div>
 
         <main className="flex-1 px-4 pb-6 overflow-auto">
+          <PageHelpBanner
+            videoId="1234567890abcdef"
+            pageTitle="Managing Roles"
+            pageDescription="Learn how to create roles, set permissions, and assign users to roles."
+          />
+
           {/* Organisation Selector Card */}
           <Card className="mb-4">
             <CardContent className="py-4">

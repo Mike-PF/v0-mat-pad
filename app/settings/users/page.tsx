@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, ChevronDown, Trash2, Pencil, X } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
+import { PageHelpBanner } from "@/components/ui/help-video"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -366,6 +367,12 @@ export default function UsersPage() {
         </div>
 
         <main className="flex-1 px-4 pb-6 overflow-auto">
+          <PageHelpBanner
+            videoId="1234567890abcdef"
+            pageTitle="Managing Users"
+            pageDescription="Learn how to add users, assign schools and roles, and manage account access."
+          />
+
           {/* Organisations Card */}
           <Card className="mb-4">
             <CardContent className="py-4">
