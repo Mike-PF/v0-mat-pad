@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Pencil, Trash2, X, PlayCircle, Upload, ExternalLink, Search } from "lucide-react"
+import { Pencil, Trash2, X, PlayCircle, Upload, ExternalLink, Search } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -255,9 +255,8 @@ export default function SystemHelpPage() {
                 </div>
                 <Button
                   onClick={handleAddVideo}
-                  className="bg-[#B30089] hover:bg-[#8a006a] text-white flex items-center gap-2"
+                  className="bg-[#121051] hover:bg-[#0a0838] text-white"
                 >
-                  <Plus className="w-4 h-4" />
                   Add Video
                 </Button>
               </div>
