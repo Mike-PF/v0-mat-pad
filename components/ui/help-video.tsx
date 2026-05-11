@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { PlayCircle, X, HelpCircle } from "lucide-react"
+import { useState, useRef } from "react"
+import { PlayCircle, X, HelpCircle, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface HelpVideoProps {
@@ -134,46 +134,78 @@ export function MultiVideoHelpBanner({
   videos,
 }: MultiVideoHelpBannerProps) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 320
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      })
+    }
+  }
 
   return (
     <>
       <div className="mb-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
-        {/* Header */}
-        <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#B30089]/10 flex items-center justify-center">
-              <HelpCircle className="w-5 h-5 text-[#B30089]" />
-            </div>
+        {/* Compact Header */}
+        <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-[#B30089]/5 to-[#121051]/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-4 h-4 text-[#B30089]" />
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">{pageTitle}</h2>
-              <p className="text-sm text-slate-600">{pageDescription}</p>
+              <h3 className="text-sm font-semibold text-slate-900">{pageTitle}</h3>
+              <p className="text-xs text-slate-500">{pageDescription}</p>
             </div>
           </div>
         </div>
 
-        {/* Video Grid */}
-        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {videos.map((video, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveVideo(video)}
-              className="group text-left p-4 rounded-lg border border-slate-200 hover:border-[#B30089] hover:shadow-md transition-all bg-white"
-            >
-              {/* Thumbnail placeholder */}
-              <div className="relative mb-3 rounded-lg overflow-hidden bg-gradient-to-br from-[#121051] to-[#B30089] aspect-video flex items-center justify-center">
-                <PlayCircle className="w-12 h-12 text-white/80 group-hover:text-white group-hover:scale-110 transition-transform" />
-                {video.duration && (
-                  <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 text-white text-xs font-medium">
-                    {video.duration}
-                  </span>
-                )}
-              </div>
-              <h3 className="font-medium text-slate-900 group-hover:text-[#B30089] transition-colors mb-1">
-                {video.title}
-              </h3>
-              <p className="text-sm text-slate-500 line-clamp-2">{video.description}</p>
-            </button>
-          ))}
+        {/* Horizontal Scroll Container */}
+        <div className="relative">
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-3 p-3 overflow-x-auto scrollbar-hide"
+          >
+            {videos.map((video, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveVideo(video)}
+                className="flex-shrink-0 group w-56 p-3 rounded-lg border border-slate-200 hover:border-[#B30089] hover:shadow-md transition-all bg-white hover:bg-slate-50"
+              >
+                {/* Mini Thumbnail */}
+                <div className="relative mb-2 rounded-md overflow-hidden bg-gradient-to-br from-[#121051] to-[#B30089] aspect-video flex items-center justify-center">
+                  <PlayCircle className="w-8 h-8 text-white/80 group-hover:text-white group-hover:scale-110 transition-transform" />
+                  {video.duration && (
+                    <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-xs bg-black/60 text-white font-medium">
+                      {video.duration}
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-xs font-semibold text-slate-900 group-hover:text-[#B30089] transition-colors line-clamp-1">
+                  {video.title}
+                </h4>
+                <p className="text-xs text-slate-500 line-clamp-1">{video.description}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* Scroll Controls */}
+          {videos.length > 3 && (
+            <>
+              <button
+                onClick={() => scroll("left")}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
+              >
+                <ChevronLeft className="w-4 h-4 text-slate-600" />
+              </button>
+              <button
+                onClick={() => scroll("right")}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
+              >
+                <ChevronRight className="w-4 h-4 text-slate-600" />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
