@@ -372,7 +372,7 @@ export default function SystemHelpPage() {
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#121051] to-[#B30089] px-6 py-4">
+          <div className="bg-[#B30089] px-6 py-4">
             <h2 className="text-lg font-semibold text-white">
               {editingVideo ? "Edit Help Video" : "Add Help Video"}
             </h2>
@@ -480,7 +480,7 @@ export default function SystemHelpPage() {
             </Button>
             <Button
               onClick={handleSaveVideo}
-              className="bg-[#B30089] hover:bg-[#8a006a] text-white"
+              className="bg-[#121051] hover:bg-[#0a0838] text-white"
             >
               {editingVideo ? "Update Video" : "Add Video"}
             </Button>
