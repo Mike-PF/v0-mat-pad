@@ -29,6 +29,7 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { LoadingModal } from "@/components/ui/loading-modal"
+import { PageHelpBanner } from "@/components/ui/help-video"
 
 const reportAreaOptions = ["Attendance", "Attainment", "Behaviour", "Finance", "Safeguarding", "SEND", "Staffing", "Curriculum", "Pastoral", "Other"]
 
@@ -277,6 +278,13 @@ export default function DashboardSettingsPage() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-4">
+          {/* Help Video Banner */}
+          <PageHelpBanner
+            videoId="1234567890abcdef"
+            pageTitle="Dashboard Settings"
+            pageDescription="Learn how to configure your Power BI reports and manage dashboard access."
+          />
+
           <Card className="bg-white border-slate-200">
             <CardContent className="p-6">
               {/* Header */}
