@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { PlayCircle, X, HelpCircle, ChevronLeft, ChevronRight } from "lucide-react"
+import { useState } from "react"
+import { PlayCircle, X, HelpCircle, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface HelpVideoProps {
@@ -134,72 +134,45 @@ export function MultiVideoHelpBanner({
   videos,
 }: MultiVideoHelpBannerProps) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 320
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      })
-    }
-  }
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <div className="mb-4 rounded-lg border border-slate-200 bg-white overflow-hidden">
-        {/* Minimal Header */}
-        <div className="px-3 py-2 border-b border-slate-200 bg-gradient-to-r from-[#B30089]/5 to-[#121051]/5 flex items-center gap-2">
-          <HelpCircle className="w-3.5 h-3.5 text-[#B30089] flex-shrink-0" />
-          <h3 className="text-xs font-semibold text-slate-900">{pageTitle}</h3>
+      {/* Minimal Collapsible Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="mb-4 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors px-3 py-2 flex items-center justify-between"
+      >
+        <div className="flex items-center gap-2">
+          <HelpCircle className="w-4 h-4 text-[#B30089] flex-shrink-0" />
+          <span className="text-sm font-medium text-slate-700">{pageTitle}</span>
+          <span className="text-xs text-slate-500">({videos.length})</span>
         </div>
+        <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+      </button>
 
-        {/* Horizontal Scroll Container */}
-        <div className="relative">
-          <div
-            ref={scrollContainerRef}
-            className="flex gap-2 p-2 overflow-x-auto scrollbar-hide"
-          >
-            {videos.map((video, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveVideo(video)}
-                className="flex-shrink-0 group relative w-32 h-20 rounded-md overflow-hidden border border-slate-200 hover:border-[#B30089] hover:shadow-md transition-all bg-gradient-to-br from-[#121051] to-[#B30089]"
-              >
-                <PlayCircle className="absolute inset-0 m-auto w-6 h-6 text-white/60 group-hover:text-white group-hover:scale-110 transition-transform z-10" />
-                {video.duration && (
-                  <span className="absolute bottom-0.5 right-0.5 px-1 py-0 rounded text-xs bg-black/60 text-white font-medium">
-                    {video.duration}
-                  </span>
-                )}
-                {/* Tooltip on hover */}
-                <div className="absolute bottom-full left-0 right-0 mb-2 hidden group-hover:block z-20 bg-slate-900 text-white text-xs rounded-md p-2 whitespace-nowrap">
-                  <div className="font-semibold">{video.title}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Scroll Controls */}
-          {videos.length > 5 && (
-            <>
-              <button
-                onClick={() => scroll("left")}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
-              >
-                <ChevronLeft className="w-3.5 h-3.5 text-slate-600" />
-              </button>
-              <button
-                onClick={() => scroll("right")}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
-              >
-                <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-              </button>
-            </>
-          )}
+      {/* Expanded List */}
+      {isOpen && (
+        <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+          {videos.map((video, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setActiveVideo(video)
+                setIsOpen(false)
+              }}
+              className="w-full text-left px-3 py-2.5 hover:bg-white transition-colors border-b border-slate-200 last:border-b-0 flex items-center gap-2 group"
+            >
+              <PlayCircle className="w-4 h-4 text-[#B30089] flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <div className="min-w-0 flex-1">
+                <h4 className="text-sm font-medium text-slate-900 group-hover:text-[#B30089]">{video.title}</h4>
+                <p className="text-xs text-slate-500">{video.description}</p>
+              </div>
+              {video.duration && <span className="text-xs text-slate-400 flex-shrink-0">{video.duration}</span>}
+            </button>
+          ))}
         </div>
-      </div>
+      )}
 
       {/* Video Modal */}
       {activeVideo && (
