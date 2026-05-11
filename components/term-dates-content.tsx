@@ -111,11 +111,22 @@ export function TermDatesContent() {
     }))
   }
 
+  const systemDatesOption = "System Dates"
+
   const handleSchoolChange = (school: string) => {
     setSelectedSchool(school)
     // Reset academic year when school changes
     if (!selectedAcademicYear) {
       setSelectedAcademicYear(currentAcademicYear)
+    }
+  }
+
+  const handleTabChange = (tab: "termdates" | "censusdates") => {
+    setActiveTab(tab)
+    // When switching to census dates, reset selection and force System Dates
+    if (tab === "censusdates") {
+      setSelectedSchool("")
+      setSelectedAcademicYear("")
     }
   }
 
@@ -246,32 +257,48 @@ export function TermDatesContent() {
             <div className="flex flex-wrap items-end gap-6">
               {/* School Selection */}
               <div className="flex flex-col w-[280px]">
-                <label className="text-sm font-medium text-slate-700 mb-2">Select school</label>
+                <label className="text-sm font-medium text-slate-700 mb-2">
+                  {activeTab === "censusdates" ? "Date source" : "Select school"}
+                </label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button className="flex items-center gap-2 h-11 w-full px-3 bg-white border border-slate-200 rounded-lg text-sm text-left hover:border-[#121051] transition-colors">
                       <span className="flex-1 truncate text-slate-700">
-                        {selectedSchool || "Select school..."}
+                        {selectedSchool || (activeTab === "censusdates" ? "Select..." : "Select school...")}
                       </span>
                       <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[280px] p-0 shadow-lg" align="start">
                     <div className="max-h-[300px] overflow-auto">
-                      {schools.map((school) => (
+                      {activeTab === "censusdates" ? (
                         <div
-                          key={school}
-                          onClick={() => handleSchoolChange(school)}
+                          onClick={() => handleSchoolChange(systemDatesOption)}
                           className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
-                            selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            selectedSchool === systemDatesOption ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
                           }`}
                         >
-                          <span className="text-sm">{school}</span>
+                          <span className="text-sm">{systemDatesOption}</span>
                         </div>
-                      ))}
+                      ) : (
+                        schools.map((school) => (
+                          <div
+                            key={school}
+                            onClick={() => handleSchoolChange(school)}
+                            className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
+                              selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            }`}
+                          >
+                            <span className="text-sm">{school}</span>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </PopoverContent>
                 </Popover>
+                {activeTab === "censusdates" && (
+                  <p className="text-xs text-slate-500 mt-1">Census dates apply system-wide</p>
+                )}
               </div>
 
               {/* Academic Year Selection */}
@@ -338,7 +365,7 @@ export function TermDatesContent() {
           <div className="">
             <div className="flex gap-1">
               <button
-                onClick={() => setActiveTab("termdates")}
+                onClick={() => handleTabChange("termdates")}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "termdates"
                     ? "text-slate-900 border-[#B30089]"
@@ -348,7 +375,7 @@ export function TermDatesContent() {
                 Term Dates
               </button>
               <button
-                onClick={() => setActiveTab("censusdates")}
+                onClick={() => handleTabChange("censusdates")}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "censusdates"
                     ? "text-slate-900 border-[#B30089]"
@@ -463,8 +490,8 @@ export function TermDatesContent() {
         <Card className="flex-1">
           <CardHeader>
             <div>
-              <CardTitle className="text-lg">Census Dates for {selectedSchool}</CardTitle>
-              <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear}</p>
+              <CardTitle className="text-lg">System Census Dates</CardTitle>
+              <p className="text-sm text-slate-600">Academic Year: {selectedAcademicYear} — applies to all schools</p>
             </div>
           </CardHeader>
           <CardContent className="flex-1">
