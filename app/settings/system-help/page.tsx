@@ -480,7 +480,7 @@ export default function SystemHelpPage() {
             </Button>
             <Button
               onClick={handleSaveVideo}
-              className="bg-[#121051] hover:bg-[#0a0838] text-white"
+              className="!bg-[#121051] !hover:bg-[#0a0838] !text-white"
             >
               {editingVideo ? "Update Video" : "Add Video"}
             </Button>
