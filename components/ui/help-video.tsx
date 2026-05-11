@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { PlayCircle, X, HelpCircle } from "lucide-react"
+import { PlayCircle, X, HelpCircle, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface HelpVideoProps {
@@ -134,30 +134,39 @@ export function MultiVideoHelpBanner({
   videos,
 }: MultiVideoHelpBannerProps) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <div className="mb-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
-        {/* Header */}
-        <div className="p-4 flex items-center gap-4 border-b border-slate-200">
-          {/* Icon */}
-          <div className="w-14 h-14 rounded-full bg-[#B30089]/10 flex items-center justify-center flex-shrink-0">
-            <PlayCircle className="w-6 h-6 text-[#B30089]" />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1">
-            <h2 className="text-lg font-bold text-slate-900">{pageTitle}</h2>
-            <p className="text-sm text-slate-600 mt-0.5">{pageDescription}</p>
-          </div>
+      {/* Collapsible Header Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="mb-4 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors p-4 flex items-center gap-4"
+      >
+        {/* Icon */}
+        <div className="w-10 h-10 rounded-full bg-[#B30089]/10 flex items-center justify-center flex-shrink-0">
+          <PlayCircle className="w-5 h-5 text-[#B30089]" />
         </div>
 
-        {/* Video List */}
-        <div className="divide-y divide-slate-200">
+        {/* Content */}
+        <div className="flex-1 min-w-0 text-left">
+          <h3 className="text-sm font-bold text-slate-900">{pageTitle}</h3>
+          <p className="text-xs text-slate-500 mt-0.5">{pageDescription}</p>
+        </div>
+
+        <ChevronRight className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+      </button>
+
+      {/* Expanded Video List */}
+      {isOpen && (
+        <div className="mb-4 rounded-lg border border-slate-200 bg-white overflow-hidden divide-y divide-slate-200">
           {videos.map((video, index) => (
             <button
               key={index}
-              onClick={() => setActiveVideo(video)}
+              onClick={() => {
+                setActiveVideo(video)
+                setIsOpen(false)
+              }}
               className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex items-center gap-3 group"
             >
               <PlayCircle className="w-5 h-5 text-[#B30089] flex-shrink-0 group-hover:scale-110 transition-transform" />
@@ -171,7 +180,7 @@ export function MultiVideoHelpBanner({
             </button>
           ))}
         </div>
-      </div>
+      )}
 
       {/* Video Modal */}
       {activeVideo && (
