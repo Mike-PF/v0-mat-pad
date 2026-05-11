@@ -53,8 +53,6 @@ interface SchoolData {
   createdDate: string
   expiryDate: string
   localAuthority?: string
-  chairOfGovernors?: string
-  sltTeam?: string
   ageRange?: string
   phaseOfEducation?: string
   academyTrust?: string
@@ -1085,23 +1083,7 @@ export default function OrganisationPage() {
                                   className="h-9"
                                 />
                               </div>
-                              <div>
-                                <label className="text-xs text-slate-500 block mb-1">Chair of Governors</label>
-                                <Input
-                                  value={(editingItem as SchoolData).chairOfGovernors ?? ""}
-                                  onChange={(e) => setEditingItem({ ...editingItem, chairOfGovernors: e.target.value })}
-                                  className="h-9"
-                                />
-                              </div>
-                              <div className="col-span-2">
-                                <label className="text-xs text-slate-500 block mb-1">SLT Team</label>
-                                <Input
-                                  value={(editingItem as SchoolData).sltTeam ?? ""}
-                                  onChange={(e) => setEditingItem({ ...editingItem, sltTeam: e.target.value })}
-                                  placeholder="Comma-separated names"
-                                  className="h-9"
-                                />
-                              </div>
+
                               <div>
                                 <label className="text-xs text-slate-500 block mb-1">Age Range</label>
                                 <Input
@@ -1307,14 +1289,7 @@ export default function OrganisationPage() {
                                 <span className="text-xs text-slate-500">Local Authority</span>
                                 <p className="text-sm text-slate-900">{(selectedData as SchoolData).localAuthority ?? "—"}</p>
                               </div>
-                              <div>
-                                <span className="text-xs text-slate-500">Chair of Governors</span>
-                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).chairOfGovernors ?? "—"}</p>
-                              </div>
-                              <div className="col-span-2">
-                                <span className="text-xs text-slate-500">SLT Team</span>
-                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).sltTeam ?? "—"}</p>
-                              </div>
+
                               <div>
                                 <span className="text-xs text-slate-500">Age Range</span>
                                 <p className="text-sm text-slate-900">{(selectedData as SchoolData).ageRange ?? "—"}</p>
