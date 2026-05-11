@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, ChevronDown, Trash2, Pencil, X } from "lucide-react"
+import { useToast } from "@/components/ui/toast"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -110,6 +111,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const { showToast } = useToast()
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [selectedType, setSelectedType] = useState<"mat" | "school" | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -243,7 +245,6 @@ export default function UsersPage() {
 
   const handleSaveUser = () => {
     if (isAddMode) {
-      // Add new user
       const newUser: User = {
         id: Math.max(...users.map(u => u.id)) + 1,
         email: editEmail,
@@ -253,8 +254,13 @@ export default function UsersPage() {
         roles: editSelectedRoles,
       }
       setUsers([...users, newUser])
+      showToast({
+        variant: "success",
+        title: "User added.",
+        message: `${newUser.name || newUser.email} has been created successfully.`,
+        primaryAction: { label: "Dismiss" },
+      })
     } else if (editingUser) {
-      // Update existing user
       const updatedUser: User = {
         ...editingUser,
         name: `${editFirstName} ${editLastName}`.trim(),
@@ -262,6 +268,12 @@ export default function UsersPage() {
         roles: editSelectedRoles,
       }
       setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u))
+      showToast({
+        variant: "success",
+        title: "User updated.",
+        message: `${updatedUser.name || updatedUser.email} has been saved successfully.`,
+        primaryAction: { label: "Dismiss" },
+      })
     }
     setEditUserOpen(false)
     setEditingUser(null)
@@ -293,6 +305,12 @@ export default function UsersPage() {
   const handleConfirmDelete = () => {
     if (userToDelete) {
       setUsers(users.filter(u => u.id !== userToDelete.id))
+      showToast({
+        variant: "error",
+        title: "User removed.",
+        message: `${userToDelete.name || userToDelete.email} has been deleted.`,
+        primaryAction: { label: "Dismiss" },
+      })
     }
     setDeleteDialogOpen(false)
     setUserToDelete(null)
