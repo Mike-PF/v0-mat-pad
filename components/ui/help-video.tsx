@@ -113,6 +113,125 @@ export function HelpVideo({
   )
 }
 
+// Single video type for multi-video banner
+interface VideoItem {
+  videoId: string
+  title: string
+  description: string
+  duration?: string
+}
+
+// Multi-video help banner for pages with multiple tutorials
+interface MultiVideoHelpBannerProps {
+  pageTitle: string
+  pageDescription?: string
+  videos: VideoItem[]
+}
+
+export function MultiVideoHelpBanner({
+  pageTitle,
+  pageDescription = "Watch these tutorials to get started.",
+  videos,
+}: MultiVideoHelpBannerProps) {
+  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null)
+
+  return (
+    <>
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
+        {/* Header */}
+        <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#B30089]/10 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5 text-[#B30089]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">{pageTitle}</h2>
+              <p className="text-sm text-slate-600">{pageDescription}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Video Grid */}
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {videos.map((video, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveVideo(video)}
+              className="group text-left p-4 rounded-lg border border-slate-200 hover:border-[#B30089] hover:shadow-md transition-all bg-white"
+            >
+              {/* Thumbnail placeholder */}
+              <div className="relative mb-3 rounded-lg overflow-hidden bg-gradient-to-br from-[#121051] to-[#B30089] aspect-video flex items-center justify-center">
+                <PlayCircle className="w-12 h-12 text-white/80 group-hover:text-white group-hover:scale-110 transition-transform" />
+                {video.duration && (
+                  <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 text-white text-xs font-medium">
+                    {video.duration}
+                  </span>
+                )}
+              </div>
+              <h3 className="font-medium text-slate-900 group-hover:text-[#B30089] transition-colors mb-1">
+                {video.title}
+              </h3>
+              <p className="text-sm text-slate-500 line-clamp-2">{video.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Video Modal */}
+      {activeVideo && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setActiveVideo(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#121051] to-[#B30089]">
+              <div>
+                <h3 className="text-lg font-semibold text-white">{activeVideo.title}</h3>
+                <p className="text-sm text-white/80">{activeVideo.description}</p>
+              </div>
+              <button
+                onClick={() => setActiveVideo(null)}
+                className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src={`https://www.loom.com/embed/${activeVideo.videoId}?hideEmbedTopBar=true`}
+                frameBorder="0"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+                allow="autoplay; fullscreen"
+              />
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <p className="text-sm text-slate-500">
+                Still need help? Contact support at{" "}
+                <a href="mailto:support@matpad.co.uk" className="text-[#B30089] hover:underline">
+                  support@matpad.co.uk
+                </a>
+              </p>
+              <Button
+                onClick={() => setActiveVideo(null)}
+                variant="outline"
+                className="border-slate-300"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 // Wrapper component for page-level help that includes a title card
 interface PageHelpVideoProps {
   videoId: string

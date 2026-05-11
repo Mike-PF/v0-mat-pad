@@ -29,7 +29,7 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { LoadingModal } from "@/components/ui/loading-modal"
-import { PageHelpBanner } from "@/components/ui/help-video"
+import { MultiVideoHelpBanner } from "@/components/ui/help-video"
 
 const reportAreaOptions = ["Attendance", "Attainment", "Behaviour", "Finance", "Safeguarding", "SEND", "Staffing", "Curriculum", "Pastoral", "Other"]
 
@@ -279,10 +279,35 @@ export default function DashboardSettingsPage() {
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-4">
           {/* Help Video Banner */}
-          <PageHelpBanner
-            videoId="1234567890abcdef"
-            pageTitle="Dashboard Settings"
-            pageDescription="Learn how to configure your Power BI reports and manage dashboard access."
+          <MultiVideoHelpBanner
+            pageTitle="Dashboard Settings Help"
+            pageDescription="Watch these tutorials to learn how to manage your Power BI reports and dashboard configuration."
+            videos={[
+              {
+                videoId: "1234567890abcdef",
+                title: "Getting Started",
+                description: "An overview of the dashboard settings page and key features.",
+                duration: "2:30",
+              },
+              {
+                videoId: "abcdef1234567890",
+                title: "Configuring Reports",
+                description: "Learn how to set display names, descriptions, and report areas.",
+                duration: "4:15",
+              },
+              {
+                videoId: "fedcba0987654321",
+                title: "Managing Access",
+                description: "How to assign schools and roles to control report visibility.",
+                duration: "3:45",
+              },
+              {
+                videoId: "0987654321fedcba",
+                title: "Using Report Builder",
+                description: "Create custom reports using the Report Builder feature.",
+                duration: "5:20",
+              },
+            ]}
           />
 
           <Card className="bg-white border-slate-200">
