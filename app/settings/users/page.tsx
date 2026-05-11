@@ -128,6 +128,7 @@ export default function UsersPage() {
   const [editEmail, setEditEmail] = useState("")
   const [editFirstName, setEditFirstName] = useState("")
   const [editLastName, setEditLastName] = useState("")
+  const [formErrors, setFormErrors] = useState<{ firstName?: boolean; lastName?: boolean; email?: boolean }>({})
   const [editSelectedSchools, setEditSelectedSchools] = useState<{ urn: string; name: string }[]>([])
   const [editAllSchools, setEditAllSchools] = useState(false)
   const [editSelectedRoles, setEditSelectedRoles] = useState<string[]>([])
@@ -206,6 +207,7 @@ export default function UsersPage() {
     setEditAllSchools(false)
     setEditSelectedSchools([])
     setEditSelectedRoles([])
+    setFormErrors({})
     setEditUserOpen(true)
   }
 
@@ -217,6 +219,7 @@ export default function UsersPage() {
     setEditFirstName(nameParts[0] || "")
     setEditLastName(nameParts.slice(1).join(" ") || "")
     setEditEmail(user.email)
+    setFormErrors({})
     if (user.schools === "all") {
       setEditAllSchools(true)
       setEditSelectedSchools([])
@@ -244,6 +247,42 @@ export default function UsersPage() {
   }
 
   const handleSaveUser = () => {
+    // Validate required fields
+    const errors: { firstName?: boolean; lastName?: boolean; email?: boolean } = {}
+    if (!editFirstName.trim()) errors.firstName = true
+    if (!editLastName.trim()) errors.lastName = true
+    if (isAddMode && !editEmail.trim()) errors.email = true
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors)
+      const missing = [
+        errors.firstName && "first name",
+        errors.lastName && "last name",
+        errors.email && "email address",
+      ].filter(Boolean).join(", ")
+      showToast({
+        variant: "warning",
+        title: "Required fields missing.",
+        message: `Please provide a ${missing} before saving.`,
+        primaryAction: { label: "OK, got it" },
+      })
+      return
+    }
+
+    // Basic email format check (add mode only)
+    if (isAddMode && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail.trim())) {
+      setFormErrors({ email: true })
+      showToast({
+        variant: "warning",
+        title: "Invalid email address.",
+        message: "Please enter a valid email address before saving.",
+        primaryAction: { label: "OK, got it" },
+      })
+      return
+    }
+
+    setFormErrors({})
+
     if (isAddMode) {
       const newUser: User = {
         id: Math.max(...users.map(u => u.id)) + 1,
@@ -278,6 +317,7 @@ export default function UsersPage() {
     setEditUserOpen(false)
     setEditingUser(null)
     setIsAddMode(false)
+    setFormErrors({})
   }
 
   const toggleSchool = (school: { urn: string; name: string }) => {
@@ -634,39 +674,42 @@ export default function UsersPage() {
               
               {/* First Name */}
               <div className="mb-4">
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                  First name<span className="text-slate-400">*</span>
+                <label className={`text-sm font-medium mb-1.5 block ${formErrors.firstName ? "text-red-600" : "text-slate-700"}`}>
+                  First name<span className={formErrors.firstName ? "text-red-500" : "text-slate-400"}>*</span>
                 </label>
                 <Input
                   value={editFirstName}
-                  onChange={(e) => setEditFirstName(e.target.value)}
-                  className="h-11"
+                  onChange={(e) => { setEditFirstName(e.target.value); if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, firstName: false })) }}
+                  className={`h-11 ${formErrors.firstName ? "border-red-500 focus-visible:ring-red-300" : ""}`}
                 />
+                {formErrors.firstName && <p className="text-xs text-red-500 mt-1">First name is required.</p>}
               </div>
 
               {/* Last Name */}
               <div className="mb-4">
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                  Last name<span className="text-slate-400">*</span>
+                <label className={`text-sm font-medium mb-1.5 block ${formErrors.lastName ? "text-red-600" : "text-slate-700"}`}>
+                  Last name<span className={formErrors.lastName ? "text-red-500" : "text-slate-400"}>*</span>
                 </label>
                 <Input
                   value={editLastName}
-                  onChange={(e) => setEditLastName(e.target.value)}
-                  className="h-11"
+                  onChange={(e) => { setEditLastName(e.target.value); if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, lastName: false })) }}
+                  className={`h-11 ${formErrors.lastName ? "border-red-500 focus-visible:ring-red-300" : ""}`}
                 />
+                {formErrors.lastName && <p className="text-xs text-red-500 mt-1">Last name is required.</p>}
               </div>
 
               {/* Email */}
               <div className="mb-4">
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                  Email<span className="text-slate-400">*</span>
+                <label className={`text-sm font-medium mb-1.5 block ${formErrors.email ? "text-red-600" : "text-slate-700"}`}>
+                  Email<span className={formErrors.email ? "text-red-500" : "text-slate-400"}>*</span>
                 </label>
                 <Input
                   value={isAddMode ? editEmail : editingUser?.email || ""}
-                  onChange={(e) => isAddMode && setEditEmail(e.target.value)}
+                  onChange={(e) => { if (isAddMode) { setEditEmail(e.target.value); if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, email: false })) } }}
                   disabled={!isAddMode}
-                  className={`h-11 ${!isAddMode ? "bg-slate-100 text-slate-600" : ""}`}
+                  className={`h-11 ${!isAddMode ? "bg-slate-100 text-slate-600" : ""} ${formErrors.email ? "border-red-500 focus-visible:ring-red-300" : ""}`}
                 />
+                {formErrors.email && <p className="text-xs text-red-500 mt-1">A valid email address is required.</p>}
               </div>
 
               {/* Select Schools */}
