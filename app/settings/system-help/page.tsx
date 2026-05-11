@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2, X, PlayCircle, Upload, ExternalLink, Search } from "lucide-react"
+import { Pencil, Trash2, X, PlayCircle, Upload, ExternalLink, Search, ChevronUp, ChevronDown } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -37,6 +37,7 @@ interface HelpVideo {
   description: string
   loomId: string
   duration: string
+  order: number
   createdAt: string
   updatedAt: string
 }
@@ -50,6 +51,7 @@ const initialHelpVideos: HelpVideo[] = [
     description: "An overview of the dashboard settings page and key features.",
     loomId: "1234567890abcdef",
     duration: "2:30",
+    order: 1,
     createdAt: "2024-01-15",
     updatedAt: "2024-01-15",
   },
@@ -61,6 +63,7 @@ const initialHelpVideos: HelpVideo[] = [
     description: "Learn how to set display names, descriptions, and report areas.",
     loomId: "abcdef1234567890",
     duration: "4:15",
+    order: 2,
     createdAt: "2024-01-16",
     updatedAt: "2024-01-16",
   },
@@ -72,6 +75,7 @@ const initialHelpVideos: HelpVideo[] = [
     description: "Learn how to add users, assign schools and roles, and manage account access.",
     loomId: "fedcba0987654321",
     duration: "3:45",
+    order: 1,
     createdAt: "2024-01-17",
     updatedAt: "2024-01-17",
   },
@@ -83,6 +87,7 @@ const initialHelpVideos: HelpVideo[] = [
     description: "Learn how to create roles, set permissions, and assign users to roles.",
     loomId: "0987654321fedcba",
     duration: "5:20",
+    order: 1,
     createdAt: "2024-01-18",
     updatedAt: "2024-01-18",
   },
@@ -116,7 +121,7 @@ export default function SystemHelpPage() {
     return matchesSearch && matchesPage
   })
 
-  // Group videos by page
+  // Group videos by page, sorted by order
   const videosByPage = filteredVideos.reduce((acc, video) => {
     if (!acc[video.pageId]) {
       acc[video.pageId] = []
@@ -124,6 +129,27 @@ export default function SystemHelpPage() {
     acc[video.pageId].push(video)
     return acc
   }, {} as Record<string, HelpVideo[]>)
+
+  Object.keys(videosByPage).forEach((pageId) => {
+    videosByPage[pageId].sort((a, b) => a.order - b.order)
+  })
+
+  // Move a video up or down within its page group
+  const handleReorder = (pageId: string, videoId: number, direction: "up" | "down") => {
+    const pageVideos = [...helpVideos.filter((v) => v.pageId === pageId)].sort((a, b) => a.order - b.order)
+    const idx = pageVideos.findIndex((v) => v.id === videoId)
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= pageVideos.length) return
+
+    const updatedOrders: Record<number, number> = {
+      [pageVideos[idx].id]: pageVideos[swapIdx].order,
+      [pageVideos[swapIdx].id]: pageVideos[idx].order,
+    }
+
+    setHelpVideos(helpVideos.map((v) =>
+      updatedOrders[v.id] !== undefined ? { ...v, order: updatedOrders[v.id] } : v
+    ))
+  }
 
   // Open add dialog
   const handleAddVideo = () => {
@@ -187,6 +213,7 @@ export default function SystemHelpPage() {
       })
     } else {
       // Add new
+      const pageVideoCount = helpVideos.filter((v) => v.pageId === formPageId).length
       const newVideo: HelpVideo = {
         id: Math.max(...helpVideos.map((v) => v.id), 0) + 1,
         pageId: formPageId,
@@ -195,6 +222,7 @@ export default function SystemHelpPage() {
         description: formDescription,
         loomId: formLoomId,
         duration: formDuration,
+        order: pageVideoCount + 1,
         createdAt: new Date().toISOString().split("T")[0],
         updatedAt: new Date().toISOString().split("T")[0],
       }
@@ -307,11 +335,40 @@ export default function SystemHelpPage() {
 
                       {/* Video Cards */}
                       <div className="space-y-2">
-                        {videos.map((video) => (
+                        {videos.map((video, idx) => (
                           <div
                             key={video.id}
-                            className="flex items-center gap-4 p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition-colors"
+                            className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition-colors"
                           >
+                            {/* Order Controls — only shown when page has multiple videos */}
+                            {videos.length > 1 && (
+                              <div className="flex flex-col gap-0.5 flex-shrink-0">
+                                <button
+                                  onClick={() => handleReorder(pageId, video.id, "up")}
+                                  disabled={idx === 0}
+                                  className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                  aria-label="Move up"
+                                >
+                                  <ChevronUp className="w-4 h-4 text-slate-500" />
+                                </button>
+                                <button
+                                  onClick={() => handleReorder(pageId, video.id, "down")}
+                                  disabled={idx === videos.length - 1}
+                                  className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                  aria-label="Move down"
+                                >
+                                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Order Badge */}
+                            {videos.length > 1 && (
+                              <span className="text-xs font-medium text-slate-400 w-4 flex-shrink-0 text-center">
+                                {idx + 1}
+                              </span>
+                            )}
+
                             {/* Thumbnail */}
                             <button
                               onClick={() => setPreviewVideo(video)}
