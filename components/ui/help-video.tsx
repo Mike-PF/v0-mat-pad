@@ -148,61 +148,53 @@ export function MultiVideoHelpBanner({
 
   return (
     <>
-      <div className="mb-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
-        {/* Compact Header */}
-        <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-[#B30089]/5 to-[#121051]/5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-[#B30089]" />
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">{pageTitle}</h3>
-              <p className="text-xs text-slate-500">{pageDescription}</p>
-            </div>
-          </div>
+      <div className="mb-4 rounded-lg border border-slate-200 bg-white overflow-hidden">
+        {/* Minimal Header */}
+        <div className="px-3 py-2 border-b border-slate-200 bg-gradient-to-r from-[#B30089]/5 to-[#121051]/5 flex items-center gap-2">
+          <HelpCircle className="w-3.5 h-3.5 text-[#B30089] flex-shrink-0" />
+          <h3 className="text-xs font-semibold text-slate-900">{pageTitle}</h3>
         </div>
 
         {/* Horizontal Scroll Container */}
         <div className="relative">
           <div
             ref={scrollContainerRef}
-            className="flex gap-3 p-3 overflow-x-auto scrollbar-hide"
+            className="flex gap-2 p-2 overflow-x-auto scrollbar-hide"
           >
             {videos.map((video, index) => (
               <button
                 key={index}
                 onClick={() => setActiveVideo(video)}
-                className="flex-shrink-0 group w-56 p-3 rounded-lg border border-slate-200 hover:border-[#B30089] hover:shadow-md transition-all bg-white hover:bg-slate-50"
+                className="flex-shrink-0 group relative w-32 h-20 rounded-md overflow-hidden border border-slate-200 hover:border-[#B30089] hover:shadow-md transition-all bg-gradient-to-br from-[#121051] to-[#B30089]"
               >
-                {/* Mini Thumbnail */}
-                <div className="relative mb-2 rounded-md overflow-hidden bg-gradient-to-br from-[#121051] to-[#B30089] aspect-video flex items-center justify-center">
-                  <PlayCircle className="w-8 h-8 text-white/80 group-hover:text-white group-hover:scale-110 transition-transform" />
-                  {video.duration && (
-                    <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-xs bg-black/60 text-white font-medium">
-                      {video.duration}
-                    </span>
-                  )}
+                <PlayCircle className="absolute inset-0 m-auto w-6 h-6 text-white/60 group-hover:text-white group-hover:scale-110 transition-transform z-10" />
+                {video.duration && (
+                  <span className="absolute bottom-0.5 right-0.5 px-1 py-0 rounded text-xs bg-black/60 text-white font-medium">
+                    {video.duration}
+                  </span>
+                )}
+                {/* Tooltip on hover */}
+                <div className="absolute bottom-full left-0 right-0 mb-2 hidden group-hover:block z-20 bg-slate-900 text-white text-xs rounded-md p-2 whitespace-nowrap">
+                  <div className="font-semibold">{video.title}</div>
                 </div>
-                <h4 className="text-xs font-semibold text-slate-900 group-hover:text-[#B30089] transition-colors line-clamp-1">
-                  {video.title}
-                </h4>
-                <p className="text-xs text-slate-500 line-clamp-1">{video.description}</p>
               </button>
             ))}
           </div>
 
           {/* Scroll Controls */}
-          {videos.length > 3 && (
+          {videos.length > 5 && (
             <>
               <button
                 onClick={() => scroll("left")}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
               >
-                <ChevronLeft className="w-4 h-4 text-slate-600" />
+                <ChevronLeft className="w-3.5 h-3.5 text-slate-600" />
               </button>
               <button
                 onClick={() => scroll("right")}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50 shadow-md"
               >
-                <ChevronRight className="w-4 h-4 text-slate-600" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
               </button>
             </>
           )}
