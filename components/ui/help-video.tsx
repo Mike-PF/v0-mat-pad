@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { PlayCircle, X, HelpCircle, ChevronRight } from "lucide-react"
+import { PlayCircle, X, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface HelpVideoProps {
@@ -130,49 +130,48 @@ interface MultiVideoHelpBannerProps {
 
 export function MultiVideoHelpBanner({
   pageTitle,
-  pageDescription = "Watch these tutorials to get started.",
+  pageDescription = "Select a tutorial below to get started.",
   videos,
 }: MultiVideoHelpBannerProps) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      {/* Minimal Collapsible Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="mb-4 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors px-3 py-2 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-[#B30089] flex-shrink-0" />
-          <span className="text-sm font-medium text-slate-700">{pageTitle}</span>
-          <span className="text-xs text-slate-500">({videos.length})</span>
-        </div>
-        <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-90" : ""}`} />
-      </button>
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
+        {/* Header */}
+        <div className="p-4 flex items-center gap-4 border-b border-slate-200">
+          {/* Icon */}
+          <div className="w-14 h-14 rounded-full bg-[#B30089]/10 flex items-center justify-center flex-shrink-0">
+            <PlayCircle className="w-6 h-6 text-[#B30089]" />
+          </div>
 
-      {/* Expanded List */}
-      {isOpen && (
-        <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+          {/* Content */}
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-slate-900">{pageTitle}</h2>
+            <p className="text-sm text-slate-600 mt-0.5">{pageDescription}</p>
+          </div>
+        </div>
+
+        {/* Video List */}
+        <div className="divide-y divide-slate-200">
           {videos.map((video, index) => (
             <button
               key={index}
-              onClick={() => {
-                setActiveVideo(video)
-                setIsOpen(false)
-              }}
-              className="w-full text-left px-3 py-2.5 hover:bg-white transition-colors border-b border-slate-200 last:border-b-0 flex items-center gap-2 group"
+              onClick={() => setActiveVideo(video)}
+              className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex items-center gap-3 group"
             >
-              <PlayCircle className="w-4 h-4 text-[#B30089] flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <div className="min-w-0 flex-1">
+              <PlayCircle className="w-5 h-5 text-[#B30089] flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-medium text-slate-900 group-hover:text-[#B30089]">{video.title}</h4>
                 <p className="text-xs text-slate-500">{video.description}</p>
               </div>
-              {video.duration && <span className="text-xs text-slate-400 flex-shrink-0">{video.duration}</span>}
+              {video.duration && (
+                <span className="text-xs text-slate-400 flex-shrink-0 ml-2">{video.duration}</span>
+              )}
             </button>
           ))}
         </div>
-      )}
+      </div>
 
       {/* Video Modal */}
       {activeVideo && (
@@ -234,6 +233,92 @@ interface PageHelpVideoProps {
   videoId: string
   pageTitle: string
   pageDescription?: string
+}
+
+export function PageHelpBanner({
+  videoId,
+  pageTitle,
+  pageDescription = "Watch this tutorial to learn more.",
+}: PageHelpVideoProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-4 flex items-center gap-4">
+        {/* Icon */}
+        <div className="w-14 h-14 rounded-full bg-[#B30089]/10 flex items-center justify-center flex-shrink-0">
+          <PlayCircle className="w-6 h-6 text-[#B30089]" />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-bold text-slate-900">{pageTitle}</h2>
+          <p className="text-sm text-slate-600 mt-0.5">{pageDescription}</p>
+        </div>
+
+        {/* Watch Tutorial Button */}
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="bg-[#B30089] hover:bg-[#8a006a] text-white flex items-center gap-2 flex-shrink-0"
+        >
+          <PlayCircle className="w-4 h-4" />
+          Watch Tutorial
+        </Button>
+      </div>
+
+      {/* Video Modal */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#121051] to-[#B30089]">
+              <div>
+                <h3 className="text-lg font-semibold text-white">{pageTitle}</h3>
+                <p className="text-sm text-white/80">{pageDescription}</p>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src={`https://www.loom.com/embed/${videoId}?hideEmbedTopBar=true`}
+                frameBorder="0"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+                allow="autoplay; fullscreen"
+              />
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <p className="text-sm text-slate-500">
+                Still need help? Contact support at{" "}
+                <a href="mailto:support@matpad.co.uk" className="text-[#B30089] hover:underline">
+                  support@matpad.co.uk
+                </a>
+              </p>
+              <Button
+                onClick={() => setIsOpen(false)}
+                variant="outline"
+                className="border-slate-300"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 export function PageHelpBanner({ 
