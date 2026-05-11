@@ -6,6 +6,8 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2, Pencil, ChevronDown } from "lucide-react"
+import { useToast } from "@/components/ui/toast"
+import { PageHelpBanner } from "@/components/ui/help-video"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -82,6 +84,7 @@ interface Role {
 }
 
 export default function RolesPage() {
+  const { showToast } = useToast()
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [roles, setRoles] = useState<Role[]>(initialRoles)
   const [selectedOrganisation, setSelectedOrganisation] = useState<string | null>(null)
@@ -183,7 +186,6 @@ export default function RolesPage() {
     if (!editingRole) return
     
     if (editingRole.id === 0) {
-      // Adding a new role
       const newId = Math.max(...roles.map(r => r.id), 0) + 1
       const newRole: Role = {
         id: newId,
@@ -192,16 +194,26 @@ export default function RolesPage() {
         userIds: [...selectedUsers],
       }
       setRoles([...roles, newRole])
+      showToast({
+        variant: "success",
+        title: "Role created.",
+        message: `"${editRoleName}" has been added successfully.`,
+        primaryAction: { label: "Dismiss" },
+      })
     } else {
-      // Updating existing role
       setRoles(roles.map(role => 
         role.id === editingRole.id 
           ? { ...role, name: editRoleName, users: selectedUsers.length, userIds: [...selectedUsers] }
           : role
       ))
+      showToast({
+        variant: "success",
+        title: "Role saved.",
+        message: `"${editRoleName}" has been updated successfully.`,
+        primaryAction: { label: "Dismiss" },
+      })
     }
     
-    // Return to list view
     handleBack()
   }
 
@@ -213,6 +225,12 @@ export default function RolesPage() {
   const handleConfirmDelete = () => {
     if (roleToDelete) {
       setRoles(roles.filter(r => r.id !== roleToDelete.id))
+      showToast({
+        variant: "error",
+        title: "Role deleted.",
+        message: `"${roleToDelete.name}" has been permanently removed.`,
+        primaryAction: { label: "Dismiss" },
+      })
     }
     setDeleteDialogOpen(false)
     setRoleToDelete(null)
@@ -234,6 +252,12 @@ export default function RolesPage() {
   const handleConfirmRemoveUser = () => {
     if (userToDelete) {
       setSelectedUsers(prev => prev.filter(id => id !== userToDelete.id))
+      showToast({
+        variant: "warning",
+        title: "User removed.",
+        message: `${userToDelete.name} has been removed from this role.`,
+        primaryAction: { label: "Dismiss" },
+      })
     }
     setDeleteUserDialogOpen(false)
     setUserToDelete(null)
@@ -260,6 +284,12 @@ export default function RolesPage() {
           </div>
 
           <main className="flex-1 px-4 pb-6 overflow-auto">
+            <PageHelpBanner
+              videoId="1234567890abcdef"
+              pageTitle="Creating & Editing Roles"
+              pageDescription="Learn how to configure role names, permissions, and assign users to this role."
+            />
+
             {/* Header with Role Name and Actions */}
             <div className="flex items-start justify-between mb-6">
               <div>
@@ -556,6 +586,12 @@ export default function RolesPage() {
         </div>
 
         <main className="flex-1 px-4 pb-6 overflow-auto">
+          <PageHelpBanner
+            videoId="1234567890abcdef"
+            pageTitle="Managing Roles"
+            pageDescription="Learn how to create roles, set permissions, and assign users to roles."
+          />
+
           {/* Organisation Selector Card */}
           <Card className="mb-4">
             <CardContent className="py-4">

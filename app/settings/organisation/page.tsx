@@ -52,6 +52,20 @@ interface SchoolData {
   matId?: string
   createdDate: string
   expiryDate: string
+  localAuthority?: string
+  ageRange?: string
+  phaseOfEducation?: string
+  academyTrust?: string
+  dateJoinedTrust?: string
+  gender?: string
+  dfeNumber?: string
+  ukprn?: string
+  website?: string
+  religiousCharacter?: string
+  diocese?: string
+  nurseryProvision?: string
+  sixthFormProvision?: string
+  schoolPan?: string
 }
 
 interface MATData {
@@ -1061,6 +1075,147 @@ export default function OrganisationPage() {
                                   </SelectContent>
                                 </Select>
                               </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Local Authority</label>
+                                <Input
+                                  value={(editingItem as SchoolData).localAuthority ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, localAuthority: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Age Range</label>
+                                <Input
+                                  value={(editingItem as SchoolData).ageRange ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, ageRange: e.target.value })}
+                                  placeholder="e.g. 11-18"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Phase of Education</label>
+                                <Input
+                                  value={(editingItem as SchoolData).phaseOfEducation ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, phaseOfEducation: e.target.value })}
+                                  placeholder="e.g. Secondary"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Academy Trust</label>
+                                <Input
+                                  value={(editingItem as SchoolData).academyTrust ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, academyTrust: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Date Joined Trust</label>
+                                <Input
+                                  type="date"
+                                  value={(editingItem as SchoolData).dateJoinedTrust ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, dateJoinedTrust: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Gender</label>
+                                <Select
+                                  value={(editingItem as SchoolData).gender ?? ""}
+                                  onValueChange={(val) => setEditingItem({ ...editingItem, gender: val })}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Select gender..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Boys">Boys</SelectItem>
+                                    <SelectItem value="Girls">Girls</SelectItem>
+                                    <SelectItem value="Mixed">Mixed</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">DfE Number</label>
+                                <Input
+                                  value={(editingItem as SchoolData).dfeNumber ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, dfeNumber: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">UKPRN</label>
+                                <Input
+                                  value={(editingItem as SchoolData).ukprn ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, ukprn: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div className="col-span-2">
+                                <label className="text-xs text-slate-500 block mb-1">Website</label>
+                                <Input
+                                  type="url"
+                                  value={(editingItem as SchoolData).website ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, website: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Religious Character</label>
+                                <Input
+                                  value={(editingItem as SchoolData).religiousCharacter ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, religiousCharacter: e.target.value })}
+                                  placeholder="e.g. Roman Catholic"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Diocese</label>
+                                <Input
+                                  value={(editingItem as SchoolData).diocese ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, diocese: e.target.value })}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Nursery Provision</label>
+                                <Select
+                                  value={(editingItem as SchoolData).nurseryProvision ?? ""}
+                                  onValueChange={(val) => setEditingItem({ ...editingItem, nurseryProvision: val })}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Select..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Yes">Yes</SelectItem>
+                                    <SelectItem value="No">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">Sixth Form Provision</label>
+                                <Select
+                                  value={(editingItem as SchoolData).sixthFormProvision ?? ""}
+                                  onValueChange={(val) => setEditingItem({ ...editingItem, sixthFormProvision: val })}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Select..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Yes">Yes</SelectItem>
+                                    <SelectItem value="No">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 block mb-1">School PAN</label>
+                                <Input
+                                  value={(editingItem as SchoolData).schoolPan ?? ""}
+                                  onChange={(e) => setEditingItem({ ...editingItem, schoolPan: e.target.value })}
+                                  placeholder="e.g. 1080"
+                                  className="h-9"
+                                />
+                              </div>
                             </>
                           ) : (
                             <div className="col-span-2">
@@ -1129,6 +1284,71 @@ export default function OrganisationPage() {
                               <div>
                                 <span className="text-xs text-slate-500">Phase</span>
                                 <p className="text-sm text-slate-900">{(selectedData as SchoolData).phase ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Local Authority</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).localAuthority ?? "—"}</p>
+                              </div>
+
+                              <div>
+                                <span className="text-xs text-slate-500">Age Range</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).ageRange ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Phase of Education</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).phaseOfEducation ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Academy Trust</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).academyTrust ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Date Joined Trust</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).dateJoinedTrust ? new Date((selectedData as SchoolData).dateJoinedTrust!).toLocaleDateString('en-GB') : "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Gender</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).gender ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">DfE Number</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).dfeNumber ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">UKPRN</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).ukprn ?? "—"}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-xs text-slate-500">Website</span>
+                                <p className="text-sm text-slate-900">
+                                  {(selectedData as SchoolData).website ? (
+                                    <a href={(selectedData as SchoolData).website} target="_blank" rel="noopener noreferrer" className="text-[#121051] hover:underline">
+                                      {(selectedData as SchoolData).website}
+                                    </a>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Religious Character</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).religiousCharacter ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Diocese</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).diocese ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Nursery Provision</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).nurseryProvision ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">Sixth Form Provision</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).sixthFormProvision ?? "—"}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-slate-500">School PAN</span>
+                                <p className="text-sm text-slate-900">{(selectedData as SchoolData).schoolPan ?? "—"}</p>
                               </div>
                             </>
                           ) : (

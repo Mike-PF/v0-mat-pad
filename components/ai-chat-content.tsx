@@ -11,7 +11,7 @@ interface ChatMessage {
   id: string
   role: "user" | "assistant"
   content: string
-  timestamp: Date
+  timestamp: string
 }
 
 interface ChatSession {
@@ -19,143 +19,155 @@ interface ChatSession {
   title: string
   messages: ChatMessage[]
   isPinned: boolean
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
 
-// Sample chat history
+// Sample chat history - using ISO string dates to avoid hydration issues
 const sampleChatSessions: ChatSession[] = [
   {
     id: "1",
     title: "Ofsted Inspection Preparation",
     messages: [
-      { id: "1a", role: "user", content: "What should we focus on when preparing for an Ofsted inspection?", timestamp: new Date("2024-01-15T10:00:00") },
-      { id: "1b", role: "assistant", content: "For Ofsted preparation, focus on five key areas: quality of education, behaviour and attitudes, personal development, leadership and management, and early years provision if applicable. Ensure your self-evaluation form (SEF) is up to date and that all staff can articulate your school improvement plan clearly.", timestamp: new Date("2024-01-15T10:01:00") },
+      { id: "1a", role: "user", content: "What should we focus on when preparing for an Ofsted inspection?", timestamp: "2024-01-15T10:00:00" },
+      { id: "1b", role: "assistant", content: "For Ofsted preparation, focus on five key areas: quality of education, behaviour and attitudes, personal development, leadership and management, and early years provision if applicable. Ensure your self-evaluation form (SEF) is up to date and that all staff can articulate your school improvement plan clearly.", timestamp: "2024-01-15T10:01:00" },
     ],
     isPinned: true,
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-15"),
+    createdAt: "2024-01-15",
+    updatedAt: "2024-01-15",
   },
   {
     id: "2",
     title: "MAT Performance Overview",
     messages: [
-      { id: "2a", role: "user", content: "Summarise the performance across our MAT for this academic year.", timestamp: new Date("2024-01-14T09:00:00") },
-      { id: "2b", role: "assistant", content: "Across the trust, Progress 8 scores have improved by 0.3 on average compared to last year. Three schools are now above national average for Attainment 8, and persistent absence has reduced by 2.1 percentage points trust-wide. The primary schools show strong KS2 reading results at 76% meeting expected standard.", timestamp: new Date("2024-01-14T09:01:00") },
+      { id: "2a", role: "user", content: "Summarise the performance across our MAT for this academic year.", timestamp: "2024-01-14T09:00:00" },
+      { id: "2b", role: "assistant", content: "Across the trust, Progress 8 scores have improved by 0.3 on average compared to last year. Three schools are now above national average for Attainment 8, and persistent absence has reduced by 2.1 percentage points trust-wide. The primary schools show strong KS2 reading results at 76% meeting expected standard.", timestamp: "2024-01-14T09:01:00" },
     ],
     isPinned: true,
-    createdAt: new Date("2024-01-14"),
-    updatedAt: new Date("2024-01-14"),
+    createdAt: "2024-01-14",
+    updatedAt: "2024-01-14",
   },
   {
     id: "3",
     title: "Pupil Premium Strategy 2024",
     messages: [
-      { id: "3a", role: "user", content: "Help me draft a pupil premium strategy for the 2024-25 academic year.", timestamp: new Date("2024-01-13T14:00:00") },
-      { id: "3b", role: "assistant", content: "A strong pupil premium strategy should be structured around three pillars: teaching and learning quality, targeted academic support, and wider strategies for wellbeing and attendance. I can help you draft each section with reference to the EEF guidance toolkit. Shall we start with your current pupil premium cohort data?", timestamp: new Date("2024-01-13T14:02:00") },
+      { id: "3a", role: "user", content: "Help me draft a pupil premium strategy for the 2024-25 academic year.", timestamp: "2024-01-13T14:00:00" },
+      { id: "3b", role: "assistant", content: "A strong pupil premium strategy should be structured around three pillars: teaching and learning quality, targeted academic support, and wider strategies for wellbeing and attendance. I can help you draft each section with reference to the EEF guidance toolkit. Shall we start with your current pupil premium cohort data?", timestamp: "2024-01-13T14:02:00" },
     ],
     isPinned: true,
-    createdAt: new Date("2024-01-13"),
-    updatedAt: new Date("2024-01-13"),
+    createdAt: "2024-01-13",
+    updatedAt: "2024-01-13",
   },
   {
     id: "4",
     title: "Persistent Absence Analysis",
     messages: [
-      { id: "4a", role: "user", content: "Which year groups have the highest persistent absence rates?", timestamp: new Date("2024-01-12T11:00:00") },
-      { id: "4b", role: "assistant", content: "Based on the current data, Year 10 has the highest persistent absence rate at 18.4%, followed by Year 8 at 15.9%. Both are above the national average of 14.2%. Year 7 and Year 12 are performing well below the national threshold. Would you like me to break this down by FSM eligibility or SEN status?", timestamp: new Date("2024-01-12T11:01:00") },
+      { id: "4a", role: "user", content: "Which year groups have the highest persistent absence rates?", timestamp: "2024-01-12T11:00:00" },
+      { id: "4b", role: "assistant", content: "Based on the current data, Year 10 has the highest persistent absence rate at 18.4%, followed by Year 8 at 15.9%. Both are above the national average of 14.2%. Year 7 and Year 12 are performing well below the national threshold. Would you like me to break this down by FSM eligibility or SEN status?", timestamp: "2024-01-12T11:01:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-12"),
-    updatedAt: new Date("2024-01-12"),
+    createdAt: "2024-01-12",
+    updatedAt: "2024-01-12",
   },
   {
     id: "5",
     title: "SEND Provision Review",
     messages: [
-      { id: "5a", role: "user", content: "Review our current SEND provision and identify gaps.", timestamp: new Date("2024-01-11T16:00:00") },
-      { id: "5b", role: "assistant", content: "Looking at your SEND data, the proportion of pupils with EHCPs is 3.2%, slightly below the national average of 3.7%. There are indicators that identification of pupils with SEMH needs may be underrepresented. I would recommend reviewing referral pathways and ensuring class teachers are confident in early identification.", timestamp: new Date("2024-01-11T16:02:00") },
+      { id: "5a", role: "user", content: "Review our current SEND provision and identify gaps.", timestamp: "2024-01-11T16:00:00" },
+      { id: "5b", role: "assistant", content: "Looking at your SEND data, the proportion of pupils with EHCPs is 3.2%, slightly below the national average of 3.7%. There are indicators that identification of pupils with SEMH needs may be underrepresented. I would recommend reviewing referral pathways and ensuring class teachers are confident in early identification.", timestamp: "2024-01-11T16:02:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-11"),
-    updatedAt: new Date("2024-01-11"),
+    createdAt: "2024-01-11",
+    updatedAt: "2024-01-11",
   },
   {
     id: "6",
     title: "School Improvement Plan Draft",
     messages: [
-      { id: "6a", role: "user", content: "Help me write the curriculum section of our school improvement plan.", timestamp: new Date("2024-01-10T09:30:00") },
-      { id: "6b", role: "assistant", content: "For the curriculum section, I suggest structuring it around intent, implementation, and impact — aligned with the Ofsted framework. Key priorities might include improving curriculum sequencing in humanities, increasing oracy provision across KS3, and embedding retrieval practice school-wide. Shall I draft specific targets and success criteria?", timestamp: new Date("2024-01-10T09:32:00") },
+      { id: "6a", role: "user", content: "Help me write the curriculum section of our school improvement plan.", timestamp: "2024-01-10T09:30:00" },
+      { id: "6b", role: "assistant", content: "For the curriculum section, I suggest structuring it around intent, implementation, and impact — aligned with the Ofsted framework. Key priorities might include improving curriculum sequencing in humanities, increasing oracy provision across KS3, and embedding retrieval practice school-wide. Shall I draft specific targets and success criteria?", timestamp: "2024-01-10T09:32:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-10"),
-    updatedAt: new Date("2024-01-10"),
+    createdAt: "2024-01-10",
+    updatedAt: "2024-01-10",
   },
   {
     id: "7",
     title: "KS2 SATs Results Breakdown",
     messages: [
-      { id: "7a", role: "user", content: "Break down our KS2 SATs results by subject and demographic.", timestamp: new Date("2024-01-09T13:00:00") },
-      { id: "7b", role: "assistant", content: "Your combined Reading, Writing and Maths score is 61%, which is 3 points below national average. Reading is your strongest subject at 74%. There is a notable gap for FSM pupils in Maths (48% vs 67% non-FSM). Gender gap in Writing is narrower than national, which is a positive indicator.", timestamp: new Date("2024-01-09T13:03:00") },
+      { id: "7a", role: "user", content: "Break down our KS2 SATs results by subject and demographic.", timestamp: "2024-01-09T13:00:00" },
+      { id: "7b", role: "assistant", content: "Your combined Reading, Writing and Maths score is 61%, which is 3 points below national average. Reading is your strongest subject at 74%. There is a notable gap for FSM pupils in Maths (48% vs 67% non-FSM). Gender gap in Writing is narrower than national, which is a positive indicator.", timestamp: "2024-01-09T13:03:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-09"),
-    updatedAt: new Date("2024-01-09"),
+    createdAt: "2024-01-09",
+    updatedAt: "2024-01-09",
   },
   {
     id: "8",
     title: "Staff Wellbeing Survey Analysis",
     messages: [
-      { id: "8a", role: "user", content: "Analyse the results of our staff wellbeing survey.", timestamp: new Date("2024-01-08T10:00:00") },
-      { id: "8b", role: "assistant", content: "The survey results show 68% of staff feel supported by senior leadership, up from 54% last year. Workload remains the top concern, cited by 71% of respondents. CPD satisfaction has improved significantly following the introduction of protected development time on Thursday afternoons.", timestamp: new Date("2024-01-08T10:05:00") },
+      { id: "8a", role: "user", content: "Analyse the results of our staff wellbeing survey.", timestamp: "2024-01-08T10:00:00" },
+      { id: "8b", role: "assistant", content: "The survey results show 68% of staff feel supported by senior leadership, up from 54% last year. Workload remains the top concern, cited by 71% of respondents. CPD satisfaction has improved significantly following the introduction of protected development time on Thursday afternoons.", timestamp: "2024-01-08T10:05:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-08"),
-    updatedAt: new Date("2024-01-08"),
+    createdAt: "2024-01-08",
+    updatedAt: "2024-01-08",
   },
   {
     id: "9",
     title: "Exclusions & Behaviour Data",
     messages: [
-      { id: "9a", role: "user", content: "Summarise our exclusions data for the autumn term.", timestamp: new Date("2024-01-07T15:00:00") },
-      { id: "9b", role: "assistant", content: "Autumn term saw 12 fixed-term exclusions and 0 permanent exclusions. This is a reduction of 4 compared to the same period last year. The majority of exclusions were in Year 9 and related to persistent disruptive behaviour. Internal suspensions totalled 34 days across the school.", timestamp: new Date("2024-01-07T15:04:00") },
+      { id: "9a", role: "user", content: "Summarise our exclusions data for the autumn term.", timestamp: "2024-01-07T15:00:00" },
+      { id: "9b", role: "assistant", content: "Autumn term saw 12 fixed-term exclusions and 0 permanent exclusions. This is a reduction of 4 compared to the same period last year. The majority of exclusions were in Year 9 and related to persistent disruptive behaviour. Internal suspensions totalled 34 days across the school.", timestamp: "2024-01-07T15:04:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-07"),
-    updatedAt: new Date("2024-01-07"),
+    createdAt: "2024-01-07",
+    updatedAt: "2024-01-07",
   },
   {
     id: "10",
     title: "Sixth Form Destinations Report",
     messages: [
-      { id: "10a", role: "user", content: "What were the post-16 destinations for last year's Year 13 cohort?", timestamp: new Date("2024-01-06T11:00:00") },
-      { id: "10b", role: "assistant", content: "Of last year's Year 13 cohort, 62% progressed to higher education, with 8% attending Russell Group universities. 21% entered employment or apprenticeships, 11% took a gap year, and 6% enrolled in further education or retraining. Overall destination data is above national average for this school type.", timestamp: new Date("2024-01-06T11:02:00") },
+      { id: "10a", role: "user", content: "What were the post-16 destinations for last year's Year 13 cohort?", timestamp: "2024-01-06T11:00:00" },
+      { id: "10b", role: "assistant", content: "Of last year's Year 13 cohort, 62% progressed to higher education, with 8% attending Russell Group universities. 21% entered employment or apprenticeships, 11% took a gap year, and 6% enrolled in further education or retraining. Overall destination data is above national average for this school type.", timestamp: "2024-01-06T11:02:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-06"),
-    updatedAt: new Date("2024-01-06"),
+    createdAt: "2024-01-06",
+    updatedAt: "2024-01-06",
   },
   {
     id: "11",
     title: "Curriculum Intent Statement",
     messages: [
-      { id: "11a", role: "user", content: "Help me write a curriculum intent statement for our school.", timestamp: new Date("2024-01-05T09:00:00") },
-      { id: "11b", role: "assistant", content: "Here is a draft curriculum intent statement: 'Our curriculum is designed to inspire curiosity, build cultural capital, and equip all pupils with the knowledge and skills to thrive beyond school. We believe in an ambitious, knowledge-rich curriculum that is carefully sequenced to ensure deep understanding and long-term retention across all subjects and year groups.' Would you like me to tailor this to your school context?", timestamp: new Date("2024-01-05T09:03:00") },
+      { id: "11a", role: "user", content: "Help me write a curriculum intent statement for our school.", timestamp: "2024-01-05T09:00:00" },
+      { id: "11b", role: "assistant", content: "Here is a draft curriculum intent statement: 'Our curriculum is designed to inspire curiosity, build cultural capital, and equip all pupils with the knowledge and skills to thrive beyond school. We believe in an ambitious, knowledge-rich curriculum that is carefully sequenced to ensure deep understanding and long-term retention across all subjects and year groups.' Would you like me to tailor this to your school context?", timestamp: "2024-01-05T09:03:00" },
     ],
     isPinned: false,
-    createdAt: new Date("2024-01-05"),
-    updatedAt: new Date("2024-01-05"),
+    createdAt: "2024-01-05",
+    updatedAt: "2024-01-05",
   },
 ]
 
+// Initialize on client side only to avoid hydration mismatch
+function getInitialSessions(): ChatSession[] {
+  return sampleChatSessions
+}
+
 export function AIChatContent() {
-  const [sessions, setSessions] = useState<ChatSession[]>(sampleChatSessions)
+  const [mounted, setMounted] = useState(false)
+  const [sessions, setSessions] = useState<ChatSession[]>([])
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [hoveredSessionId, setHoveredSessionId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Only load sessions after mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+    setSessions(getInitialSessions())
+  }, [])
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
 
@@ -168,6 +180,15 @@ export function AIChatContent() {
       scrollToBottom()
     }
   }, [activeSession?.messages])
+
+  // Show loading state during SSR/hydration
+  if (!mounted) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-slate-500">Loading...</div>
+      </div>
+    )
+  }
 
   const handleNewChat = () => {
     setActiveSessionId(null)
@@ -197,11 +218,12 @@ export function AIChatContent() {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
 
+    const now = new Date().toISOString()
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: "user",
       content: inputValue.trim(),
-      timestamp: new Date(),
+      timestamp: now,
     }
 
     if (activeSessionId) {
@@ -209,7 +231,7 @@ export function AIChatContent() {
       setSessions((prev) =>
         prev.map((s) =>
           s.id === activeSessionId
-            ? { ...s, messages: [...s.messages, userMessage], updatedAt: new Date() }
+            ? { ...s, messages: [...s.messages, userMessage], updatedAt: now }
             : s
         )
       )
@@ -220,8 +242,8 @@ export function AIChatContent() {
         title: inputValue.trim().slice(0, 30) + (inputValue.length > 30 ? "..." : ""),
         messages: [userMessage],
         isPinned: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
       }
       setSessions((prev) => [newSession, ...prev])
       setActiveSessionId(newSession.id)
@@ -232,18 +254,19 @@ export function AIChatContent() {
 
     // Simulate AI response
     setTimeout(() => {
+      const responseTime = new Date().toISOString()
       const assistantMessage: ChatMessage = {
         id: `msg-${Date.now()}-response`,
         role: "assistant",
         content: "Thank you for your message. I'm here to help you with any questions about your school data, reports, or any other information you need. How can I assist you today?",
-        timestamp: new Date(),
+        timestamp: responseTime,
       }
 
       setSessions((prev) =>
         prev.map((s) =>
           s.id === (activeSessionId || `session-${Date.now() - 1500}`) ||
           (s.messages.length === 1 && s.messages[0].id === userMessage.id)
-            ? { ...s, messages: [...s.messages, assistantMessage], updatedAt: new Date() }
+            ? { ...s, messages: [...s.messages, assistantMessage], updatedAt: responseTime }
             : s
         )
       )
