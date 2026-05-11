@@ -548,7 +548,7 @@ export default function RolesPage() {
   // List View
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+      <Sidebar />
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check, Cable } from "lucide-react"
+import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check, Cable, MessageSquare } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -46,6 +46,7 @@ export function Sidebar({}: SidebarProps) {
     { icon: Cable, label: "Connections", href: "/settings/connections" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: BarChart3, label: "Reports", href: "/reports" },
+    { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   ]
 
   const isActive = (href: string) => pathname.startsWith(href)
@@ -87,10 +88,12 @@ export function Sidebar({}: SidebarProps) {
       {/* Bottom section */}
       <div className="p-2 pb-4 space-y-1 border-t border-white/10">
         {/* Logged in user */}
+
         <a
           href="/profile"
           className="w-full flex items-center justify-center h-11 group"
           title="View Profile - Gareth Hutchings"
+
         >
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold tracking-wide select-none border-2 transition-all group-hover:scale-105 group-hover:shadow-lg"
@@ -98,6 +101,7 @@ export function Sidebar({}: SidebarProps) {
           >
             GH
           </div>
+
         </a>
 
         {/* Account Switcher */}

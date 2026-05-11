@@ -47,6 +47,7 @@ export function TopNavigation() {
   const tabs = getNavigationTabs()
   const isSettingsPage = pathname.startsWith("/settings")
   const isReportsPage = pathname.startsWith("/reports")
+  const isAiChatPage = pathname.startsWith("/ai-chat")
 
   return (
     <div className="w-full rounded-lg h-14 bg-white border border-slate-200 flex items-center justify-between px-4">

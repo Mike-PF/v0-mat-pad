@@ -6,11 +6,9 @@ import { TopNavigation } from "@/components/top-navigation"
 import { ArchiveContent } from "@/components/archive-content"
 
 export default function ArchivePage() {
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
-
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
+      <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="p-4">

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { UploadModal } from "@/components/ui/upload-modal"
 import {
   ChevronDown,
+  ChevronLeft,
   Save,
   Search,
   FileText,
@@ -29,6 +30,7 @@ import {
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
+import { DocumentEditor } from "@/components/document-editor"
 
 const mats = [
   { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
@@ -213,7 +215,12 @@ export function DocumentCreationContent() {
   const [documents, setDocuments] = useState(mockSavedDocuments)
   const [selectedDocument, setSelectedDocument] = useState<any>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
+  const [showDocumentEditor, setShowDocumentEditor] = useState(false)
+  const [configSaved, setConfigSaved] = useState(false)
   const [documentName, setDocumentName] = useState("")
+  const [formList, setFormList] = useState("")
+  const [sectionName, setSectionName] = useState("")
+  const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -373,8 +380,9 @@ export function DocumentCreationContent() {
     }
 
     setIsCreatingNew(true)
+    setShowDocumentEditor(true)
     setSelectedDocument(null)
-    setDocumentName("")
+    setDocumentName("New Document")
     setSelectedSP("")
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -385,6 +393,26 @@ export function DocumentCreationContent() {
     // setQuestionAssignments({})
     // setQaData({})
     setSelectingTagMode(null) // Clear selection mode on create new
+  }
+
+  const handleExitEditor = () => {
+    setShowDocumentEditor(false)
+    setIsCreatingNew(false)
+    setConfigSaved(false)
+  }
+
+  const handleSaveConfiguration = () => {
+    if (!documentName.trim()) return
+    setConfigSaved(true)
+    setNotificationMessage("Configuration saved!")
+    setShowNotification(true)
+  }
+
+  const handleSaveFromEditor = () => {
+    setShowDocumentEditor(false)
+    setConfigSaved(false)
+    setNotificationMessage("Document saved successfully!")
+    setShowNotification(true)
   }
 
   const handleEditDocument = (doc: any) => {
@@ -1026,6 +1054,131 @@ export function DocumentCreationContent() {
 
     setConditionalTagSearch("")
     setShowIfModal(true)
+  }
+
+  // Stage 1: Configuration panel — shown before saving
+  if (showDocumentEditor && !configSaved) {
+    return (
+      <>
+        <UploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onFileSelect={handleFileUpload}
+          isProcessing={isProcessing}
+        />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExitEditor}
+                className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to List
+              </Button>
+              <Button
+                onClick={handleSaveConfiguration}
+                disabled={!documentName.trim() || !sectionName}
+                className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Configuration
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-6 items-end">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
+                <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
+                  {selectedOrganization?.name || selectedSchoolUrn}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
+                <Input
+                  type="text"
+                  placeholder="Enter document name..."
+                  value={documentName}
+                  onChange={(e) => setDocumentName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Form List</label>
+                <select
+                  value={formList}
+                  onChange={(e) => setFormList(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="">Select a form link</option>
+                  <option value="form-1">Autumn Term Form</option>
+                  <option value="form-2">Spring Term Form</option>
+                  <option value="form-3">Summer Term Form</option>
+                  <option value="form-4">Annual Review Form</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Section Name <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={sectionName}
+                  onChange={(e) => setSectionName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="">Select a section name</option>
+                  <option value="school">School</option>
+                  <option value="trust">Trust</option>
+                  <option value="la">Local Authority</option>
+                  <option value="national">National</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3">
+              <label className="text-sm font-medium text-slate-700">Report Level:</label>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                  School
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                    reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                      reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm ${reportLevel === "mat" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                  MAT
+                </span>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      </>
+    )
+  }
+
+  // Stage 2: Document editor — shown after configuration is saved
+  if (showDocumentEditor && configSaved) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-120px)]">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <DocumentEditor
+            documentName={documentName}
+            onExit={handleExitEditor}
+            onSave={handleSaveFromEditor}
+          />
+        </div>
+      </div>
+    )
   }
 
   return (
