@@ -30,14 +30,32 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
   const [selectedFont, setSelectedFont] = useState("Arial")
   const [textColor, setTextColor] = useState("#000000")
   const [highlightColor, setHighlightColor] = useState("#ffff00")
+  const [isMounted, setIsMounted] = useState(false)
+  const isInternalChange = useRef(false)
 
   const fonts = ["Arial", "Times New Roman", "Helvetica", "Georgia", "Verdana", "Calibri"]
 
+  // Mark as mounted after initial render to avoid hydration issues
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value
+    setIsMounted(true)
+    // Initialize content after mount
+    const timer = setTimeout(() => {
+      if (editorRef.current && value) {
+        editorRef.current.innerHTML = value
+      }
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Sync external value changes to the editor
+  useEffect(() => {
+    if (isMounted && editorRef.current && !isInternalChange.current) {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value
+      }
     }
-  }, [value])
+    isInternalChange.current = false
+  }, [value, isMounted])
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value)
@@ -48,6 +66,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
 
   const handleInput = () => {
     if (editorRef.current) {
+      isInternalChange.current = true
       onChange(editorRef.current.innerHTML)
     }
   }
@@ -173,16 +192,23 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
       </div>
 
       {/* Editor Content */}
-      <div
-        ref={editorRef}
-        contentEditable
-        onInput={handleInput}
-        className="min-h-[120px] p-4 focus:outline-none"
-        style={{ minHeight: "120px" }}
-        suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: value }}
-        data-placeholder={placeholder}
-      />
+      {isMounted ? (
+        <div
+          ref={editorRef}
+          contentEditable
+          onInput={handleInput}
+          className="min-h-[120px] p-4 focus:outline-none"
+          style={{ minHeight: "120px" }}
+          suppressContentEditableWarning={true}
+          data-placeholder={placeholder}
+        />
+      ) : (
+        <div
+          className="min-h-[120px] p-4"
+          style={{ minHeight: "120px" }}
+          dangerouslySetInnerHTML={{ __html: value }}
+        />
+      )}
     </div>
   )
 }
