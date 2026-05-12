@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { ChevronDown, Search } from "lucide-react"
 
 
 const ethnicityValues = [
@@ -49,6 +50,40 @@ const mappedValues = [
   { code: "MWBC", count: 1, label: "White and Black Caribbean" },
   { code: "NOBT", count: 1, label: "Information not yet obtained" },
   { code: "OOTH", count: null, label: "Any other ethnic group" },
+]
+
+// SEN Needs data
+const senNeedsValues = [
+  { code: "AUDITORY_PROCESSING_DISORDER", label: "Auditory processing disorder" },
+  { code: "DEVELOPMENTAL_DELAY", label: "Developmental delay" },
+  { code: "DOWNS_SYNDROME", label: "Down Syndrome" },
+  { code: "DYSGRAPHIA", label: "Dysgraphia" },
+  { code: "DYSPRAXIA", label: "Dyspraxia" },
+  { code: "EPILEPSY", label: "Epilepsy" },
+  { code: "FINE_AND_GROSS_MOTOR_SKILL_DIFFICULTY", label: "Fine and gross motor skill difficulty" },
+  { code: "MEMORY", label: "Memory difficulties" },
+  { code: "PROCESSING_SPEED", label: "Processing speed difficulties" },
+  { code: "SENSORY_PROCESSING", label: "Sensory processing disorder" },
+  { code: "SOCIAL_COMMUNICATION", label: "Social communication difficulties" },
+  { code: "SPEECH_LANGUAGE", label: "Speech and language difficulties" },
+  { code: "VISUAL_IMPAIRMENT", label: "Visual impairment" },
+  { code: "WORKING_MEMORY", label: "Working memory difficulties" },
+]
+
+const mappedSenValues = [
+  { code: "ASD", count: 4, label: "Autism" },
+  { code: "HI", count: 2, label: "Hearing impairment" },
+  { code: "MLD", count: 2, label: "Moderate learning difficulty" },
+  { code: "MSI", count: 3, label: "Multi-sensory impairment" },
+  { code: "NSA", count: 2, label: "No specialist assessment" },
+  { code: "OTH", count: 2, label: "Other difficulty/disability" },
+  { code: "PD", count: 4, label: "Physical disability" },
+  { code: "PMLD", count: 1, label: "Profound and multiple learning difficulty" },
+  { code: "SEMH", count: 3, label: "Social, emotional and mental health" },
+  { code: "SLCN", count: 2, label: "Speech, language and communications needs" },
+  { code: "SLD", count: 1, label: "Severe learning difficulty" },
+  { code: "SPLD", count: 5, label: "Specific learning difficulty" },
+  { code: "VI", count: 2, label: "Visual impairment" },
 ]
 
 // DfE extended ethnicity reference data
@@ -125,6 +160,9 @@ export default function MappingPage() {
     "White and Asian": "dfe-main",
     "White and Black African": "dfe-main",
   })
+  const [senMappings, setSenMappings] = useState<Record<string, string>>({})
+  const [senLeftSearch, setSenLeftSearch] = useState("")
+  const [senRightSearch, setSenRightSearch] = useState("")
 
   const filteredEthnicityValues = ethnicityValues.filter((v) =>
     v.toLowerCase().includes(leftSearch.toLowerCase())
@@ -134,6 +172,18 @@ export default function MappingPage() {
     (v) =>
       v.code.toLowerCase().includes(rightSearch.toLowerCase()) ||
       v.label.toLowerCase().includes(rightSearch.toLowerCase())
+  )
+
+  const filteredSenNeeds = senNeedsValues.filter(
+    (v) =>
+      v.code.toLowerCase().includes(senLeftSearch.toLowerCase()) ||
+      v.label.toLowerCase().includes(senLeftSearch.toLowerCase())
+  )
+
+  const filteredMappedSenValues = mappedSenValues.filter(
+    (v) =>
+      v.code.toLowerCase().includes(senRightSearch.toLowerCase()) ||
+      v.label.toLowerCase().includes(senRightSearch.toLowerCase())
   )
 
   const clearSelection = () => {
@@ -166,8 +216,7 @@ export default function MappingPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ethnicity">Ethnicity</SelectItem>
-                        <SelectItem value="gender">Gender</SelectItem>
-                        <SelectItem value="language">Language</SelectItem>
+                        <SelectItem value="sen">SEN</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -196,8 +245,8 @@ export default function MappingPage() {
             </CardContent>
           </Card>
 
-          {/* Tabbed Full-Width Layout */}
-          {selectedMapping && selectedOrganisation && (
+          {/* Ethnicity Tabbed Full-Width Layout */}
+          {selectedMapping === "ethnicity" && selectedOrganisation && (
           <Card>
             <CardContent className="p-0">
               {/* Tab Navigation */}
@@ -382,6 +431,93 @@ export default function MappingPage() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+          )}
+
+          {/* SEN Two-Panel Layout */}
+          {selectedMapping === "sen" && selectedOrganisation && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Left Panel - SEN Needs */}
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
+                    <span className="text-sm font-semibold text-slate-900">SEN Needs</span>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        placeholder="Search..."
+                        value={senLeftSearch}
+                        onChange={(e) => setSenLeftSearch(e.target.value)}
+                        className="w-48 h-9 pl-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-[500px] overflow-y-auto bg-slate-50">
+                    {filteredSenNeeds.map((sen, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between px-4 py-3 border-b last:border-0 bg-white hover:bg-slate-50 transition-colors"
+                      >
+                        <span className="text-sm text-slate-800">
+                          <span className="font-medium">{sen.code}</span>
+                          <span className="text-slate-500"> - {sen.label}</span>
+                        </span>
+                        <Select
+                          value={senMappings[sen.code] || ""}
+                          onValueChange={(val) =>
+                            setSenMappings((prev) => ({ ...prev, [sen.code]: val }))
+                          }
+                        >
+                          <SelectTrigger className="w-40 h-9 text-sm">
+                            <SelectValue placeholder="Select Value..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mappedSenValues.map((mv) => (
+                              <SelectItem key={mv.code} value={mv.code}>
+                                {mv.code} - {mv.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right Panel - Mapped Values */}
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
+                    <span className="text-sm font-semibold text-slate-900">Mapped Values</span>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        placeholder="Search..."
+                        value={senRightSearch}
+                        onChange={(e) => setSenRightSearch(e.target.value)}
+                        className="w-48 h-9 pl-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-[500px] overflow-y-auto bg-slate-50">
+                    {filteredMappedSenValues.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between px-4 py-3 border-b last:border-0 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
+                        <span className="text-sm">
+                          <span className="text-amber-600 font-semibold">
+                            {item.code} ({item.count})
+                          </span>
+                          <span className="text-slate-700"> - {item.label}</span>
+                        </span>
+                        <ChevronDown className="h-5 w-5 text-slate-400" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
           )}
