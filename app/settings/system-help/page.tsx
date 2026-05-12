@@ -411,7 +411,7 @@ export default function SystemHelpPage() {
                               <button
                                 onClick={() => handleToggleActive(video.id)}
                                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                  video.isActive ? "bg-[#B30089]" : "bg-slate-300"
+                                  video.isActive ? "bg-[#121051]" : "bg-slate-300"
                                 }`}
                                 role="switch"
                                 aria-checked={video.isActive}
