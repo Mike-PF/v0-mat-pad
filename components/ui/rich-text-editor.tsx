@@ -192,23 +192,15 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
       </div>
 
       {/* Editor Content */}
-      {isMounted ? (
-        <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleInput}
-          className="min-h-[120px] p-4 focus:outline-none"
-          style={{ minHeight: "120px" }}
-          suppressContentEditableWarning={true}
-          data-placeholder={placeholder}
-        />
-      ) : (
-        <div
-          className="min-h-[120px] p-4"
-          style={{ minHeight: "120px" }}
-          dangerouslySetInnerHTML={{ __html: value }}
-        />
-      )}
+      <div
+        ref={editorRef}
+        contentEditable={isMounted}
+        onInput={handleInput}
+        className="min-h-[120px] p-4 focus:outline-none"
+        style={{ minHeight: "120px" }}
+        suppressContentEditableWarning={true}
+        data-placeholder={placeholder}
+      />
     </div>
   )
 }
