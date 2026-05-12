@@ -166,8 +166,7 @@ export default function MappingPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ethnicity">Ethnicity</SelectItem>
-                        <SelectItem value="gender">Gender</SelectItem>
-                        <SelectItem value="language">Language</SelectItem>
+                        <SelectItem value="sen">SEN</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
