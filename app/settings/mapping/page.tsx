@@ -82,6 +82,7 @@ export default function MappingPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [selectedMapping, setSelectedMapping] = useState("ethnicity")
   const [selectedOrganisation, setSelectedOrganisation] = useState("st-clare")
+  const [activeTab, setActiveTab] = useState<"map" | "review">("map")
   const [leftSearch, setLeftSearch] = useState("")
   const [rightSearch, setRightSearch] = useState("")
   const [mappings, setMappings] = useState<Record<string, string>>({
@@ -195,124 +196,192 @@ export default function MappingPage() {
             </CardContent>
           </Card>
 
-          {/* Two Column Layout */}
+          {/* Tabbed Full-Width Layout */}
           {selectedMapping && selectedOrganisation && (
           <Card>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-6">
-                {/* Left Panel - Ethnicity Values */}
-                <Card className="border">
-                  <CardContent className="p-0">
-                    <div className="flex items-center justify-between px-4 py-3 border-b">
-                      <span className="text-sm font-medium text-primary">Ethnicity</span>
-                      <Input
-                        placeholder="Search..."
-                        value={leftSearch}
-                        onChange={(e) => setLeftSearch(e.target.value)}
-                        className="w-40 h-8 text-sm"
-                      />
-                    </div>
-                    <div className="max-h-[500px] overflow-y-auto">
-                      {filteredEthnicityValues.map((value, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between px-4 py-3 border-b last:border-0 hover:bg-slate-50"
-                        >
-                          <span className="text-sm text-slate-700">{value} -</span>
-                          <Select
-                            value={mappings[value] || ""}
-                            onValueChange={(val) =>
-                              setMappings((prev) => ({ ...prev, [value]: val }))
-                            }
-                          >
-                            <SelectTrigger className="w-44 h-8 text-sm text-slate-400">
-                              <SelectValue placeholder="Select Mapped Value..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {mappedValues.map((mv) => (
-                                <SelectItem key={mv.code} value={mv.code}>
-                                  {mv.code} - {mv.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+            <CardContent className="p-0">
+              {/* Tab Navigation */}
+              <div className="flex items-center border-b px-4">
+                <button
+                  onClick={() => setActiveTab("map")}
+                  className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === "map"
+                      ? "text-primary border-primary"
+                      : "text-slate-500 border-transparent hover:text-slate-700"
+                  }`}
+                >
+                  Map Ethnicities
+                </button>
+                <button
+                  onClick={() => setActiveTab("review")}
+                  className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === "review"
+                      ? "text-primary border-primary"
+                      : "text-slate-500 border-transparent hover:text-slate-700"
+                  }`}
+                >
+                  Review Mapped Values
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600">
+                    {Object.keys(mappings).filter(k => mappings[k]).length}
+                  </span>
+                </button>
+              </div>
 
-                {/* Right Panel - Mapped Values Table */}
-                <Card className="border">
-                  <CardContent className="p-0">
-                    <div className="flex items-center justify-between px-4 py-3 border-b">
-                      <span className="text-sm font-medium text-slate-700">Mapped Values</span>
-                      <Input
-                        placeholder="Search..."
-                        value={rightSearch}
-                        onChange={(e) => setRightSearch(e.target.value)}
-                        className="w-40 h-8 text-sm"
-                      />
+              {/* Map Ethnicities Tab */}
+              {activeTab === "map" && (
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">School Ethnicity Values</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Select a DfE mapping for each school ethnicity value</p>
                     </div>
-                    <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                      <table className="w-full text-sm">
-                        <thead className="sticky top-0 bg-white z-10">
-                          <tr className="border-b">
-                            <th className="text-left px-3 py-2 text-xs font-semibold text-slate-600 whitespace-nowrap">School ethnicity</th>
-                            <th className="text-left px-3 py-2 text-xs font-semibold text-slate-600 whitespace-nowrap">Mapped to DfE extended</th>
-                            <th className="text-left px-3 py-2 text-xs font-semibold text-slate-600 whitespace-nowrap">DfE extended code</th>
-                            <th className="text-left px-3 py-2 text-xs font-semibold text-slate-600 whitespace-nowrap">DfE main code</th>
-                            <th className="text-left px-3 py-2 text-xs font-semibold text-slate-600 whitespace-nowrap">DfE main description</th>
-                            <th className="text-left px-3 py-2 text-xs font-semibold text-slate-600 whitespace-nowrap">Reported ethnicity</th>
-                          </tr>
-                        </thead>
+                    <Input
+                      placeholder="Search ethnicities..."
+                      value={leftSearch}
+                      onChange={(e) => setLeftSearch(e.target.value)}
+                      className="w-64 h-9"
+                    />
+                  </div>
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 w-1/2">School Ethnicity</th>
+                          <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 w-1/2">Mapped to DfE Value</th>
+                        </tr>
+                      </thead>
+                    </table>
+                    <div className="max-h-[450px] overflow-y-auto">
+                      <table className="w-full">
                         <tbody>
-                          {filteredEthnicityValues
-                            .filter((v) => mappings[v])
-                            .map((schoolEthnicity, index) => {
-                              const mappedCode = mappings[schoolEthnicity]
-                              const mappedVal = mappedValues.find((mv) => mv.code === mappedCode)
-                              const dfe = dfeExtendedEthnicities[schoolEthnicity]
-                              return (
-                                <tr key={index} className="border-b last:border-0 hover:bg-slate-50">
-                                  <td className="px-3 py-2 text-slate-800 whitespace-nowrap">{schoolEthnicity}</td>
-                                  <td className="px-3 py-2 text-slate-700 whitespace-nowrap">{dfe?.dfeExtendedLabel ?? mappedVal?.label ?? "—"}</td>
-                                  <td className="px-3 py-2 font-medium text-slate-900 whitespace-nowrap">{dfe?.dfeExtendedCode ?? mappedCode}</td>
-                                  <td className="px-3 py-2 font-medium text-slate-900 whitespace-nowrap">{dfe?.dfeMainCode ?? "—"}</td>
-                                  <td className="px-3 py-2 text-slate-700">{dfe?.dfeMainDescription ?? "—"}</td>
-                                  <td className="px-3 py-2">
-                                    <Select
-                                      value={reportedEthnicities[schoolEthnicity] || ""}
-                                      onValueChange={(val) =>
-                                        setReportedEthnicities((prev) => ({ ...prev, [schoolEthnicity]: val }))
-                                      }
-                                    >
-                                      <SelectTrigger className="h-7 w-32 text-xs">
-                                        <SelectValue placeholder="Select..." />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="dfe-main">DfE main</SelectItem>
-                                        <SelectItem value="dfe-extended">DfE extended</SelectItem>
-                                        <SelectItem value="school">School</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </td>
-                                </tr>
-                              )
-                            })}
-                          {filteredEthnicityValues.filter((v) => mappings[v]).length === 0 && (
-                            <tr>
-                              <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
-                                Map school ethnicities on the left to see them here.
+                          {filteredEthnicityValues.map((value, index) => (
+                            <tr
+                              key={index}
+                              className="border-t hover:bg-slate-50 transition-colors"
+                            >
+                              <td className="px-4 py-3 w-1/2">
+                                <span className="text-sm text-slate-800">{value}</span>
+                              </td>
+                              <td className="px-4 py-3 w-1/2">
+                                <Select
+                                  value={mappings[value] || ""}
+                                  onValueChange={(val) =>
+                                    setMappings((prev) => ({ ...prev, [value]: val }))
+                                  }
+                                >
+                                  <SelectTrigger className="w-full max-w-md h-9 text-sm">
+                                    <SelectValue placeholder="Select DfE mapping..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {mappedValues.map((mv) => (
+                                      <SelectItem key={mv.code} value={mv.code}>
+                                        <span className="font-medium">{mv.code}</span>
+                                        <span className="text-slate-500 ml-2">- {mv.label}</span>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </td>
                             </tr>
-                          )}
+                          ))}
                         </tbody>
                       </table>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Review Mapped Values Tab */}
+              {activeTab === "review" && (
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">Mapped Values Overview</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Review all mappings and select which value to use in reports</p>
+                    </div>
+                    <Input
+                      placeholder="Search mapped values..."
+                      value={rightSearch}
+                      onChange={(e) => setRightSearch(e.target.value)}
+                      className="w-64 h-9"
+                    />
+                  </div>
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[900px]">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">School Ethnicity</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">Mapped to DfE Extended</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">DfE Extended Code</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">DfE Main Code</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">DfE Main Description</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">Reported Ethnicity</th>
+                          </tr>
+                        </thead>
+                      </table>
+                      <div className="max-h-[450px] overflow-y-auto">
+                        <table className="w-full min-w-[900px]">
+                          <tbody>
+                            {filteredEthnicityValues
+                              .filter((v) => mappings[v])
+                              .filter((v) =>
+                                v.toLowerCase().includes(rightSearch.toLowerCase()) ||
+                                (dfeExtendedEthnicities[v]?.dfeExtendedLabel ?? "").toLowerCase().includes(rightSearch.toLowerCase())
+                              )
+                              .map((schoolEthnicity, index) => {
+                                const mappedCode = mappings[schoolEthnicity]
+                                const mappedVal = mappedValues.find((mv) => mv.code === mappedCode)
+                                const dfe = dfeExtendedEthnicities[schoolEthnicity]
+                                return (
+                                  <tr key={index} className="border-t hover:bg-slate-50 transition-colors">
+                                    <td className="px-4 py-3 text-sm text-slate-800">{schoolEthnicity}</td>
+                                    <td className="px-4 py-3 text-sm text-slate-700">{dfe?.dfeExtendedLabel ?? mappedVal?.label ?? "—"}</td>
+                                    <td className="px-4 py-3">
+                                      <span className="inline-flex px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded">
+                                        {dfe?.dfeExtendedCode ?? mappedCode}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <span className="inline-flex px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded">
+                                        {dfe?.dfeMainCode ?? "—"}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-slate-700">{dfe?.dfeMainDescription ?? "—"}</td>
+                                    <td className="px-4 py-3">
+                                      <Select
+                                        value={reportedEthnicities[schoolEthnicity] || ""}
+                                        onValueChange={(val) =>
+                                          setReportedEthnicities((prev) => ({ ...prev, [schoolEthnicity]: val }))
+                                        }
+                                      >
+                                        <SelectTrigger className="h-8 w-36 text-sm">
+                                          <SelectValue placeholder="Select..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="dfe-main">DfE main</SelectItem>
+                                          <SelectItem value="dfe-extended">DfE extended</SelectItem>
+                                          <SelectItem value="school">School</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            {filteredEthnicityValues.filter((v) => mappings[v]).length === 0 && (
+                              <tr>
+                                <td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-400">
+                                  No mappings yet. Go to the &quot;Map Ethnicities&quot; tab to create mappings.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
           )}
