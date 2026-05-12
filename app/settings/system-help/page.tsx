@@ -38,6 +38,7 @@ interface HelpVideo {
   loomId: string
   duration: string
   order: number
+  isActive: boolean
   createdAt: string
   updatedAt: string
 }
@@ -52,6 +53,7 @@ const initialHelpVideos: HelpVideo[] = [
     loomId: "1234567890abcdef",
     duration: "2:30",
     order: 1,
+    isActive: true,
     createdAt: "2024-01-15",
     updatedAt: "2024-01-15",
   },
@@ -64,6 +66,7 @@ const initialHelpVideos: HelpVideo[] = [
     loomId: "abcdef1234567890",
     duration: "4:15",
     order: 2,
+    isActive: true,
     createdAt: "2024-01-16",
     updatedAt: "2024-01-16",
   },
@@ -76,6 +79,7 @@ const initialHelpVideos: HelpVideo[] = [
     loomId: "fedcba0987654321",
     duration: "3:45",
     order: 1,
+    isActive: true,
     createdAt: "2024-01-17",
     updatedAt: "2024-01-17",
   },
@@ -88,6 +92,7 @@ const initialHelpVideos: HelpVideo[] = [
     loomId: "0987654321fedcba",
     duration: "5:20",
     order: 1,
+    isActive: true,
     createdAt: "2024-01-18",
     updatedAt: "2024-01-18",
   },
@@ -148,6 +153,13 @@ export default function SystemHelpPage() {
 
     setHelpVideos(helpVideos.map((v) =>
       updatedOrders[v.id] !== undefined ? { ...v, order: updatedOrders[v.id] } : v
+    ))
+  }
+
+  // Toggle video active state
+  const handleToggleActive = (videoId: number) => {
+    setHelpVideos(helpVideos.map((v) =>
+      v.id === videoId ? { ...v, isActive: !v.isActive } : v
     ))
   }
 
@@ -223,6 +235,7 @@ export default function SystemHelpPage() {
         loomId: formLoomId,
         duration: formDuration,
         order: pageVideoCount + 1,
+        isActive: true,
         createdAt: new Date().toISOString().split("T")[0],
         updatedAt: new Date().toISOString().split("T")[0],
       }
@@ -378,8 +391,13 @@ export default function SystemHelpPage() {
                             </button>
 
                             {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-semibold text-slate-900">{video.title}</h4>
+                            <div className={`flex-1 min-w-0 ${!video.isActive ? "opacity-50" : ""}`}>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-semibold text-slate-900">{video.title}</h4>
+                                {!video.isActive && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">Inactive</span>
+                                )}
+                              </div>
                               <p className="text-xs text-slate-500 line-clamp-1">{video.description}</p>
                               <div className="flex items-center gap-3 mt-1">
                                 <span className="text-xs text-slate-400">{video.duration}</span>
@@ -389,6 +407,22 @@ export default function SystemHelpPage() {
 
                             {/* Actions */}
                             <div className="flex items-center gap-2">
+                              {/* Active Toggle */}
+                              <button
+                                onClick={() => handleToggleActive(video.id)}
+                                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                  video.isActive ? "bg-[#B30089]" : "bg-slate-300"
+                                }`}
+                                role="switch"
+                                aria-checked={video.isActive}
+                                aria-label={video.isActive ? "Deactivate video" : "Activate video"}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    video.isActive ? "translate-x-4" : "translate-x-0"
+                                  }`}
+                                />
+                              </button>
                               <Button
                                 variant="ghost"
                                 size="sm"
