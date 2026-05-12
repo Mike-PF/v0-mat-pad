@@ -84,8 +84,46 @@ export default function MappingPage() {
   const [selectedOrganisation, setSelectedOrganisation] = useState("st-clare")
   const [leftSearch, setLeftSearch] = useState("")
   const [rightSearch, setRightSearch] = useState("")
-  const [mappings, setMappings] = useState<Record<string, string>>({})
-  const [reportedEthnicities, setReportedEthnicities] = useState<Record<string, string>>({})
+  const [mappings, setMappings] = useState<Record<string, string>>({
+    "Any other Asian background": "AOTH",
+    "Any other Black background": "BOTH",
+    "Any other mixed background": "MOTH",
+    "Any Other White Background": "OOTH",
+    "Asian - British": "ABRI",
+    "Bangladeshi": "ABAN",
+    "Black - African": "BAFR",
+    "Black Caribbean": "BCRB",
+    "Chinese": "CHNE",
+    "Gypsy/Roma": "OOTH",
+    "Indian": "AIND",
+    "Information Not Yet Obtained": "NOBT",
+    "Pakistani": "APKN",
+    "Refused": "NOBT",
+    "White - British": "ABRI",
+    "White - Irish": "ABRI",
+    "White and Asian": "MWAS",
+    "White and Black African": "MWBA",
+  })
+  const [reportedEthnicities, setReportedEthnicities] = useState<Record<string, string>>({
+    "Any other Asian background": "dfe-main",
+    "Any other Black background": "dfe-main",
+    "Any other mixed background": "dfe-main",
+    "Any Other White Background": "dfe-main",
+    "Asian - British": "dfe-extended",
+    "Bangladeshi": "dfe-main",
+    "Black - African": "dfe-main",
+    "Black Caribbean": "dfe-main",
+    "Chinese": "dfe-main",
+    "Gypsy/Roma": "dfe-extended",
+    "Indian": "dfe-main",
+    "Information Not Yet Obtained": "dfe-main",
+    "Pakistani": "dfe-main",
+    "Refused": "dfe-main",
+    "White - British": "dfe-main",
+    "White - Irish": "dfe-main",
+    "White and Asian": "dfe-main",
+    "White and Black African": "dfe-main",
+  })
 
   const filteredEthnicityValues = ethnicityValues.filter((v) =>
     v.toLowerCase().includes(leftSearch.toLowerCase())
