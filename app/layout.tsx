@@ -29,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans">
+    <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <body className="font-sans" suppressHydrationWarning>
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
