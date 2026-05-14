@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Search } from "lucide-react"
+
 
 
 const ethnicityValues = [
@@ -52,22 +52,31 @@ const mappedValues = [
   { code: "OOTH", count: null, label: "Any other ethnic group" },
 ]
 
-// SEN Needs data
-const senNeedsValues = [
-  { code: "AUDITORY_PROCESSING_DISORDER", label: "Auditory processing disorder" },
-  { code: "DEVELOPMENTAL_DELAY", label: "Developmental delay" },
-  { code: "DOWNS_SYNDROME", label: "Down Syndrome" },
-  { code: "DYSGRAPHIA", label: "Dysgraphia" },
-  { code: "DYSPRAXIA", label: "Dyspraxia" },
-  { code: "EPILEPSY", label: "Epilepsy" },
-  { code: "FINE_AND_GROSS_MOTOR_SKILL_DIFFICULTY", label: "Fine and gross motor skill difficulty" },
-  { code: "MEMORY", label: "Memory difficulties" },
-  { code: "PROCESSING_SPEED", label: "Processing speed difficulties" },
-  { code: "SENSORY_PROCESSING", label: "Sensory processing disorder" },
-  { code: "SOCIAL_COMMUNICATION", label: "Social communication difficulties" },
-  { code: "SPEECH_LANGUAGE", label: "Speech and language difficulties" },
-  { code: "VISUAL_IMPAIRMENT", label: "Visual impairment" },
-  { code: "WORKING_MEMORY", label: "Working memory difficulties" },
+// SEN School Needs data (school-specific SEN categories)
+const senSchoolNeedsValues = [
+  "Attention Deficit (Hyperactivity)",
+  "Angelman syndrome",
+  "Anxiety disorder",
+  "Aphasia",
+  "Apraxia",
+  "Asperger's syndrome",
+  "Attachment disorder",
+  "Auditory processing disorder",
+  "Autism",
+  "Cerebral palsy",
+  "Developmental delay",
+  "Down Syndrome",
+  "Dyscalculia",
+  "Dysgraphia",
+  "Dyslexia",
+  "Dyspraxia",
+  "Epilepsy",
+  "Fragile X syndrome",
+  "Hearing impairment",
+  "Memory difficulties",
+  "Sensory processing disorder",
+  "Speech and language difficulties",
+  "Visual impairment",
 ]
 
 const mappedSenValues = [
@@ -160,7 +169,57 @@ export default function MappingPage() {
     "White and Asian": "dfe-main",
     "White and Black African": "dfe-main",
   })
-  const [senMappings, setSenMappings] = useState<Record<string, string>>({})
+  const [senMappings, setSenMappings] = useState<Record<string, string>>({
+    "Attention Deficit (Hyperactivity)": "SEMH",
+    "Angelman syndrome": "SLD",
+    "Anxiety disorder": "SEMH",
+    "Aphasia": "SLCN",
+    "Apraxia": "SPLD",
+    "Asperger's syndrome": "ASD",
+    "Attachment disorder": "SEMH",
+    "Auditory processing disorder": "HI",
+    "Autism": "ASD",
+    "Cerebral palsy": "PD",
+    "Developmental delay": "MLD",
+    "Down Syndrome": "SLD",
+    "Dyscalculia": "SPLD",
+    "Dysgraphia": "SPLD",
+    "Dyslexia": "SPLD",
+    "Dyspraxia": "SPLD",
+    "Epilepsy": "OTH",
+    "Fragile X syndrome": "SLD",
+    "Hearing impairment": "HI",
+    "Memory difficulties": "MLD",
+    "Sensory processing disorder": "MSI",
+    "Speech and language difficulties": "SLCN",
+    "Visual impairment": "VI",
+  })
+  const [reportedSenNeeds, setReportedSenNeeds] = useState<Record<string, string>>({
+    "Attention Deficit (Hyperactivity)": "dfe-sen",
+    "Angelman syndrome": "dfe-sen",
+    "Anxiety disorder": "school",
+    "Aphasia": "dfe-sen",
+    "Apraxia": "dfe-sen",
+    "Asperger's syndrome": "dfe-sen",
+    "Attachment disorder": "school",
+    "Auditory processing disorder": "dfe-sen",
+    "Autism": "dfe-sen",
+    "Cerebral palsy": "dfe-sen",
+    "Developmental delay": "dfe-sen",
+    "Down Syndrome": "dfe-sen",
+    "Dyscalculia": "dfe-sen",
+    "Dysgraphia": "dfe-sen",
+    "Dyslexia": "dfe-sen",
+    "Dyspraxia": "dfe-sen",
+    "Epilepsy": "dfe-sen",
+    "Fragile X syndrome": "dfe-sen",
+    "Hearing impairment": "dfe-sen",
+    "Memory difficulties": "dfe-sen",
+    "Sensory processing disorder": "dfe-sen",
+    "Speech and language difficulties": "dfe-sen",
+    "Visual impairment": "dfe-sen",
+  })
+  const [senActiveTab, setSenActiveTab] = useState<"map" | "review">("map")
   const [senLeftSearch, setSenLeftSearch] = useState("")
   const [senRightSearch, setSenRightSearch] = useState("")
 
@@ -174,17 +233,11 @@ export default function MappingPage() {
       v.label.toLowerCase().includes(rightSearch.toLowerCase())
   )
 
-  const filteredSenNeeds = senNeedsValues.filter(
-    (v) =>
-      v.code.toLowerCase().includes(senLeftSearch.toLowerCase()) ||
-      v.label.toLowerCase().includes(senLeftSearch.toLowerCase())
+  const filteredSenSchoolNeeds = senSchoolNeedsValues.filter((v) =>
+    v.toLowerCase().includes(senLeftSearch.toLowerCase())
   )
 
-  const filteredMappedSenValues = mappedSenValues.filter(
-    (v) =>
-      v.code.toLowerCase().includes(senRightSearch.toLowerCase()) ||
-      v.label.toLowerCase().includes(senRightSearch.toLowerCase())
-  )
+
 
   const clearSelection = () => {
     setSelectedMapping("")
@@ -435,89 +488,182 @@ export default function MappingPage() {
           </Card>
           )}
 
-          {/* SEN Two-Panel Layout */}
+          {/* SEN Tabbed Full-Width Layout */}
           {selectedMapping === "sen" && selectedOrganisation && (
           <Card>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-6">
-                {/* Left Panel - SEN Needs */}
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
-                    <span className="text-sm font-semibold text-slate-900">SEN Needs</span>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        placeholder="Search..."
-                        value={senLeftSearch}
-                        onChange={(e) => setSenLeftSearch(e.target.value)}
-                        className="w-48 h-9 pl-9 text-sm"
-                      />
-                    </div>
-                  </div>
-                  <div className="max-h-[500px] overflow-y-auto bg-slate-50">
-                    {filteredSenNeeds.map((sen, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between px-4 py-3 border-b last:border-0 bg-white hover:bg-slate-50 transition-colors"
-                      >
-                        <span className="text-sm text-slate-800">
-                          <span className="font-medium">{sen.code}</span>
-                          <span className="text-slate-500"> - {sen.label}</span>
-                        </span>
-                        <Select
-                          value={senMappings[sen.code] || ""}
-                          onValueChange={(val) =>
-                            setSenMappings((prev) => ({ ...prev, [sen.code]: val }))
-                          }
-                        >
-                          <SelectTrigger className="w-40 h-9 text-sm">
-                            <SelectValue placeholder="Select Value..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {mappedSenValues.map((mv) => (
-                              <SelectItem key={mv.code} value={mv.code}>
-                                {mv.code} - {mv.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right Panel - Mapped Values */}
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
-                    <span className="text-sm font-semibold text-slate-900">Mapped Values</span>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        placeholder="Search..."
-                        value={senRightSearch}
-                        onChange={(e) => setSenRightSearch(e.target.value)}
-                        className="w-48 h-9 pl-9 text-sm"
-                      />
-                    </div>
-                  </div>
-                  <div className="max-h-[500px] overflow-y-auto bg-slate-50">
-                    {filteredMappedSenValues.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between px-4 py-3 border-b last:border-0 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
-                      >
-                        <span className="text-sm">
-                          <span className="text-amber-600 font-semibold">
-                            {item.code} ({item.count})
-                          </span>
-                          <span className="text-slate-700"> - {item.label}</span>
-                        </span>
-                        <ChevronDown className="h-5 w-5 text-slate-400" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <CardContent className="p-0">
+              {/* Tab Navigation */}
+              <div className="flex items-center border-b px-4">
+                <button
+                  onClick={() => setSenActiveTab("map")}
+                  className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    senActiveTab === "map"
+                      ? "text-primary border-primary"
+                      : "text-slate-500 border-transparent hover:text-slate-700"
+                  }`}
+                >
+                  Map SEN Needs
+                </button>
+                <button
+                  onClick={() => setSenActiveTab("review")}
+                  className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    senActiveTab === "review"
+                      ? "text-primary border-primary"
+                      : "text-slate-500 border-transparent hover:text-slate-700"
+                  }`}
+                >
+                  Review Mapped Values
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600">
+                    {Object.keys(senMappings).filter(k => senMappings[k]).length}
+                  </span>
+                </button>
               </div>
+
+              {/* Map SEN Needs Tab */}
+              {senActiveTab === "map" && (
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">School SEN Need Values</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Select a DfE SEN mapping for each school SEN need</p>
+                    </div>
+                    <Input
+                      placeholder="Search SEN needs..."
+                      value={senLeftSearch}
+                      onChange={(e) => setSenLeftSearch(e.target.value)}
+                      className="w-64 h-9"
+                    />
+                  </div>
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 w-1/2">School SEN Need</th>
+                          <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 w-1/2">Mapped to DfE SEN Need</th>
+                        </tr>
+                      </thead>
+                    </table>
+                    <div className="max-h-[450px] overflow-y-auto">
+                      <table className="w-full">
+                        <tbody>
+                          {filteredSenSchoolNeeds.map((value, index) => (
+                            <tr
+                              key={index}
+                              className="border-t hover:bg-slate-50 transition-colors"
+                            >
+                              <td className="px-4 py-3 w-1/2">
+                                <span className="text-sm text-slate-800">{value}</span>
+                              </td>
+                              <td className="px-4 py-3 w-1/2">
+                                <Select
+                                  value={senMappings[value] || ""}
+                                  onValueChange={(val) =>
+                                    setSenMappings((prev) => ({ ...prev, [value]: val }))
+                                  }
+                                >
+                                  <SelectTrigger className="w-full max-w-md h-9 text-sm">
+                                    <SelectValue placeholder="Select DfE SEN mapping..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {mappedSenValues.map((mv) => (
+                                      <SelectItem key={mv.code} value={mv.code}>
+                                        <span className="font-medium">{mv.code}</span>
+                                        <span className="text-slate-500 ml-2">- {mv.label}</span>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Review Mapped Values Tab */}
+              {senActiveTab === "review" && (
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">Mapped SEN Values Overview</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Review all SEN mappings and select which value to use in reports</p>
+                    </div>
+                    <Input
+                      placeholder="Search mapped values..."
+                      value={senRightSearch}
+                      onChange={(e) => setSenRightSearch(e.target.value)}
+                      className="w-64 h-9"
+                    />
+                  </div>
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">School SEN need</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">Mapped to DfE SEN need</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">DfE SEN need code</th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600">Reported SEN need</th>
+                          </tr>
+                        </thead>
+                      </table>
+                      <div className="max-h-[450px] overflow-y-auto">
+                        <table className="w-full">
+                          <tbody>
+                            {senSchoolNeedsValues
+                              .filter((v) => senMappings[v])
+                              .filter((v) =>
+                                v.toLowerCase().includes(senRightSearch.toLowerCase()) ||
+                                (mappedSenValues.find(m => m.code === senMappings[v])?.label ?? "").toLowerCase().includes(senRightSearch.toLowerCase())
+                              )
+                              .map((schoolSen, index) => {
+                                const mappedCode = senMappings[schoolSen]
+                                const mappedVal = mappedSenValues.find((mv) => mv.code === mappedCode)
+                                return (
+                                  <tr key={index} className={`border-t transition-colors ${index % 2 === 0 ? 'bg-green-50' : 'bg-white'}`}>
+                                    <td className="px-4 py-3 text-sm text-slate-800">{schoolSen}</td>
+                                    <td className="px-4 py-3 text-sm text-slate-700">{mappedVal?.label ?? "—"}</td>
+                                    <td className="px-4 py-3">
+                                      <span className="text-sm font-medium text-slate-900">
+                                        {mappedCode}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <Select
+                                        value={reportedSenNeeds[schoolSen] || ""}
+                                        onValueChange={(val) =>
+                                          setReportedSenNeeds((prev) => ({ ...prev, [schoolSen]: val }))
+                                        }
+                                      >
+                                        <SelectTrigger className="h-8 w-36 text-sm">
+                                          <SelectValue placeholder="Select..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="dfe-sen">DfE SEN need</SelectItem>
+                                          <SelectItem value="school">School</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            {senSchoolNeedsValues.filter((v) => senMappings[v]).length === 0 && (
+                              <tr>
+                                <td colSpan={4} className="px-4 py-12 text-center text-sm text-slate-400">
+                                  No mappings yet. Go to the &quot;Map SEN Needs&quot; tab to create mappings.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
           )}
