@@ -623,7 +623,7 @@ export default function MappingPage() {
                                 const mappedCode = senMappings[schoolSen]
                                 const mappedVal = mappedSenValues.find((mv) => mv.code === mappedCode)
                                 return (
-                                  <tr key={index} className={`border-t transition-colors ${index % 2 === 0 ? 'bg-green-50' : 'bg-white'}`}>
+                                  <tr key={index} className="border-t hover:bg-slate-50 transition-colors">
                                     <td className="px-4 py-3 text-sm text-slate-800">{schoolSen}</td>
                                     <td className="px-4 py-3 text-sm text-slate-700">{mappedVal?.label ?? "—"}</td>
                                     <td className="px-4 py-3">
