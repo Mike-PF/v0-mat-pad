@@ -38,7 +38,7 @@ export function TopNavigation() {
 
     if (pathname.startsWith("/reports")) {
       return [
-        { id: "predefined", label: "Predefined Reports", href: "/reports/predefined" },
+        { id: "predefined", label: "Reports", href: "/reports/predefined" },
         { id: "data-export", label: "Data Export", href: "/reports/data-export" },
         { id: "archive", label: "Archive", href: "/reports/archive" },
       ]
