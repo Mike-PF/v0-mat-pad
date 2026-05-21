@@ -38,10 +38,15 @@ export function TopNavigation() {
 
     if (pathname.startsWith("/reports")) {
       return [
-        { id: "dashboard", label: "Dashboard", href: "/reports" },
-        { id: "predefined", label: "Predefined reports", href: "/reports/predefined" },
+        { id: "predefined", label: "Predefined Reports", href: "/reports/predefined" },
         { id: "data-export", label: "Data Export", href: "/reports/data-export" },
         { id: "archive", label: "Archive", href: "/reports/archive" },
+      ]
+    }
+
+    if (pathname.startsWith("/dashboards")) {
+      return [
+        { id: "dashboards", label: "Dashboards", href: "/dashboards" },
       ]
     }
 
@@ -61,6 +66,7 @@ export function TopNavigation() {
   const tabs = getNavigationTabs()
   const isSettingsPage = mounted && pathname.startsWith("/settings")
   const isReportsPage = mounted && pathname.startsWith("/reports")
+  const isDashboardsPage = mounted && pathname.startsWith("/dashboards")
   const isAiChatPage = mounted && pathname.startsWith("/ai-chat")
 
   return (
@@ -71,8 +77,9 @@ export function TopNavigation() {
           const isActive = mounted && (
             pathname === tab.href ||
             (tab.href === "/settings/organisation" && pathname === "/settings") ||
-            (tab.href === "/reports" && pathname === "/reports") ||
-            (tab.href === "/profile" && pathname.startsWith("/profile"))
+            (tab.href === "/reports/predefined" && pathname === "/reports") ||
+            (tab.href === "/profile" && pathname.startsWith("/profile")) ||
+            (tab.href === "/dashboards" && pathname.startsWith("/dashboards"))
           )
 
           return (
@@ -95,7 +102,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {mounted && !isSettingsPage && !isReportsPage && !pathname.startsWith("/profile") && (
+        {mounted && !isSettingsPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">
