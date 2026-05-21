@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard } from "lucide-react"
+import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -50,7 +50,7 @@ export function Sidebar({}: SidebarProps) {
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: Cable, label: "Connections", href: "/settings/connections" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
-    { icon: BarChart3, label: "Reports", href: "/reports" },
+    { icon: FileBarChart2, label: "Reports", href: "/reports" },
     { icon: LayoutDashboard, label: "Dashboards", href: "/dashboards" },
     { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   ]
