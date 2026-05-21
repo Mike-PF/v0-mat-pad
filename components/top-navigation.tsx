@@ -22,6 +22,12 @@ export function TopNavigation() {
       ]
     }
     
+    if (pathname.startsWith("/home")) {
+      return [
+        { id: "home", label: "Home", href: "/home" },
+      ]
+    }
+
     if (pathname.startsWith("/settings")) {
       return [
         { id: "organisation", label: "Organisation", href: "/settings/organisation" },
@@ -64,6 +70,7 @@ export function TopNavigation() {
   }
 
   const tabs = getNavigationTabs()
+  const isHomePage = mounted && pathname.startsWith("/home")
   const isSettingsPage = mounted && pathname.startsWith("/settings")
   const isReportsPage = mounted && pathname.startsWith("/reports")
   const isDashboardsPage = mounted && pathname.startsWith("/dashboards")
@@ -79,7 +86,8 @@ export function TopNavigation() {
             (tab.href === "/settings/organisation" && pathname === "/settings") ||
             (tab.href === "/reports/predefined" && pathname === "/reports") ||
             (tab.href === "/profile" && pathname.startsWith("/profile")) ||
-            (tab.href === "/dashboards" && pathname.startsWith("/dashboards"))
+            (tab.href === "/dashboards" && pathname.startsWith("/dashboards")) ||
+            (tab.href === "/home" && pathname.startsWith("/home"))
           )
 
           return (
@@ -102,7 +110,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {mounted && !isSettingsPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
+        {mounted && !isHomePage && !isSettingsPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">

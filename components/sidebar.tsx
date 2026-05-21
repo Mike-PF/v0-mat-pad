@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2 } from "lucide-react"
+import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -46,6 +46,7 @@ export function Sidebar({}: SidebarProps) {
   }, [])
 
   const menuItems = [
+    { icon: House, label: "Home", href: "/home" },
     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: Cable, label: "Connections", href: "/settings/connections" },
