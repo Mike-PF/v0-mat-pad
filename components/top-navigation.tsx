@@ -1,13 +1,33 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 export function TopNavigation() {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Different navigation tabs based on the current page
   const getNavigationTabs = () => {
+    if (!mounted) {
+      // Return default tabs during SSR to avoid mismatch
+      return [
+        { id: "dashboard", label: "Dashboard", href: "/forms" },
+        { id: "maintenance", label: "Maintenance", href: "/forms/maintenance" },
+      ]
+    }
+    
+    if (pathname.startsWith("/home")) {
+      return [
+        { id: "home", label: "Home", href: "/home" },
+      ]
+    }
+
     if (pathname.startsWith("/settings")) {
       return [
         { id: "organisation", label: "Organisation", href: "/settings/organisation" },
@@ -24,10 +44,15 @@ export function TopNavigation() {
 
     if (pathname.startsWith("/reports")) {
       return [
-        { id: "dashboard", label: "Dashboard", href: "/reports" },
-        { id: "predefined", label: "Predefined reports", href: "/reports/predefined" },
+        { id: "predefined", label: "Reports", href: "/reports/predefined" },
         { id: "data-export", label: "Data Export", href: "/reports/data-export" },
         { id: "archive", label: "Archive", href: "/reports/archive" },
+      ]
+    }
+
+    if (pathname.startsWith("/dashboards")) {
+      return [
+        { id: "dashboards", label: "Dashboards", href: "/dashboards" },
       ]
     }
 
@@ -45,20 +70,25 @@ export function TopNavigation() {
   }
 
   const tabs = getNavigationTabs()
-  const isSettingsPage = pathname.startsWith("/settings")
-  const isReportsPage = pathname.startsWith("/reports")
-  const isAiChatPage = pathname.startsWith("/ai-chat")
+  const isHomePage = mounted && pathname.startsWith("/home")
+  const isSettingsPage = mounted && pathname.startsWith("/settings")
+  const isReportsPage = mounted && pathname.startsWith("/reports")
+  const isDashboardsPage = mounted && pathname.startsWith("/dashboards")
+  const isAiChatPage = mounted && pathname.startsWith("/ai-chat")
 
   return (
     <div className="w-full rounded-lg h-14 bg-white border border-slate-200 flex items-center justify-between px-4">
       {/* Navigation Tabs */}
       <div className="flex h-full">
         {tabs.map((tab) => {
-          const isActive =
+          const isActive = mounted && (
             pathname === tab.href ||
             (tab.href === "/settings/organisation" && pathname === "/settings") ||
-            (tab.href === "/reports" && pathname === "/reports") ||
-            (tab.href === "/profile" && pathname.startsWith("/profile"))
+            (tab.href === "/reports/predefined" && pathname === "/reports") ||
+            (tab.href === "/profile" && pathname.startsWith("/profile")) ||
+            (tab.href === "/dashboards" && pathname.startsWith("/dashboards")) ||
+            (tab.href === "/home" && pathname.startsWith("/home"))
+          )
 
           return (
             <a
@@ -80,7 +110,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {!isSettingsPage && !isReportsPage && !pathname.startsWith("/profile") && (
+        {mounted && !isHomePage && !isSettingsPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">

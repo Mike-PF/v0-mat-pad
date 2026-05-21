@@ -390,7 +390,7 @@ export function PredefinedReportsContent() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Predefined Reports</CardTitle>
+              <CardTitle className="text-xl">Reports</CardTitle>
               <p className="text-sm text-slate-600 mb-4">
                 Select from our library of pre-built reports designed for different stakeholders and purposes
               </p>
