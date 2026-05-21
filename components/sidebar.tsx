@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Upload, Settings, ClipboardList, BarChart3, LogOut, ArrowLeftRight, Check, Cable, MessageSquare } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -39,6 +39,11 @@ export function Sidebar({}: SidebarProps) {
   const pathname = usePathname()
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [activeSchool, setActiveSchool] = useState(schools[0])
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const menuItems = [
     { icon: Upload, label: "Upload", href: "/upload" },
@@ -49,7 +54,7 @@ export function Sidebar({}: SidebarProps) {
     { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   ]
 
-  const isActive = (href: string) => pathname.startsWith(href)
+  const isActive = (href: string) => mounted && pathname.startsWith(href)
 
   return (
     <div
