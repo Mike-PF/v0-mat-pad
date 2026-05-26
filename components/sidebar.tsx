@@ -48,7 +48,6 @@ export function Sidebar({}: SidebarProps) {
   const menuItems = [
     { icon: House, label: "Home", href: "/home" },
     { icon: Upload, label: "Upload", href: "/upload" },
-    { icon: Settings, label: "Settings", href: "/settings" },
     { icon: Cable, label: "Connections", href: "/settings/connections" },
     { icon: ClipboardList, label: "Forms", href: "/forms" },
     { icon: FileBarChart2, label: "Reports", href: "/reports" },
@@ -100,7 +99,6 @@ export function Sidebar({}: SidebarProps) {
           href="/profile"
           className="w-full flex items-center justify-center h-11 group"
           title="View Profile - Gareth Hutchings"
-
         >
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold tracking-wide select-none border-2 transition-all group-hover:scale-105 group-hover:shadow-lg"
@@ -108,7 +106,17 @@ export function Sidebar({}: SidebarProps) {
           >
             GH
           </div>
+        </a>
 
+        {/* Settings */}
+        <a
+          href="/settings"
+          className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
+          title="Settings"
+        >
+          <IconCircle active={mounted && pathname.startsWith("/settings")}>
+            <Settings className="w-5 h-5" />
+          </IconCircle>
         </a>
 
         {/* Account Switcher */}
