@@ -7,115 +7,229 @@ import {
   ClipboardList,
   Upload,
   FileBarChart2,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-  CheckCircle2,
+  AlertTriangle,
   Clock,
   ArrowRight,
-  School,
   CalendarDays,
-  UserCheck,
-  FileText,
+  Star,
+  Megaphone,
+  Wrench,
+  AlertCircle,
+  GraduationCap,
+  BookOpen,
+  Globe,
+  MapPin,
+  Ban,
+  UserMinus,
+  CheckCircle,
+  Info,
+  ChevronRight,
+  Settings,
+  LayoutDashboard,
+  MessageSquare,
 } from "lucide-react"
 import Link from "next/link"
 
 const ACCENT = "hsl(314 100% 35%)"
 
 // --- Mock data ---
-const statCards = [
+
+// Exclusions & Suspensions data
+const exclusionsData = {
+  permanentExclusions: {
+    total: 2,
+    thisYear: 1,
+    schools: [
+      { name: "All Saints' Catholic High School", count: 1, date: "12 Nov 2024" },
+      { name: "Notre Dame High School", count: 1, date: "3 Oct 2024" },
+    ],
+  },
+  suspensions: {
+    total: 47,
+    thisYear: 23,
+    thisWeek: 3,
+    schools: [
+      { name: "All Saints' Catholic High School", count: 28, sessions: 84 },
+      { name: "Notre Dame High School", count: 15, sessions: 42 },
+      { name: "Emmaus Catholic Primary School", count: 4, sessions: 8 },
+    ],
+  },
+}
+
+// Cohort context data per school
+const cohortData = [
   {
-    label: "Overall Attendance",
-    value: "94.2%",
-    change: "+0.4%",
-    trend: "up",
-    sub: "vs last week",
-    icon: UserCheck,
-    color: "#5B9BF5",
+    name: "All Saints' Catholic High School",
+    abbr: "ASHS",
+    pupils: 1240,
+    pp: { count: 298, pct: 24.0 },
+    send: { count: 186, pct: 15.0, ehcp: 42 },
+    eal: { count: 124, pct: 10.0 },
+    idaci: { decile: 3, band: "High deprivation" },
   },
   {
-    label: "Persistent Absence",
-    value: "8.1%",
-    change: "-0.3%",
-    trend: "down-good",
-    sub: "pupils below 90%",
-    icon: AlertCircle,
-    color: "#f59e0b",
+    name: "Emmaus Catholic Primary School",
+    abbr: "ECPS",
+    pupils: 420,
+    pp: { count: 147, pct: 35.0 },
+    send: { count: 63, pct: 15.0, ehcp: 12 },
+    eal: { count: 84, pct: 20.0 },
+    idaci: { decile: 2, band: "Very high deprivation" },
   },
   {
-    label: "Forms Completed",
-    value: "3 / 20",
-    change: "15%",
-    trend: "neutral",
-    sub: "this academic year",
-    icon: ClipboardList,
-    color: "#10b981",
-  },
-  {
-    label: "Data Uploads",
-    value: "12",
-    change: "Last: 2d ago",
-    trend: "neutral",
-    sub: "this term",
-    icon: Upload,
-    color: "#8b5cf6",
+    name: "Notre Dame High School",
+    abbr: "NDHS",
+    pupils: 980,
+    pp: { count: 196, pct: 20.0 },
+    send: { count: 137, pct: 14.0, ehcp: 28 },
+    eal: { count: 78, pct: 8.0 },
+    idaci: { decile: 5, band: "Medium deprivation" },
   },
 ]
 
-const schools = [
-  { name: "All Saints' Catholic High School", attendance: 95.1, pa: 7.2, pupils: 1240 },
-  { name: "Emmaus Catholic Primary School", attendance: 93.8, pa: 8.9, pupils: 420 },
-  { name: "Notre Dame High School", attendance: 93.7, pa: 8.3, pupils: 980 },
-]
-
-const recentActivity = [
+// Ofsted data
+const ofstedData = [
   {
-    icon: Upload,
-    text: "Attendance data uploaded for All Saints'",
-    time: "2 hours ago",
-    color: "#5B9BF5",
+    name: "All Saints' Catholic High School",
+    judgement: "Good",
+    date: "15 Mar 2023",
+    previousJudgement: "Good",
+    nextInspectionWindow: "Mar 2027 - Mar 2028",
   },
   {
-    icon: FileText,
-    text: "Census form section 3 completed",
-    time: "Yesterday",
-    color: "#10b981",
+    name: "Emmaus Catholic Primary School",
+    judgement: "Outstanding",
+    date: "22 Sep 2022",
+    previousJudgement: "Good",
+    nextInspectionWindow: "Sep 2026 - Sep 2030",
   },
   {
-    icon: FileBarChart2,
-    text: "Attendance Headlines report generated",
-    time: "2 days ago",
-    color: ACCENT,
-  },
-  {
-    icon: Upload,
-    text: "SEN data uploaded for Notre Dame",
-    time: "3 days ago",
-    color: "#5B9BF5",
-  },
-  {
-    icon: CheckCircle2,
-    text: "Data mapping for SEN needs completed",
-    time: "4 days ago",
-    color: "#10b981",
+    name: "Notre Dame High School",
+    judgement: "Requires Improvement",
+    date: "8 Jan 2024",
+    previousJudgement: "Good",
+    nextInspectionWindow: "Jan 2025 - Jul 2025",
   },
 ]
 
-const quickLinks = [
-  { label: "Upload Data", href: "/upload", icon: Upload, desc: "Add new school data" },
-  { label: "View Reports", href: "/reports/predefined", icon: FileBarChart2, desc: "Access pre-built reports" },
-  { label: "Complete Forms", href: "/forms", icon: ClipboardList, desc: "Census & statutory forms" },
-  { label: "Dashboards", href: "/dashboards", icon: School, desc: "Visual analytics" },
+// Favourites
+const favourites = [
+  { label: "Upload Data", href: "/upload", icon: Upload },
+  { label: "Reports", href: "/reports/predefined", icon: FileBarChart2 },
+  { label: "Forms", href: "/forms", icon: ClipboardList },
+  { label: "Dashboards", href: "/dashboards", icon: LayoutDashboard },
+  { label: "AI Chat", href: "/ai-chat", icon: MessageSquare },
+  { label: "Settings", href: "/settings", icon: Settings },
 ]
 
-const upcomingDates = [
-  { label: "Spring term ends", date: "4 Apr 2025", daysLeft: 44 },
-  { label: "Census deadline", date: "16 Jan 2025", daysLeft: 2 },
-  { label: "Summer term starts", date: "23 Apr 2025", daysLeft: 63 },
+// What's New / Key Dates
+const whatsNew = [
+  {
+    type: "update",
+    title: "New attendance dashboard released",
+    description: "Enhanced visualisations for persistent absence tracking",
+    date: "Today",
+    isNew: true,
+  },
+  {
+    type: "deadline",
+    title: "Spring Census deadline",
+    description: "Submit census data by 16 January 2025",
+    date: "16 Jan 2025",
+    daysLeft: 2,
+    isUrgent: true,
+  },
+  {
+    type: "deadline",
+    title: "Workforce Census opens",
+    description: "Annual school workforce census collection begins",
+    date: "4 Nov 2025",
+    daysLeft: 292,
+  },
+  {
+    type: "maintenance",
+    title: "Scheduled maintenance",
+    description: "System will be unavailable 02:00-04:00 GMT",
+    date: "18 Jan 2025",
+    daysLeft: 4,
+  },
+  {
+    type: "issue",
+    title: "Known issue: Export delays",
+    description: "Large data exports may take longer than usual",
+    date: "Investigating",
+    isActive: true,
+  },
+  {
+    type: "update",
+    title: "IDACI 2024 data now available",
+    description: "Updated deprivation indices for all postcodes",
+    date: "2 days ago",
+  },
 ]
+
+const getOfstedColor = (judgement: string) => {
+  switch (judgement) {
+    case "Outstanding":
+      return { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" }
+    case "Good":
+      return { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" }
+    case "Requires Improvement":
+      return { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" }
+    case "Inadequate":
+      return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" }
+    default:
+      return { bg: "bg-slate-50", text: "text-slate-700", border: "border-slate-200" }
+  }
+}
+
+const getIdaciColor = (decile: number) => {
+  if (decile <= 2) return { bg: "bg-red-50", text: "text-red-700" }
+  if (decile <= 4) return { bg: "bg-amber-50", text: "text-amber-700" }
+  if (decile <= 6) return { bg: "bg-yellow-50", text: "text-yellow-700" }
+  return { bg: "bg-green-50", text: "text-green-700" }
+}
+
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "update":
+      return Megaphone
+    case "deadline":
+      return CalendarDays
+    case "maintenance":
+      return Wrench
+    case "issue":
+      return AlertCircle
+    default:
+      return Info
+  }
+}
+
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case "update":
+      return "#5B9BF5"
+    case "deadline":
+      return ACCENT
+    case "maintenance":
+      return "#8b5cf6"
+    case "issue":
+      return "#ef4444"
+    default:
+      return "#64748b"
+  }
+}
 
 export function HomeContent() {
-  const [selectedSchool, setSelectedSchool] = useState<string>("all")
+  const [selectedTab, setSelectedTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
+
+  const filteredNews = whatsNew.filter((item) => {
+    if (selectedTab === "all") return true
+    if (selectedTab === "updates") return item.type === "update"
+    if (selectedTab === "deadlines") return item.type === "deadline"
+    if (selectedTab === "system") return item.type === "maintenance" || item.type === "issue"
+    return true
+  })
 
   return (
     <div className="space-y-6">
@@ -131,207 +245,337 @@ export function HomeContent() {
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
-        {statCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <Card key={card.label} className="bg-white border-slate-200">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{card.label}</p>
-                    <p className="text-3xl font-bold text-slate-900 mt-1">{card.value}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      {card.trend === "up" && <TrendingUp className="w-3 h-3 text-green-500" />}
-                      {card.trend === "down-good" && <TrendingDown className="w-3 h-3 text-green-500" />}
-                      <span className={`text-xs font-medium ${card.trend !== "neutral" ? "text-green-600" : "text-slate-500"}`}>
-                        {card.change}
-                      </span>
-                      <span className="text-xs text-slate-400">{card.sub}</span>
-                    </div>
-                  </div>
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${card.color}18` }}
-                  >
-                    <Icon className="w-5 h-5" style={{ color: card.color }} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* Middle row: Schools breakdown + Recent activity */}
+      {/* Top row: Favourites + What's New */}
       <div className="grid grid-cols-3 gap-4">
-        {/* Schools attendance breakdown */}
-        <div className="col-span-2">
-          <Card className="bg-white border-slate-200 h-full">
-            <CardHeader className="pb-3 px-5 pt-5">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-slate-900">Schools Overview</CardTitle>
-                <Link href="/dashboards" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  View dashboards <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pb-5">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <th className="text-left text-xs font-medium text-slate-500 pb-2">School</th>
-                    <th className="text-right text-xs font-medium text-slate-500 pb-2">Pupils</th>
-                    <th className="text-right text-xs font-medium text-slate-500 pb-2">Attendance</th>
-                    <th className="text-right text-xs font-medium text-slate-500 pb-2">PA Rate</th>
-                    <th className="text-right text-xs font-medium text-slate-500 pb-2 w-28">vs National</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {schools.map((school) => {
-                    const national = 94.5
-                    const diff = school.attendance - national
-                    const isAbove = diff >= 0
-                    return (
-                      <tr key={school.name} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 pr-4">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-1.5 h-7 rounded-full shrink-0"
-                              style={{ backgroundColor: ACCENT }}
-                            />
-                            <span className="text-sm text-slate-800 font-medium leading-tight">{school.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 text-right text-sm text-slate-600">{school.pupils.toLocaleString()}</td>
-                        <td className="py-3 text-right">
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold text-slate-900">{school.attendance}%</span>
-                            <div className="w-20 bg-slate-100 rounded-full h-1.5">
-                              <div
-                                className="h-1.5 rounded-full"
-                                style={{ width: `${school.attendance}%`, backgroundColor: "#10b981" }}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 text-right">
-                          <span className={`text-sm font-medium ${school.pa > 10 ? "text-red-500" : school.pa > 8 ? "text-amber-500" : "text-green-600"}`}>
-                            {school.pa}%
-                          </span>
-                        </td>
-                        <td className="py-3 text-right">
-                          <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${isAbove ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
-                            {isAbove ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                            {isAbove ? "+" : ""}{diff.toFixed(1)}%
-                          </span>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-              <p className="text-xs text-slate-400 mt-3">National average: 94.5% — Autumn term 2024</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent activity */}
+        {/* Favourites */}
         <Card className="bg-white border-slate-200">
           <CardHeader className="pb-3 px-5 pt-5">
-            <CardTitle className="text-sm font-semibold text-slate-900">Recent Activity</CardTitle>
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-amber-500" />
+              <CardTitle className="text-sm font-semibold text-slate-900">Favourites</CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="px-5 pb-5">
-            <div className="space-y-4">
-              {recentActivity.map((item, i) => {
-                const Icon = item.icon
+            <div className="grid grid-cols-2 gap-2">
+              {favourites.map((fav) => {
+                const Icon = fav.icon
                 return (
-                  <div key={i} className="flex items-start gap-3">
+                  <Link
+                    key={fav.label}
+                    href={fav.href}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-slate-100 hover:border-primary hover:bg-slate-50 transition-all group"
+                  >
                     <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ backgroundColor: `${item.color}18` }}
+                      className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: "hsl(314 100% 35% / 0.08)" }}
                     >
-                      <Icon className="w-3.5 h-3.5" style={{ color: item.color }} />
+                      <Icon className="w-3.5 h-3.5" style={{ color: ACCENT }} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-700 leading-snug">{item.text}</p>
-                      <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {item.time}
-                      </p>
-                    </div>
-                  </div>
+                    <span className="text-sm text-slate-700 group-hover:text-primary transition-colors">{fav.label}</span>
+                  </Link>
                 )
               })}
             </div>
           </CardContent>
         </Card>
+
+        {/* What's New / Key Dates */}
+        <div className="col-span-2">
+          <Card className="bg-white border-slate-200 h-full">
+            <CardHeader className="pb-3 px-5 pt-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="w-4 h-4 text-slate-400" />
+                  <CardTitle className="text-sm font-semibold text-slate-900">What&apos;s New &amp; Key Dates</CardTitle>
+                </div>
+                <div className="flex items-center gap-1 text-xs">
+                  {(["all", "updates", "deadlines", "system"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setSelectedTab(tab)}
+                      className={`px-2.5 py-1 rounded-md capitalize transition-colors ${
+                        selectedTab === tab
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-500 hover:bg-slate-100"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                {filteredNews.map((item, i) => {
+                  const Icon = getTypeIcon(item.type)
+                  const color = getTypeColor(item.type)
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                        item.isUrgent
+                          ? "border-red-200 bg-red-50/50"
+                          : item.isNew
+                          ? "border-blue-200 bg-blue-50/50"
+                          : item.isActive
+                          ? "border-amber-200 bg-amber-50/50"
+                          : "border-slate-100 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${color}18` }}
+                      >
+                        <Icon className="w-4 h-4" style={{ color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-slate-800">{item.title}</p>
+                          {item.isNew && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded">NEW</span>
+                          )}
+                          {item.isUrgent && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded">URGENT</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs text-slate-500">{item.date}</p>
+                        {item.daysLeft !== undefined && item.daysLeft <= 7 && (
+                          <p className={`text-xs font-semibold mt-0.5 ${item.daysLeft <= 3 ? "text-red-600" : "text-amber-600"}`}>
+                            {item.daysLeft === 0 ? "Today" : `${item.daysLeft}d left`}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Bottom row: Quick links + Upcoming dates */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Quick links */}
-        <div className="col-span-2 grid grid-cols-2 gap-3">
-          {quickLinks.map((link) => {
-            const Icon = link.icon
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-3 hover:border-primary hover:shadow-sm transition-all group"
-              >
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "hsl(314 100% 35% / 0.08)" }}
-                >
-                  <Icon className="w-5 h-5" style={{ color: ACCENT }} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors">{link.label}</p>
-                  <p className="text-xs text-slate-500">{link.desc}</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary ml-auto transition-colors" />
-              </Link>
-            )
-          })}
-        </div>
-
-        {/* Upcoming key dates */}
+      {/* Middle row: Exclusions & Suspensions */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Permanent Exclusions */}
         <Card className="bg-white border-slate-200">
           <CardHeader className="pb-3 px-5 pt-5">
-            <div className="flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-slate-400" />
-              <CardTitle className="text-sm font-semibold text-slate-900">Key Dates</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Ban className="w-4 h-4 text-red-500" />
+                <CardTitle className="text-sm font-semibold text-slate-900">Permanent Exclusions</CardTitle>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-slate-900">{exclusionsData.permanentExclusions.total}</span>
+                <span className="text-xs text-slate-500">total</span>
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="px-5 pb-5 space-y-3">
-            {upcomingDates.map((item, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                <div>
-                  <p className="text-sm font-medium text-slate-800">{item.label}</p>
-                  <p className="text-xs text-slate-400">{item.date}</p>
+          <CardContent className="px-5 pb-5">
+            <div className="space-y-3">
+              {exclusionsData.permanentExclusions.schools.map((school, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{school.name}</p>
+                    <p className="text-xs text-slate-400">Last: {school.date}</p>
+                  </div>
+                  <span className="text-lg font-bold text-red-600">{school.count}</span>
                 </div>
-                <span
-                  className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                    item.daysLeft <= 3
-                      ? "bg-red-50 text-red-600"
-                      : item.daysLeft <= 14
-                      ? "bg-amber-50 text-amber-600"
-                      : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {item.daysLeft === 0 ? "Today" : `${item.daysLeft}d`}
-                </span>
-              </div>
-            ))}
-            <div className="pt-1 flex items-center gap-1.5 text-xs text-slate-400">
-              <Users className="w-3.5 h-3.5" />
-              <span>3 schools in your MAT</span>
+              ))}
             </div>
+            <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
+              {exclusionsData.permanentExclusions.thisYear} this academic year
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Suspensions */}
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="pb-3 px-5 pt-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserMinus className="w-4 h-4 text-amber-500" />
+                <CardTitle className="text-sm font-semibold text-slate-900">Suspensions</CardTitle>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-slate-900">{exclusionsData.suspensions.total}</span>
+                  <span className="text-xs text-slate-500 ml-1">total</span>
+                </div>
+                <div className="text-right pl-4 border-l border-slate-200">
+                  <span className="text-lg font-semibold text-amber-600">{exclusionsData.suspensions.thisWeek}</span>
+                  <span className="text-xs text-slate-500 ml-1">this week</span>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 pb-5">
+            <div className="space-y-3">
+              {exclusionsData.suspensions.schools.map((school, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{school.name}</p>
+                    <p className="text-xs text-slate-400">{school.sessions} sessions lost</p>
+                  </div>
+                  <span className="text-lg font-bold text-amber-600">{school.count}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
+              {exclusionsData.suspensions.thisYear} suspensions this academic year
+            </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Cohort Context Information */}
+      <Card className="bg-white border-slate-200">
+        <CardHeader className="pb-3 px-5 pt-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-slate-400" />
+              <CardTitle className="text-sm font-semibold text-slate-900">Cohort Context</CardTitle>
+            </div>
+            <Link href="/dashboards" className="text-xs text-primary hover:underline flex items-center gap-1">
+              View detailed breakdown <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="px-5 pb-5">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="text-left text-xs font-medium text-slate-500 pb-3">School</th>
+                <th className="text-center text-xs font-medium text-slate-500 pb-3">Pupils</th>
+                <th className="text-center text-xs font-medium text-slate-500 pb-3">
+                  <div className="flex items-center justify-center gap-1">
+                    <GraduationCap className="w-3 h-3" />
+                    <span>Pupil Premium</span>
+                  </div>
+                </th>
+                <th className="text-center text-xs font-medium text-slate-500 pb-3">
+                  <div className="flex items-center justify-center gap-1">
+                    <BookOpen className="w-3 h-3" />
+                    <span>SEND</span>
+                  </div>
+                </th>
+                <th className="text-center text-xs font-medium text-slate-500 pb-3">
+                  <div className="flex items-center justify-center gap-1">
+                    <Globe className="w-3 h-3" />
+                    <span>EAL</span>
+                  </div>
+                </th>
+                <th className="text-center text-xs font-medium text-slate-500 pb-3">
+                  <div className="flex items-center justify-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>IDACI</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {cohortData.map((school) => {
+                const idaciColors = getIdaciColor(school.idaci.decile)
+                return (
+                  <tr key={school.name} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-1.5 h-7 rounded-full shrink-0"
+                          style={{ backgroundColor: ACCENT }}
+                        />
+                        <div>
+                          <span className="text-sm text-slate-800 font-medium leading-tight">{school.name}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 text-center">
+                      <span className="text-sm font-semibold text-slate-900">{school.pupils.toLocaleString()}</span>
+                    </td>
+                    <td className="py-3 text-center">
+                      <div className="inline-flex flex-col items-center">
+                        <span className="text-sm font-semibold text-slate-900">{school.pp.pct}%</span>
+                        <span className="text-xs text-slate-400">{school.pp.count} pupils</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-center">
+                      <div className="inline-flex flex-col items-center">
+                        <span className="text-sm font-semibold text-slate-900">{school.send.pct}%</span>
+                        <span className="text-xs text-slate-400">{school.send.count} ({school.send.ehcp} EHCP)</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-center">
+                      <div className="inline-flex flex-col items-center">
+                        <span className="text-sm font-semibold text-slate-900">{school.eal.pct}%</span>
+                        <span className="text-xs text-slate-400">{school.eal.count} pupils</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-center">
+                      <div className="inline-flex flex-col items-center">
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${idaciColors.bg} ${idaciColors.text}`}>
+                          Decile {school.idaci.decile}
+                        </span>
+                        <span className="text-xs text-slate-400 mt-0.5">{school.idaci.band}</span>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+            <p className="text-xs text-slate-400">PP = Pupil Premium | SEND = Special Educational Needs | EAL = English as Additional Language | IDACI = Income Deprivation Affecting Children Index</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Ofsted Judgements */}
+      <Card className="bg-white border-slate-200">
+        <CardHeader className="pb-3 px-5 pt-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-slate-400" />
+              <CardTitle className="text-sm font-semibold text-slate-900">Ofsted Judgements</CardTitle>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-5 pb-5">
+          <div className="grid grid-cols-3 gap-4">
+            {ofstedData.map((school) => {
+              const colors = getOfstedColor(school.judgement)
+              const isRI = school.judgement === "Requires Improvement"
+              return (
+                <div
+                  key={school.name}
+                  className={`p-4 rounded-lg border ${colors.border} ${colors.bg}`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{school.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Last inspected: {school.date}</p>
+                    </div>
+                    {isRI && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-lg font-bold ${colors.text}`}>{school.judgement}</span>
+                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-slate-200/50">
+                    <p className="text-xs text-slate-500">
+                      <span className="font-medium">Next inspection window:</span>
+                      <br />
+                      {school.nextInspectionWindow}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
