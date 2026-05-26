@@ -13,15 +13,8 @@ export function TopNavigation() {
   }, [])
 
   // Different navigation tabs based on the current page
+  // Note: pathname from usePathname() is available on server too, so we can use it for tab selection
   const getNavigationTabs = () => {
-    if (!mounted) {
-      // Return default tabs during SSR to avoid mismatch
-      return [
-        { id: "dashboard", label: "Dashboard", href: "/forms" },
-        { id: "maintenance", label: "Maintenance", href: "/forms/maintenance" },
-      ]
-    }
-    
     if (pathname.startsWith("/home")) {
       return [
         { id: "home", label: "Home", href: "/home" },
