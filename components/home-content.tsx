@@ -22,6 +22,7 @@ import {
   X,
   Play,
   ChevronRight,
+  CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
 
