@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Users,
-  AlertTriangle,
   ArrowRight,
   CalendarDays,
   Megaphone,
@@ -12,7 +11,6 @@ import {
   AlertCircle,
   Ban,
   UserMinus,
-  CheckCircle,
   Info,
   TrendingUp,
   TrendingDown,
@@ -21,6 +19,9 @@ import {
   Upload,
   Clock,
   ExternalLink,
+  X,
+  Play,
+  ChevronRight,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -112,7 +113,21 @@ const ofstedData = [
 ]
 
 // What's New / Key Dates
-const whatsNew = [
+type WhatsNewItem = {
+  type: "update" | "deadline" | "maintenance" | "issue"
+  title: string
+  description: string
+  date: string
+  daysLeft?: number
+  isUrgent?: boolean
+  isNew?: boolean
+  isActive?: boolean
+  body?: string
+  video?: { url: string; title: string }
+  documents?: { name: string; size: string; type: "pdf" | "xlsx" | "docx" }[]
+}
+
+const whatsNew: WhatsNewItem[] = [
   {
     type: "deadline",
     title: "Spring Census deadline",
@@ -120,6 +135,11 @@ const whatsNew = [
     date: "16 Jan",
     daysLeft: 2,
     isUrgent: true,
+    body: "The Spring School Census is due on 16 January 2025. All schools must ensure their data has been validated and submitted via COLLECT before 11:59pm on the deadline date.\n\nKey areas to check before submission:\n• Pupil headcount and new admissions\n• Attendance codes for the reference week\n• Free school meal eligibility\n• SEN support and EHCP records\n\nContact your data manager if you encounter any COLLECT errors. DfE will not accept late submissions without prior written agreement.",
+    documents: [
+      { name: "Spring Census Checklist 2025.pdf", size: "142 KB", type: "pdf" },
+      { name: "COLLECT Submission Guide.pdf", size: "380 KB", type: "pdf" },
+    ],
   },
   {
     type: "update",
@@ -127,13 +147,22 @@ const whatsNew = [
     description: "Enhanced visualisations for persistent absence tracking",
     date: "Today",
     isNew: true,
+    body: "We have released an updated Attendance Dashboard with several improvements based on user feedback:\n\n• Persistent Absence cohort drill-down now available at pupil level\n• Comparison against national and regional averages added to all charts\n• New 'at risk' threshold alerts for pupils approaching 90% threshold\n• Export to Excel now includes all filters applied\n\nThe dashboard is available from the Dashboards section in the left-hand navigation. Watch the short walkthrough video below for an overview of the new features.",
+    video: {
+      url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      title: "New Attendance Dashboard Walkthrough",
+    },
+    documents: [
+      { name: "Attendance Dashboard Release Notes.pdf", size: "98 KB", type: "pdf" },
+    ],
   },
   {
     type: "maintenance",
     title: "Scheduled maintenance",
-    description: "System unavailable 02:00-04:00 GMT",
+    description: "System unavailable 02:00–04:00 GMT on 18 January",
     date: "18 Jan",
     daysLeft: 4,
+    body: "Planned maintenance will take place on the night of 18 January 2025 between 02:00 and 04:00 GMT. The following services will be unavailable during this window:\n\n• All data upload functionality\n• Report generation and export\n• Dashboard access\n\nUser authentication and read-only access to saved reports will remain available. No action is required — the system will resume normal operation automatically. Please ensure any time-sensitive uploads are completed before 01:30 GMT.",
   },
   {
     type: "issue",
@@ -141,6 +170,7 @@ const whatsNew = [
     description: "Large exports may take longer than usual",
     date: "Active",
     isActive: true,
+    body: "We are aware of an issue affecting large data exports (files over 50,000 rows). Exports are completing successfully but may take up to 15 minutes longer than normal.\n\nWorkarounds:\n• Apply additional filters to reduce export size before downloading\n• Use the 'Schedule Export' option to run exports overnight\n• Exports under 10,000 rows are unaffected\n\nOur engineering team is investigating the root cause. We expect a fix to be deployed by 20 January. We apologise for the inconvenience.",
   },
   {
     type: "deadline",
@@ -148,6 +178,10 @@ const whatsNew = [
     description: "Annual workforce census collection begins",
     date: "4 Nov",
     daysLeft: 292,
+    body: "The Annual School Workforce Census opens on 4 November 2025. All maintained schools and academies are required to submit workforce data to the DfE by the deadline.\n\nData required includes:\n• Staff headcount and FTE\n• Qualifications and subject specialisms\n• Absence and vacancies\n• Salary and pay range information\n\nFull guidance and the submission portal will be available on the DfE COLLECT website from 1 October 2025.",
+    documents: [
+      { name: "Workforce Census Guidance 2025.xlsx", size: "1.2 MB", type: "xlsx" },
+    ],
   },
 ]
 
@@ -197,6 +231,7 @@ const getActivityIcon = (type: string) => {
 
 export function HomeContent() {
   const [selectedTab, setSelectedTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
+  const [selectedItem, setSelectedItem] = useState<WhatsNewItem | null>(null)
 
   const filteredNews = whatsNew.filter((item) => {
     if (selectedTab === "all") return true
@@ -208,6 +243,107 @@ export function HomeContent() {
 
   return (
     <div className="space-y-6">
+      {/* Slide-out detail panel */}
+      {selectedItem && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/30 z-40 transition-opacity"
+            onClick={() => setSelectedItem(null)}
+          />
+          {/* Panel */}
+          <div className="fixed right-0 top-0 h-full w-[520px] bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
+            {/* Panel header */}
+            <div
+              className="flex items-start gap-3 px-6 py-5 border-b border-slate-200"
+              style={{ borderTopColor: getTypeColor(selectedItem.type), borderTopWidth: 3 }}
+            >
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                style={{ backgroundColor: `${getTypeColor(selectedItem.type)}18` }}
+              >
+                {(() => { const Icon = getTypeIcon(selectedItem.type); return <Icon className="w-4 h-4" style={{ color: getTypeColor(selectedItem.type) }} /> })()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-base font-semibold text-slate-900">{selectedItem.title}</h2>
+                  {selectedItem.isNew && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded">NEW</span>
+                  )}
+                  {selectedItem.isUrgent && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded">URGENT</span>
+                  )}
+                  {selectedItem.isActive && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-500 text-white rounded">ACTIVE</span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500 mt-0.5">{selectedItem.date}{selectedItem.daysLeft !== undefined ? ` · ${selectedItem.daysLeft} days remaining` : ""}</p>
+              </div>
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+              >
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+
+            {/* Panel body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              {/* Body text */}
+              {selectedItem.body && (
+                <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                  {selectedItem.body}
+                </div>
+              )}
+
+              {/* Embedded video */}
+              {selectedItem.video && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Play className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm font-medium text-slate-700">{selectedItem.video.title}</span>
+                  </div>
+                  <div className="relative w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100" style={{ paddingBottom: "56.25%" }}>
+                    <iframe
+                      src={selectedItem.video.url}
+                      title={selectedItem.video.title}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Document attachments */}
+              {selectedItem.documents && selectedItem.documents.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Attachments</p>
+                  {selectedItem.documents.map((doc, i) => {
+                    const docColors: Record<string, string> = { pdf: "text-red-600 bg-red-50", xlsx: "text-emerald-600 bg-emerald-50", docx: "text-blue-600 bg-blue-50" }
+                    const colors = docColors[doc.type] || "text-slate-600 bg-slate-50"
+                    return (
+                      <button
+                        key={i}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
+                      >
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs ${colors}`}>
+                          {doc.type.toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">{doc.name}</p>
+                          <p className="text-xs text-slate-400">{doc.size}</p>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
       {/* Welcome header */}
       <div className="flex items-center justify-between">
         <div>
@@ -373,16 +509,17 @@ export function HomeContent() {
                   const Icon = getTypeIcon(item.type)
                   const color = getTypeColor(item.type)
                   return (
-                    <div
+                    <button
                       key={i}
-                      className={`flex items-start gap-3 p-2.5 rounded-lg border transition-colors ${
+                      onClick={() => setSelectedItem(item)}
+                      className={`w-full flex items-start gap-3 p-2.5 rounded-lg border transition-all text-left cursor-pointer group ${
                         item.isUrgent
-                          ? "border-red-200 bg-red-50/50"
+                          ? "border-red-200 bg-red-50/50 hover:border-red-300"
                           : item.isNew
-                          ? "border-blue-200 bg-blue-50/50"
+                          ? "border-blue-200 bg-blue-50/50 hover:border-blue-300"
                           : item.isActive
-                          ? "border-amber-200 bg-amber-50/50"
-                          : "border-slate-100 hover:bg-slate-50"
+                          ? "border-amber-200 bg-amber-50/50 hover:border-amber-300"
+                          : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
                       }`}
                     >
                       <div
@@ -403,15 +540,18 @@ export function HomeContent() {
                         </div>
                         <p className="text-xs text-slate-500 truncate">{item.description}</p>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs text-slate-500">{item.date}</p>
-                        {item.daysLeft !== undefined && item.daysLeft <= 7 && (
-                          <p className={`text-xs font-semibold ${item.daysLeft <= 3 ? "text-red-600" : "text-amber-600"}`}>
-                            {item.daysLeft}d left
-                          </p>
-                        )}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <div className="text-right">
+                          <p className="text-xs text-slate-500">{item.date}</p>
+                          {item.daysLeft !== undefined && item.daysLeft <= 7 && (
+                            <p className={`text-xs font-semibold ${item.daysLeft <= 3 ? "text-red-600" : "text-amber-600"}`}>
+                              {item.daysLeft}d left
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors ml-1" />
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
