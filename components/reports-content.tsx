@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { 
   ChevronDown, 
   ChevronRight, 
+  ChevronLeft,
   Search, 
   X, 
   LayoutGrid,
@@ -362,6 +363,7 @@ export function ReportsContent() {
   const [isLoadingReport, setIsLoadingReport] = useState(false)
   const [favourites, setFavourites] = useState<string[]>([])
   const [showAiChat, setShowAiChat] = useState(false)
+  const [chatMinimized, setChatMinimized] = useState(false)
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([])
   const [chatInput, setChatInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
@@ -762,14 +764,44 @@ export function ReportsContent() {
         </div>
 
         {/* AI Chat Floating Button */}
-        <button
-          onClick={() => setShowAiChat(true)}
-          className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-40"
-          style={{ backgroundColor: "#B30089" }}
-          aria-label="Open AI Chat"
-        >
-          <Sparkles className="w-8 h-8 text-white" />
-        </button>
+        {!chatMinimized && (
+          <div className="fixed bottom-8 right-8 z-40 group">
+            <button
+              onClick={() => setShowAiChat(true)}
+              className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
+              style={{ backgroundColor: "#B30089" }}
+              aria-label="Open AI Chat"
+            >
+              <Sparkles className="w-8 h-8 text-white" />
+            </button>
+            {/* Minimise the floating button when it's in the way */}
+            <button
+              onClick={() => {
+                setChatMinimized(true)
+                setShowAiChat(false)
+              }}
+              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+              aria-label="Minimise AI Chat button"
+              title="Minimise"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Restore tab shown when the chat button is minimised */}
+        {chatMinimized && (
+          <button
+            onClick={() => setChatMinimized(false)}
+            className="fixed bottom-8 right-0 z-40 flex items-center gap-1.5 rounded-l-full py-2 pl-3 pr-2 shadow-lg hover:shadow-xl transition-all text-white"
+            style={{ backgroundColor: "#B30089" }}
+            aria-label="Show AI Chat button"
+            title="Show AI Chat"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <Sparkles className="w-5 h-5" />
+          </button>
+        )}
 
         {/* AI Chat Modal */}
         {showAiChat && (
