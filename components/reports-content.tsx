@@ -1,0 +1,896 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { 
+  ChevronDown, 
+  ChevronRight, 
+  Search, 
+  X, 
+  LayoutGrid,
+  ArrowLeft,
+  Maximize2,
+  Minimize2,
+  Star,
+  Sparkles,
+  Send,
+  ExternalLink
+} from "lucide-react"
+import Link from "next/link"
+import { LoadingModal } from "@/components/ui/loading-modal"
+import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
+import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
+import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
+import { EyfsGoalsBySchoolReport } from "@/components/eyfs-goals-by-school-report"
+import { EyfsGoalsByPupilGroupReport } from "@/components/eyfs-goals-by-pupilgroup-report"
+
+// Report categories with reports and descriptions
+// isSystem: true = MATpad system report, false/undefined = custom user-built report
+// status: 'active' | 'insufficient-roles' | 'upgrade-required' - controls report availability
+const reportCategories = [
+  {
+    id: "attendance",
+    name: "Attendance",
+    color: "#5B9BF5",
+    reports: [
+      {
+        id: "attendance-headlines",
+        name: "Attendance Headlines",
+        description: "A comprehensive overview of attendance metrics across your MAT, comparing current performance against national benchmarks. Includes persistent absence rates, authorised and unauthorised absence breakdowns, and trend analysis over time to identify patterns requiring intervention.",
+        isSystem: true
+      },
+      {
+        id: "persistent-absence",
+        name: "Persistent Absence Dashboard",
+        description: "Detailed analysis of pupils with attendance below 90%, identifying those at risk of becoming persistently absent. Drill down by school, year group, and pupil characteristics to target early intervention strategies and monitor the effectiveness of attendance improvement plans.",
+        isSystem: true
+      },
+      {
+        id: "custom-monday-absence-tracker",
+        name: "Monday Absence Tracker",
+        description: "Created by James Wilson to track Monday morning absence patterns across primary schools, with focus on Year 5 and 6 pupils who have shown recurring patterns.",
+        isSystem: false
+      },
+      {
+        id: "pupil-summary",
+        name: "Pupil Summary Dashboard",
+        description: "Individual pupil-level attendance data with filters for specific cohorts. Track attendance patterns for vulnerable groups including SEN, FSM, and looked-after children. Export functionality enables sharing data with external agencies and parents for collaborative support.",
+        isSystem: true
+      },
+      {
+        id: "pupil-view",
+        name: "Pupil View Dashboard",
+        description: "A focused view on individual pupil attendance records showing day-by-day absence patterns, reason codes, and cumulative statistics. Essential for case management meetings, parental discussions, and identifying pupils requiring targeted support from pastoral teams.",
+        isSystem: true
+      },
+      {
+        id: "termly-attendance",
+        name: "Termly Attendance Analysis",
+        description: "Compare attendance performance across autumn, spring, and summer terms to identify seasonal patterns. Historical trend analysis helps predict periods of lower attendance and enables proactive planning of intervention strategies during challenging periods.",
+        isSystem: true
+      },
+      {
+        id: "school-comparisons",
+        name: "School Comparisons",
+        description: "Benchmark attendance performance across all schools in your MAT using standardised metrics. Identify schools outperforming expectations and those requiring additional support, enabling targeted resource allocation and sharing of best practice across the trust.",
+        isSystem: true,
+        status: "insufficient-roles"
+      },
+      {
+        id: "attendance-heatmap",
+        name: "Attendance Heatmap",
+        description: "Visual representation of attendance patterns across days of the week and times of year. Quickly identify problematic patterns such as Monday absences or post-holiday dips. Interactive filters allow analysis by school, year group, and pupil characteristics.",
+        isSystem: true,
+        status: "upgrade-required"
+      },
+      {
+        id: "absence-codes",
+        name: "Absence Code Analysis",
+        description: "Breakdown of absence by code type showing the proportion of illness, family holidays, exclusions, and other reasons. Monitor trends in specific absence types and ensure consistent application of absence codes across all schools in your MAT.",
+        isSystem: true
+      },
+    ]
+  },
+  {
+    id: "attainment",
+    name: "Attainment",
+    color: "#715DBF",
+    reports: [
+      {
+        id: "ks2-outcomes",
+        name: "KS2 Outcomes Dashboard",
+        description: "Analysis of Key Stage 2 results including reading, writing, maths, and combined scores. Compare your MAT's performance against national figures and track progress over multiple years. Breakdown by pupil characteristics identifies gaps requiring focused curriculum intervention.",
+        isSystem: true
+      },
+      {
+        id: "custom-ks2-writing-deep-dive",
+        name: "KS2 Writing Deep Dive",
+        description: "Custom report created by Sarah Thompson to analyse writing outcomes by genre and assess the impact of the new handwriting intervention programme across Year 3 and 4 classes.",
+        isSystem: false
+      },
+      {
+        id: "ks4-outcomes",
+        name: "KS4 Outcomes Dashboard",
+        description: "GCSE and equivalent qualification results analysis including Attainment 8, Progress 8, and EBacc measures. Track performance trends and compare against national benchmarks. Identify subject areas and pupil groups requiring curriculum or pastoral intervention strategies.",
+        isSystem: true
+      },
+      {
+        id: "phonics-screening",
+        name: "Phonics Screening Check",
+        description: "Year 1 phonics screening results with comparison to national pass rates. Track re-take performance for Year 2 pupils and analyse the effectiveness of phonics interventions. Essential for early identification of pupils requiring additional reading support.",
+        isSystem: true
+      },
+      {
+        id: "multiplication-check",
+        name: "Multiplication Tables Check",
+        description: "Year 4 MTC results showing the proportion of pupils achieving full marks and average scores. Analyse performance by times table to identify specific gaps in multiplication knowledge and target maths interventions effectively across your MAT.",
+        isSystem: true
+      },
+      {
+        id: "reading-ages",
+        name: "Reading Age Analysis",
+        description: "Track reading ages against chronological ages to identify pupils reading significantly below expected levels. Monitor the impact of reading interventions over time and compare performance across schools to share effective approaches to improving literacy.",
+        isSystem: true
+      },
+      {
+        id: "progress-tracker",
+        name: "In-Year Progress Tracker",
+        description: "Monitor pupil progress against expected trajectories using your chosen assessment framework. Identify pupils falling behind expected progress and those exceeding expectations. Essential for termly pupil progress meetings and intervention planning discussions.",
+        isSystem: true
+      },
+      {
+        id: "eyfs-headlines",
+        name: "EYFS Headlines & Trends",
+        description: "A comprehensive overview of Early Years Foundation Stage outcomes including Good Level of Development, all ELG areas, and literacy and mathematics ELGs. Track MAT performance against national figures with year-on-year and three-year trends across all seven areas of learning.",
+        isSystem: true
+      },
+      {
+        id: "eyfs-pupil-group",
+        name: "EYFS Pupil Group Results",
+        description: "Explore EYFS outcomes broken down by pupil group including FSM eligibility, SEN provision, first language, term of birth and ethnicity. Compare school-level results against national and MAT benchmarks across all 17 Early Learning Goals.",
+        isSystem: true
+      },
+      {
+        id: "eyfs-goals-by-school",
+        name: "EYFS - Early Years Goals by school",
+        description: "Detailed performance data for all 17 Early Learning Goals across schools within your MAT. Color-coded table showing Good Level of Development and all individual ELG outcomes with performance benchmarked against national averages.",
+        isSystem: true
+      },
+      {
+        id: "eyfs-goals-by-pupilgroup",
+        name: "EYFS - Early Years Goals by pupil group",
+        description: "All 17 Early Learning Goals broken down by pupil group — FSM eligibility, SEN provision, first language and term of birth. Color-coded by performance relative to national averages so you can quickly identify where specific groups need support.",
+        isSystem: true
+      },
+    ]
+  },
+  {
+    id: "behaviour",
+    name: "Behaviour",
+    color: "#B3008B",
+    reports: [
+      {
+        id: "behaviour-overview",
+        name: "Behaviour Overview",
+        description: "Summary of behaviour incidents across your MAT including positive recognition and sanctions. Track trends over time and compare performance between schools. Identify patterns requiring policy review or additional staff training to improve behaviour culture.",
+        isSystem: true
+      },
+      {
+        id: "exclusions",
+        name: "Exclusions Dashboard",
+        description: "Fixed-term and permanent exclusion data with breakdown by school, year group, and pupil characteristics. Monitor compliance with exclusion procedures and identify disproportionate exclusion rates for specific groups requiring alternative behaviour support strategies.",
+        isSystem: true
+      },
+      {
+        id: "suspensions-analysis",
+        name: "Suspensions Analysis",
+        description: "Detailed analysis of suspension reasons, durations, and repeat offenders. Track the effectiveness of reintegration processes and identify pupils requiring managed moves or alternative provision placements. Essential for governing body reporting requirements.",
+        isSystem: true
+      },
+      {
+        id: "positive-recognition",
+        name: "Positive Recognition Tracker",
+        description: "Monitor the balance of positive to negative behaviour points across your MAT. Identify schools and classes with strong positive cultures and those requiring support to increase recognition and praise. Promotes a consistent approach to celebrating pupil success.",
+        isSystem: true
+      },
+      {
+        id: "custom-lunchtime-incidents",
+        name: "Lunchtime Incident Analysis",
+        description: "Built by Helen Carter to monitor behaviour incidents occurring during lunch breaks, comparing supervised vs unsupervised areas and tracking the effectiveness of the new playground zones initiative.",
+        isSystem: false
+      },
+    ]
+  },
+  {
+    id: "contextual",
+    name: "Contextual",
+    color: "#F79400",
+    reports: [
+      {
+        id: "census-summary",
+        name: "Census Summary",
+        description: "Overview of pupil demographic data from statutory census returns including ethnicity, language, FSM eligibility, and SEN provision. Essential for understanding your pupil population and ensuring curriculum and support services meet the needs of all learners.",
+        isSystem: true
+      },
+      {
+        id: "sen-overview",
+        name: "SEN Overview Dashboard",
+        description: "Breakdown of Special Educational Needs provision across your MAT showing pupils at SEN Support and with EHCPs. Track the effectiveness of SEN spending and compare outcomes for SEN pupils against their peers across all schools.",
+        isSystem: true
+      },
+      {
+        id: "pupil-premium",
+        name: "Pupil Premium Analysis",
+        description: "Analysis of disadvantaged pupil data including FSM, Ever6 FSM, and service children. Track the attainment and progress gap between disadvantaged and non-disadvantaged pupils. Monitor spending and evaluate the impact of pupil premium strategies.",
+        isSystem: true
+      },
+      {
+        id: "eal-analysis",
+        name: "EAL Pupil Analysis",
+        description: "English as an Additional Language pupil data showing proficiency levels and progress in English acquisition. Identify pupils requiring additional language support and monitor the impact of EAL interventions on academic outcomes across the curriculum.",
+        isSystem: true
+      },
+      {
+        id: "mobility",
+        name: "Pupil Mobility Report",
+        description: "Track pupils joining and leaving your schools mid-year with analysis of the impact on cohort performance data. Identify schools with high mobility rates and plan appropriate transition support and assessment processes for new arrivals.",
+        isSystem: true
+      },
+    ]
+  },
+  {
+    id: "safeguarding",
+    name: "Safeguarding",
+    color: "#5BBE80",
+    reports: [
+      {
+        id: "cpoms-overview",
+        name: "CPOMS Overview",
+        description: "Summary of safeguarding concerns logged in CPOMS or equivalent systems across your MAT. Track concern categories, response times, and outcomes. Identify trends requiring policy review or additional safeguarding training for specific staff groups.",
+        isSystem: true
+      },
+      {
+        id: "lac-overview",
+        name: "Looked After Children Overview",
+        description: "Dashboard for monitoring outcomes for looked-after children including attendance, attainment, and exclusions compared to peers. Track PEP completion rates and pupil premium plus spending to ensure LAC receive appropriate support and resources.",
+        isSystem: true
+      },
+      {
+        id: "caseload-analysis",
+        name: "DSL Caseload Analysis",
+        description: "Analyse the distribution and complexity of safeguarding cases across designated safeguarding leads. Identify schools requiring additional DSL capacity and ensure workload is manageable to maintain high-quality responses to safeguarding concerns.",
+        isSystem: true
+      },
+    ]
+  },
+  {
+    id: "workforce",
+    name: "Workforce",
+    color: "#2395A4",
+    reports: [
+      {
+        id: "staff-absence",
+        name: "Staff Absence Dashboard",
+        description: "Track teacher and support staff absence rates across your MAT. Analyse absence by reason, duration, and time of year. Identify schools with high absence rates requiring HR intervention and monitor the cost of supply cover expenditure.",
+        isSystem: true
+      },
+      {
+        id: "recruitment",
+        name: "Recruitment Analytics",
+        description: "Monitor vacancy rates, time to fill positions, and recruitment source effectiveness across your MAT. Identify hard-to-fill subject areas and schools struggling to attract quality candidates. Essential for workforce planning and retention strategies.",
+        isSystem: true
+      },
+      {
+        id: "staff-turnover",
+        name: "Staff Turnover Analysis",
+        description: "Track staff leaving rates by school, role type, and length of service. Analyse exit interview data to identify retention issues and compare turnover against sector benchmarks. Inform strategies to improve staff retention and reduce recruitment costs.",
+        isSystem: true
+      },
+      {
+        id: "cpd-tracker",
+        name: "CPD Completion Tracker",
+        description: "Monitor completion of mandatory and optional training across all staff. Identify compliance gaps in safeguarding, prevent, and health and safety training. Track engagement with professional development opportunities and impact on teaching quality.",
+        isSystem: true
+      },
+    ]
+  },
+  {
+    id: "finance",
+    name: "Finance",
+    color: "#6AD0D5",
+    reports: [
+      {
+        id: "budget-summary",
+        name: "Budget Summary Dashboard",
+        description: "Overview of income and expenditure across your MAT with comparison to budget forecasts. Track spending patterns and identify variances requiring investigation. Essential for CFO reporting to trustees and ensuring financial sustainability.",
+        isSystem: true
+      },
+      {
+        id: "staffing-costs",
+        name: "Staffing Cost Analysis",
+        description: "Breakdown of staffing expenditure as a proportion of total budget with benchmarking against similar MATs. Analyse the balance between teaching and non-teaching staff costs and identify schools with unsustainable staffing structures requiring intervention.",
+        status: "upgrade-required",
+        isSystem: true
+      },
+      {
+        id: "grant-tracking",
+        name: "Grant Tracking Dashboard",
+        description: "Monitor allocation and spending of ring-fenced grants including pupil premium, PE and sport premium, and recovery premium. Ensure compliance with spending requirements and evaluate impact of grant-funded interventions on pupil outcomes.",
+        isSystem: true
+      },
+      {
+        id: "procurement",
+        name: "Procurement Analysis",
+        description: "Track supplier spending patterns and contract renewals across your MAT. Identify opportunities for centralised procurement and cost savings through economies of scale. Monitor compliance with financial regulations and procurement policies.",
+        isSystem: true
+      },
+    ]
+  },
+  {
+    id: "estates",
+    name: "Estates",
+    color: "#F7555A",
+    reports: [
+      {
+        id: "capacity-planning",
+        name: "Capacity Planning",
+        description: "Monitor pupil numbers against Published Admission Numbers and forecast future capacity requirements. Identify schools at risk of becoming over or undersubscribed and inform decisions about expansion, reduction, or new school requirements.",
+        isSystem: true
+      },
+      {
+        id: "condition-survey",
+        name: "Condition Survey Summary",
+        description: "Overview of building condition data from surveys with prioritisation of maintenance and capital works. Track progress against condition improvement plans and forecast future capital expenditure requirements for estate investment planning.",
+        isSystem: true
+      },
+      {
+        id: "energy-consumption",
+        name: "Energy Consumption Dashboard",
+        description: "Monitor electricity, gas, and water consumption across your estate with comparison to benchmarks. Identify buildings with high consumption requiring energy efficiency improvements. Track progress towards net zero carbon targets and cost reduction goals.",
+        isSystem: true
+      },
+    ]
+  },
+]
+
+export function ReportsContent() {
+  const [selectedReport, setSelectedReport] = useState<string | null>(null)
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(["favourites", ...reportCategories.map(c => c.id)])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isLoadingReport, setIsLoadingReport] = useState(false)
+  const [favourites, setFavourites] = useState<string[]>([])
+  const [showAiChat, setShowAiChat] = useState(false)
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([])
+  const [chatInput, setChatInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+
+  const handleReportSelect = (reportId: string) => {
+    setIsLoadingReport(true)
+    setTimeout(() => {
+      setSelectedReport(reportId)
+      setIsLoadingReport(false)
+    }, 800)
+  }
+
+  const handleBackToMenu = () => {
+    setSelectedReport(null)
+  }
+
+  // Sample AI responses based on keywords
+  const getAiResponse = (question: string): string => {
+    const q = question.toLowerCase()
+    if (q.includes("attendance")) {
+      return "Based on your current data, the overall attendance rate across the trust is 94.7%, which is slightly above the national average of 94.2%. St Mary's Academy has the highest rate at 96.1%, while Riverside Primary is at 92.8% and may need attention."
+    }
+    if (q.includes("ks2") || q.includes("key stage 2")) {
+      return "KS2 Results Summary:\n\n- Reading: 74% at expected standard (national: 73%)\n- Writing: 69% at expected standard (national: 71%)\n- Maths: 76% at expected standard (national: 73%)\n\nThree schools exceeded national averages in all subjects. Two schools require improvement support in Writing."
+    }
+    if (q.includes("persistent absence") || q.includes("absence trends")) {
+      return "Persistent absence has decreased by 1.8% compared to last term. Current PA rate is 14.2% (down from 16.0%). Year 9 and Year 10 have the highest PA rates at 17.3% and 16.8% respectively. Intervention programmes in these year groups are recommended."
+    }
+    if (q.includes("progress 8") || q.includes("progress8")) {
+      return "The trust-wide Progress 8 score is +0.32, placing it above the national average. Four out of six secondary schools have positive Progress 8 scores. English and Maths are the strongest contributors, while open bucket subjects show room for improvement."
+    }
+    if (q.includes("exclusion") || q.includes("suspension")) {
+      return "This term there have been 8 fixed-term exclusions across the trust, down from 12 in the same period last year. No permanent exclusions have been recorded. The majority of incidents relate to persistent disruptive behaviour in Key Stage 3."
+    }
+    return "I can help you analyse your school data. Try asking about attendance rates, KS2 results, persistent absence trends, Progress 8 scores, or exclusions. You can also ask me to compare data across schools in your trust."
+  }
+
+  const handleSendChatMessage = () => {
+    if (!chatInput.trim()) return
+    const userMessage = chatInput.trim()
+    setChatMessages((prev) => [...prev, { role: "user", content: userMessage }])
+    setChatInput("")
+    setIsTyping(true)
+
+    // Simulate AI response delay
+    setTimeout(() => {
+      const response = getAiResponse(userMessage)
+      setChatMessages((prev) => [...prev, { role: "assistant", content: response }])
+      setIsTyping(false)
+    }, 1000)
+  }
+
+  const handleExampleQuestion = (question: string) => {
+    setChatMessages((prev) => [...prev, { role: "user", content: question }])
+    setIsTyping(true)
+
+    setTimeout(() => {
+      const response = getAiResponse(question)
+      setChatMessages((prev) => [...prev, { role: "assistant", content: response }])
+      setIsTyping(false)
+    }, 1000)
+  }
+
+  const handleChatKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSendChatMessage()
+    }
+  }
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    )
+  }
+
+  const toggleFavourite = (e: React.MouseEvent, reportId: string) => {
+    e.stopPropagation()
+    setFavourites(prev =>
+      prev.includes(reportId)
+        ? prev.filter(id => id !== reportId)
+        : [...prev, reportId]
+    )
+  }
+
+  const allReports = reportCategories.flatMap(c => c.reports.map(r => ({ ...r, categoryColor: c.color, categoryName: c.name })))
+  const favouriteReports = allReports.filter(r => favourites.includes(r.id))
+
+  const filteredCategories = reportCategories.map(category => ({
+    ...category,
+    reports: category.reports.filter(report =>
+      report.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(category => category.reports.length > 0)
+
+  const selectedReportData = reportCategories
+    .flatMap(c => c.reports)
+    .find(r => r.id === selectedReport)
+
+  const selectedCategory = reportCategories.find(c => 
+    c.reports.some(r => r.id === selectedReport)
+  )
+
+  // Report selected with navigation visible
+  if (selectedReport) {
+    return (
+      <>
+        <LoadingModal isOpen={isLoadingReport} message="Loading report..." />
+        <div className="h-full flex flex-col bg-slate-50">
+          {/* Header with report info */}
+          <div 
+            className="px-6 py-2 flex items-center gap-4 border-b border-white/10"
+            style={{ backgroundColor: selectedCategory?.color || "#121051" }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToMenu}
+              className="text-white hover:bg-white/20 h-8"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-white">{selectedReportData?.name}</h2>
+              <span className="text-white/50">���</span>
+              <p className="text-sm text-white/70">{selectedCategory?.name}</p>
+            </div>
+          </div>
+
+          {/* Report content */}
+          <div className="flex-1 overflow-auto bg-slate-50 p-4">
+            {selectedReport === "attendance-headlines" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <AttendanceHeadlinesReport />
+              </div>
+            ) : selectedReport === "eyfs-headlines" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsHeadlinesReport />
+              </div>
+            ) : selectedReport === "eyfs-pupil-group" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsPopilGroupReport />
+              </div>
+            ) : selectedReport === "eyfs-goals-by-school" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsGoalsBySchoolReport />
+              </div>
+            ) : selectedReport === "eyfs-goals-by-pupilgroup" ? (
+              <div className="bg-white rounded-lg overflow-hidden">
+                <EyfsGoalsByPupilGroupReport />
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg border border-slate-200 h-full flex items-center justify-center p-6">
+                <div className="text-center text-slate-500">
+                  <LayoutGrid className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                  <p className="text-lg font-medium">Power BI Report: {selectedReportData?.name}</p>
+                  <p className="text-sm mt-2">Embedded report will display here</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // Report selection menu
+  return (
+    <>
+      <LoadingModal isOpen={isLoadingReport} message="Loading report..." />
+      <div className="h-full bg-slate-50 overflow-auto">
+        {/* Header */}
+        <div className="bg-white border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
+              <p className="text-sm text-slate-500 mt-1">
+                Select a report from the categories below. {reportCategories.reduce((acc, c) => acc + c.reports.length, 0)} reports available.
+              </p>
+            </div>
+          </div>
+          {/* Search */}
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder="Search reports..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-slate-50 border-slate-200"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Categories and Reports */}
+        <div className="p-6 space-y-3 overflow-y-auto flex-1">
+
+          {/* Favourites Section */}
+          {!searchQuery && (
+            <Card className="bg-white overflow-hidden">
+              <button
+                onClick={() => toggleCategory("favourites")}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-amber-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  <span className="text-base font-semibold text-slate-900">Favourites</span>
+                  <span className="text-sm text-slate-400">({favouriteReports.length} reports)</span>
+                </div>
+                {expandedCategories.includes("favourites") ? (
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                )}
+              </button>
+              {expandedCategories.includes("favourites") && (
+                <div className="border-t border-slate-100">
+                  {favouriteReports.length === 0 ? (
+                    <div className="px-5 py-8 text-center">
+                      <Star className="w-8 h-8 mx-auto text-slate-200 mb-3" />
+                      <p className="text-sm text-slate-400">No favourites yet.</p>
+                      <p className="text-xs text-slate-400 mt-1">Click the star on any report to add it here.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
+                      {favouriteReports.map((report) => {
+                        const isSystem = report.isSystem
+                        return (
+                          <button
+                            key={report.id}
+                            onClick={() => handleReportSelect(report.id)}
+                            className="text-left p-4 rounded-lg border border-amber-100 hover:border-amber-300 hover:shadow-sm transition-all bg-amber-50/40 group relative"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: report.categoryColor }} />
+                              <div className="flex-1 min-w-0 pr-6">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-medium text-slate-900 group-hover:text-[#121051] transition-colors line-clamp-1">{report.name}</h3>
+                                  {isSystem ? (
+                                    <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#121051]/10 text-[#121051]">
+                                      System
+                                    </span>
+                                  ) : (
+                                    <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-100 text-pink-700">
+                                      Custom
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-400 mt-0.5">{report.categoryName}</p>
+                                <p className="text-sm text-slate-500 mt-1 line-clamp-3">{report.description}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => toggleFavourite(e, report.id)}
+                              className="absolute top-3 right-3 text-amber-400 hover:text-amber-500 transition-colors"
+                              aria-label="Remove from favourites"
+                            >
+                              <Star className="w-4 h-4 fill-amber-400" />
+                            </button>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Category Sections */}
+          {filteredCategories.map((category) => (
+            <Card key={category.id} className="bg-white overflow-hidden">
+              {/* Category Header */}
+              <button
+                onClick={() => toggleCategory(category.id)}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <span className="text-base font-semibold text-slate-900">{category.name}</span>
+                  <span className="text-sm text-slate-400">({category.reports.length} reports)</span>
+                </div>
+                {expandedCategories.includes(category.id) ? (
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                )}
+              </button>
+
+              {/* Reports Grid */}
+              {expandedCategories.includes(category.id) && (
+                <div className="border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
+                    {category.reports.map((report) => {
+                      const isFavourite = favourites.includes(report.id)
+                      const isSystem = 'isSystem' in report && report.isSystem
+                      const status = 'status' in report ? report.status : 'active'
+                      const isInactive = status === 'insufficient-roles' || status === 'upgrade-required'
+                      return (
+                        <div
+                          key={report.id}
+                          className={`text-left p-4 rounded-lg border transition-all relative ${
+                            isInactive 
+                              ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed" 
+                              : "border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white cursor-pointer group"
+                          }`}
+                          onClick={() => !isInactive && handleReportSelect(report.id)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`w-2 h-2 rounded-full mt-2 shrink-0 ${isInactive ? "opacity-50" : ""}`}
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <div className="flex-1 min-w-0 pr-6">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <h3 className={`font-medium transition-colors line-clamp-1 ${
+                                  isInactive ? "text-slate-400" : "text-slate-900 group-hover:text-[#121051]"
+                                }`}>
+                                  {report.name}
+                                </h3>
+                                {isSystem ? (
+                                  <span className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                    isInactive ? "bg-slate-200 text-slate-400" : "bg-[#121051]/10 text-[#121051]"
+                                  }`}>
+                                    System
+                                  </span>
+                                ) : (
+                                  <span className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                    isInactive ? "bg-slate-200 text-slate-400" : "bg-pink-100 text-pink-700"
+                                  }`}>
+                                    Custom
+                                  </span>
+                                )}
+                                {status === 'insufficient-roles' && (
+                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-300 text-slate-600">
+                                    Insufficient Roles
+                                  </span>
+                                )}
+                                {status === 'upgrade-required' && (
+                                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700">
+                                    Upgrade Required
+                                  </span>
+                                )}
+                              </div>
+                              <p className={`text-sm mt-1 line-clamp-3 ${isInactive ? "text-slate-400" : "text-slate-500"}`}>
+                                {report.description}
+                              </p>
+                            </div>
+                          </div>
+                          {!isInactive && (
+                            <button
+                              onClick={(e) => toggleFavourite(e, report.id)}
+                              className={`absolute top-3 right-3 transition-colors ${
+                                isFavourite
+                                  ? "text-amber-400 hover:text-amber-500"
+                                  : "text-slate-200 hover:text-amber-300 opacity-0 group-hover:opacity-100"
+                              }`}
+                              aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
+                            >
+                              <Star className={`w-4 h-4 ${isFavourite ? "fill-amber-400" : ""}`} />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </Card>
+          ))}
+
+          {filteredCategories.length === 0 && (
+            <div className="text-center py-12">
+              <Search className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+              <p className="text-slate-500">No reports found matching "{searchQuery}"</p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="text-[#121051] hover:underline mt-2 text-sm"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* AI Chat Floating Button */}
+        <button
+          onClick={() => setShowAiChat(true)}
+          className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-40"
+          style={{ backgroundColor: "#B30089" }}
+          aria-label="Open AI Chat"
+        >
+          <Sparkles className="w-8 h-8 text-white" />
+        </button>
+
+        {/* AI Chat Modal */}
+        {showAiChat && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-end md:p-6">
+            <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[600px]">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#B30089] to-[#121051] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
+                <div>
+                  <h3 className="text-white font-semibold">MATpad AI</h3>
+                  <p className="text-white/80 text-sm">Ask about your data</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/ai-chat"
+                    className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors flex items-center gap-1 text-xs"
+                    title="Open full AI Chat"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                  <button
+                    onClick={() => setShowAiChat(false)}
+                    className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Chat Area */}
+                <div className="flex-1 overflow-y-auto p-4">
+                  {chatMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
+                        <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
+                      </div>
+                      <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
+                      <p className="text-sm text-slate-600 mb-6">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
+
+                      {/* Example questions */}
+                      <div className="w-full space-y-2">
+                        <button 
+                          onClick={() => handleExampleQuestion("What's our current attendance rate?")}
+                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                        >
+                          What&apos;s our current attendance rate?
+                        </button>
+                        <button 
+                          onClick={() => handleExampleQuestion("Compare KS2 results across schools")}
+                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                        >
+                          Compare KS2 results across schools
+                        </button>
+                        <button 
+                          onClick={() => handleExampleQuestion("Show persistent absence trends")}
+                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                        >
+                          Show persistent absence trends
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {chatMessages.map((msg, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-line ${
+                              msg.role === "user"
+                                ? "bg-[#121051] text-white"
+                                : "bg-slate-100 text-slate-800"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))}
+                      {isTyping && (
+                        <div className="flex justify-start">
+                          <div className="bg-slate-100 rounded-lg px-4 py-3">
+                            <div className="flex gap-1">
+                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Area */}
+                <div className="border-t border-slate-200 p-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ask about your data..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={handleChatKeyDown}
+                      className="flex-1 px-4 py-2 bg-slate-100 rounded-full text-sm outline-none placeholder-slate-400 focus:bg-slate-50 transition-colors"
+                    />
+                    <button 
+                      onClick={handleSendChatMessage}
+                      disabled={!chatInput.trim()}
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
+                      style={{ backgroundColor: chatInput.trim() ? "#B30089" : "#C0C0C0" }}
+                    >
+                      <Send className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
