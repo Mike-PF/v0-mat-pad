@@ -6,7 +6,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, ChevronDown, Trash2, Pencil, X } from "lucide-react"
+import { Plus, ChevronDown, Trash2, Pencil, X, Users as UsersIcon } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { PageHelpBanner } from "@/components/ui/help-video"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -515,7 +515,27 @@ export default function UsersPage() {
                   </Button>
                 </div>
 
-                {/* Users Table */}
+                {/* Empty state - shown when there are no users */}
+                {users.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-100 mb-4">
+                      <UsersIcon className="w-7 h-7 text-slate-400" />
+                    </div>
+                    <h4 className="text-base font-semibold text-slate-900 mb-1">No users yet</h4>
+                    <p className="text-sm text-slate-500 max-w-sm mb-6">
+                      There are no users for this organisation. Add your first user to give them access.
+                    </p>
+                    <Button
+                      onClick={handleAddUser}
+                      className="text-white"
+                      style={{ backgroundColor: "#121051" }}
+                    >
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      Add user
+                    </Button>
+                  </div>
+                ) : (
+                /* Users Table */
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -636,6 +656,7 @@ export default function UsersPage() {
                     </tbody>
                   </table>
                 </div>
+                )}
               </CardContent>
             </Card>
           )}
