@@ -198,6 +198,36 @@ export default function UsersPage() {
     return ""
   }
 
+  // Users visible for the currently selected organisation
+  const getVisibleUsers = (): User[] => {
+    if (!selectedType || !selectedId) return []
+
+    if (selectedType === "school") {
+      const school = schoolsListData.find((s) => s.id === selectedId)
+      if (!school) return []
+      // "all schools" access only covers schools that belong to a trust (MAT),
+      // not standalone schools like Sacred Heart.
+      const schoolBelongsToMat = Boolean(school.matId)
+      return users.filter((user) => {
+        if (user.schools === "all") return schoolBelongsToMat
+        return user.schools.some((s) => s.urn === school.urn)
+      })
+    }
+
+    // MAT selection: users assigned to any school in the trust, or "all schools"
+    const mat = matsData.find((m) => m.id === selectedId)
+    if (!mat) return []
+    const matUrns = schoolsListData
+      .filter((s) => mat.schools.includes(s.id))
+      .map((s) => s.urn)
+    return users.filter((user) => {
+      if (user.schools === "all") return true
+      return user.schools.some((s) => matUrns.includes(s.urn))
+    })
+  }
+
+  const visibleUsers = getVisibleUsers()
+
   // Add user handler
   const handleAddUser = () => {
     setIsAddMode(true)
@@ -516,7 +546,7 @@ export default function UsersPage() {
                 </div>
 
                 {/* Empty state - shown when there are no users */}
-                {users.length === 0 ? (
+                {visibleUsers.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                     <div className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-100 mb-4">
                       <UsersIcon className="w-7 h-7 text-slate-400" />
@@ -549,7 +579,7 @@ export default function UsersPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map((user) => (
+                      {visibleUsers.map((user) => (
                         <tr key={user.id} className="border-b border-slate-100 last:border-0">
                           <td className="py-4 px-4 text-sm text-slate-900">{user.email}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
