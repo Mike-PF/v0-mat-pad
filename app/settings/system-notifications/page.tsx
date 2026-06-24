@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Plus, Pencil, Trash2, X, Search, Eye, Bell } from "lucide-react"
+import { Plus, Pencil, Trash2, X, Search, Eye, Bell, Megaphone, ChevronRight, Monitor } from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
@@ -41,6 +41,10 @@ export default function SystemNotificationsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<WhatsNewItem | null>(null)
+
+  // Preview
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [previewTab, setPreviewTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
 
   // Form state
   const [formType, setFormType] = useState<NotificationType>("update")
@@ -66,6 +70,16 @@ export default function SystemNotificationsPage() {
   }, [items, searchTerm, filterType])
 
   const visibleCount = items.filter((i) => i.visible).length
+
+  // Mirrors the homepage "What's New & Key Dates" filtering
+  const previewItems = items.filter((item) => {
+    if (!item.visible) return false
+    if (previewTab === "all") return true
+    if (previewTab === "updates") return item.type === "update"
+    if (previewTab === "deadlines") return item.type === "deadline"
+    if (previewTab === "system") return item.type === "maintenance" || item.type === "issue"
+    return true
+  })
 
   const resetForm = () => {
     setFormType("update")
@@ -217,10 +231,16 @@ export default function SystemNotificationsPage() {
                     </p>
                   </div>
                 </div>
-                <Button onClick={handleAdd} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  Add notification
-                </Button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button variant="outline" onClick={() => setIsPreviewOpen(true)}>
+                    <Monitor className="w-4 h-4 mr-1.5" />
+                    Preview
+                  </Button>
+                  <Button onClick={handleAdd} className="text-white" style={{ backgroundColor: NAVY }}>
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    Add notification
+                  </Button>
+                </div>
               </div>
 
               {/* Summary */}
@@ -523,6 +543,119 @@ export default function SystemNotificationsPage() {
             >
               <X className="w-4 h-4 mr-1.5" />
               Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Homepage preview */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-xl">
+          <div className="flex items-center gap-2 mb-1">
+            <Monitor className="w-4 h-4 text-slate-400" />
+            <h2 className="text-base font-semibold text-slate-900">Homepage preview</h2>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">
+            This is exactly how the visible notifications appear in the{" "}
+            <span className="font-medium text-slate-700">What&apos;s New &amp; Key Dates</span> panel on the homepage.
+          </p>
+
+          {/* Replicated homepage panel */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <Card className="bg-white border-slate-200">
+              <div className="px-5 pt-4 pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm font-semibold text-slate-900">What&apos;s New &amp; Key Dates</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs">
+                    {(["all", "updates", "deadlines", "system"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setPreviewTab(tab)}
+                        className={`px-2 py-1 rounded-md capitalize transition-colors ${
+                          previewTab === tab ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <CardContent className="px-5 pb-4">
+                {previewItems.length === 0 ? (
+                  <div className="py-10 text-center text-sm text-slate-400">
+                    No visible notifications for this filter.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {previewItems.map((item) => {
+                      const Icon = getTypeIcon(item.type)
+                      const color = getTypeColor(item.type)
+                      return (
+                        <div
+                          key={item.id}
+                          className={`w-full flex items-start gap-3 p-2.5 rounded-lg border text-left group ${
+                            item.isUrgent
+                              ? "border-red-200 bg-red-50/50"
+                              : item.isNew
+                              ? "border-blue-200 bg-blue-50/50"
+                              : item.isActive
+                              ? "border-amber-200 bg-amber-50/50"
+                              : "border-slate-100"
+                          }`}
+                        >
+                          <div
+                            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${color}18` }}
+                          >
+                            <Icon className="w-3.5 h-3.5" style={{ color }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-slate-800 truncate">{item.title}</p>
+                              {item.isNew && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded shrink-0">
+                                  NEW
+                                </span>
+                              )}
+                              {item.isUrgent && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded shrink-0">
+                                  URGENT
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 truncate">{item.description}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <div className="text-right">
+                              <p className="text-xs text-slate-500">{item.date}</p>
+                              {item.daysLeft !== undefined && item.daysLeft <= 7 && (
+                                <p
+                                  className={`text-xs font-semibold ${
+                                    item.daysLeft <= 3 ? "text-red-600" : "text-amber-600"
+                                  }`}
+                                >
+                                  {item.daysLeft}d left
+                                </p>
+                              )}
+                            </div>
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 ml-1" />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+              Close
             </Button>
           </div>
         </DialogContent>
