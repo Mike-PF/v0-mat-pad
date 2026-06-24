@@ -26,6 +26,7 @@ import {
   CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
+import { useNotifications, getTypeIcon, getTypeColor, type WhatsNewItem } from "@/lib/notifications"
 
 const ACCENT = "hsl(314 100% 35%)"
 
@@ -114,79 +115,6 @@ const ofstedData = [
   { name: "Notre Dame High School", abbr: "NDHS", judgement: "Requires Improvement", date: "Jan 2024" },
 ]
 
-// What's New / Key Dates
-type WhatsNewItem = {
-  type: "update" | "deadline" | "maintenance" | "issue"
-  title: string
-  description: string
-  date: string
-  daysLeft?: number
-  isUrgent?: boolean
-  isNew?: boolean
-  isActive?: boolean
-  body?: string
-  video?: { url: string; title: string }
-  documents?: { name: string; size: string; type: "pdf" | "xlsx" | "docx" }[]
-}
-
-const whatsNew: WhatsNewItem[] = [
-  {
-    type: "deadline",
-    title: "Spring Census deadline",
-    description: "Submit census data by 16 January 2025",
-    date: "16 Jan",
-    daysLeft: 2,
-    isUrgent: true,
-    body: "The Spring School Census is due on 16 January 2025. All schools must ensure their data has been validated and submitted via COLLECT before 11:59pm on the deadline date.\n\nKey areas to check before submission:\n• Pupil headcount and new admissions\n• Attendance codes for the reference week\n• Free school meal eligibility\n• SEN support and EHCP records\n\nContact your data manager if you encounter any COLLECT errors. DfE will not accept late submissions without prior written agreement.",
-    documents: [
-      { name: "Spring Census Checklist 2025.pdf", size: "142 KB", type: "pdf" },
-      { name: "COLLECT Submission Guide.pdf", size: "380 KB", type: "pdf" },
-    ],
-  },
-  {
-    type: "update",
-    title: "New attendance dashboard released",
-    description: "Enhanced visualisations for persistent absence tracking",
-    date: "Today",
-    isNew: true,
-    body: "We have released an updated Attendance Dashboard with several improvements based on user feedback:\n\n• Persistent Absence cohort drill-down now available at pupil level\n• Comparison against national and regional averages added to all charts\n• New 'at risk' threshold alerts for pupils approaching 90% threshold\n• Export to Excel now includes all filters applied\n\nThe dashboard is available from the Dashboards section in the left-hand navigation. Watch the short walkthrough video below for an overview of the new features.",
-    video: {
-      url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      title: "New Attendance Dashboard Walkthrough",
-    },
-    documents: [
-      { name: "Attendance Dashboard Release Notes.pdf", size: "98 KB", type: "pdf" },
-    ],
-  },
-  {
-    type: "maintenance",
-    title: "Scheduled maintenance",
-    description: "System unavailable 02:00–04:00 GMT on 18 January",
-    date: "18 Jan",
-    daysLeft: 4,
-    body: "Planned maintenance will take place on the night of 18 January 2025 between 02:00 and 04:00 GMT. The following services will be unavailable during this window:\n\n• All data upload functionality\n• Report generation and export\n• Dashboard access\n\nUser authentication and read-only access to saved reports will remain available. No action is required — the system will resume normal operation automatically. Please ensure any time-sensitive uploads are completed before 01:30 GMT.",
-  },
-  {
-    type: "issue",
-    title: "Known issue: Export delays",
-    description: "Large exports may take longer than usual",
-    date: "Active",
-    isActive: true,
-    body: "We are aware of an issue affecting large data exports (files over 50,000 rows). Exports are completing successfully but may take up to 15 minutes longer than normal.\n\nWorkarounds:\n• Apply additional filters to reduce export size before downloading\n• Use the 'Schedule Export' option to run exports overnight\n• Exports under 10,000 rows are unaffected\n\nOur engineering team is investigating the root cause. We expect a fix to be deployed by 20 January. We apologise for the inconvenience.",
-  },
-  {
-    type: "deadline",
-    title: "Workforce Census opens",
-    description: "Annual workforce census collection begins",
-    date: "4 Nov",
-    daysLeft: 292,
-    body: "The Annual School Workforce Census opens on 4 November 2025. All maintained schools and academies are required to submit workforce data to the DfE by the deadline.\n\nData required includes:\n• Staff headcount and FTE\n• Qualifications and subject specialisms\n• Absence and vacancies\n• Salary and pay range information\n\nFull guidance and the submission portal will be available on the DfE COLLECT website from 1 October 2025.",
-    documents: [
-      { name: "Workforce Census Guidance 2025.xlsx", size: "1.2 MB", type: "xlsx" },
-    ],
-  },
-]
-
 const getOfstedColor = (judgement: string) => {
   switch (judgement) {
     case "Outstanding":
@@ -202,26 +130,6 @@ const getOfstedColor = (judgement: string) => {
   }
 }
 
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case "update": return Megaphone
-    case "deadline": return CalendarDays
-    case "maintenance": return Wrench
-    case "issue": return AlertCircle
-    default: return Info
-  }
-}
-
-const getTypeColor = (type: string) => {
-  switch (type) {
-    case "update": return "#5B9BF5"
-    case "deadline": return ACCENT
-    case "maintenance": return "#8b5cf6"
-    case "issue": return "#ef4444"
-    default: return "#64748b"
-  }
-}
-
 const getActivityIcon = (type: string) => {
   switch (type) {
     case "upload": return Upload
@@ -234,8 +142,10 @@ const getActivityIcon = (type: string) => {
 export function HomeContent() {
   const [selectedTab, setSelectedTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
   const [selectedItem, setSelectedItem] = useState<WhatsNewItem | null>(null)
+  const { items: notifications } = useNotifications()
 
-  const filteredNews = whatsNew.filter((item) => {
+  const filteredNews = notifications.filter((item) => {
+    if (!item.visible) return false
     if (selectedTab === "all") return true
     if (selectedTab === "updates") return item.type === "update"
     if (selectedTab === "deadlines") return item.type === "deadline"
