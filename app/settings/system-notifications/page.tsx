@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Plus, Pencil, Trash2, X, Search, Eye, EyeOff, Bell } from "lucide-react"
+import { Plus, Pencil, Trash2, X, Search, Eye, Bell } from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
@@ -325,11 +325,6 @@ export default function SystemNotificationsPage() {
 
                         <div className="flex items-center gap-3 shrink-0">
                           <label className="flex items-center gap-2 cursor-pointer select-none">
-                            {item.visible ? (
-                              <Eye className="w-4 h-4 text-slate-500" />
-                            ) : (
-                              <EyeOff className="w-4 h-4 text-slate-400" />
-                            )}
                             <Switch
                               checked={item.visible}
                               onCheckedChange={() => handleToggleVisible(item.id)}
