@@ -429,7 +429,7 @@ export default function AiChatbotPage() {
                                         <Button
                                           size="sm"
                                           onClick={() => addFaqAsPrompt(q.text)}
-                                          className="shrink-0 text-white hover:opacity-90 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          className="shrink-0 text-white hover:opacity-90 transition-opacity"
                                           style={{ backgroundColor: "#121051" }}
                                         >
                                           <Plus className="w-3.5 h-3.5 mr-1" />
