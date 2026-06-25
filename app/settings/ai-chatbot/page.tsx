@@ -154,7 +154,7 @@ export default function AiManagementPage() {
           <TopNavigation />
         </div>
         <main className="flex-1 overflow-y-auto px-4 pb-8">
-          <div className="max-w-6xl mx-auto">
+          <div className="w-full">
             {/* Header */}
             <div className="flex items-start gap-3 mb-6">
               <div
