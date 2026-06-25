@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Trash2, X, Search, Eye, Bell, Megaphone, ChevronRight, Monitor } from "lucide-react"
+import { Trash2, X, Search, Eye, Bell, Monitor, Play, ExternalLink } from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
@@ -43,9 +43,8 @@ export default function SystemNotificationsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<WhatsNewItem | null>(null)
 
-  // Preview
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [previewTab, setPreviewTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
+  // Per-item preview of how a notification looks when opened on the homepage
+  const [previewItem, setPreviewItem] = useState<WhatsNewItem | null>(null)
 
   // Form state
   const [formType, setFormType] = useState<NotificationType>("update")
@@ -71,16 +70,6 @@ export default function SystemNotificationsPage() {
   }, [items, searchTerm, filterType])
 
   const visibleCount = items.filter((i) => i.visible).length
-
-  // Mirrors the homepage "What's New & Key Dates" filtering
-  const previewItems = items.filter((item) => {
-    if (!item.visible) return false
-    if (previewTab === "all") return true
-    if (previewTab === "updates") return item.type === "update"
-    if (previewTab === "deadlines") return item.type === "deadline"
-    if (previewTab === "system") return item.type === "maintenance" || item.type === "issue"
-    return true
-  })
 
   const resetForm = () => {
     setFormType("update")
@@ -242,9 +231,6 @@ export default function SystemNotificationsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="outline" onClick={() => setIsPreviewOpen(true)}>
-                    Preview
-                  </Button>
                   <Button onClick={handleAdd} className="text-white" style={{ backgroundColor: NAVY }}>
                     Add notification
                   </Button>
@@ -369,6 +355,14 @@ export default function SystemNotificationsPage() {
                               className="data-[state=checked]:bg-[#121051]"
                             />
                           </label>
+                          <button
+                            onClick={() => setPreviewItem(item)}
+                            className="p-1.5 rounded-md text-slate-400 hover:text-[#121051] hover:bg-slate-100 transition-colors"
+                            aria-label={`Preview ${item.title}`}
+                            title="Preview how this looks when opened"
+                          >
+                            <Monitor className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => setDeleteConfirm(item)}
                             className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
@@ -559,116 +553,128 @@ export default function SystemNotificationsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Homepage preview */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-xl">
-          <div className="flex items-center gap-2 mb-1">
-            <Monitor className="w-4 h-4 text-slate-400" />
-            <h2 className="text-base font-semibold text-slate-900">Homepage preview</h2>
-          </div>
-          <p className="text-sm text-slate-500 mb-4">
-            This is exactly how the visible notifications appear in the{" "}
-            <span className="font-medium text-slate-700">What&apos;s New &amp; Key Dates</span> panel on the homepage.
-          </p>
+      {/* Per-item preview: how the notification looks when opened on the homepage */}
+      <Dialog open={!!previewItem} onOpenChange={(open) => !open && setPreviewItem(null)}>
+        <DialogContent className="max-w-lg p-0 overflow-hidden">
+          {previewItem && (
+            <>
+              <div className="flex items-center gap-2 px-5 pt-4 pb-3 border-b border-slate-100">
+                <Monitor className="w-4 h-4 text-slate-400" />
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  Homepage preview — opened view
+                </span>
+              </div>
 
-          {/* Replicated homepage panel */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <Card className="bg-white border-slate-200">
-              <div className="px-5 pt-4 pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Megaphone className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm font-semibold text-slate-900">What&apos;s New &amp; Key Dates</span>
+              {/* Replicated homepage detail panel */}
+              <div
+                className="flex items-start gap-3 px-6 py-5 border-b border-slate-200"
+                style={{ borderTopColor: getTypeColor(previewItem.type), borderTopWidth: 3 }}
+              >
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                  style={{ backgroundColor: `${getTypeColor(previewItem.type)}18` }}
+                >
+                  {(() => {
+                    const Icon = getTypeIcon(previewItem.type)
+                    return <Icon className="w-4 h-4" style={{ color: getTypeColor(previewItem.type) }} />
+                  })()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-semibold text-slate-900">{previewItem.title}</h2>
+                    {isCurrentlyNew(previewItem) && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded">NEW</span>
+                    )}
+                    {previewItem.isUrgent && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded">
+                        URGENT
+                      </span>
+                    )}
+                    {previewItem.isActive && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-500 text-white rounded">
+                        ACTIVE
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs">
-                    {(["all", "updates", "deadlines", "system"] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setPreviewTab(tab)}
-                        className={`px-2 py-1 rounded-md capitalize transition-colors ${
-                          previewTab === tab ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
-                        }`}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {previewItem.date}
+                    {previewItem.daysLeft !== undefined ? ` · ${previewItem.daysLeft} days remaining` : ""}
+                  </p>
                 </div>
               </div>
-              <CardContent className="px-5 pb-4">
-                {previewItems.length === 0 ? (
-                  <div className="py-10 text-center text-sm text-slate-400">
-                    No visible notifications for this filter.
-                  </div>
+
+              <div className="px-6 py-5 space-y-5 max-h-[55vh] overflow-y-auto">
+                {previewItem.body ? (
+                  <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{previewItem.body}</div>
                 ) : (
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                    {previewItems.map((item) => {
-                      const Icon = getTypeIcon(item.type)
-                      const color = getTypeColor(item.type)
+                  <p className="text-sm text-slate-400 italic">{previewItem.description}</p>
+                )}
+
+                {previewItem.video && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Play className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-700">{previewItem.video.title}</span>
+                    </div>
+                    <div
+                      className="relative w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100"
+                      style={{ paddingBottom: "56.25%" }}
+                    >
+                      <iframe
+                        src={previewItem.video.url}
+                        title={previewItem.video.title}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {previewItem.documents && previewItem.documents.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Attachments</p>
+                    {previewItem.documents.map((doc, i) => {
+                      const docColors: Record<string, string> = {
+                        pdf: "text-red-600 bg-red-50",
+                        xlsx: "text-emerald-600 bg-emerald-50",
+                        docx: "text-blue-600 bg-blue-50",
+                      }
+                      const colors = docColors[doc.type] || "text-slate-600 bg-slate-50"
                       return (
                         <div
-                          key={item.id}
-                          className={`w-full flex items-start gap-3 p-2.5 rounded-lg border text-left group ${
-                            item.isUrgent
-                              ? "border-red-200 bg-red-50/50"
-                              : isCurrentlyNew(item)
-                              ? "border-blue-200 bg-blue-50/50"
-                              : item.isActive
-                              ? "border-amber-200 bg-amber-50/50"
-                              : "border-slate-100"
-                          }`}
+                          key={i}
+                          className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 text-left"
                         >
                           <div
-                            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `${color}18` }}
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs ${colors}`}
                           >
-                            <Icon className="w-3.5 h-3.5" style={{ color }} />
+                            {doc.type.toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium text-slate-800 truncate">{item.title}</p>
-                              {isCurrentlyNew(item) && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded shrink-0">
-                                  NEW
-                                </span>
-                              )}
-                              {item.isUrgent && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded shrink-0">
-                                  URGENT
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-500 truncate">{item.description}</p>
+                            <p className="text-sm font-medium text-slate-800 truncate">{doc.name}</p>
+                            <p className="text-xs text-slate-400">{doc.size}</p>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <div className="text-right">
-                              <p className="text-xs text-slate-500">{item.date}</p>
-                              {item.daysLeft !== undefined && item.daysLeft <= 7 && (
-                                <p
-                                  className={`text-xs font-semibold ${
-                                    item.daysLeft <= 3 ? "text-red-600" : "text-amber-600"
-                                  }`}
-                                >
-                                  {item.daysLeft}d left
-                                </p>
-                              )}
-                            </div>
-                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 ml-1" />
-                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                         </div>
                       )
                     })}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
 
-          <div className="flex justify-end mt-4">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
-              Close
-            </Button>
-          </div>
+              <div className="flex justify-end gap-2 px-6 py-4 border-t border-slate-100">
+                {!previewItem.visible && (
+                  <span className="mr-auto inline-flex items-center gap-1.5 text-xs text-amber-600">
+                    Hidden — not currently shown on the homepage
+                  </span>
+                )}
+                <Button variant="outline" onClick={() => setPreviewItem(null)}>
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
