@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2, X, PlayCircle, Upload, ExternalLink, Search, ChevronUp, ChevronDown } from "lucide-react"
+import { Trash2, X, PlayCircle, Upload, ExternalLink, Search, ChevronUp, ChevronDown } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -351,11 +351,20 @@ export default function SystemHelpPage() {
                         {videos.map((video, idx) => (
                           <div
                             key={video.id}
-                            className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition-colors"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleEditVideo(video)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault()
+                                handleEditVideo(video)
+                              }
+                            }}
+                            className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-colors cursor-pointer"
                           >
                             {/* Order Controls — only shown when page has multiple videos */}
                             {videos.length > 1 && (
-                              <div className="flex flex-col gap-0.5 flex-shrink-0">
+                              <div className="flex flex-col gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   onClick={() => handleReorder(pageId, video.id, "up")}
                                   disabled={idx === 0}
@@ -384,7 +393,10 @@ export default function SystemHelpPage() {
 
                             {/* Thumbnail */}
                             <button
-                              onClick={() => setPreviewVideo(video)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setPreviewVideo(video)
+                              }}
                               className="w-24 h-14 rounded-md overflow-hidden bg-gradient-to-br from-[#121051] to-[#B30089] flex items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity"
                             >
                               <PlayCircle className="w-6 h-6 text-white" />
@@ -406,7 +418,7 @@ export default function SystemHelpPage() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                               {/* Active Toggle */}
                               <button
                                 onClick={() => handleToggleActive(video.id)}
@@ -430,14 +442,6 @@ export default function SystemHelpPage() {
                                 className="text-slate-500 hover:text-[#B30089]"
                               >
                                 <PlayCircle className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditVideo(video)}
-                                className="text-slate-500 hover:text-[#B30089]"
-                              >
-                                <Pencil className="w-4 h-4" />
                               </Button>
                               <Button
                                 variant="ghost"
