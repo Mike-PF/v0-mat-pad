@@ -26,7 +26,7 @@ import {
   CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
-import { useNotifications, getTypeIcon, getTypeColor, type WhatsNewItem } from "@/lib/notifications"
+import { useNotifications, getTypeIcon, getTypeColor, isCurrentlyNew, type WhatsNewItem } from "@/lib/notifications"
 
 const ACCENT = "hsl(314 100% 35%)"
 
@@ -179,7 +179,7 @@ export function HomeContent() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base font-semibold text-slate-900">{selectedItem.title}</h2>
-                  {selectedItem.isNew && (
+                  {isCurrentlyNew(selectedItem) && (
                     <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded">NEW</span>
                   )}
                   {selectedItem.isUrgent && (
@@ -427,7 +427,7 @@ export function HomeContent() {
                       className={`w-full flex items-start gap-3 p-2.5 rounded-lg border transition-all text-left cursor-pointer group ${
                         item.isUrgent
                           ? "border-red-200 bg-red-50/50 hover:border-red-300"
-                          : item.isNew
+                          : isCurrentlyNew(item)
                           ? "border-blue-200 bg-blue-50/50 hover:border-blue-300"
                           : item.isActive
                           ? "border-amber-200 bg-amber-50/50 hover:border-amber-300"
@@ -443,7 +443,7 @@ export function HomeContent() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-slate-800 truncate">{item.title}</p>
-                          {item.isNew && (
+                          {isCurrentlyNew(item) && (
                             <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded shrink-0">NEW</span>
                           )}
                           {item.isUrgent && (

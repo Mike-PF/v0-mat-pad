@@ -24,6 +24,7 @@ import {
   getTypeIcon,
   getTypeColor,
   getTypeLabel,
+  isCurrentlyNew,
   NOTIFICATION_TYPES,
   type NotificationType,
   type WhatsNewItem,
@@ -158,6 +159,8 @@ export default function SystemNotificationsPage() {
                 video,
                 isUrgent: formIsUrgent,
                 isNew: formIsNew,
+                // Preserve the original "new since" date if it was already new; otherwise stamp now.
+                newSince: formIsNew ? (i.isNew && i.newSince ? i.newSince : new Date().toISOString()) : undefined,
                 isActive: formIsActive,
               }
             : i,
@@ -182,6 +185,7 @@ export default function SystemNotificationsPage() {
         video,
         isUrgent: formIsUrgent,
         isNew: formIsNew,
+        newSince: formIsNew ? new Date().toISOString() : undefined,
         isActive: formIsActive,
       }
       setItems((prev) => [newItem, ...prev])
@@ -338,7 +342,7 @@ export default function SystemNotificationsPage() {
                             >
                               {getTypeLabel(item.type)}
                             </span>
-                            {item.isNew && (
+                            {isCurrentlyNew(item) && (
                               <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded">
                                 NEW
                               </span>
@@ -492,7 +496,7 @@ export default function SystemNotificationsPage() {
               <div className="flex items-center justify-between px-3 py-2.5">
                 <div>
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;NEW&quot;</p>
-                  <p className="text-xs text-slate-500">Shows a blue NEW badge</p>
+                  <p className="text-xs text-slate-500">Shows a blue NEW badge for 3 days</p>
                 </div>
                 <Switch checked={formIsNew} onCheckedChange={setFormIsNew} className="data-[state=checked]:bg-[#121051]" />
               </div>
@@ -607,7 +611,7 @@ export default function SystemNotificationsPage() {
                           className={`w-full flex items-start gap-3 p-2.5 rounded-lg border text-left group ${
                             item.isUrgent
                               ? "border-red-200 bg-red-50/50"
-                              : item.isNew
+                              : isCurrentlyNew(item)
                               ? "border-blue-200 bg-blue-50/50"
                               : item.isActive
                               ? "border-amber-200 bg-amber-50/50"
@@ -623,7 +627,7 @@ export default function SystemNotificationsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-medium text-slate-800 truncate">{item.title}</p>
-                              {item.isNew && (
+                              {isCurrentlyNew(item) && (
                                 <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded shrink-0">
                                   NEW
                                 </span>
