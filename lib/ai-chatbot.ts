@@ -9,8 +9,8 @@ import { useCallback, useEffect, useState } from "react"
  * - ChatTarget: a specific report or dashboard the chatbot can be configured for.
  * - AskRecord: an aggregated record of a real question users have asked the chatbot,
  *   scoped to the target it was asked on. Drives auto-surfacing and trend tracking.
- * - DemandRecord: clustered requests for reports/data that do NOT map to an existing
- *   target — i.e. things users want that we have not built yet.
+ * - AskLogEntry: an individual, granular question event (who asked, what page they
+ *   were on, when) used for the exportable Reports tab.
  */
 
 export type TargetKind = "dashboard" | "report"
@@ -40,17 +40,26 @@ export interface AskRecord {
   lastAsked: string
 }
 
-export interface DemandRecord {
+/** A single question event — one row in the exportable Reports log. */
+export interface AskLogEntry {
   id: string
-  /** The kind of report/data users are asking for that does not exist yet. */
-  request: string
+  /** ISO timestamp of when the question was asked. */
+  askedAt: string
+  /** The exact question the user typed. */
+  question: string
   topic: string
-  /** Number of distinct asks clustered into this request. */
-  count: number
-  trend: number
-  /** Where these requests come from most. */
-  topSource: string
-  status: "new" | "reviewing" | "planned" | "dismissed"
+  /** Person who asked. */
+  user: string
+  /** Their role / job title. */
+  role: string
+  /** School or organisation they belong to. */
+  school: string
+  /** The report or dashboard they were viewing when they asked. */
+  page: string
+  /** The id of the target (report/dashboard) when it maps to one, else "". */
+  targetId: string
+  /** Whether the chatbot was able to answer from existing data. */
+  answered: boolean
 }
 
 export const AREA_COLORS: Record<string, string> = {
@@ -66,13 +75,6 @@ export const AREA_COLORS: Record<string, string> = {
 
 export function getAreaColor(area: string): string {
   return AREA_COLORS[area] ?? AREA_COLORS.General
-}
-
-export const DEMAND_STATUS_LABELS: Record<DemandRecord["status"], string> = {
-  new: "New",
-  reviewing: "Reviewing",
-  planned: "Planned",
-  dismissed: "Dismissed",
 }
 
 // ---------------------------------------------------------------------------
@@ -184,22 +186,87 @@ const SEED_ASKS: AskRecord[] = [
   { id: "a19", targetId: "rep-send", question: "Show progress for pupils with an EHCP.", topic: "SEND", count: 84, trend: 22, lastAsked: "3 hours ago" },
 ]
 
-const SEED_DEMAND: DemandRecord[] = [
-  { id: "d1", request: "A governor-ready termly summary report", topic: "Ofsted & Compliance", count: 142, trend: 38, topSource: "Headteachers", status: "new" },
-  { id: "d2", request: "Pupil Premium impact / spending report", topic: "Finance", count: 118, trend: 41, topSource: "Business Managers", status: "reviewing" },
-  { id: "d3", request: "Live attendance vs target tracker", topic: "Attendance", count: 96, trend: 22, topSource: "Attendance Leads", status: "planned" },
-  { id: "d4", request: "Reading age vs chronological age report", topic: "Assessment", count: 73, trend: 18, topSource: "English Leads", status: "new" },
-  { id: "d5", request: "Multi-school MAT comparison dashboard", topic: "Attainment", count: 64, trend: 29, topSource: "Trust Leaders", status: "reviewing" },
-  { id: "d6", request: "Suspension / exclusion trends over time", topic: "Behaviour", count: 51, trend: 12, topSource: "Pastoral Leads", status: "new" },
-  { id: "d7", request: "Destinations / leavers tracking report", topic: "General", count: 33, trend: 4, topSource: "Sixth Form", status: "dismissed" },
+// People used to generate a realistic individual question log.
+const LOG_PEOPLE: { user: string; role: string; school: string }[] = [
+  { user: "Sarah Thompson", role: "Headteacher", school: "Oakfield Primary" },
+  { user: "James Patel", role: "Deputy Head", school: "Oakfield Primary" },
+  { user: "Emily Carter", role: "Attendance Lead", school: "St Mary's CofE" },
+  { user: "David Owusu", role: "SENDCo", school: "St Mary's CofE" },
+  { user: "Rachel Green", role: "Assessment Lead", school: "Greenhill Academy" },
+  { user: "Mark Robinson", role: "Business Manager", school: "Greenhill Academy" },
+  { user: "Priya Sharma", role: "Pastoral Lead", school: "Riverside High" },
+  { user: "Tom Walker", role: "Data Manager", school: "Riverside High" },
+  { user: "Laura Bennett", role: "Class Teacher", school: "Hillside Junior" },
+  { user: "Daniel Foster", role: "Trust Data Lead", school: "Fuze MAT (Central)" },
 ]
+
+/**
+ * Build a granular question log from the aggregated asks so the Reports tab has
+ * realistic per-person rows (who asked, which page, when). Each aggregated ask
+ * spawns several individual events spread across people and recent days.
+ */
+function buildSeedLog(): AskLogEntry[] {
+  const log: AskLogEntry[] = []
+  let counter = 0
+  const now = Date.now()
+  const targetName = (id: string) => SEED_TARGETS.find((t) => t.id === id)?.name ?? "Unknown"
+
+  for (const ask of SEED_ASKS) {
+    // More popular questions appear more often in the log (capped for readability).
+    const occurrences = Math.min(6, Math.max(2, Math.round(ask.count / 70)))
+    for (let i = 0; i < occurrences; i++) {
+      const person = LOG_PEOPLE[(counter + i) % LOG_PEOPLE.length]
+      const hoursAgo = (counter * 7 + i * 13) % 96 // within last 4 days
+      log.push({
+        id: `log-${++counter}`,
+        askedAt: new Date(now - hoursAgo * 60 * 60 * 1000).toISOString(),
+        question: ask.question,
+        topic: ask.topic,
+        user: person.user,
+        role: person.role,
+        school: person.school,
+        page: targetName(ask.targetId),
+        targetId: ask.targetId,
+        answered: ask.trend >= 0 ? true : i % 3 !== 0,
+      })
+    }
+  }
+
+  // A few "unanswered" requests for things we don't have a report for yet —
+  // these surface in the export as gaps to investigate.
+  const unmet: { q: string; topic: string }[] = [
+    { q: "Can I get a governor-ready termly summary report?", topic: "Ofsted & Compliance" },
+    { q: "Show Pupil Premium spending impact this year.", topic: "Finance" },
+    { q: "Compare all schools in the trust side by side.", topic: "Attainment" },
+    { q: "Reading age vs chronological age for Year 4.", topic: "Assessment" },
+  ]
+  for (const u of unmet) {
+    const person = LOG_PEOPLE[counter % LOG_PEOPLE.length]
+    const hoursAgo = (counter * 5) % 96
+    log.push({
+      id: `log-${++counter}`,
+      askedAt: new Date(now - hoursAgo * 60 * 60 * 1000).toISOString(),
+      question: u.q,
+      topic: u.topic,
+      user: person.user,
+      role: person.role,
+      school: person.school,
+      page: "AI Assistant (no report match)",
+      targetId: "",
+      answered: false,
+    })
+  }
+
+  return log.sort((a, b) => new Date(b.askedAt).getTime() - new Date(a.askedAt).getTime())
+}
+
+const SEED_LOG: AskLogEntry[] = buildSeedLog()
 
 // ---------------------------------------------------------------------------
 // Persistence
 // ---------------------------------------------------------------------------
 
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
-const DEMAND_KEY = "matpad:ai-mgmt-demand-v1"
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback
@@ -226,12 +293,10 @@ function save<T>(key: string, value: T) {
 
 export function useAiManagement() {
   const [targets, setTargets] = useState<ChatTarget[]>(SEED_TARGETS)
-  const [demand, setDemand] = useState<DemandRecord[]>(SEED_DEMAND)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setTargets(load(TARGETS_KEY, SEED_TARGETS))
-    setDemand(load(DEMAND_KEY, SEED_DEMAND))
     setMounted(true)
   }, [])
 
@@ -239,12 +304,9 @@ export function useAiManagement() {
     if (mounted) save(TARGETS_KEY, targets)
   }, [targets, mounted])
 
-  useEffect(() => {
-    if (mounted) save(DEMAND_KEY, demand)
-  }, [demand, mounted])
-
-  // Asks are analytics — read-only, not persisted/edited by admins.
+  // Asks + the question log are analytics — read-only, not persisted/edited by admins.
   const asks = SEED_ASKS
+  const log = SEED_LOG
 
   const toggleAutoSurface = useCallback((targetId: string) => {
     setTargets((prev) => prev.map((t) => (t.id === targetId ? { ...t, autoSurface: !t.autoSurface } : t)))
@@ -278,20 +340,15 @@ export function useAiManagement() {
     )
   }, [])
 
-  const setDemandStatus = useCallback((id: string, status: DemandRecord["status"]) => {
-    setDemand((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)))
-  }, [])
-
   return {
     mounted,
     targets,
     asks,
-    demand,
+    log,
     toggleAutoSurface,
     pinQuestion,
     updatePinned,
     removePinned,
-    setDemandStatus,
   }
 }
 
@@ -352,4 +409,63 @@ export function asksByTopic(
 
 export function totalAsks(asks: AskRecord[]): number {
   return asks.reduce((s, a) => s + a.count, 0)
+}
+
+// ---------------------------------------------------------------------------
+// Question log helpers (Reports tab + Excel export)
+// ---------------------------------------------------------------------------
+
+export interface LogFilters {
+  search: string
+  school: string // "all" or a school name
+  topic: string // "all" or a topic name
+  answered: "all" | "answered" | "unanswered"
+}
+
+export function formatLogDate(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+export function filterLog(log: AskLogEntry[], filters: LogFilters): AskLogEntry[] {
+  const q = filters.search.trim().toLowerCase()
+  return log.filter((e) => {
+    if (filters.school !== "all" && e.school !== filters.school) return false
+    if (filters.topic !== "all" && e.topic !== filters.topic) return false
+    if (filters.answered === "answered" && !e.answered) return false
+    if (filters.answered === "unanswered" && e.answered) return false
+    if (q) {
+      return (
+        e.question.toLowerCase().includes(q) ||
+        e.user.toLowerCase().includes(q) ||
+        e.role.toLowerCase().includes(q) ||
+        e.page.toLowerCase().includes(q)
+      )
+    }
+    return true
+  })
+}
+
+/** Convert log rows into the flat, human-readable shape used for Excel export. */
+export function logToExportRows(log: AskLogEntry[]) {
+  return log.map((e) => ({
+    "Date & time": formatLogDate(e.askedAt),
+    User: e.user,
+    Role: e.role,
+    "School / Org": e.school,
+    "Page / Report": e.page,
+    Topic: e.topic,
+    Question: e.question,
+    Answered: e.answered ? "Yes" : "No",
+  }))
+}
+
+export function uniqueValues<K extends keyof AskLogEntry>(log: AskLogEntry[], key: K): string[] {
+  return Array.from(new Set(log.map((e) => String(e[key])))).sort()
 }

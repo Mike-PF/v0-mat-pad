@@ -27,10 +27,14 @@ import {
   TrendingDown,
   LayoutDashboard,
   FileBarChart2,
-  Lightbulb,
+  FileSpreadsheet,
+  Download,
   MessageCircleQuestion,
+  CheckCircle2,
+  XCircle,
   Lock,
 } from "lucide-react"
+import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
 import {
   useAiManagement,
@@ -39,14 +43,18 @@ import {
   asksByTopic,
   totalAsks,
   getAreaColor,
-  DEMAND_STATUS_LABELS,
+  filterLog,
+  logToExportRows,
+  formatLogDate,
+  uniqueValues,
   type ChatTarget,
-  type DemandRecord,
+  type AskLogEntry,
+  type LogFilters,
 } from "@/lib/ai-chatbot"
 
 const NAVY = "#121051"
 
-type Tab = "prompts" | "trends" | "demand"
+type Tab = "prompts" | "trends" | "reports"
 
 export default function AiManagementPage() {
   const allowed = isPlatformAdmin()
@@ -55,12 +63,11 @@ export default function AiManagementPage() {
     mounted,
     targets,
     asks,
-    demand,
+    log,
     toggleAutoSurface,
     pinQuestion,
     updatePinned,
     removePinned,
-    setDemandStatus,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
@@ -143,7 +150,7 @@ export default function AiManagementPage() {
   const tabs: { id: Tab; label: string; icon: typeof Bot }[] = [
     { id: "prompts", label: "Report Prompts", icon: Sparkles },
     { id: "trends", label: "Question Trends", icon: TrendingUp },
-    { id: "demand", label: "Report Demand", icon: Lightbulb },
+    { id: "reports", label: "Reports", icon: FileSpreadsheet },
   ]
 
   return (
@@ -167,7 +174,7 @@ export default function AiManagementPage() {
                 <h1 className="text-xl font-bold text-slate-900">AI Management</h1>
                 <p className="text-sm text-slate-500 mt-0.5 max-w-2xl">
                   Attach AI questions to specific reports and dashboards. The chatbot tailors what it suggests on each
-                  page based on what users actually ask, and you can track demand for reports we haven&apos;t built yet.
+                  page based on what users actually ask, and you can export the full question log for reporting.
                 </p>
               </div>
             </div>
@@ -212,7 +219,7 @@ export default function AiManagementPage() {
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
             ) : (
-              <DemandTab demand={demand} onStatus={setDemandStatus} />
+              <ReportsTab log={log} />
             )}
           </div>
         </main>
@@ -647,81 +654,189 @@ function TrendsTab({
 }
 
 // ===========================================================================
-// Tab 3 — Report Demand
+// Tab 3 — Reports (exportable question log)
 // ===========================================================================
 
-function DemandTab({
-  demand,
-  onStatus,
-}: {
-  demand: DemandRecord[]
-  onStatus: (id: string, status: DemandRecord["status"]) => void
-}) {
-  const sorted = useMemo(() => demand.slice().sort((a, b) => b.count - a.count), [demand])
+function ReportsTab({ log }: { log: AskLogEntry[] }) {
+  const [filters, setFilters] = useState<LogFilters>({
+    search: "",
+    school: "all",
+    topic: "all",
+    answered: "all",
+  })
+
+  const schools = useMemo(() => uniqueValues(log, "school"), [log])
+  const topics = useMemo(() => uniqueValues(log, "topic"), [log])
+  const filtered = useMemo(() => filterLog(log, filters), [log, filters])
+
+  const unansweredCount = useMemo(() => filtered.filter((e) => !e.answered).length, [filtered])
+
+  function handleExport() {
+    const rows = logToExportRows(filtered)
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+    // Sensible column widths.
+    worksheet["!cols"] = [
+      { wch: 20 }, // Date & time
+      { wch: 18 }, // User
+      { wch: 18 }, // Role
+      { wch: 22 }, // School / Org
+      { wch: 28 }, // Page / Report
+      { wch: 16 }, // Topic
+      { wch: 52 }, // Question
+      { wch: 10 }, // Answered
+    ]
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "AI Questions")
+    const stamp = new Date().toISOString().slice(0, 10)
+    XLSX.writeFile(workbook, `ai-chatbot-questions-${stamp}.xlsx`)
+  }
 
   return (
     <div className="space-y-4">
+      {/* Intro + export */}
       <Card>
-        <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <Lightbulb className="w-4 h-4 text-amber-500" />
-            <h3 className="text-sm font-semibold text-slate-900">Reports people want that we haven&apos;t built</h3>
+        <CardContent className="p-5 flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <FileSpreadsheet className="w-4 h-4 text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-900">AI question log</h3>
+            </div>
+            <p className="text-xs text-slate-500">
+              Every question asked to the chatbot — who asked it, their role and school, and the page they were on. Use
+              the filters below, then export the current view to Excel.
+            </p>
           </div>
-          <p className="text-xs text-slate-500">
-            These are clusters of chatbot questions that didn&apos;t map to an existing report or dashboard. High,
-            rising demand is a strong signal of what to build next.
-          </p>
+          <Button onClick={handleExport} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
+            <Download className="w-4 h-4 mr-2" />
+            Export to Excel ({filtered.length})
+          </Button>
         </CardContent>
       </Card>
 
-      <div className="space-y-3">
-        {sorted.map((d) => {
-          const max = sorted[0].count
-          const color = getAreaColor(d.topic)
-          return (
-            <Card key={d.id}>
-              <CardContent className="p-5">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h4 className="text-sm font-semibold text-slate-900">{d.request}</h4>
-                      <span
-                        className="px-1.5 py-0.5 text-[10px] font-medium rounded uppercase tracking-wide"
-                        style={{ backgroundColor: `${color}18`, color }}
-                      >
-                        {d.topic}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mb-2">Most requested by {d.topSource}</p>
-                    <div className="flex items-center gap-2 max-w-md">
-                      <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
-                          style={{ width: `${(d.count / max) * 100}%`, backgroundColor: color }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-slate-500 w-20 text-right">{d.count} asks</span>
-                      <TrendBadge trend={d.trend} />
-                    </div>
-                  </div>
-                  <Select value={d.status} onValueChange={(v) => onStatus(d.id, v as DemandRecord["status"])}>
-                    <SelectTrigger className="w-36 shrink-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(Object.keys(DEMAND_STATUS_LABELS) as DemandRecord["status"][]).map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {DEMAND_STATUS_LABELS[s]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+      {/* Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input
+            value={filters.search}
+            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+            placeholder="Search question, person, page…"
+            className="pl-9"
+          />
+        </div>
+        <Select value={filters.school} onValueChange={(v) => setFilters((f) => ({ ...f, school: v }))}>
+          <SelectTrigger>
+            <SelectValue placeholder="All schools" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All schools</SelectItem>
+            {schools.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filters.topic} onValueChange={(v) => setFilters((f) => ({ ...f, topic: v }))}>
+          <SelectTrigger>
+            <SelectValue placeholder="All topics" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All topics</SelectItem>
+            {topics.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.answered}
+          onValueChange={(v) => setFilters((f) => ({ ...f, answered: v as LogFilters["answered"] }))}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Answered & unanswered</SelectItem>
+            <SelectItem value="answered">Answered only</SelectItem>
+            <SelectItem value="unanswered">Unanswered only</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+
+      {/* Summary line */}
+      <div className="flex items-center gap-4 text-xs text-slate-500">
+        <span>
+          Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of {log.length} questions
+        </span>
+        {unansweredCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-amber-600">
+            <XCircle className="w-3.5 h-3.5" />
+            {unansweredCount} unanswered (gaps to investigate)
+          </span>
+        )}
+      </div>
+
+      {/* Table */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <th className="px-4 py-3 whitespace-nowrap">Date &amp; time</th>
+                  <th className="px-4 py-3 whitespace-nowrap">User</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Role</th>
+                  <th className="px-4 py-3 whitespace-nowrap">School / Org</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Page / Report</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Topic</th>
+                  <th className="px-4 py-3">Question</th>
+                  <th className="px-4 py-3 whitespace-nowrap text-center">Answered</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-12 text-center text-sm text-slate-400">
+                      No questions match your filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((e) => {
+                    const color = getAreaColor(e.topic)
+                    return (
+                      <tr key={e.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-500">{formatLogDate(e.askedAt)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800">{e.user}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.role}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.school}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.page}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span
+                            className="px-1.5 py-0.5 text-[10px] font-medium rounded uppercase tracking-wide"
+                            style={{ backgroundColor: `${color}18`, color }}
+                          >
+                            {e.topic}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-700 min-w-[280px]">{e.question}</td>
+                        <td className="px-4 py-3 text-center">
+                          {e.answered ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" aria-label="Answered" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-amber-500 inline" aria-label="Unanswered" />
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
