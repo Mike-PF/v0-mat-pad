@@ -122,11 +122,17 @@ export default function SystemNotificationsPage() {
   }
 
   const handleSave = () => {
-    if (!formTitle.trim()) {
+    const missing: string[] = []
+    if (!formTitle.trim()) missing.push("Title")
+    if (!formDescription.trim()) missing.push("Short description")
+    if (!formDate.trim()) missing.push("Date label")
+    if (!formBody.trim()) missing.push("Full details")
+
+    if (missing.length > 0) {
       showToast({
         variant: "error",
-        title: "Title required",
-        message: "Please enter a title for the notification.",
+        title: "Required fields missing",
+        message: `Please complete: ${missing.join(", ")}.`,
         primaryAction: { label: "Dismiss" },
       })
       return
@@ -386,7 +392,7 @@ export default function SystemNotificationsPage() {
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="notif-type">Type</Label>
+              <Label htmlFor="notif-type">Type<span className="text-red-500">*</span></Label>
               <Select value={formType} onValueChange={(v) => setFormType(v as NotificationType)}>
                 <SelectTrigger id="notif-type" className="mt-1.5">
                   <SelectValue />
@@ -413,7 +419,7 @@ export default function SystemNotificationsPage() {
             </div>
 
             <div>
-              <Label htmlFor="notif-desc">Short description</Label>
+              <Label htmlFor="notif-desc">Short description<span className="text-red-500">*</span></Label>
               <Input
                 id="notif-desc"
                 value={formDescription}
@@ -425,7 +431,7 @@ export default function SystemNotificationsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="notif-date">Date label</Label>
+                <Label htmlFor="notif-date">Date label<span className="text-red-500">*</span></Label>
                 <Input
                   id="notif-date"
                   value={formDate}
@@ -448,7 +454,7 @@ export default function SystemNotificationsPage() {
             </div>
 
             <div>
-              <Label htmlFor="notif-body">Full details</Label>
+              <Label htmlFor="notif-body">Full details<span className="text-red-500">*</span></Label>
               <Textarea
                 id="notif-body"
                 value={formBody}
