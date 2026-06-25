@@ -15,6 +15,8 @@ export type WhatsNewItem = {
   daysLeft?: number
   isUrgent?: boolean
   isNew?: boolean
+  /** ISO timestamp recording when the item was marked as NEW. Used to expire the NEW badge after a few days. */
+  newSince?: string
   isActive?: boolean
   body?: string
   video?: { url: string; title: string }
@@ -64,6 +66,22 @@ export function getTypeLabel(type: string): string {
   return NOTIFICATION_TYPES.find((t) => t.value === type)?.label ?? type
 }
 
+/** How long a notification keeps showing the "NEW" badge after being marked new. */
+export const NEW_DURATION_DAYS = 3
+
+/**
+ * A notification only counts as "new" when it is flagged isNew AND was marked
+ * new within the last NEW_DURATION_DAYS days. Items without a timestamp are
+ * treated as new for backwards compatibility.
+ */
+export function isCurrentlyNew(item: Pick<WhatsNewItem, "isNew" | "newSince">): boolean {
+  if (!item.isNew) return false
+  if (!item.newSince) return true
+  const since = new Date(item.newSince).getTime()
+  if (Number.isNaN(since)) return true
+  return Date.now() - since <= NEW_DURATION_DAYS * 24 * 60 * 60 * 1000
+}
+
 // Seed data — the single source of truth that the homepage reads from.
 export const defaultNotifications: WhatsNewItem[] = [
   {
@@ -89,6 +107,7 @@ export const defaultNotifications: WhatsNewItem[] = [
     date: "Today",
     visible: true,
     isNew: true,
+    newSince: new Date().toISOString(),
     body: "We have released an updated Attendance Dashboard with several improvements based on user feedback:\n\n• Persistent Absence cohort drill-down now available at pupil level\n• Comparison against national and regional averages added to all charts\n• New 'at risk' threshold alerts for pupils approaching 90% threshold\n• Export to Excel now includes all filters applied\n\nThe dashboard is available from the Dashboards section in the left-hand navigation. Watch the short walkthrough video below for an overview of the new features.",
     video: {
       url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
