@@ -494,21 +494,21 @@ export default function SystemNotificationsPage() {
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;NEW&quot;</p>
                   <p className="text-xs text-slate-500">Shows a blue NEW badge</p>
                 </div>
-                <Switch checked={formIsNew} onCheckedChange={setFormIsNew} />
+                <Switch checked={formIsNew} onCheckedChange={setFormIsNew} className="data-[state=checked]:bg-[#121051]" />
               </div>
               <div className="flex items-center justify-between px-3 py-2.5">
                 <div>
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;URGENT&quot;</p>
                   <p className="text-xs text-slate-500">Highlights the item in red</p>
                 </div>
-                <Switch checked={formIsUrgent} onCheckedChange={setFormIsUrgent} />
+                <Switch checked={formIsUrgent} onCheckedChange={setFormIsUrgent} className="data-[state=checked]:bg-[#121051]" />
               </div>
               <div className="flex items-center justify-between px-3 py-2.5">
                 <div>
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;Active&quot;</p>
                   <p className="text-xs text-slate-500">Highlights ongoing issues in amber</p>
                 </div>
-                <Switch checked={formIsActive} onCheckedChange={setFormIsActive} />
+                <Switch checked={formIsActive} onCheckedChange={setFormIsActive} className="data-[state=checked]:bg-[#121051]" />
               </div>
             </div>
           </div>
