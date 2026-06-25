@@ -68,6 +68,7 @@ export default function AiManagementPage() {
     pinQuestion,
     updatePinned,
     removePinned,
+    excludeQuestion,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
@@ -215,6 +216,7 @@ export default function AiManagementPage() {
                 onAdd={openAdd}
                 onEdit={openEdit}
                 onDelete={(target, index) => setDeleteConfirm({ target, index })}
+                onExclude={excludeQuestion}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -318,6 +320,7 @@ function PromptsTab({
   onAdd,
   onEdit,
   onDelete,
+  onExclude,
 }: {
   targets: ChatTarget[]
   asks: ReturnType<typeof useAiManagement>["asks"]
@@ -329,6 +332,7 @@ function PromptsTab({
   onAdd: (target: ChatTarget, prefill?: string) => void
   onEdit: (target: ChatTarget, index: number) => void
   onDelete: (target: ChatTarget, index: number) => void
+  onExclude: (targetId: string, question: string) => void
 }) {
   return (
     <div className="space-y-4">
@@ -458,9 +462,19 @@ function PromptsTab({
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               ) : (
-                                <span className="text-[10px] text-slate-400 uppercase tracking-wide shrink-0 mt-1">
-                                  Auto
-                                </span>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <span className="text-[10px] text-slate-400 uppercase tracking-wide mt-1">
+                                    Auto
+                                  </span>
+                                  <button
+                                    onClick={() => onExclude(target.id, s.text)}
+                                    className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                                    aria-label="Remove auto-surfaced question"
+                                    title="Remove this suggestion"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               )}
                             </div>
                           )

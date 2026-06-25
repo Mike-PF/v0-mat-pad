@@ -25,6 +25,8 @@ export interface ChatTarget {
   autoSurface: boolean
   /** Questions an admin has explicitly pinned to this target. Always shown. */
   pinned: string[]
+  /** Auto-surfaced questions an admin has dismissed. Never shown, even if top-asked. */
+  excluded?: string[]
 }
 
 export interface AskRecord {
@@ -317,8 +319,26 @@ export function useAiManagement() {
     if (!q) return
     setTargets((prev) =>
       prev.map((t) =>
-        t.id === targetId && !t.pinned.some((p) => p.toLowerCase() === q.toLowerCase())
-          ? { ...t, pinned: [...t.pinned, q] }
+        t.id === targetId
+          ? {
+              ...t,
+              // Pinning a previously dismissed question un-dismisses it.
+              excluded: (t.excluded ?? []).filter((e) => e.toLowerCase() !== q.toLowerCase()),
+              pinned: t.pinned.some((p) => p.toLowerCase() === q.toLowerCase()) ? t.pinned : [...t.pinned, q],
+            }
+          : t,
+      ),
+    )
+  }, [])
+
+  /** Dismiss an auto-surfaced question so it is no longer suggested on this target. */
+  const excludeQuestion = useCallback((targetId: string, question: string) => {
+    const q = question.trim()
+    if (!q) return
+    setTargets((prev) =>
+      prev.map((t) =>
+        t.id === targetId && !(t.excluded ?? []).some((e) => e.toLowerCase() === q.toLowerCase())
+          ? { ...t, excluded: [...(t.excluded ?? []), q] }
           : t,
       ),
     )
@@ -349,6 +369,7 @@ export function useAiManagement() {
     pinQuestion,
     updatePinned,
     removePinned,
+    excludeQuestion,
   }
 }
 
@@ -377,9 +398,11 @@ export function surfacedQuestions(
     text: p,
     source: "pinned",
   }))
+  const excluded = target.excluded ?? []
   if (target.autoSurface) {
     for (const a of topAsksForTarget(asks, target.id, limit)) {
       if (result.length >= limit) break
+      if (excluded.some((e) => e.toLowerCase() === a.question.toLowerCase())) continue
       if (!result.some((r) => r.text.toLowerCase() === a.question.toLowerCase())) {
         result.push({ text: a.question, source: "auto" })
       }
