@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House } from "lucide-react"
+import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { isPlatformAdmin } from "@/lib/current-org"
 
 const ACCENT = "hsl(314 100% 35%)"
 
@@ -118,6 +119,19 @@ export function Sidebar({}: SidebarProps) {
             <Settings className="w-5 h-5" />
           </IconCircle>
         </a>
+
+        {/* Style Guide — only for the Fuze platform admin org */}
+        {isPlatformAdmin() && (
+          <a
+            href="/settings/style-guide"
+            className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
+            title="Style Guide"
+          >
+            <IconCircle active={mounted && pathname.startsWith("/settings/style-guide")}>
+              <Palette className="w-5 h-5" />
+            </IconCircle>
+          </a>
+        )}
 
         {/* Account Switcher */}
         <div className="relative">

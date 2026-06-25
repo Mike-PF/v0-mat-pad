@@ -34,13 +34,8 @@ export function TopNavigation() {
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
         { id: "system-help", label: "System Help", href: "/settings/system-help" },
         { id: "system-notifications", label: "System Notifications", href: "/settings/system-notifications" },
-        // AI Management & the developer Style Guide are only available to the Fuze platform admin org.
-        ...(isPlatformAdmin()
-          ? [
-              { id: "ai-chatbot", label: "AI Management", href: "/settings/ai-chatbot" },
-              { id: "style-guide", label: "Style Guide", href: "/settings/style-guide" },
-            ]
-          : []),
+        // AI Management is only available to the Fuze platform admin org.
+        ...(isPlatformAdmin() ? [{ id: "ai-chatbot", label: "AI Management", href: "/settings/ai-chatbot" }] : []),
       ]
     }
 
