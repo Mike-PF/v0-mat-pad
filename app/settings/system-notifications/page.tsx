@@ -358,6 +358,7 @@ export default function SystemNotificationsPage() {
                               checked={item.visible}
                               onCheckedChange={() => handleToggleVisible(item.id)}
                               aria-label={`Toggle visibility of ${item.title}`}
+                              className="data-[state=checked]:bg-[#121051]"
                             />
                           </label>
                           <button
