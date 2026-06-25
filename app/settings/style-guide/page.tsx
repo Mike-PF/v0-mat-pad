@@ -455,14 +455,10 @@ export default function StyleGuidePage() {
                   <div className="space-y-2">
                     <Label>Toggle (active = navy)</Label>
                     <div className="flex items-center gap-3 h-10">
-                      <Switch
-                        checked={demoSwitch}
-                        onCheckedChange={setDemoSwitch}
-                        className="data-[state=checked]:bg-[#121051]"
-                      />
+                      <Switch checked={demoSwitch} onCheckedChange={setDemoSwitch} />
                       <span className="text-sm text-slate-600">{demoSwitch ? "On" : "Off"}</span>
-                      <Switch className="ml-4" />
-                      <span className="text-sm text-slate-400">Default (magenta)</span>
+                      <Switch className="ml-4" defaultChecked />
+                      <span className="text-sm text-slate-400">Always navy — never pink</span>
                     </div>
                   </div>
                 </div>
