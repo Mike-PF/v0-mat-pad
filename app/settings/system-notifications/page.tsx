@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Plus, Pencil, Trash2, X, Search, Eye, Bell, Megaphone, ChevronRight, Monitor } from "lucide-react"
+import { Plus, Trash2, X, Search, Eye, Bell, Megaphone, ChevronRight, Monitor } from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
@@ -303,7 +303,16 @@ export default function SystemNotificationsPage() {
                     return (
                       <div
                         key={item.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleEdit(item)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            handleEdit(item)
+                          }
+                        }}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:border-slate-300 hover:bg-slate-50 ${
                           item.visible ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50/60"
                         }`}
                       >
@@ -343,7 +352,7 @@ export default function SystemNotificationsPage() {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
                           <label className="flex items-center gap-2 cursor-pointer select-none">
                             <Switch
                               checked={item.visible}
@@ -351,13 +360,6 @@ export default function SystemNotificationsPage() {
                               aria-label={`Toggle visibility of ${item.title}`}
                             />
                           </label>
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                            aria-label={`Edit ${item.title}`}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
                           <button
                             onClick={() => setDeleteConfirm(item)}
                             className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
