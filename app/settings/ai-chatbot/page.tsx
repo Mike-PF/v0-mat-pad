@@ -22,7 +22,6 @@ import {
   Search,
   Plus,
   Trash2,
-  Pencil,
   TrendingUp,
   TrendingDown,
   MessageSquare,
@@ -488,7 +487,16 @@ export default function AiChatbotPage() {
                         return (
                           <div
                             key={prompt.id}
-                            className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-colors"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => openEditDialog(prompt)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault()
+                                openEditDialog(prompt)
+                              }
+                            }}
+                            className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-colors cursor-pointer"
                           >
                             <span
                               className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -517,20 +525,13 @@ export default function AiChatbotPage() {
                                 ))}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                               <Switch
                                 checked={prompt.enabled}
                                 onCheckedChange={() => handleToggleEnabled(prompt.id)}
                                 aria-label={`Toggle ${prompt.text}`}
                                 className="data-[state=checked]:bg-[#121051]"
                               />
-                              <button
-                                onClick={() => openEditDialog(prompt)}
-                                className="p-1.5 rounded-md text-slate-400 hover:text-[#121051] hover:bg-slate-100 transition-colors"
-                                aria-label={`Edit ${prompt.text}`}
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
                               <button
                                 onClick={() => setDeleteConfirm(prompt)}
                                 className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
