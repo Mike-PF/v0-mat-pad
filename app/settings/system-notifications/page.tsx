@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Plus, Trash2, X, Search, Eye, Bell, Megaphone, ChevronRight, Monitor } from "lucide-react"
+import { Trash2, X, Search, Eye, Bell, Megaphone, ChevronRight, Monitor } from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
@@ -233,11 +233,9 @@ export default function SystemNotificationsPage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Button variant="outline" onClick={() => setIsPreviewOpen(true)}>
-                    <Monitor className="w-4 h-4 mr-1.5" />
                     Preview
                   </Button>
                   <Button onClick={handleAdd} className="text-white" style={{ backgroundColor: NAVY }}>
-                    <Plus className="w-4 h-4 mr-1.5" />
                     Add notification
                   </Button>
                 </div>
