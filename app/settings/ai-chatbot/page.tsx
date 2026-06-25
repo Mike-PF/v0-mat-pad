@@ -233,7 +233,7 @@ export default function AiManagementPage() {
           <div className="flex items-center gap-2 mb-1">
             <Pin className="w-4 h-4 text-slate-400" />
             <h2 className="text-base font-semibold text-slate-900">
-              {dialogIndex === null ? "Pin a question" : "Edit pinned question"}
+              {dialogIndex === null ? "Add a question" : "Edit question"}
             </h2>
           </div>
           {dialogTarget && (
@@ -267,7 +267,7 @@ export default function AiManagementPage() {
               className="text-white"
               style={{ backgroundColor: NAVY }}
             >
-              {dialogIndex === null ? "Pin question" : "Save changes"}
+              {dialogIndex === null ? "Add question" : "Save changes"}
             </Button>
           </div>
         </DialogContent>
@@ -276,11 +276,11 @@ export default function AiManagementPage() {
       {/* Delete confirm */}
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <DialogContent className="max-w-sm">
-          <h2 className="text-base font-semibold text-slate-900 mb-1">Remove pinned question?</h2>
+          <h2 className="text-base font-semibold text-slate-900 mb-1">Remove question?</h2>
           <p className="text-sm text-slate-500 mb-6">
             {deleteConfirm && (
               <>
-                &ldquo;{deleteConfirm.target.pinned[deleteConfirm.index]}&rdquo; will no longer be pinned to{" "}
+                &ldquo;{deleteConfirm.target.pinned[deleteConfirm.index]}&rdquo; will no longer be suggested on{" "}
                 {deleteConfirm.target.name}.
               </>
             )}
@@ -411,12 +411,12 @@ function PromptsTab({
                       </span>
                       <Button size="sm" variant="outline" onClick={() => onAdd(target)} className="h-7 px-2 text-xs">
                         <Plus className="w-3.5 h-3.5 mr-1" />
-                        Pin question
+                        Add question
                       </Button>
                     </div>
                     {surfaced.length === 0 ? (
                       <p className="text-xs text-slate-400 py-4">
-                        Nothing suggested yet. Pin a question or enable auto-surface.
+                        Nothing suggested yet. Add a question or enable auto-surface.
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -504,7 +504,7 @@ function PromptsTab({
                                     onClick={() => onAdd(target, a.question)}
                                     className="text-[11px] font-medium text-[#121051] hover:underline shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
-                                    Pin
+                                    Add
                                   </button>
                                 )}
                               </div>
