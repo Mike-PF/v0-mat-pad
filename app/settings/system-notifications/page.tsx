@@ -402,7 +402,7 @@ export default function SystemNotificationsPage() {
             </div>
 
             <div>
-              <Label htmlFor="notif-title">Title</Label>
+              <Label htmlFor="notif-title">Title<span className="text-red-500">*</span></Label>
               <Input
                 id="notif-title"
                 value={formTitle}
@@ -435,7 +435,7 @@ export default function SystemNotificationsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="notif-days">Days left (optional)</Label>
+                <Label htmlFor="notif-days">Days left</Label>
                 <Input
                   id="notif-days"
                   type="number"
@@ -448,7 +448,7 @@ export default function SystemNotificationsPage() {
             </div>
 
             <div>
-              <Label htmlFor="notif-body">Full details (optional)</Label>
+              <Label htmlFor="notif-body">Full details</Label>
               <Textarea
                 id="notif-body"
                 value={formBody}
@@ -461,7 +461,7 @@ export default function SystemNotificationsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="notif-video-url">Video URL (optional)</Label>
+                <Label htmlFor="notif-video-url">Video URL</Label>
                 <Input
                   id="notif-video-url"
                   value={formVideoUrl}
@@ -471,7 +471,7 @@ export default function SystemNotificationsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="notif-video-title">Video title (optional)</Label>
+                <Label htmlFor="notif-video-title">Video title</Label>
                 <Input
                   id="notif-video-title"
                   value={formVideoTitle}
