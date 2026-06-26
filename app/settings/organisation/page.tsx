@@ -31,7 +31,8 @@ import {
   ArrowLeft,
   Trash2,
   Search,
-  Unlink
+  Unlink,
+  AlertTriangle
 } from "lucide-react"
 
 // MAT and School data structure
@@ -478,6 +479,16 @@ export default function OrganisationPage() {
   const isViewingSchoolInMAT = selectedType === "mat" && drillDownSchoolId !== null
   const displayName = selectedData?.name || "Select an organisation"
 
+  // An organisation is expired when its expiry date is in the past (before today).
+  const isExpired = (() => {
+    if (!selectedData?.expiryDate) return false
+    const expiry = new Date(selectedData.expiryDate)
+    if (isNaN(expiry.getTime())) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return expiry < today
+  })()
+
   return (
     <div className="flex h-screen bg-slate-50">
       <Sidebar />
@@ -505,6 +516,11 @@ export default function OrganisationPage() {
                       <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                         {selectedType === "mat" ? "MAT" : "School"}
                       </span>
+                      {isExpired && (
+                        <span className="text-xs font-semibold text-red-700 bg-red-100 px-2 py-0.5 rounded uppercase tracking-wide">
+                          Expired
+                        </span>
+                      )}
                     </>
                   ) : (
                     <span className="text-sm text-slate-500 flex-1 text-left">
@@ -690,6 +706,26 @@ export default function OrganisationPage() {
           {/* Content Card - Only shown when organisation is selected */}
           {selectedData && (
           <Card className="flex-1 flex flex-col mt-4">
+            {/* Expired warning banner */}
+            {isExpired && (
+              <div className="flex items-start gap-3 px-4 py-3 bg-red-50 border-b border-red-200">
+                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-red-800">
+                    This {selectedType === "mat" ? "trust" : "organisation"} has expired
+                  </p>
+                  <p className="text-sm text-red-700">
+                    {selectedData.name}&apos;s subscription expired on{" "}
+                    {new Date(selectedData.expiryDate).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                    . Update the expiry date to restore access.
+                  </p>
+                </div>
+              </div>
+            )}
             {/* Schools Navigation Panel - shown when MAT is selected */}
             {selectedType === "mat" && selectedMAT && (
               <div className="px-4 py-3 border-b bg-slate-50">
@@ -1381,8 +1417,13 @@ export default function OrganisationPage() {
                           </div>
                           <div>
                             <span className="text-xs text-slate-500">Expiry Date</span>
-                            <p className="text-sm text-slate-900">
+                            <p className={`text-sm flex items-center gap-2 ${isExpired ? "text-red-700 font-semibold" : "text-slate-900"}`}>
                               {new Date(selectedData.expiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              {isExpired && (
+                                <span className="text-xs font-semibold text-red-700 bg-red-100 px-2 py-0.5 rounded uppercase tracking-wide">
+                                  Expired
+                                </span>
+                              )}
                             </p>
                           </div>
                         </div>
