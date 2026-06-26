@@ -5,6 +5,27 @@ import { Megaphone, CalendarDays, Wrench, AlertCircle, Info, type LucideIcon } f
 
 export type NotificationType = "update" | "deadline" | "maintenance" | "issue"
 
+/**
+ * Who a notification is shown to.
+ * - "all": every system user.
+ * - "targeted": only users belonging to the selected organisations. Each target
+ *   is a MAT (whole trust, including its schools) or an individual school.
+ */
+export type AudienceScope = "all" | "targeted"
+
+export type AudienceTarget = {
+  /** "mat" targets a whole trust and all of its schools; "school" targets a single school. */
+  kind: "mat" | "school"
+  id: string
+  name: string
+}
+
+export type NotificationAudience = {
+  scope: AudienceScope
+  /** Only populated when scope is "targeted". */
+  targets?: AudienceTarget[]
+}
+
 export type WhatsNewItem = {
   id: string
   type: NotificationType
@@ -21,6 +42,59 @@ export type WhatsNewItem = {
   body?: string
   video?: { url: string; title: string }
   documents?: { name: string; size: string; type: "pdf" | "xlsx" | "docx" }[]
+  /** Audience the notification is delivered to. Defaults to all users when omitted. */
+  audience?: NotificationAudience
+}
+
+/**
+ * Directory of organisations available as notification targets. Mirrors the
+ * organisations defined on the Organisation settings page. A MAT entry targets
+ * the whole trust (and all its schools); each school can also be targeted alone.
+ */
+export type OrgDirectoryEntry = {
+  id: string
+  name: string
+  kind: "mat" | "school"
+  /** Schools belonging to a MAT, used to power per-school targeting. */
+  schools?: { id: string; name: string }[]
+}
+
+export const ORG_DIRECTORY: OrgDirectoryEntry[] = [
+  {
+    id: "mat-1",
+    name: "St Clare Catholic Multi Academy Trust",
+    kind: "mat",
+    schools: [
+      { id: "school-1", name: "All Saints' Catholic High School" },
+      { id: "school-2", name: "Emmaus Catholic and CofE Primary School" },
+      { id: "school-3", name: "Notre Dame High School" },
+    ],
+  },
+  {
+    id: "mat-2",
+    name: "Holy Family Catholic Academy Trust",
+    kind: "mat",
+    schools: [{ id: "school-4", name: "Sacred Heart School" }],
+  },
+  {
+    id: "standalone-1",
+    name: "St Alban's Catholic Primary and Nursery School",
+    kind: "school",
+  },
+  {
+    id: "standalone-2",
+    name: "Holy Trinity Catholic and Church of England School",
+    kind: "school",
+  },
+]
+
+/** Human-readable summary of who a notification is delivered to. */
+export function describeAudience(audience?: NotificationAudience): string {
+  if (!audience || audience.scope === "all") return "All users"
+  const targets = audience.targets ?? []
+  if (targets.length === 0) return "No recipients selected"
+  if (targets.length === 1) return targets[0].name
+  return `${targets.length} organisations`
 }
 
 const ACCENT = "#B30089"

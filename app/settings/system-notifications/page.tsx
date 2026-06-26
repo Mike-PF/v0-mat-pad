@@ -18,16 +18,20 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Trash2, X, Search, Eye, Bell, Monitor, Play, ExternalLink } from "lucide-react"
+import { Trash2, X, Search, Eye, Bell, Monitor, Play, ExternalLink, Users, Building2, School, Check } from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
   getTypeColor,
   getTypeLabel,
   isCurrentlyNew,
+  describeAudience,
   NOTIFICATION_TYPES,
+  ORG_DIRECTORY,
   type NotificationType,
   type WhatsNewItem,
+  type AudienceScope,
+  type AudienceTarget,
 } from "@/lib/notifications"
 
 const NAVY = "#121051"
@@ -58,6 +62,10 @@ export default function SystemNotificationsPage() {
   const [formIsUrgent, setFormIsUrgent] = useState(false)
   const [formIsNew, setFormIsNew] = useState(false)
   const [formIsActive, setFormIsActive] = useState(false)
+  // Audience targeting
+  const [formAudienceScope, setFormAudienceScope] = useState<AudienceScope>("all")
+  const [formTargets, setFormTargets] = useState<AudienceTarget[]>([])
+  const [targetSearch, setTargetSearch] = useState("")
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -83,6 +91,9 @@ export default function SystemNotificationsPage() {
     setFormIsUrgent(false)
     setFormIsNew(false)
     setFormIsActive(false)
+    setFormAudienceScope("all")
+    setFormTargets([])
+    setTargetSearch("")
   }
 
   const handleAdd = () => {
@@ -104,6 +115,9 @@ export default function SystemNotificationsPage() {
     setFormIsUrgent(Boolean(item.isUrgent))
     setFormIsNew(Boolean(item.isNew))
     setFormIsActive(Boolean(item.isActive))
+    setFormAudienceScope(item.audience?.scope ?? "all")
+    setFormTargets(item.audience?.targets ?? [])
+    setTargetSearch("")
     setIsDialogOpen(true)
   }
 
@@ -128,10 +142,24 @@ export default function SystemNotificationsPage() {
       return
     }
 
+    if (formAudienceScope === "targeted" && formTargets.length === 0) {
+      showToast({
+        variant: "error",
+        title: "No recipients selected",
+        message: "Choose at least one organisation, or send to all users.",
+        primaryAction: { label: "Dismiss" },
+      })
+      return
+    }
+
     const daysLeftNum = formDaysLeft.trim() === "" ? undefined : Number(formDaysLeft)
     const video = formVideoUrl.trim()
       ? { url: formVideoUrl.trim(), title: formVideoTitle.trim() || "Watch video" }
       : undefined
+    const audience =
+      formAudienceScope === "targeted"
+        ? { scope: "targeted" as const, targets: formTargets }
+        : { scope: "all" as const }
 
     if (editingId) {
       setItems((prev) =>
@@ -151,6 +179,7 @@ export default function SystemNotificationsPage() {
                 // Preserve the original "new since" date if it was already new; otherwise stamp now.
                 newSince: formIsNew ? (i.isNew && i.newSince ? i.newSince : new Date().toISOString()) : undefined,
                 isActive: formIsActive,
+                audience,
               }
             : i,
         ),
@@ -176,6 +205,7 @@ export default function SystemNotificationsPage() {
         isNew: formIsNew,
         newSince: formIsNew ? new Date().toISOString() : undefined,
         isActive: formIsActive,
+        audience,
       }
       setItems((prev) => [newItem, ...prev])
       showToast({
@@ -199,6 +229,44 @@ export default function SystemNotificationsPage() {
       primaryAction: { label: "Dismiss" },
     })
   }
+
+  const isTargetSelected = (id: string) => formTargets.some((t) => t.id === id)
+
+  const toggleTarget = (target: AudienceTarget) => {
+    setFormTargets((prev) =>
+      prev.some((t) => t.id === target.id) ? prev.filter((t) => t.id !== target.id) : [...prev, target],
+    )
+  }
+
+  // Flattened, searchable list of targetable organisations (MATs + their schools + standalone schools).
+  const targetOptions = useMemo(() => {
+    const q = targetSearch.trim().toLowerCase()
+    const groups: { mat: AudienceTarget; schools: AudienceTarget[] }[] = []
+    for (const org of ORG_DIRECTORY) {
+      if (org.kind === "mat") {
+        const mat: AudienceTarget = { kind: "mat", id: org.id, name: org.name }
+        const schools: AudienceTarget[] = (org.schools ?? []).map((s) => ({
+          kind: "school",
+          id: s.id,
+          name: s.name,
+        }))
+        groups.push({ mat, schools })
+      } else {
+        groups.push({ mat: { kind: "school", id: org.id, name: org.name }, schools: [] })
+      }
+    }
+    if (!q) return groups
+    // Keep a group if the MAT/school name or any child school matches.
+    return groups
+      .map((g) => {
+        const matMatches = g.mat.name.toLowerCase().includes(q)
+        const matchedSchools = g.schools.filter((s) => s.name.toLowerCase().includes(q))
+        if (matMatches) return g
+        if (matchedSchools.length > 0) return { mat: g.mat, schools: matchedSchools }
+        return null
+      })
+      .filter((g): g is { mat: AudienceTarget; schools: AudienceTarget[] } => g !== null)
+  }, [targetSearch])
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -340,10 +408,26 @@ export default function SystemNotificationsPage() {
                             )}
                           </div>
                           <p className="text-xs text-slate-500 truncate mt-0.5">{item.description}</p>
-                          <p className="text-[11px] text-slate-400 mt-1">
-                            {item.date}
-                            {item.daysLeft !== undefined ? ` · ${item.daysLeft} days left` : ""}
-                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-[11px] text-slate-400">
+                              {item.date}
+                              {item.daysLeft !== undefined ? ` · ${item.daysLeft} days left` : ""}
+                            </p>
+                            <span
+                              className={`inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded ${
+                                !item.audience || item.audience.scope === "all"
+                                  ? "bg-slate-100 text-slate-500"
+                                  : "bg-blue-50 text-blue-700"
+                              }`}
+                            >
+                              {!item.audience || item.audience.scope === "all" ? (
+                                <Users className="w-3 h-3" />
+                              ) : (
+                                <Building2 className="w-3 h-3" />
+                              )}
+                              {describeAudience(item.audience)}
+                            </span>
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -508,6 +592,113 @@ export default function SystemNotificationsPage() {
                 </div>
                 <Switch checked={formIsActive} onCheckedChange={setFormIsActive} className="data-[state=checked]:bg-[#121051]" />
               </div>
+            </div>
+
+            {/* Audience targeting */}
+            <div>
+              <Label>Send to<span className="text-red-500">*</span></Label>
+              <div className="grid grid-cols-2 gap-2 mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => setFormAudienceScope("all")}
+                  className={`flex items-start gap-2 p-3 rounded-lg border text-left transition-colors ${
+                    formAudienceScope === "all"
+                      ? "border-[#121051] bg-[#121051]/5"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <Users
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${formAudienceScope === "all" ? "text-[#121051]" : "text-slate-400"}`}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">All system users</p>
+                    <p className="text-xs text-slate-500">Everyone sees this</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormAudienceScope("targeted")}
+                  className={`flex items-start gap-2 p-3 rounded-lg border text-left transition-colors ${
+                    formAudienceScope === "targeted"
+                      ? "border-[#121051] bg-[#121051]/5"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <Building2
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${formAudienceScope === "targeted" ? "text-[#121051]" : "text-slate-400"}`}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Specific organisations</p>
+                    <p className="text-xs text-slate-500">Choose MATs or schools</p>
+                  </div>
+                </button>
+              </div>
+
+              {formAudienceScope === "targeted" && (
+                <div className="mt-3 rounded-lg border border-slate-200 overflow-hidden">
+                  {formTargets.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 p-2.5 border-b border-slate-100 bg-slate-50/60">
+                      {formTargets.map((t) => (
+                        <span
+                          key={t.id}
+                          className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full bg-white border border-slate-200 text-xs text-slate-700"
+                        >
+                          {t.kind === "mat" ? (
+                            <Building2 className="w-3 h-3 text-slate-400" />
+                          ) : (
+                            <School className="w-3 h-3 text-slate-400" />
+                          )}
+                          {t.name}
+                          <button
+                            type="button"
+                            onClick={() => toggleTarget(t)}
+                            className="p-0.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                            aria-label={`Remove ${t.name}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="relative p-2 border-b border-slate-100">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <Input
+                      value={targetSearch}
+                      onChange={(e) => setTargetSearch(e.target.value)}
+                      placeholder="Search trusts or schools..."
+                      className="pl-8 h-9"
+                    />
+                  </div>
+                  <div className="max-h-56 overflow-y-auto p-1">
+                    {targetOptions.length === 0 ? (
+                      <p className="text-xs text-slate-400 text-center py-6">No organisations match your search.</p>
+                    ) : (
+                      targetOptions.map((group) => (
+                        <div key={group.mat.id} className="mb-1">
+                          <TargetRow
+                            target={group.mat}
+                            selected={isTargetSelected(group.mat.id)}
+                            onToggle={() => toggleTarget(group.mat)}
+                            subtitle={
+                              group.mat.kind === "mat" ? "Whole trust — includes all schools" : "Standalone school"
+                            }
+                          />
+                          {group.schools.map((school) => (
+                            <TargetRow
+                              key={school.id}
+                              target={school}
+                              selected={isTargetSelected(school.id)}
+                              onToggle={() => toggleTarget(school)}
+                              indented
+                            />
+                          ))}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -678,5 +869,43 @@ export default function SystemNotificationsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+function TargetRow({
+  target,
+  selected,
+  onToggle,
+  subtitle,
+  indented = false,
+}: {
+  target: AudienceTarget
+  selected: boolean
+  onToggle: () => void
+  subtitle?: string
+  indented?: boolean
+}) {
+  const Icon = target.kind === "mat" ? Building2 : School
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-colors hover:bg-slate-50 ${
+        indented ? "pl-7" : ""
+      }`}
+    >
+      <span
+        className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
+          selected ? "bg-[#121051] border-[#121051]" : "border-slate-300 bg-white"
+        }`}
+      >
+        {selected && <Check className="w-3 h-3 text-white" />}
+      </span>
+      <Icon className="w-4 h-4 text-slate-400 shrink-0" />
+      <span className="flex-1 min-w-0">
+        <span className="block text-sm text-slate-800 truncate">{target.name}</span>
+        {subtitle && <span className="block text-[11px] text-slate-400">{subtitle}</span>}
+      </span>
+    </button>
   )
 }
