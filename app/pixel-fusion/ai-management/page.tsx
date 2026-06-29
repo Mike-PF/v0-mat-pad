@@ -859,11 +859,11 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
 
 function TrendBadge({ trend }: { trend: number }) {
   const up = trend >= 0
+  // Style guide status colours: Success (#4A7C44) and Destructive (#EF4444).
   return (
     <span
-      className={`inline-flex items-center gap-0.5 text-xs font-medium shrink-0 ${
-        up ? "text-emerald-600" : "text-red-500"
-      }`}
+      className="inline-flex items-center gap-0.5 text-xs font-medium shrink-0"
+      style={{ color: up ? "#4A7C44" : "#EF4444" }}
     >
       {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
       {Math.abs(trend)}%

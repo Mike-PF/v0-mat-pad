@@ -64,15 +64,17 @@ export interface AskLogEntry {
   answered: boolean
 }
 
+// Category colours from the brand style guide (Style Guide → Colours → Category).
+// Keep these in sync with `categoryColors` on app/settings/style-guide/page.tsx.
 export const AREA_COLORS: Record<string, string> = {
-  Attendance: "#15803d",
-  Attainment: "#1d4ed8",
-  Behaviour: "#b45309",
-  SEND: "#7c3aed",
-  Finance: "#0e7490",
-  "Ofsted & Compliance": "#dc2626",
-  Assessment: "#be185d",
-  General: "#475569",
+  Attendance: "#5BBE80", // Green
+  Attainment: "#5B9BF5", // Blue
+  Behaviour: "#F79400", // Orange
+  SEND: "#715DBF", // Purple
+  Finance: "#2395A4", // Teal
+  "Ofsted & Compliance": "#F7555A", // Red
+  Assessment: "#B3008B", // Magenta
+  General: "#64748B", // slate-500 (neutral catch-all)
 }
 
 export function getAreaColor(area: string): string {
