@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { isPlatformAdmin } from "@/lib/current-org"
 
 export function TopNavigation() {
   const pathname = usePathname()
@@ -32,10 +31,16 @@ export function TopNavigation() {
         { id: "dashboard-settings", label: "Dashboard Settings", href: "/settings/dashboard-settings" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
-        { id: "system-help", label: "System Help", href: "/settings/system-help" },
-        { id: "system-notifications", label: "System Notifications", href: "/settings/system-notifications" },
-        // AI Management is only available to the Fuze platform admin org.
-        ...(isPlatformAdmin() ? [{ id: "ai-chatbot", label: "AI Management", href: "/settings/ai-chatbot" }] : []),
+      ]
+    }
+
+    // Pixel Fusion: internal, admin-only settings (System Help, System
+    // Notifications, AI Management). Not available to client organisations.
+    if (pathname.startsWith("/pixel-fusion")) {
+      return [
+        { id: "system-help", label: "System Help", href: "/pixel-fusion/system-help" },
+        { id: "system-notifications", label: "System Notifications", href: "/pixel-fusion/system-notifications" },
+        { id: "ai-management", label: "AI Management", href: "/pixel-fusion/ai-management" },
       ]
     }
 
@@ -69,6 +74,7 @@ export function TopNavigation() {
   const tabs = getNavigationTabs()
   const isHomePage = mounted && pathname.startsWith("/home")
   const isSettingsPage = mounted && pathname.startsWith("/settings")
+  const isPixelFusionPage = mounted && pathname.startsWith("/pixel-fusion")
   const isReportsPage = mounted && pathname.startsWith("/reports")
   const isDashboardsPage = mounted && pathname.startsWith("/dashboards")
   const isAiChatPage = mounted && pathname.startsWith("/ai-chat")
@@ -107,7 +113,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {mounted && !isHomePage && !isSettingsPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
+        {mounted && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">
