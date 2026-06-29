@@ -25,8 +25,6 @@ import {
   Sparkles,
   TrendingUp,
   TrendingDown,
-  LayoutDashboard,
-  FileBarChart2,
   FileSpreadsheet,
   Download,
   MessageCircleQuestion,
@@ -366,18 +364,11 @@ function PromptsTab({
           const surfaced = surfacedQuestions(target, asks)
           const topAsks = topAsksForTarget(asks, target.id)
           const color = getAreaColor(target.area)
-          const KindIcon = target.kind === "dashboard" ? LayoutDashboard : FileBarChart2
           return (
             <Card key={target.id} className="overflow-hidden">
               <CardContent className="p-0">
                 {/* Target header */}
                 <div className="flex items-start gap-3 p-5 border-b border-slate-100">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${color}18` }}
-                  >
-                    <KindIcon className="w-4 h-4" style={{ color }} />
-                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-semibold text-slate-900">{target.name}</h3>
@@ -444,11 +435,6 @@ function PromptsTab({
                                   : undefined
                               }
                             >
-                              {s.source === "pinned" ? (
-                                <Pin className="w-3.5 h-3.5 text-[#121051] shrink-0 mt-0.5" />
-                              ) : (
-                                <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                              )}
                               <span className="flex-1 text-sm text-slate-700">{s.text}</span>
                               {s.source === "pinned" ? (
                                 <button
