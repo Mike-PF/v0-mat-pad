@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Button } from "@/components/ui/button"
@@ -332,6 +332,16 @@ function PromptsTab({
   onDelete: (target: ChatTarget, index: number) => void
   onExclude: (targetId: string, question: string) => void
 }) {
+  const PAGE_SIZE = 5
+  const [page, setPage] = useState(1)
+  // Reset to the first page whenever the filters change the result set.
+  useEffect(() => {
+    setPage(1)
+  }, [search, kindFilter])
+  const pageCount = Math.max(1, Math.ceil(targets.length / PAGE_SIZE))
+  const safePage = Math.min(page, pageCount)
+  const pageTargets = targets.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -360,7 +370,8 @@ function PromptsTab({
       {targets.length === 0 ? (
         <div className="py-16 text-center text-sm text-slate-400">No reports or dashboards match your filter.</div>
       ) : (
-        targets.map((target) => {
+        <>
+        {pageTargets.map((target) => {
           const surfaced = surfacedQuestions(target, asks)
           const topAsks = topAsksForTarget(asks, target.id)
           const color = getAreaColor(target.area)
@@ -472,7 +483,16 @@ function PromptsTab({
               </CardContent>
             </Card>
           )
-        })
+        })}
+        <Pagination
+          page={safePage}
+          pageCount={pageCount}
+          onPageChange={setPage}
+          totalItems={targets.length}
+          pageSize={PAGE_SIZE}
+          itemLabel="reports & dashboards"
+        />
+        </>
       )}
     </div>
   )
@@ -506,6 +526,14 @@ function TrendsTab({
 
   const fastestGrowing = topicGroups.slice().sort((a, b) => b.trend - a.trend)[0]?.topic ?? "—"
 
+  const TOPIC_PAGE_SIZE = 6
+  const [topicPage, setTopicPage] = useState(1)
+  const topicPageCount = Math.max(1, Math.ceil(topicGroups.length / TOPIC_PAGE_SIZE))
+  const safeTopicPage = Math.min(topicPage, topicPageCount)
+  // Keep the bar scale consistent across pages using the global max (list is sorted desc).
+  const topicMax = topicGroups[0]?.total ?? 1
+  const pagedTopics = topicGroups.slice((safeTopicPage - 1) * TOPIC_PAGE_SIZE, safeTopicPage * TOPIC_PAGE_SIZE)
+
   return (
     <div className="space-y-6">
       {/* Summary stats */}
@@ -527,8 +555,8 @@ function TrendsTab({
             Questions are grouped by keyword (Attendance, Attainment, SEND…). Use this to spot where demand is heading.
           </p>
           <div className="space-y-4">
-            {topicGroups.map((g) => {
-              const max = topicGroups[0].total
+            {pagedTopics.map((g) => {
+              const max = topicMax
               const color = getAreaColor(g.topic)
               return (
                 <div key={g.topic}>
@@ -552,6 +580,16 @@ function TrendsTab({
                 </div>
               )
             })}
+          </div>
+          <div className="mt-4">
+            <Pagination
+              page={safeTopicPage}
+              pageCount={topicPageCount}
+              onPageChange={setTopicPage}
+              totalItems={topicGroups.length}
+              pageSize={TOPIC_PAGE_SIZE}
+              itemLabel="topics"
+            />
           </div>
         </CardContent>
       </Card>
@@ -625,6 +663,16 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
   const filtered = useMemo(() => filterLog(log, filters), [log, filters])
 
   const unansweredCount = useMemo(() => filtered.filter((e) => !e.answered).length, [filtered])
+
+  const ROW_PAGE_SIZE = 15
+  const [page, setPage] = useState(1)
+  // Reset to the first page whenever the filters change the result set.
+  useEffect(() => {
+    setPage(1)
+  }, [filters])
+  const pageCount = Math.max(1, Math.ceil(filtered.length / ROW_PAGE_SIZE))
+  const safePage = Math.min(page, pageCount)
+  const pageRows = filtered.slice((safePage - 1) * ROW_PAGE_SIZE, safePage * ROW_PAGE_SIZE)
 
   function handleExport() {
     const rows = logToExportRows(filtered)
@@ -758,7 +806,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((e) => {
+                  pageRows.map((e) => {
                     const color = getAreaColor(e.topic)
                     return (
                       <tr key={e.id} className="border-b border-slate-100 hover:bg-slate-50/60">
@@ -792,6 +840,15 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
           </div>
         </CardContent>
       </Card>
+
+      <Pagination
+        page={safePage}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        totalItems={filtered.length}
+        pageSize={ROW_PAGE_SIZE}
+        itemLabel="questions"
+      />
     </div>
   )
 }
@@ -811,6 +868,88 @@ function TrendBadge({ trend }: { trend: number }) {
       {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
       {Math.abs(trend)}%
     </span>
+  )
+}
+
+// Builds a compact page list with ellipses, e.g. [1, "…", 4, 5, 6, "…", 12].
+function getPageRange(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: (number | "…")[] = [1]
+  const left = Math.max(2, current - 1)
+  const right = Math.min(total - 1, current + 1)
+  if (left > 2) pages.push("…")
+  for (let i = left; i <= right; i++) pages.push(i)
+  if (right < total - 1) pages.push("…")
+  pages.push(total)
+  return pages
+}
+
+function Pagination({
+  page,
+  pageCount,
+  onPageChange,
+  totalItems,
+  pageSize,
+  itemLabel = "items",
+}: {
+  page: number
+  pageCount: number
+  onPageChange: (p: number) => void
+  totalItems: number
+  pageSize: number
+  itemLabel?: string
+}) {
+  if (pageCount <= 1) return null
+  const start = (page - 1) * pageSize + 1
+  const end = Math.min(page * pageSize, totalItems)
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+      <p className="text-xs text-slate-500">
+        Showing{" "}
+        <span className="font-semibold text-slate-700">
+          {start}–{end}
+        </span>{" "}
+        of {totalItems} {itemLabel}
+      </p>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 px-3 text-xs"
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+        >
+          Previous
+        </Button>
+        {getPageRange(page, pageCount).map((p, i) =>
+          p === "…" ? (
+            <span key={`gap-${i}`} className="px-2 text-xs text-slate-400">
+              …
+            </span>
+          ) : (
+            <Button
+              key={p}
+              variant={p === page ? "default" : "outline"}
+              size="sm"
+              className="h-8 min-w-8 px-2 text-xs"
+              style={p === page ? { backgroundColor: NAVY, color: "white" } : undefined}
+              onClick={() => onPageChange(p)}
+            >
+              {p}
+            </Button>
+          ),
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 px-3 text-xs"
+          disabled={page === pageCount}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
   )
 }
 
