@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { isPlatformAdmin } from "@/lib/current-org"
-import { Palette, Type, MousePointerClick, Tag, FormInput, Layers, Check, Copy, Lock, Square } from "lucide-react"
+import { Palette, Type, MousePointerClick, Tag, FormInput, Layers, Check, Copy, Lock, Square, Ban } from "lucide-react"
 
 const NAVY = "#121051"
 const MAGENTA = "#B30089"
@@ -93,6 +93,7 @@ const sections = [
   { id: "badges", label: "Badges", icon: Tag },
   { id: "forms", label: "Form Controls", icon: FormInput },
   { id: "surfaces", label: "Surfaces & Radius", icon: Layers },
+  { id: "iconography", label: "Iconography", icon: Ban },
 ]
 
 function ColorSwatch({ swatch, onCopy, copied }: { swatch: Swatch; onCopy: (v: string) => void; copied: string | null }) {
@@ -504,6 +505,48 @@ export default function StyleGuidePage() {
                     <p className="text-xs text-slate-500">Modals, popovers, FAB</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Iconography */}
+            <Card id="iconography" className="bg-white border-slate-200 scroll-mt-4">
+              <CardContent className="p-6">
+                <SectionHeading
+                  icon={Ban}
+                  title="Iconography"
+                  description="Keep the interface clean and text-led. Do not add decorative icons to new pages or components."
+                />
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 mb-5">
+                  <p className="text-sm font-semibold text-red-800 mb-1">Rule: no decorative icons</p>
+                  <p className="text-sm text-red-700 leading-relaxed">
+                    Do not add icons going forward — no coloured icon tiles next to list items, no leading icons on
+                    rows, cards, suggestions or table cells, and no purely decorative glyphs. Lead with clear text
+                    labels instead. This keeps screens uncluttered and consistent across the platform.
+                  </p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="rounded-lg border border-slate-200 p-4">
+                    <p className="text-xs uppercase tracking-wide text-green-600 font-semibold mb-2">Do</p>
+                    <ul className="space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                      <li>Use text labels and badges to convey type or status.</li>
+                      <li>Rely on spacing, weight and colour for hierarchy.</li>
+                      <li>Keep list rows and cards icon-free.</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 p-4">
+                    <p className="text-xs uppercase tracking-wide text-red-600 font-semibold mb-2">Don&apos;t</p>
+                    <ul className="space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                      <li>Add coloured icon squares beside item names.</li>
+                      <li>Prefix suggestions or menu rows with glyphs.</li>
+                      <li>Introduce new decorative icons to fill space.</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+                  Note: small functional controls that are clearly understood (e.g. a delete action or a search field
+                  affordance) may keep their icon where it aids usability — the rule targets decorative and
+                  category/type icons.
+                </p>
               </CardContent>
             </Card>
           </div>
