@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { isPlatformAdmin } from "@/lib/current-org"
 
 export function TopNavigation() {
   const pathname = usePathname()
@@ -32,9 +31,6 @@ export function TopNavigation() {
         { id: "dashboard-settings", label: "Dashboard Settings", href: "/settings/dashboard-settings" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
-        // Pixel Fusion is internal-only — surfaced to platform admins as the entry
-        // point into the admin-only section (System Help, Notifications, AI Management).
-        ...(isPlatformAdmin() ? [{ id: "pixel-fusion", label: "Pixel Fusion", href: "/pixel-fusion" }] : []),
       ]
     }
 
