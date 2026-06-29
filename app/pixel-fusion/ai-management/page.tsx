@@ -393,8 +393,8 @@ function PromptsTab({
                   </label>
                 </div>
 
-                <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-                  {/* Left: what the chatbot surfaces */}
+                <div>
+                  {/* What the chatbot surfaces */}
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -462,51 +462,6 @@ function PromptsTab({
                                   </button>
                                 </div>
                               )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right: most asked here (drives auto-surface) */}
-                  <div className="p-5 bg-slate-50/40">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Most asked here
-                    </span>
-                    {topAsks.length === 0 ? (
-                      <p className="text-xs text-slate-400 py-4">No questions asked here yet.</p>
-                    ) : (
-                      <div className="space-y-2.5 mt-3">
-                        {topAsks.map((a) => {
-                          const max = topAsks[0].count
-                          const isPinned = target.pinned.some((p) => p.toLowerCase() === a.question.toLowerCase())
-                          return (
-                            <div key={a.id} className="group">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm text-slate-700 truncate flex-1">{a.question}</span>
-                                {!isPinned && (
-                                  <button
-                                    onClick={() => onAdd(target, a.question)}
-                                    className="text-[11px] font-medium text-[#121051] hover:underline shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    Add
-                                  </button>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full"
-                                    style={{
-                                      width: `${(a.count / max) * 100}%`,
-                                      backgroundColor: getAreaColor(a.topic),
-                                    }}
-                                  />
-                                </div>
-                                <span className="text-xs font-medium text-slate-500 w-10 text-right">{a.count}</span>
-                                <TrendBadge trend={a.trend} />
-                              </div>
                             </div>
                           )
                         })}
