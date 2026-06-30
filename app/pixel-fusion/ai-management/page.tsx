@@ -498,6 +498,7 @@ function TrendsTab({
   // Track which topic rows are expanded to reveal the questions asked within them.
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({})
   const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
+  const allExpanded = topicGroups.length > 0 && topicGroups.every((g) => expandedTopics[g.topic])
 
   return (
     <div className="space-y-6">
@@ -512,9 +513,24 @@ function TrendsTab({
       {/* By topic */}
       <Card>
         <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <MessageCircleQuestion className="w-4 h-4 text-slate-400" />
-            <h3 className="text-sm font-semibold text-slate-900">What people are asking, by topic</h3>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <MessageCircleQuestion className="w-4 h-4 text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-900">What people are asking, by topic</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (allExpanded) {
+                  setExpandedTopics({})
+                } else {
+                  setExpandedTopics(Object.fromEntries(topicGroups.map((g) => [g.topic, true])))
+                }
+              }}
+              className="shrink-0 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              {allExpanded ? "Collapse all" : "Expand all"}
+            </button>
           </div>
           <p className="text-xs text-slate-500 mb-4">
             Questions are grouped by keyword (Attendance, Attainment, SEND…). Use this to spot where demand is heading.
