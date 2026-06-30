@@ -22,7 +22,6 @@ import {
   Trash2,
   Sparkles,
   TrendingUp,
-  TrendingDown,
   FileSpreadsheet,
   Download,
   MessageCircleQuestion,
@@ -559,7 +558,6 @@ function TrendsTab({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-slate-700">{g.total.toLocaleString()}</span>
-                        <TrendBadge trend={g.trend} />
                       </div>
                     </div>
                     <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -577,7 +575,6 @@ function TrendsTab({
                           <span className="text-xs font-medium text-slate-500 shrink-0">
                             {q.count.toLocaleString()}
                           </span>
-                          <TrendBadge trend={q.trend} />
                         </div>
                       ))}
                     </div>
@@ -614,7 +611,6 @@ function TrendsTab({
                     <span className="text-xs font-semibold text-slate-300 w-4">{i + 1}</span>
                     <span className="flex-1 text-sm text-slate-700 truncate">{a.question}</span>
                     <span className="text-xs font-medium text-slate-500">{a.count}</span>
-                    <TrendBadge trend={a.trend} />
                   </div>
                 ))}
             </div>
@@ -861,20 +857,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
 // ===========================================================================
 // Shared small components
 // ===========================================================================
-
-function TrendBadge({ trend }: { trend: number }) {
-  const up = trend >= 0
-  // Style guide status colours: Success (#4A7C44) and Destructive (#EF4444).
-  return (
-    <span
-      className="inline-flex items-center gap-0.5 text-xs font-medium shrink-0"
-      style={{ color: up ? "#4A7C44" : "#EF4444" }}
-    >
-      {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-      {Math.abs(trend)}%
-    </span>
-  )
-}
 
 // Builds a compact page list with ellipses, e.g. [1, "…", 4, 5, 6, "…", 12].
 function getPageRange(current: number, total: number): (number | "…")[] {
