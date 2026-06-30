@@ -397,15 +397,6 @@ function PromptsTab({
                           : `Surfaced on: ${areaTargets.map((t) => t.name).join(", ")}`}
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onAdd(area)}
-                      className="h-8 px-2.5 text-xs shrink-0"
-                    >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      Add
-                    </Button>
                   </div>
 
                   {/* Pinned questions */}
