@@ -824,6 +824,9 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
 
   const unansweredCount = useMemo(() => filtered.filter((e) => !e.answered).length, [filtered])
 
+  // The log row whose full response is being viewed in the detail dialog.
+  const [selectedEntry, setSelectedEntry] = useState<AskLogEntry | null>(null)
+
   const ROW_PAGE_SIZE = 15
   const [page, setPage] = useState(1)
   // Reset to the first page whenever the filters change the result set.
@@ -847,6 +850,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
       { wch: 16 }, // Topic
       { wch: 52 }, // Question
       { wch: 10 }, // Answered
+      { wch: 70 }, // Response
     ]
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "AI Questions")
@@ -969,7 +973,20 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   pageRows.map((e) => {
                     const color = getAreaColor(e.topic)
                     return (
-                      <tr key={e.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                      <tr
+                        key={e.id}
+                        className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`View response for: ${e.question}`}
+                        onClick={() => setSelectedEntry(e)}
+                        onKeyDown={(ev) => {
+                          if (ev.key === "Enter" || ev.key === " ") {
+                            ev.preventDefault()
+                            setSelectedEntry(e)
+                          }
+                        }}
+                      >
                         <td className="px-4 py-3 whitespace-nowrap text-slate-500">{formatLogDate(e.askedAt)}</td>
                         <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800">{e.user}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.role}</td>
@@ -983,7 +1000,9 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                             {e.topic}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-700 min-w-[280px]">{e.question}</td>
+                        <td className="px-4 py-3 min-w-[280px]">
+                          <span className="text-slate-700 hover:text-slate-900 hover:underline">{e.question}</span>
+                        </td>
                         <td className="px-4 py-3 text-center">
                           {e.answered ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" aria-label="Answered" />
@@ -1009,6 +1028,83 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
         pageSize={ROW_PAGE_SIZE}
         itemLabel="questions"
       />
+
+      {/* Question + response detail */}
+      <Dialog open={!!selectedEntry} onOpenChange={(open) => !open && setSelectedEntry(null)}>
+        <DialogContent className="max-w-lg">
+          {selectedEntry && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span
+                  className="px-1.5 py-0.5 text-[10px] font-medium rounded uppercase tracking-wide"
+                  style={{
+                    backgroundColor: `${getAreaColor(selectedEntry.topic)}18`,
+                    color: getAreaColor(selectedEntry.topic),
+                  }}
+                >
+                  {selectedEntry.topic}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 text-xs font-medium ${
+                    selectedEntry.answered ? "text-emerald-600" : "text-amber-600"
+                  }`}
+                >
+                  {selectedEntry.answered ? (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <XCircle className="w-3.5 h-3.5" />
+                  )}
+                  {selectedEntry.answered ? "Answered" : "Unanswered"}
+                </span>
+              </div>
+
+              {/* Question */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Question</p>
+                <p className="text-sm font-medium text-slate-900">{selectedEntry.question}</p>
+              </div>
+
+              {/* Response */}
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">AI response</p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm leading-relaxed text-slate-700">{selectedEntry.answer}</p>
+                </div>
+              </div>
+
+              {/* Meta */}
+              <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 text-sm">
+                <div>
+                  <dt className="text-xs text-slate-400">Asked by</dt>
+                  <dd className="text-slate-700">{selectedEntry.user}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">Role</dt>
+                  <dd className="text-slate-700">{selectedEntry.role}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">School / Org</dt>
+                  <dd className="text-slate-700">{selectedEntry.school}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">Page / Report</dt>
+                  <dd className="text-slate-700">{selectedEntry.page}</dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs text-slate-400">Asked</dt>
+                  <dd className="text-slate-700">{formatLogDate(selectedEntry.askedAt)}</dd>
+                </div>
+              </dl>
+
+              <div className="mt-6 flex justify-end">
+                <Button variant="outline" onClick={() => setSelectedEntry(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
