@@ -45,13 +45,37 @@ import {
   uniqueValues,
   type ChatTarget,
   type AreaPinned,
+  type ReportPinned,
   type AskLogEntry,
   type LogFilters,
 } from "@/lib/ai-chatbot"
+import { reportCategories } from "@/components/reports-content"
 
 const NAVY = "#121051"
 
+// Sentinel for the "All reports in this area" option (Radix Select forbids "" values).
+const ALL_REPORTS = "__all_reports__"
+
 type Tab = "prompts" | "trends" | "reports"
+
+/**
+ * System reports listed on the Dashboards page, grouped by the area heading they
+ * sit under. Used to scope an AI question to a single specific report.
+ */
+function systemReportsForArea(area: string): { id: string; name: string }[] {
+  const cat = reportCategories.find((c) => c.name.toLowerCase() === area.toLowerCase())
+  if (!cat) return []
+  return cat.reports.filter((r) => r.isSystem).map((r) => ({ id: r.id, name: r.name }))
+}
+
+/** Find the human-readable name for a report id across all areas. */
+function reportNameById(reportId: string): string {
+  for (const c of reportCategories) {
+    const r = c.reports.find((x) => x.id === reportId)
+    if (r) return r.name
+  }
+  return reportId
+}
 
 export default function AiManagementPage() {
   const allowed = isPlatformAdmin()
@@ -60,30 +84,42 @@ export default function AiManagementPage() {
     mounted,
     targets,
     areaPinned,
+    reportPinned,
     asks,
     log,
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    pinReportQuestion,
+    updateReportPinned,
+    removeReportPinned,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
   const [search, setSearch] = useState("")
 
-  // Add / edit question dialog state. Questions attach to a report area.
+  // Add / edit question dialog state. Questions attach to a report area, and can
+  // optionally be scoped to one specific report within that area.
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogArea, setDialogArea] = useState<string>(REPORT_AREAS[0])
+  // ALL_REPORTS = all reports in the area; otherwise a specific report id.
+  const [dialogReport, setDialogReport] = useState<string>(ALL_REPORTS)
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
 
-  // Delete confirm
-  const [deleteConfirm, setDeleteConfirm] = useState<{ area: string; index: number } | null>(null)
+  // Delete confirm — scoped to either a report area or a single report.
+  const [deleteConfirm, setDeleteConfirm] = useState<
+    | { scope: "area"; area: string; index: number }
+    | { scope: "report"; reportId: string; index: number }
+    | null
+  >(null)
 
   const topicGroups = useMemo(() => asksByTopic(asks), [asks])
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
 
   function openAdd(area?: string) {
     setDialogArea(area ?? REPORT_AREAS[0])
+    setDialogReport(ALL_REPORTS)
     setDialogIndex(null)
     setDialogText("")
     setDialogOpen(true)
@@ -91,21 +127,40 @@ export default function AiManagementPage() {
 
   function openEdit(area: string, index: number) {
     setDialogArea(area)
+    setDialogReport(ALL_REPORTS)
     setDialogIndex(index)
     setDialogText((areaPinned[area] ?? [])[index] ?? "")
     setDialogOpen(true)
   }
 
+  function openEditReport(area: string, reportId: string, index: number) {
+    setDialogArea(area)
+    setDialogReport(reportId)
+    setDialogIndex(index)
+    setDialogText((reportPinned[reportId] ?? [])[index] ?? "")
+    setDialogOpen(true)
+  }
+
+  // When the area changes while adding, the previously chosen report no longer applies.
+  function handleDialogAreaChange(area: string) {
+    setDialogArea(area)
+    setDialogReport(ALL_REPORTS)
+  }
+
   function saveDialog() {
     if (!dialogText.trim()) return
+    const scopedToReport = dialogReport !== ALL_REPORTS
     if (dialogIndex === null) {
-      pinAreaQuestion(dialogArea, dialogText)
+      if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
+      else pinAreaQuestion(dialogArea, dialogText)
     } else {
-      updateAreaPinned(dialogArea, dialogIndex, dialogText)
+      if (scopedToReport) updateReportPinned(dialogReport, dialogIndex, dialogText)
+      else updateAreaPinned(dialogArea, dialogIndex, dialogText)
     }
     setDialogOpen(false)
     setDialogText("")
     setDialogIndex(null)
+    setDialogReport(ALL_REPORTS)
   }
 
   if (!allowed) {
@@ -195,11 +250,14 @@ export default function AiManagementPage() {
               <PromptsTab
                 targets={targets}
                 areaPinned={areaPinned}
+                reportPinned={reportPinned}
                 search={search}
                 setSearch={setSearch}
                 onAdd={openAdd}
                 onEdit={openEdit}
-                onDelete={(area, index) => setDeleteConfirm({ area, index })}
+                onEditReport={openEditReport}
+                onDelete={(area, index) => setDeleteConfirm({ scope: "area", area, index })}
+                onDeleteReport={(reportId, index) => setDeleteConfirm({ scope: "report", reportId, index })}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -217,15 +275,16 @@ export default function AiManagementPage() {
             {dialogIndex === null ? "Add a question" : "Edit question"}
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            Choose the report area this question belongs to. It will be suggested by the chatbot on every dashboard and
-            report in that area.
+            Choose the report area this question belongs to, then optionally narrow it to a single report. Area
+            questions are suggested across every dashboard and report in that area; a report-specific question is only
+            suggested when that exact report is open.
           </p>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="question-area">
                 Report area<span className="text-red-500">*</span>
               </Label>
-              <Select value={dialogArea} onValueChange={setDialogArea} disabled={dialogIndex !== null}>
+              <Select value={dialogArea} onValueChange={handleDialogAreaChange} disabled={dialogIndex !== null}>
                 <SelectTrigger id="question-area">
                   <SelectValue placeholder="Select a report area…" />
                 </SelectTrigger>
@@ -237,6 +296,27 @@ export default function AiManagementPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="question-report">Report</Label>
+              <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
+                <SelectTrigger id="question-report">
+                  <SelectValue placeholder="All reports in this area" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_REPORTS}>All reports in this area</SelectItem>
+                  {systemReportsForArea(dialogArea).map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-400">
+                {systemReportsForArea(dialogArea).length === 0
+                  ? "No system reports sit under this area on the Dashboards page."
+                  : "Leave as “All reports in this area” to suggest it everywhere in the area, or pick one report to scope it."}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="question-text">
@@ -275,10 +355,17 @@ export default function AiManagementPage() {
         <DialogContent className="max-w-sm">
           <h2 className="text-base font-semibold text-slate-900 mb-1">Remove question?</h2>
           <p className="text-sm text-slate-500 mb-6">
-            {deleteConfirm && (
+            {deleteConfirm?.scope === "area" && (
               <>
                 &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]}&rdquo; will no longer be suggested
                 across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
+              </>
+            )}
+            {deleteConfirm?.scope === "report" && (
+              <>
+                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]}&rdquo; will no longer be
+                suggested on{" "}
+                <span className="font-medium text-slate-700">{reportNameById(deleteConfirm.reportId)}</span>.
               </>
             )}
           </p>
@@ -289,7 +376,9 @@ export default function AiManagementPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (deleteConfirm) removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
+                if (deleteConfirm?.scope === "area") removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
+                else if (deleteConfirm?.scope === "report")
+                  removeReportPinned(deleteConfirm.reportId, deleteConfirm.index)
                 setDeleteConfirm(null)
               }}
             >
@@ -309,19 +398,25 @@ export default function AiManagementPage() {
 function PromptsTab({
   targets,
   areaPinned,
+  reportPinned,
   search,
   setSearch,
   onAdd,
   onEdit,
+  onEditReport,
   onDelete,
+  onDeleteReport,
 }: {
   targets: ChatTarget[]
   areaPinned: AreaPinned
+  reportPinned: ReportPinned
   search: string
   setSearch: (v: string) => void
   onAdd: (area?: string) => void
   onEdit: (area: string, index: number) => void
+  onEditReport: (area: string, reportId: string, index: number) => void
   onDelete: (area: string, index: number) => void
+  onDeleteReport: (reportId: string, index: number) => void
 }) {
   // Match areas by name, or by any report/dashboard that lives in the area.
   const visibleAreas = useMemo(() => {
@@ -374,6 +469,12 @@ function PromptsTab({
             const color = getAreaColor(area)
             const pinned = areaPinned[area] ?? []
             const areaTargets = targetsForArea(targets, area)
+            // Report-specific questions grouped by the report they are scoped to.
+            const areaReports = systemReportsForArea(area)
+              .map((r) => ({ report: r, questions: reportPinned[r.id] ?? [] }))
+              .filter((x) => x.questions.length > 0)
+            const reportQCount = areaReports.reduce((s, x) => s + x.questions.length, 0)
+            const totalCount = pinned.length + reportQCount
             return (
               <Card key={area} className="overflow-hidden">
                 <CardContent className="p-0">
@@ -387,7 +488,7 @@ function PromptsTab({
                           className="px-1.5 py-0.5 text-[10px] font-medium rounded"
                           style={{ backgroundColor: `${color}18`, color }}
                         >
-                          {pinned.length} {pinned.length === 1 ? "question" : "questions"}
+                          {totalCount} {totalCount === 1 ? "question" : "questions"}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5">
@@ -399,12 +500,9 @@ function PromptsTab({
                   </div>
 
                   {/* Pinned questions */}
-                  <div className="p-5">
-                    {pinned.length === 0 ? (
-                      <p className="text-xs text-slate-400 py-2">
-                        No questions yet. Add a question to suggest it across this area.
-                      </p>
-                    ) : (
+                  <div className="p-5 space-y-4">
+                    {/* Area-wide questions: surfaced on every report/dashboard in the area. */}
+                    {pinned.length > 0 && (
                       <div className="space-y-2">
                         {pinned.map((q, i) => (
                           <div
@@ -434,6 +532,48 @@ function PromptsTab({
                           </div>
                         ))}
                       </div>
+                    )}
+
+                    {/* Report-specific questions: surfaced only on that exact report. */}
+                    {areaReports.map(({ report, questions }) => (
+                      <div key={report.id} className="space-y-2">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                          Only on: <span className="text-slate-600 normal-case">{report.name}</span>
+                        </p>
+                        {questions.map((q, i) => (
+                          <div
+                            key={`${report.id}-${q}-${i}`}
+                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/60 text-left cursor-pointer hover:border-slate-300"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onEditReport(area, report.id, i)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault()
+                                onEditReport(area, report.id, i)
+                              }
+                            }}
+                          >
+                            <span className="flex-1 text-sm text-slate-700">{q}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onDeleteReport(report.id, i)
+                              }}
+                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                              aria-label="Remove question"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+
+                    {totalCount === 0 && (
+                      <p className="text-xs text-slate-400 py-2">
+                        No questions yet. Add a question to suggest it across this area.
+                      </p>
                     )}
                   </div>
                 </CardContent>

@@ -301,9 +301,18 @@ const SEED_LOG: AskLogEntry[] = buildSeedLog()
 
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
 const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
+const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
 
 /** Map of report area -> admin-pinned questions surfaced on every report in that area. */
 export type AreaPinned = Record<string, string[]>
+
+/**
+ * Map of a specific report/dashboard id (as listed on the Dashboards page) ->
+ * admin-pinned questions surfaced by the chatbot ONLY when that exact report is open.
+ */
+export type ReportPinned = Record<string, string[]>
+
+const SEED_REPORT_PINNED: ReportPinned = {}
 
 /**
  * Seed area-level pins by rolling up the questions already pinned to seed targets,
@@ -352,6 +361,15 @@ export function getAreaQuestions(area: string): string[] {
   return all[normaliseArea(area)] ?? []
 }
 
+/**
+ * Read the admin-pinned questions for a single specific report/dashboard.
+ * These are surfaced by the chatbot only when that exact report is open.
+ */
+export function getReportQuestions(reportId: string): string[] {
+  const all = load<ReportPinned>(REPORT_PINNED_KEY, SEED_REPORT_PINNED)
+  return all[reportId] ?? []
+}
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
@@ -359,11 +377,13 @@ export function getAreaQuestions(area: string): string[] {
 export function useAiManagement() {
   const [targets, setTargets] = useState<ChatTarget[]>(SEED_TARGETS)
   const [areaPinned, setAreaPinned] = useState<AreaPinned>(SEED_AREA_PINNED)
+  const [reportPinned, setReportPinned] = useState<ReportPinned>(SEED_REPORT_PINNED)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setTargets(load(TARGETS_KEY, SEED_TARGETS))
     setAreaPinned(load(AREA_PINNED_KEY, SEED_AREA_PINNED))
+    setReportPinned(load(REPORT_PINNED_KEY, SEED_REPORT_PINNED))
     setMounted(true)
   }, [])
 
@@ -374,6 +394,10 @@ export function useAiManagement() {
   useEffect(() => {
     if (mounted) save(AREA_PINNED_KEY, areaPinned)
   }, [areaPinned, mounted])
+
+  useEffect(() => {
+    if (mounted) save(REPORT_PINNED_KEY, reportPinned)
+  }, [reportPinned, mounted])
 
   /** Pin a question to a report area so it is suggested on every report in that area. */
   const pinAreaQuestion = useCallback((area: string, question: string) => {
@@ -402,6 +426,33 @@ export function useAiManagement() {
     setAreaPinned((prev) => {
       const list = prev[a] ?? []
       return { ...prev, [a]: list.filter((_, i) => i !== index) }
+    })
+  }, [])
+
+  /** Pin a question to a single specific report so it is suggested only on that report. */
+  const pinReportQuestion = useCallback((reportId: string, question: string) => {
+    const q = question.trim()
+    if (!reportId || !q) return
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      if (list.some((p) => p.toLowerCase() === q.toLowerCase())) return prev
+      return { ...prev, [reportId]: [...list, q] }
+    })
+  }, [])
+
+  const updateReportPinned = useCallback((reportId: string, index: number, question: string) => {
+    const q = question.trim()
+    if (!reportId || !q) return
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      return { ...prev, [reportId]: list.map((p, i) => (i === index ? q : p)) }
+    })
+  }, [])
+
+  const removeReportPinned = useCallback((reportId: string, index: number) => {
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      return { ...prev, [reportId]: list.filter((_, i) => i !== index) }
     })
   }, [])
 
@@ -463,6 +514,7 @@ export function useAiManagement() {
     mounted,
     targets,
     areaPinned,
+    reportPinned,
     asks,
     log,
     toggleAutoSurface,
@@ -473,6 +525,9 @@ export function useAiManagement() {
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    pinReportQuestion,
+    updateReportPinned,
+    removeReportPinned,
   }
 }
 
