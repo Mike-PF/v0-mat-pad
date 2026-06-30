@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Button } from "@/components/ui/button"
@@ -810,6 +810,190 @@ function TrendsTab({
 // Tab 3 — Reports (exportable question log)
 // ===========================================================================
 
+/**
+ * Organisations visible to a platform admin. Each MAT groups the individual
+ * schools that appear in the question log, so filtering by a trust matches every
+ * one of its schools and the school counts stay accurate.
+ */
+const ORG_TREE: { id: string; name: string; schools: string[] }[] = [
+  { id: "mat-fuze", name: "Fuze Multi Academy Trust", schools: ["Fuze MAT (Central)", "Oakfield Primary", "Hillside Junior"] },
+  { id: "mat-st-michael", name: "St Michael's Catholic Multi Academy Trust", schools: ["St Mary's CofE"] },
+  { id: "mat-greenhill", name: "Greenhill Learning Trust", schools: ["Greenhill Academy", "Riverside High"] },
+]
+
+/** The currently selected organisation scope for the question log. */
+type OrgSelection =
+  | { type: "all" }
+  | { type: "mat"; id: string; name: string }
+  | { type: "school"; name: string }
+
+/** Resolve the parent MAT name for a given school, if any. */
+function parentMatName(school: string): string | null {
+  return ORG_TREE.find((m) => m.schools.includes(school))?.name ?? null
+}
+
+/**
+ * Searchable organisation picker shown to platform admins in place of a flat
+ * "All schools" dropdown. Lists every MAT (with school counts) and every school.
+ */
+function OrgPicker({
+  value,
+  onChange,
+  schools,
+}: {
+  value: OrgSelection
+  onChange: (sel: OrgSelection) => void
+  schools: string[]
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const q = search.trim().toLowerCase()
+  const filteredMats = ORG_TREE.filter((m) => m.name.toLowerCase().includes(q))
+  const filteredSchools = schools.filter((s) => s.toLowerCase().includes(q))
+
+  const label =
+    value.type === "all"
+      ? "All organisations"
+      : value.type === "mat"
+        ? value.name
+        : value.name
+
+  function select(sel: OrgSelection) {
+    onChange(sel)
+    setOpen(false)
+    setSearch("")
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-10 w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm hover:border-slate-300 transition-colors"
+      >
+        <span className={`flex-1 text-left truncate ${value.type === "all" ? "text-slate-500" : "text-slate-900"}`}>
+          {label}
+        </span>
+        {value.type === "mat" && (
+          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">MAT</span>
+        )}
+        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-full min-w-[300px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[360px] flex flex-col">
+          <div className="p-2 border-b">
+            <Input
+              placeholder="Search MATs or schools..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9"
+              autoFocus
+            />
+          </div>
+          <div className="overflow-auto flex-1">
+            {/* All organisations */}
+            {"all organisations".includes(q) && (
+              <button
+                type="button"
+                onClick={() => select({ type: "all" })}
+                className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors ${
+                  value.type === "all" ? "bg-[#B30089] text-white font-medium" : "text-slate-900 hover:bg-slate-50"
+                }`}
+              >
+                All organisations
+              </button>
+            )}
+
+            {/* MATs */}
+            {filteredMats.length > 0 && (
+              <>
+                <div className="px-4 py-2 border-t border-b">
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Multi-Academy Trusts
+                  </span>
+                </div>
+                {filteredMats.map((mat) => {
+                  const selected = value.type === "mat" && value.id === mat.id
+                  return (
+                    <button
+                      key={mat.id}
+                      type="button"
+                      onClick={() => select({ type: "mat", id: mat.id, name: mat.name })}
+                      className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                        selected ? "bg-[#B30089]" : "hover:bg-slate-50"
+                      }`}
+                    >
+                      <span
+                        className={`text-sm flex-1 text-left truncate ${selected ? "text-white font-medium" : "text-slate-900"}`}
+                      >
+                        {mat.name}
+                      </span>
+                      <span className={`text-xs shrink-0 ${selected ? "text-white" : "text-slate-500"}`}>
+                        {mat.schools.length} {mat.schools.length === 1 ? "school" : "schools"}
+                      </span>
+                    </button>
+                  )
+                })}
+              </>
+            )}
+
+            {/* Schools */}
+            {filteredSchools.length > 0 && (
+              <>
+                <div className="px-4 py-2 border-t border-b">
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Schools</span>
+                </div>
+                {filteredSchools.map((school) => {
+                  const selected = value.type === "school" && value.name === school
+                  const parent = parentMatName(school)
+                  return (
+                    <button
+                      key={school}
+                      type="button"
+                      onClick={() => select({ type: "school", name: school })}
+                      className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                        selected ? "bg-[#B30089]" : "hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex-1 text-left min-w-0">
+                        <span
+                          className={`text-sm block truncate ${selected ? "text-white font-medium" : "text-slate-900"}`}
+                        >
+                          {school}
+                        </span>
+                        {parent && (
+                          <span className={`text-xs truncate block ${selected ? "text-white" : "text-slate-500"}`}>
+                            {parent}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
+              </>
+            )}
+
+            {filteredMats.length === 0 && filteredSchools.length === 0 && !"all organisations".includes(q) && (
+              <div className="p-4 text-center text-sm text-slate-500">No results found</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ReportsTab({ log }: { log: AskLogEntry[] }) {
   const [filters, setFilters] = useState<LogFilters>({
     search: "",
@@ -818,9 +1002,20 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
     answered: "all",
   })
 
+  // Organisation scope (platform admins can see every organisation). Kept separate
+  // from `filters.school` so a trust selection can match all of its schools.
+  const [orgSel, setOrgSel] = useState<OrgSelection>({ type: "all" })
+
   const schools = useMemo(() => uniqueValues(log, "school"), [log])
   const topics = useMemo(() => uniqueValues(log, "topic"), [log])
-  const filtered = useMemo(() => filterLog(log, filters), [log, filters])
+  const filtered = useMemo(() => {
+    const base = filterLog(log, filters)
+    if (orgSel.type === "all") return base
+    if (orgSel.type === "school") return base.filter((e) => e.school === orgSel.name)
+    const mat = ORG_TREE.find((m) => m.id === orgSel.id)
+    const matSchools = new Set(mat?.schools ?? [])
+    return base.filter((e) => matSchools.has(e.school))
+  }, [log, filters, orgSel])
 
   const unansweredCount = useMemo(() => filtered.filter((e) => !e.answered).length, [filtered])
 
@@ -832,7 +1027,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
   // Reset to the first page whenever the filters change the result set.
   useEffect(() => {
     setPage(1)
-  }, [filters])
+  }, [filters, orgSel])
   const pageCount = Math.max(1, Math.ceil(filtered.length / ROW_PAGE_SIZE))
   const safePage = Math.min(page, pageCount)
   const pageRows = filtered.slice((safePage - 1) * ROW_PAGE_SIZE, safePage * ROW_PAGE_SIZE)
@@ -891,19 +1086,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
             className="pl-9"
           />
         </div>
-        <Select value={filters.school} onValueChange={(v) => setFilters((f) => ({ ...f, school: v }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="All schools" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All schools</SelectItem>
-            {schools.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <OrgPicker value={orgSel} onChange={setOrgSel} schools={schools} />
         <Select value={filters.topic} onValueChange={(v) => setFilters((f) => ({ ...f, topic: v }))}>
           <SelectTrigger>
             <SelectValue placeholder="All topics" />
