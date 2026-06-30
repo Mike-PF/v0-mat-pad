@@ -161,7 +161,7 @@ export default function AiManagementPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-900">AI Management</h1>
-                <p className="text-sm text-slate-500 mt-0.5 max-w-2xl">
+                <p className="text-sm text-slate-500 mt-0.5">
                   Attach AI questions to specific reports and dashboards. The chatbot tailors what it suggests on each
                   page based on what users actually ask, and you can export the full question log for reporting.
                 </p>
