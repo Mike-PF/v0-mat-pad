@@ -470,6 +470,171 @@ export function ReportsContent() {
     c.reports.some(r => r.id === selectedReport)
   )
 
+  // Floating AI chat launcher + panel, shared by the report menu and report viewer.
+  const renderAiChat = () => (
+    <>
+      {/* AI Chat Floating Button */}
+      {!chatMinimized && (
+        <div className="fixed bottom-8 right-8 z-40 group">
+          <button
+            onClick={() => setShowAiChat(true)}
+            className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
+            style={{ backgroundColor: "#B30089" }}
+            aria-label="Open AI Chat"
+          >
+            <Sparkles className="w-8 h-8 text-white" />
+          </button>
+          {/* Minimise the floating button when it's in the way */}
+          <button
+            onClick={() => {
+              setChatMinimized(true)
+              setShowAiChat(false)
+            }}
+            className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+            aria-label="Minimise AI Chat button"
+            title="Minimise"
+          >
+            <Minimize2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Restore tab shown when the chat button is minimised */}
+      {chatMinimized && (
+        <button
+          onClick={() => setChatMinimized(false)}
+          className="fixed bottom-8 right-0 z-40 flex items-center gap-1.5 rounded-l-full py-2 pl-3 pr-2 shadow-lg hover:shadow-xl transition-all text-white"
+          style={{ backgroundColor: "#B30089" }}
+          aria-label="Show AI Chat button"
+          title="Show AI Chat"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <Sparkles className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* AI Chat Modal */}
+      {showAiChat && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-end md:p-6">
+          <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[600px]">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#B30089] to-[#121051] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
+              <div>
+                <h3 className="text-white font-semibold">MATpad AI</h3>
+                <p className="text-white/80 text-sm">Ask about your data</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/ai-chat"
+                  className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors flex items-center gap-1 text-xs"
+                  title="Open full AI Chat"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={() => setShowAiChat(false)}
+                  className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Chat Area */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
+                      <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
+                    <p className="text-sm text-slate-600 mb-6">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
+
+                    {/* Example questions */}
+                    <div className="w-full space-y-2">
+                      <button
+                        onClick={() => handleExampleQuestion("What's our current attendance rate?")}
+                        className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                      >
+                        What&apos;s our current attendance rate?
+                      </button>
+                      <button
+                        onClick={() => handleExampleQuestion("Compare KS2 results across schools")}
+                        className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                      >
+                        Compare KS2 results across schools
+                      </button>
+                      <button
+                        onClick={() => handleExampleQuestion("Show persistent absence trends")}
+                        className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                      >
+                        Show persistent absence trends
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {chatMessages.map((msg, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-line ${
+                            msg.role === "user"
+                              ? "bg-[#121051] text-white"
+                              : "bg-slate-100 text-slate-800"
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-slate-100 rounded-lg px-4 py-3">
+                          <div className="flex gap-1">
+                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="border-t border-slate-200 p-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ask about your data..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={handleChatKeyDown}
+                    className="flex-1 px-4 py-2 bg-slate-100 rounded-full text-sm outline-none placeholder-slate-400 focus:bg-slate-50 transition-colors"
+                  />
+                  <button
+                    onClick={handleSendChatMessage}
+                    disabled={!chatInput.trim()}
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: chatInput.trim() ? "#B30089" : "#C0C0C0" }}
+                  >
+                    <Send className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+
   // Report selected with navigation visible
   if (selectedReport) {
     return (
@@ -530,6 +695,7 @@ export function ReportsContent() {
             )}
           </div>
         </div>
+        {renderAiChat()}
       </>
     )
   }
@@ -763,165 +929,7 @@ export function ReportsContent() {
           )}
         </div>
 
-        {/* AI Chat Floating Button */}
-        {!chatMinimized && (
-          <div className="fixed bottom-8 right-8 z-40 group">
-            <button
-              onClick={() => setShowAiChat(true)}
-              className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
-              style={{ backgroundColor: "#B30089" }}
-              aria-label="Open AI Chat"
-            >
-              <Sparkles className="w-8 h-8 text-white" />
-            </button>
-            {/* Minimise the floating button when it's in the way */}
-            <button
-              onClick={() => {
-                setChatMinimized(true)
-                setShowAiChat(false)
-              }}
-              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-              aria-label="Minimise AI Chat button"
-              title="Minimise"
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
-        {/* Restore tab shown when the chat button is minimised */}
-        {chatMinimized && (
-          <button
-            onClick={() => setChatMinimized(false)}
-            className="fixed bottom-8 right-0 z-40 flex items-center gap-1.5 rounded-l-full py-2 pl-3 pr-2 shadow-lg hover:shadow-xl transition-all text-white"
-            style={{ backgroundColor: "#B30089" }}
-            aria-label="Show AI Chat button"
-            title="Show AI Chat"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <Sparkles className="w-5 h-5" />
-          </button>
-        )}
-
-        {/* AI Chat Modal */}
-        {showAiChat && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-end md:p-6">
-            <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[600px]">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-[#B30089] to-[#121051] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
-                <div>
-                  <h3 className="text-white font-semibold">MATpad AI</h3>
-                  <p className="text-white/80 text-sm">Ask about your data</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/ai-chat"
-                    className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors flex items-center gap-1 text-xs"
-                    title="Open full AI Chat"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
-                  <button
-                    onClick={() => setShowAiChat(false)}
-                    className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Chat Area */}
-                <div className="flex-1 overflow-y-auto p-4">
-                  {chatMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
-                        <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
-                      </div>
-                      <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
-                      <p className="text-sm text-slate-600 mb-6">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
-
-                      {/* Example questions */}
-                      <div className="w-full space-y-2">
-                        <button 
-                          onClick={() => handleExampleQuestion("What's our current attendance rate?")}
-                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
-                        >
-                          What&apos;s our current attendance rate?
-                        </button>
-                        <button 
-                          onClick={() => handleExampleQuestion("Compare KS2 results across schools")}
-                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
-                        >
-                          Compare KS2 results across schools
-                        </button>
-                        <button 
-                          onClick={() => handleExampleQuestion("Show persistent absence trends")}
-                          className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
-                        >
-                          Show persistent absence trends
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {chatMessages.map((msg, index) => (
-                        <div
-                          key={index}
-                          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                        >
-                          <div
-                            className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-line ${
-                              msg.role === "user"
-                                ? "bg-[#121051] text-white"
-                                : "bg-slate-100 text-slate-800"
-                            }`}
-                          >
-                            {msg.content}
-                          </div>
-                        </div>
-                      ))}
-                      {isTyping && (
-                        <div className="flex justify-start">
-                          <div className="bg-slate-100 rounded-lg px-4 py-3">
-                            <div className="flex gap-1">
-                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Input Area */}
-                <div className="border-t border-slate-200 p-4">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Ask about your data..."
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      onKeyDown={handleChatKeyDown}
-                      className="flex-1 px-4 py-2 bg-slate-100 rounded-full text-sm outline-none placeholder-slate-400 focus:bg-slate-50 transition-colors"
-                    />
-                    <button 
-                      onClick={handleSendChatMessage}
-                      disabled={!chatInput.trim()}
-                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: chatInput.trim() ? "#B30089" : "#C0C0C0" }}
-                    >
-                      <Send className="w-4 h-4 text-white" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {renderAiChat()}
       </div>
     </>
   )
