@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import {
   Select,
@@ -21,7 +20,6 @@ import {
   Search,
   Plus,
   Trash2,
-  Pin,
   Sparkles,
   TrendingUp,
   TrendingDown,
@@ -36,16 +34,17 @@ import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
 import {
   useAiManagement,
-  surfacedQuestions,
-  topAsksForTarget,
   asksByTopic,
   totalAsks,
   getAreaColor,
+  targetsForArea,
+  REPORT_AREAS,
   filterLog,
   logToExportRows,
   formatLogDate,
   uniqueValues,
   type ChatTarget,
+  type AreaPinned,
   type AskLogEntry,
   type LogFilters,
 } from "@/lib/ai-chatbot"
@@ -60,61 +59,51 @@ export default function AiManagementPage() {
   const {
     mounted,
     targets,
+    areaPinned,
     asks,
     log,
-    toggleAutoSurface,
-    pinQuestion,
-    updatePinned,
-    removePinned,
-    excludeQuestion,
+    pinAreaQuestion,
+    updateAreaPinned,
+    removeAreaPinned,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
   const [search, setSearch] = useState("")
-  const [kindFilter, setKindFilter] = useState<"all" | "dashboard" | "report">("all")
 
-  // Pin / edit dialog state
-  const [dialogTarget, setDialogTarget] = useState<ChatTarget | null>(null)
+  // Add / edit question dialog state. Questions attach to a report area.
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogArea, setDialogArea] = useState<string>(REPORT_AREAS[0])
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
 
   // Delete confirm
-  const [deleteConfirm, setDeleteConfirm] = useState<{ target: ChatTarget; index: number } | null>(null)
-
-  const filteredTargets = useMemo(() => {
-    return targets.filter((t) => {
-      if (kindFilter !== "all" && t.kind !== kindFilter) return false
-      if (search.trim()) {
-        const q = search.toLowerCase()
-        return t.name.toLowerCase().includes(q) || t.area.toLowerCase().includes(q)
-      }
-      return true
-    })
-  }, [targets, kindFilter, search])
+  const [deleteConfirm, setDeleteConfirm] = useState<{ area: string; index: number } | null>(null)
 
   const topicGroups = useMemo(() => asksByTopic(asks), [asks])
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
 
-  function openAdd(target: ChatTarget, prefill = "") {
-    setDialogTarget(target)
+  function openAdd(area?: string) {
+    setDialogArea(area ?? REPORT_AREAS[0])
     setDialogIndex(null)
-    setDialogText(prefill)
+    setDialogText("")
+    setDialogOpen(true)
   }
 
-  function openEdit(target: ChatTarget, index: number) {
-    setDialogTarget(target)
+  function openEdit(area: string, index: number) {
+    setDialogArea(area)
     setDialogIndex(index)
-    setDialogText(target.pinned[index])
+    setDialogText((areaPinned[area] ?? [])[index] ?? "")
+    setDialogOpen(true)
   }
 
   function saveDialog() {
-    if (!dialogTarget || !dialogText.trim()) return
+    if (!dialogText.trim()) return
     if (dialogIndex === null) {
-      pinQuestion(dialogTarget.id, dialogText)
+      pinAreaQuestion(dialogArea, dialogText)
     } else {
-      updatePinned(dialogTarget.id, dialogIndex, dialogText)
+      updateAreaPinned(dialogArea, dialogIndex, dialogText)
     }
-    setDialogTarget(null)
+    setDialogOpen(false)
     setDialogText("")
     setDialogIndex(null)
   }
@@ -204,17 +193,13 @@ export default function AiManagementPage() {
               <div className="py-20 text-center text-sm text-slate-400">Loading…</div>
             ) : tab === "prompts" ? (
               <PromptsTab
-                targets={filteredTargets}
-                asks={asks}
+                targets={targets}
+                areaPinned={areaPinned}
                 search={search}
                 setSearch={setSearch}
-                kindFilter={kindFilter}
-                setKindFilter={setKindFilter}
-                onToggleAuto={toggleAutoSurface}
                 onAdd={openAdd}
                 onEdit={openEdit}
-                onDelete={(target, index) => setDeleteConfirm({ target, index })}
-                onExclude={excludeQuestion}
+                onDelete={(area, index) => setDeleteConfirm({ area, index })}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -225,38 +210,52 @@ export default function AiManagementPage() {
         </main>
       </div>
 
-      {/* Pin / edit dialog */}
-      <Dialog open={!!dialogTarget} onOpenChange={(open) => !open && setDialogTarget(null)}>
+      {/* Add / edit question dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
-          <div className="flex items-center gap-2 mb-1">
-            <Pin className="w-4 h-4 text-slate-400" />
-            <h2 className="text-base font-semibold text-slate-900">
-              {dialogIndex === null ? "Add a question" : "Edit question"}
-            </h2>
-          </div>
-          {dialogTarget && (
-            <p className="text-sm text-slate-500 mb-4">
-              This question will always be suggested on{" "}
-              <span className="font-medium text-slate-700">{dialogTarget.name}</span>.
-            </p>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="pin-text">
-              Question<span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="pin-text"
-              value={dialogText}
-              onChange={(e) => setDialogText(e.target.value)}
-              placeholder="e.g. How does our Progress 8 compare to last year?"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") saveDialog()
-              }}
-            />
+          <h2 className="text-base font-semibold text-slate-900 mb-1">
+            {dialogIndex === null ? "Add a question" : "Edit question"}
+          </h2>
+          <p className="text-sm text-slate-500 mb-4">
+            Choose the report area this question belongs to. It will be suggested by the chatbot on every dashboard and
+            report in that area.
+          </p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="question-area">
+                Report area<span className="text-red-500">*</span>
+              </Label>
+              <Select value={dialogArea} onValueChange={setDialogArea} disabled={dialogIndex !== null}>
+                <SelectTrigger id="question-area">
+                  <SelectValue placeholder="Select a report area…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_AREAS.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {area}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="question-text">
+                Question<span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="question-text"
+                value={dialogText}
+                onChange={(e) => setDialogText(e.target.value)}
+                placeholder="e.g. How does our Progress 8 compare to last year?"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveDialog()
+                }}
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => setDialogTarget(null)}>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -278,8 +277,8 @@ export default function AiManagementPage() {
           <p className="text-sm text-slate-500 mb-6">
             {deleteConfirm && (
               <>
-                &ldquo;{deleteConfirm.target.pinned[deleteConfirm.index]}&rdquo; will no longer be suggested on{" "}
-                {deleteConfirm.target.name}.
+                &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]}&rdquo; will no longer be suggested
+                across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
               </>
             )}
           </p>
@@ -290,7 +289,7 @@ export default function AiManagementPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (deleteConfirm) removePinned(deleteConfirm.target.id, deleteConfirm.index)
+                if (deleteConfirm) removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
                 setDeleteConfirm(null)
               }}
             >
@@ -309,189 +308,155 @@ export default function AiManagementPage() {
 
 function PromptsTab({
   targets,
-  asks,
+  areaPinned,
   search,
   setSearch,
-  kindFilter,
-  setKindFilter,
-  onToggleAuto,
   onAdd,
   onEdit,
   onDelete,
-  onExclude,
 }: {
   targets: ChatTarget[]
-  asks: ReturnType<typeof useAiManagement>["asks"]
+  areaPinned: AreaPinned
   search: string
   setSearch: (v: string) => void
-  kindFilter: "all" | "dashboard" | "report"
-  setKindFilter: (v: "all" | "dashboard" | "report") => void
-  onToggleAuto: (id: string) => void
-  onAdd: (target: ChatTarget, prefill?: string) => void
-  onEdit: (target: ChatTarget, index: number) => void
-  onDelete: (target: ChatTarget, index: number) => void
-  onExclude: (targetId: string, question: string) => void
+  onAdd: (area?: string) => void
+  onEdit: (area: string, index: number) => void
+  onDelete: (area: string, index: number) => void
 }) {
-  const PAGE_SIZE = 5
+  // Match areas by name, or by any report/dashboard that lives in the area.
+  const visibleAreas = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return [...REPORT_AREAS]
+    return REPORT_AREAS.filter((area) => {
+      if (area.toLowerCase().includes(q)) return true
+      return targetsForArea(targets, area).some((t) => t.name.toLowerCase().includes(q))
+    })
+  }, [search, targets])
+
+  const PAGE_SIZE = 6
   const [page, setPage] = useState(1)
-  // Reset to the first page whenever the filters change the result set.
   useEffect(() => {
     setPage(1)
-  }, [search, kindFilter])
-  const pageCount = Math.max(1, Math.ceil(targets.length / PAGE_SIZE))
+  }, [search])
+  const pageCount = Math.max(1, Math.ceil(visibleAreas.length / PAGE_SIZE))
   const safePage = Math.min(page, pageCount)
-  const pageTargets = targets.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pageAreas = visibleAreas.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
+      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search reports & dashboards…"
+            placeholder="Search report areas…"
             className="pl-9"
           />
         </div>
-        <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as typeof kindFilter)}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All targets</SelectItem>
-            <SelectItem value="dashboard">Dashboards</SelectItem>
-            <SelectItem value="report">Reports</SelectItem>
-          </SelectContent>
-        </Select>
+        <Button onClick={() => onAdd()} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          Add question
+        </Button>
       </div>
 
-      {targets.length === 0 ? (
-        <div className="py-16 text-center text-sm text-slate-400">No reports or dashboards match your filter.</div>
+      <p className="text-xs text-slate-500">
+        Questions are attached to a report area. When a user opens the AI chatbot from any dashboard or report in that
+        area, these questions are suggested to them.
+      </p>
+
+      {visibleAreas.length === 0 ? (
+        <div className="py-16 text-center text-sm text-slate-400">No report areas match your search.</div>
       ) : (
         <>
-        {pageTargets.map((target) => {
-          const surfaced = surfacedQuestions(target, asks)
-          const topAsks = topAsksForTarget(asks, target.id)
-          const color = getAreaColor(target.area)
-          return (
-            <Card key={target.id} className="overflow-hidden">
-              <CardContent className="p-0">
-                {/* Target header */}
-                <div className="flex items-start gap-3 p-5 border-b border-slate-100">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-semibold text-slate-900">{target.name}</h3>
-                      <span
-                        className="px-1.5 py-0.5 text-[10px] font-medium rounded uppercase tracking-wide"
-                        style={{ backgroundColor: `${color}18`, color }}
-                      >
-                        {target.area}
-                      </span>
-                      <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 text-slate-500 capitalize">
-                        {target.kind}
-                      </span>
+          {pageAreas.map((area) => {
+            const color = getAreaColor(area)
+            const pinned = areaPinned[area] ?? []
+            const areaTargets = targetsForArea(targets, area)
+            return (
+              <Card key={area} className="overflow-hidden">
+                <CardContent className="p-0">
+                  {/* Area header */}
+                  <div className="flex items-start gap-3 p-5 border-b border-slate-100">
+                    <span className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: color }} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-semibold text-slate-900">{area}</h3>
+                        <span
+                          className="px-1.5 py-0.5 text-[10px] font-medium rounded"
+                          style={{ backgroundColor: `${color}18`, color }}
+                        >
+                          {pinned.length} {pinned.length === 1 ? "question" : "questions"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {areaTargets.length === 0
+                          ? "No reports or dashboards in this area yet"
+                          : `Surfaced on: ${areaTargets.map((t) => t.name).join(", ")}`}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {topAsks.reduce((s, a) => s + a.count, 0).toLocaleString()} questions asked here in the last 30
-                      days
-                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onAdd(area)}
+                      className="h-8 px-2.5 text-xs shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Add
+                    </Button>
                   </div>
-                  <label className="flex items-center gap-2 shrink-0 cursor-pointer">
-                    <span className="text-xs text-slate-500 hidden sm:inline">Auto-surface top asked</span>
-                    <Switch checked={target.autoSurface} onCheckedChange={() => onToggleAuto(target.id)} />
-                  </label>
-                </div>
 
-                <div>
-                  {/* What the chatbot surfaces */}
+                  {/* Pinned questions */}
                   <div className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                        Suggested on this page
-                      </span>
-                      <Button size="sm" variant="outline" onClick={() => onAdd(target)} className="h-7 px-2 text-xs">
-                        <Plus className="w-3.5 h-3.5 mr-1" />
-                        Add question
-                      </Button>
-                    </div>
-                    {surfaced.length === 0 ? (
-                      <p className="text-xs text-slate-400 py-4">
-                        Nothing suggested yet. Add a question or enable auto-surface.
+                    {pinned.length === 0 ? (
+                      <p className="text-xs text-slate-400 py-2">
+                        No questions yet. Add a question to suggest it across this area.
                       </p>
                     ) : (
                       <div className="space-y-2">
-                        {surfaced.map((s, i) => {
-                          const pinnedIndex = s.source === "pinned" ? target.pinned.indexOf(s.text) : -1
-                          return (
-                            <div
-                              key={`${s.text}-${i}`}
-                              className={`group flex items-start gap-2 p-2.5 rounded-lg border text-left ${
-                                s.source === "pinned"
-                                  ? "border-slate-200 bg-white cursor-pointer hover:border-slate-300"
-                                  : "border-dashed border-slate-200 bg-slate-50/60"
-                              }`}
-                              role={s.source === "pinned" ? "button" : undefined}
-                              tabIndex={s.source === "pinned" ? 0 : undefined}
-                              onClick={s.source === "pinned" ? () => onEdit(target, pinnedIndex) : undefined}
-                              onKeyDown={
-                                s.source === "pinned"
-                                  ? (e) => {
-                                      if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault()
-                                        onEdit(target, pinnedIndex)
-                                      }
-                                    }
-                                  : undefined
+                        {pinned.map((q, i) => (
+                          <div
+                            key={`${q}-${i}`}
+                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-slate-200 bg-white text-left cursor-pointer hover:border-slate-300"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onEdit(area, i)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault()
+                                onEdit(area, i)
                               }
+                            }}
+                          >
+                            <span className="flex-1 text-sm text-slate-700">{q}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onDelete(area, i)
+                              }}
+                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                              aria-label="Remove question"
                             >
-                              <span className="flex-1 text-sm text-slate-700">{s.text}</span>
-                              {s.source === "pinned" ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    onDelete(target, pinnedIndex)
-                                  }}
-                                  className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                                  aria-label="Remove pinned question"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <span className="text-[10px] text-slate-400 uppercase tracking-wide mt-1">
-                                    Auto
-                                  </span>
-                                  <button
-                                    onClick={() => onExclude(target.id, s.text)}
-                                    className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                                    aria-label="Remove auto-surfaced question"
-                                    title="Remove this suggestion"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-        <Pagination
-          page={safePage}
-          pageCount={pageCount}
-          onPageChange={setPage}
-          totalItems={targets.length}
-          pageSize={PAGE_SIZE}
-          itemLabel="reports & dashboards"
-        />
+                </CardContent>
+              </Card>
+            )
+          })}
+          <Pagination
+            page={safePage}
+            pageCount={pageCount}
+            onPageChange={setPage}
+            totalItems={visibleAreas.length}
+            pageSize={PAGE_SIZE}
+            itemLabel="report areas"
+          />
         </>
       )}
     </div>

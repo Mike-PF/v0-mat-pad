@@ -64,21 +64,50 @@ export interface AskLogEntry {
   answered: boolean
 }
 
+/**
+ * Report areas a question can be assigned to. Mirrors the Report Area options on
+ * Dashboard Settings. A question pinned to an area is surfaced by the chatbot on
+ * every dashboard/report that belongs to that area.
+ */
+export const REPORT_AREAS = [
+  "Attendance",
+  "Attainment",
+  "Behaviour",
+  "Finance",
+  "Safeguarding",
+  "SEND",
+  "Staffing",
+  "Curriculum",
+  "Pastoral",
+  "Other",
+] as const
+
 // Category colours from the brand style guide (Style Guide → Colours → Category).
 // Keep these in sync with `categoryColors` on app/settings/style-guide/page.tsx.
 export const AREA_COLORS: Record<string, string> = {
   Attendance: "#5BBE80", // Green
   Attainment: "#5B9BF5", // Blue
   Behaviour: "#F79400", // Orange
-  SEND: "#715DBF", // Purple
   Finance: "#2395A4", // Teal
-  "Ofsted & Compliance": "#F7555A", // Red
-  Assessment: "#B3008B", // Magenta
-  General: "#64748B", // slate-500 (neutral catch-all)
+  Safeguarding: "#F7555A", // Red
+  SEND: "#715DBF", // Purple
+  Staffing: "#B3008B", // Magenta
+  Curriculum: "#6AD0D5", // Light Teal
+  Pastoral: "#121051", // Brand Navy
+  Other: "#64748B", // slate-500 (neutral catch-all)
+  // Legacy areas still present in seed data / logs.
+  "Ofsted & Compliance": "#F7555A",
+  Assessment: "#B3008B",
+  General: "#64748B",
 }
 
 export function getAreaColor(area: string): string {
-  return AREA_COLORS[area] ?? AREA_COLORS.General
+  return AREA_COLORS[area] ?? AREA_COLORS.Other
+}
+
+/** Normalise any stored area to one of the canonical REPORT_AREAS (legacy → "Other"). */
+export function normaliseArea(area: string): string {
+  return (REPORT_AREAS as readonly string[]).includes(area) ? area : "Other"
 }
 
 // ---------------------------------------------------------------------------
@@ -271,6 +300,28 @@ const SEED_LOG: AskLogEntry[] = buildSeedLog()
 // ---------------------------------------------------------------------------
 
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
+const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
+
+/** Map of report area -> admin-pinned questions surfaced on every report in that area. */
+export type AreaPinned = Record<string, string[]>
+
+/**
+ * Seed area-level pins by rolling up the questions already pinned to seed targets,
+ * grouped by their (normalised) report area. Preserves existing demo content.
+ */
+function buildSeedAreaPinned(): AreaPinned {
+  const map: AreaPinned = {}
+  for (const t of SEED_TARGETS) {
+    const area = normaliseArea(t.area)
+    const arr = map[area] ?? (map[area] = [])
+    for (const q of t.pinned) {
+      if (!arr.some((x) => x.toLowerCase() === q.toLowerCase())) arr.push(q)
+    }
+  }
+  return map
+}
+
+const SEED_AREA_PINNED: AreaPinned = buildSeedAreaPinned()
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback
@@ -297,16 +348,52 @@ function save<T>(key: string, value: T) {
 
 export function useAiManagement() {
   const [targets, setTargets] = useState<ChatTarget[]>(SEED_TARGETS)
+  const [areaPinned, setAreaPinned] = useState<AreaPinned>(SEED_AREA_PINNED)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setTargets(load(TARGETS_KEY, SEED_TARGETS))
+    setAreaPinned(load(AREA_PINNED_KEY, SEED_AREA_PINNED))
     setMounted(true)
   }, [])
 
   useEffect(() => {
     if (mounted) save(TARGETS_KEY, targets)
   }, [targets, mounted])
+
+  useEffect(() => {
+    if (mounted) save(AREA_PINNED_KEY, areaPinned)
+  }, [areaPinned, mounted])
+
+  /** Pin a question to a report area so it is suggested on every report in that area. */
+  const pinAreaQuestion = useCallback((area: string, question: string) => {
+    const q = question.trim()
+    const a = normaliseArea(area)
+    if (!q) return
+    setAreaPinned((prev) => {
+      const list = prev[a] ?? []
+      if (list.some((p) => p.toLowerCase() === q.toLowerCase())) return prev
+      return { ...prev, [a]: [...list, q] }
+    })
+  }, [])
+
+  const updateAreaPinned = useCallback((area: string, index: number, question: string) => {
+    const q = question.trim()
+    const a = normaliseArea(area)
+    if (!q) return
+    setAreaPinned((prev) => {
+      const list = prev[a] ?? []
+      return { ...prev, [a]: list.map((p, i) => (i === index ? q : p)) }
+    })
+  }, [])
+
+  const removeAreaPinned = useCallback((area: string, index: number) => {
+    const a = normaliseArea(area)
+    setAreaPinned((prev) => {
+      const list = prev[a] ?? []
+      return { ...prev, [a]: list.filter((_, i) => i !== index) }
+    })
+  }, [])
 
   // Asks + the question log are analytics — read-only, not persisted/edited by admins.
   const asks = SEED_ASKS
@@ -365,6 +452,7 @@ export function useAiManagement() {
   return {
     mounted,
     targets,
+    areaPinned,
     asks,
     log,
     toggleAutoSurface,
@@ -372,12 +460,20 @@ export function useAiManagement() {
     updatePinned,
     removePinned,
     excludeQuestion,
+    pinAreaQuestion,
+    updateAreaPinned,
+    removeAreaPinned,
   }
 }
 
 // ---------------------------------------------------------------------------
 // Derived helpers
 // ---------------------------------------------------------------------------
+
+/** Reports/dashboards that belong to a given report area (matched by normalised area). */
+export function targetsForArea(targets: ChatTarget[], area: string): ChatTarget[] {
+  return targets.filter((t) => normaliseArea(t.area) === normaliseArea(area))
+}
 
 /** Top-asked questions for a target, most frequent first. */
 export function topAsksForTarget(asks: AskRecord[], targetId: string, limit = 4): AskRecord[] {
