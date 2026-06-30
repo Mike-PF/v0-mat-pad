@@ -22,7 +22,6 @@ import {
   Trash2,
   Sparkles,
   TrendingUp,
-  TrendingDown,
   FileSpreadsheet,
   Download,
   MessageCircleQuestion,
@@ -161,7 +160,7 @@ export default function AiManagementPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-900">AI Management</h1>
-                <p className="text-sm text-slate-500 mt-0.5 max-w-2xl">
+                <p className="text-sm text-slate-500 mt-0.5">
                   Attach AI questions to specific reports and dashboards. The chatbot tailors what it suggests on each
                   page based on what users actually ask, and you can export the full question log for reporting.
                 </p>
@@ -397,15 +396,6 @@ function PromptsTab({
                           : `Surfaced on: ${areaTargets.map((t) => t.name).join(", ")}`}
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onAdd(area)}
-                      className="h-8 px-2.5 text-xs shrink-0"
-                    >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      Add
-                    </Button>
                   </div>
 
                   {/* Pinned questions */}
@@ -491,6 +481,10 @@ function TrendsTab({
   }, [targets, asks])
 
   const fastestGrowing = topicGroups.slice().sort((a, b) => b.trend - a.trend)[0]?.topic ?? "—"
+  // Average questions asked per day across the last 30 days.
+  const avgPerDay = Math.round(grandTotal / 30)
+  // The single topic users ask about the most (topicGroups is sorted by total desc).
+  const mostAskedTopic = topicGroups[0]?.topic ?? "—"
 
   const TOPIC_PAGE_SIZE = 6
   const [topicPage, setTopicPage] = useState(1)
@@ -503,23 +497,39 @@ function TrendsTab({
   // Track which topic rows are expanded to reveal the questions asked within them.
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({})
   const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
+  const allExpanded = topicGroups.length > 0 && topicGroups.every((g) => expandedTopics[g.topic])
 
   return (
     <div className="space-y-6">
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Questions (30 days)" value={grandTotal.toLocaleString()} />
-        <StatCard label="Topics tracked" value={String(topicGroups.length)} />
-        <StatCard label="Reports & dashboards" value={String(targets.length)} />
-        <StatCard label="Fastest growing" value={fastestGrowing} small />
+        <StatCard label="Avg. questions per day" value={avgPerDay.toLocaleString()} />
+        <StatCard label="Most asked topic" value={mostAskedTopic} small />
+        <StatCard label="Fastest growing topic" value={fastestGrowing} small />
       </div>
 
       {/* By topic */}
       <Card>
         <CardContent className="p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <MessageCircleQuestion className="w-4 h-4 text-slate-400" />
-            <h3 className="text-sm font-semibold text-slate-900">What people are asking, by topic</h3>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <MessageCircleQuestion className="w-4 h-4 text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-900">What people are asking, by topic</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (allExpanded) {
+                  setExpandedTopics({})
+                } else {
+                  setExpandedTopics(Object.fromEntries(topicGroups.map((g) => [g.topic, true])))
+                }
+              }}
+              className="shrink-0 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              {allExpanded ? "Collapse all" : "Expand all"}
+            </button>
           </div>
           <p className="text-xs text-slate-500 mb-4">
             Questions are grouped by keyword (Attendance, Attainment, SEND…). Use this to spot where demand is heading.
@@ -548,7 +558,6 @@ function TrendsTab({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-slate-700">{g.total.toLocaleString()}</span>
-                        <TrendBadge trend={g.trend} />
                       </div>
                     </div>
                     <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -566,7 +575,6 @@ function TrendsTab({
                           <span className="text-xs font-medium text-slate-500 shrink-0">
                             {q.count.toLocaleString()}
                           </span>
-                          <TrendBadge trend={q.trend} />
                         </div>
                       ))}
                     </div>
@@ -603,7 +611,6 @@ function TrendsTab({
                     <span className="text-xs font-semibold text-slate-300 w-4">{i + 1}</span>
                     <span className="flex-1 text-sm text-slate-700 truncate">{a.question}</span>
                     <span className="text-xs font-medium text-slate-500">{a.count}</span>
-                    <TrendBadge trend={a.trend} />
                   </div>
                 ))}
             </div>
@@ -717,7 +724,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
           <Input
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Search question, person, page…"
+            placeholder="Search"
             className="pl-9"
           />
         </div>
@@ -850,20 +857,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
 // ===========================================================================
 // Shared small components
 // ===========================================================================
-
-function TrendBadge({ trend }: { trend: number }) {
-  const up = trend >= 0
-  // Style guide status colours: Success (#4A7C44) and Destructive (#EF4444).
-  return (
-    <span
-      className="inline-flex items-center gap-0.5 text-xs font-medium shrink-0"
-      style={{ color: up ? "#4A7C44" : "#EF4444" }}
-    >
-      {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-      {Math.abs(trend)}%
-    </span>
-  )
-}
 
 // Builds a compact page list with ellipses, e.g. [1, "…", 4, 5, 6, "…", 12].
 function getPageRange(current: number, total: number): (number | "…")[] {
