@@ -15,10 +15,6 @@ import {
   Info,
   TrendingUp,
   TrendingDown,
-  Eye,
-  FileText,
-  Upload,
-  Clock,
   ExternalLink,
   X,
   Play,
@@ -100,14 +96,6 @@ const schoolsOverview = [
   },
 ]
 
-// Recent activity
-const recentActivity = [
-  { type: "upload", title: "Attendance data uploaded", school: "ASHS", time: "10 mins ago" },
-  { type: "report", title: "PA Report generated", school: "ECPS", time: "1 hour ago" },
-  { type: "view", title: "Exclusions dashboard viewed", school: "MAT", time: "2 hours ago" },
-  { type: "upload", title: "Census data uploaded", school: "NDHS", time: "Yesterday" },
-]
-
 // Ofsted data
 const ofstedData = [
   { name: "All Saints' Catholic High School", abbr: "ASHS", judgement: "Good", date: "Mar 2023" },
@@ -127,15 +115,6 @@ const getOfstedColor = (judgement: string) => {
       return { bg: "bg-red-100", text: "text-red-700" }
     default:
       return { bg: "bg-slate-100", text: "text-slate-700" }
-  }
-}
-
-const getActivityIcon = (type: string) => {
-  switch (type) {
-    case "upload": return Upload
-    case "report": return FileText
-    case "view": return Eye
-    default: return Clock
   }
 }
 
@@ -469,29 +448,6 @@ export function HomeContent() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
-      {/* Recent Activity - Horizontal chips */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-slate-500 shrink-0">Recent:</span>
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          {recentActivity.map((activity, i) => {
-            const Icon = getActivityIcon(activity.type)
-            return (
-              <div
-                key={i}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full text-xs hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer group whitespace-nowrap"
-                title={`${activity.title} - ${activity.school}`}
-              >
-                <Icon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
-                <span className="text-slate-700">{activity.title}</span>
-                <span className="text-slate-400">({activity.school})</span>
-                <span className="text-slate-300">·</span>
-                <span className="text-slate-400">{activity.time}</span>
-              </div>
-            )
-          })}
         </div>
       </div>
 
