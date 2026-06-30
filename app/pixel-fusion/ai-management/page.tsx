@@ -724,7 +724,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
           <Input
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Search question, person, page…"
+            placeholder="Search"
             className="pl-9"
           />
         </div>
