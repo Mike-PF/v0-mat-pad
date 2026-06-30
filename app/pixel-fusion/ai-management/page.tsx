@@ -639,6 +639,12 @@ function TrendsTab({
   const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
   const allExpanded = topicGroups.length > 0 && topicGroups.every((g) => expandedTopics[g.topic])
 
+  // Cap the questions shown per open topic so expanding many topics never balloons
+  // into one giant scroll. Each topic can be individually expanded to show them all.
+  const QUESTIONS_PER_TOPIC = 5
+  const [showAllQuestions, setShowAllQuestions] = useState<Record<string, boolean>>({})
+  const toggleShowAll = (topic: string) => setShowAllQuestions((prev) => ({ ...prev, [topic]: !prev[topic] }))
+
   return (
     <div className="space-y-6">
       {/* Summary stats */}
@@ -709,14 +715,27 @@ function TrendsTab({
                   </button>
                   {isOpen && (
                     <div className="mt-2 ml-6 pl-4 border-l border-slate-200 space-y-1.5">
-                      {g.questions.map((q) => (
-                        <div key={q.id} className="flex items-center gap-3 py-1">
-                          <span className="flex-1 text-sm text-slate-600">{q.question}</span>
-                          <span className="text-xs font-medium text-slate-500 shrink-0">
-                            {q.count.toLocaleString()}
-                          </span>
-                        </div>
-                      ))}
+                      {(showAllQuestions[g.topic] ? g.questions : g.questions.slice(0, QUESTIONS_PER_TOPIC)).map(
+                        (q) => (
+                          <div key={q.id} className="flex items-center gap-3 py-1">
+                            <span className="flex-1 text-sm text-slate-600">{q.question}</span>
+                            <span className="text-xs font-medium text-slate-500 shrink-0">
+                              {q.count.toLocaleString()}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                      {g.questions.length > QUESTIONS_PER_TOPIC && (
+                        <button
+                          type="button"
+                          onClick={() => toggleShowAll(g.topic)}
+                          className="mt-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                        >
+                          {showAllQuestions[g.topic]
+                            ? "Show fewer"
+                            : `Show all ${g.questions.length} questions`}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
