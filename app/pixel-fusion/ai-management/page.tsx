@@ -29,6 +29,7 @@ import {
   CheckCircle2,
   XCircle,
   Lock,
+  ChevronDown,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -499,6 +500,10 @@ function TrendsTab({
   const topicMax = topicGroups[0]?.total ?? 1
   const pagedTopics = topicGroups.slice((safeTopicPage - 1) * TOPIC_PAGE_SIZE, safeTopicPage * TOPIC_PAGE_SIZE)
 
+  // Track which topic rows are expanded to reveal the questions asked within them.
+  const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({})
+  const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
+
   return (
     <div className="space-y-6">
       {/* Summary stats */}
@@ -523,25 +528,49 @@ function TrendsTab({
             {pagedTopics.map((g) => {
               const max = topicMax
               const color = getAreaColor(g.topic)
+              const isOpen = !!expandedTopics[g.topic]
               return (
                 <div key={g.topic}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                      <span className="text-sm font-medium text-slate-800">{g.topic}</span>
-                      <span className="text-xs text-slate-400">{g.questions.length} questions</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleTopic(g.topic)}
+                    aria-expanded={isOpen}
+                    className="w-full text-left rounded-md -mx-1 px-1 py-1 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "" : "-rotate-90"}`}
+                        />
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-sm font-medium text-slate-800">{g.topic}</span>
+                        <span className="text-xs text-slate-400">{g.questions.length} questions</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-slate-700">{g.total.toLocaleString()}</span>
+                        <TrendBadge trend={g.trend} />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-slate-700">{g.total.toLocaleString()}</span>
-                      <TrendBadge trend={g.trend} />
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${(g.total / max) * 100}%`, backgroundColor: color }}
+                      />
                     </div>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(g.total / max) * 100}%`, backgroundColor: color }}
-                    />
-                  </div>
+                  </button>
+                  {isOpen && (
+                    <div className="mt-2 ml-6 pl-4 border-l border-slate-200 space-y-1.5">
+                      {g.questions.map((q) => (
+                        <div key={q.id} className="flex items-center gap-3 py-1">
+                          <span className="flex-1 text-sm text-slate-600">{q.question}</span>
+                          <span className="text-xs font-medium text-slate-500 shrink-0">
+                            {q.count.toLocaleString()}
+                          </span>
+                          <TrendBadge trend={q.trend} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             })}
