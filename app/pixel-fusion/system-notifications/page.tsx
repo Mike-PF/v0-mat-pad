@@ -360,7 +360,6 @@ export default function SystemNotificationsPage() {
               ) : (
                 <div className="space-y-2">
                   {filtered.map((item) => {
-                    const Icon = getTypeIcon(item.type)
                     const color = getTypeColor(item.type)
                     return (
                       <div
@@ -378,13 +377,6 @@ export default function SystemNotificationsPage() {
                           item.visible ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50/60"
                         }`}
                       >
-                        <div
-                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${color}18` }}
-                        >
-                          <Icon className="w-4 h-4" style={{ color }} />
-                        </div>
-
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className={`text-sm font-medium ${item.visible ? "text-slate-900" : "text-slate-500"}`}>
