@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { LoadingModal } from "@/components/ui/loading-modal"
+import { getAreaQuestions } from "@/lib/ai-chatbot"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
 import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
 import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
@@ -471,7 +472,17 @@ export function ReportsContent() {
   )
 
   // Floating AI chat launcher + panel, shared by the report menu and report viewer.
-  const renderAiChat = () => (
+  const renderAiChat = () => {
+    // When opened from a dashboard/report, surface the questions an admin pinned to
+    // that report's area in AI Management. Fall back to generic prompts otherwise.
+    const areaQuestions = selectedCategory ? getAreaQuestions(selectedCategory.name) : []
+    const defaultQuestions = [
+      "What's our current attendance rate?",
+      "Compare KS2 results across schools",
+      "Show persistent absence trends",
+    ]
+    const suggestedQuestions = areaQuestions.length > 0 ? areaQuestions : defaultQuestions
+    return (
     <>
       {/* AI Chat Floating Button */}
       {!chatMinimized && (
@@ -552,26 +563,24 @@ export function ReportsContent() {
                     <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
                     <p className="text-sm text-slate-600 mb-6">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
 
-                    {/* Example questions */}
-                    <div className="w-full space-y-2">
-                      <button
-                        onClick={() => handleExampleQuestion("What's our current attendance rate?")}
-                        className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
-                      >
-                        What&apos;s our current attendance rate?
-                      </button>
-                      <button
-                        onClick={() => handleExampleQuestion("Compare KS2 results across schools")}
-                        className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
-                      >
-                        Compare KS2 results across schools
-                      </button>
-                      <button
-                        onClick={() => handleExampleQuestion("Show persistent absence trends")}
-                        className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
-                      >
-                        Show persistent absence trends
-                      </button>
+                    {/* Suggested questions — area-specific when opened from a report */}
+                    <div className="w-full">
+                      {areaQuestions.length > 0 && selectedCategory && (
+                        <p className="text-xs font-medium text-slate-500 mb-2 text-left">
+                          Suggested for {selectedCategory.name}
+                        </p>
+                      )}
+                      <div className="w-full space-y-2">
+                        {suggestedQuestions.map((question, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleExampleQuestion(question)}
+                            className="w-full p-3 text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left border border-slate-200"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -633,7 +642,8 @@ export function ReportsContent() {
         </div>
       )}
     </>
-  )
+    )
+  }
 
   // Report selected with navigation visible
   if (selectedReport) {

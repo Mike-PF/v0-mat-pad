@@ -342,6 +342,16 @@ function save<T>(key: string, value: T) {
   }
 }
 
+/**
+ * Read the admin-pinned questions for a given report area from the same store
+ * AI Management writes to. Used by the chatbot to surface area-specific prompts
+ * when it is opened from a dashboard/report belonging to that area.
+ */
+export function getAreaQuestions(area: string): string[] {
+  const all = load<AreaPinned>(AREA_PINNED_KEY, SEED_AREA_PINNED)
+  return all[normaliseArea(area)] ?? []
+}
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
