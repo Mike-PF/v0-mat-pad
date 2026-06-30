@@ -482,6 +482,10 @@ function TrendsTab({
   }, [targets, asks])
 
   const fastestGrowing = topicGroups.slice().sort((a, b) => b.trend - a.trend)[0]?.topic ?? "—"
+  // Average questions asked per day across the last 30 days.
+  const avgPerDay = Math.round(grandTotal / 30)
+  // The single topic users ask about the most (topicGroups is sorted by total desc).
+  const mostAskedTopic = topicGroups[0]?.topic ?? "—"
 
   const TOPIC_PAGE_SIZE = 6
   const [topicPage, setTopicPage] = useState(1)
@@ -500,9 +504,9 @@ function TrendsTab({
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Questions (30 days)" value={grandTotal.toLocaleString()} />
-        <StatCard label="Topics tracked" value={String(topicGroups.length)} />
-        <StatCard label="Reports & dashboards" value={String(targets.length)} />
-        <StatCard label="Fastest growing" value={fastestGrowing} small />
+        <StatCard label="Avg. questions per day" value={avgPerDay.toLocaleString()} />
+        <StatCard label="Most asked topic" value={mostAskedTopic} small />
+        <StatCard label="Fastest growing topic" value={fastestGrowing} small />
       </div>
 
       {/* By topic */}
