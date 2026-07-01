@@ -21,7 +21,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { LoadingModal } from "@/components/ui/loading-modal"
-import { getAreaQuestions } from "@/lib/ai-chatbot"
+import { getAreaQuestions, getReportQuestions } from "@/lib/ai-chatbot"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
 import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
 import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
@@ -31,7 +31,7 @@ import { EyfsGoalsByPupilGroupReport } from "@/components/eyfs-goals-by-pupilgro
 // Report categories with reports and descriptions
 // isSystem: true = MATpad system report, false/undefined = custom user-built report
 // status: 'active' | 'insufficient-roles' | 'upgrade-required' - controls report availability
-const reportCategories = [
+export const reportCategories = [
   {
     id: "attendance",
     name: "Attendance",
@@ -473,15 +473,20 @@ export function ReportsContent() {
 
   // Floating AI chat launcher + panel, shared by the report menu and report viewer.
   const renderAiChat = () => {
-    // When opened from a dashboard/report, surface the questions an admin pinned to
-    // that report's area in AI Management. Fall back to generic prompts otherwise.
+    // When opened from a dashboard/report, surface the questions an admin pinned in
+    // AI Management. Report-specific questions (scoped to this exact report) come first,
+    // then the broader area questions. Fall back to generic prompts otherwise.
+    const reportQuestions = selectedReportData ? getReportQuestions(selectedReportData.id) : []
     const areaQuestions = selectedCategory ? getAreaQuestions(selectedCategory.name) : []
+    const pinnedQuestions = [...reportQuestions, ...areaQuestions].filter(
+      (q, i, arr) => arr.findIndex((x) => x.toLowerCase() === q.toLowerCase()) === i,
+    )
     const defaultQuestions = [
       "What's our current attendance rate?",
       "Compare KS2 results across schools",
       "Show persistent absence trends",
     ]
-    const suggestedQuestions = areaQuestions.length > 0 ? areaQuestions : defaultQuestions
+    const suggestedQuestions = pinnedQuestions.length > 0 ? pinnedQuestions : defaultQuestions
     return (
     <>
       {/* AI Chat Floating Button */}

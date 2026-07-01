@@ -62,6 +62,8 @@ export interface AskLogEntry {
   targetId: string
   /** Whether the chatbot was able to answer from existing data. */
   answered: boolean
+  /** The response the chatbot gave back to the user. */
+  answer: string
 }
 
 /**
@@ -238,6 +240,65 @@ const LOG_PEOPLE: { user: string; role: string; school: string }[] = [
  * realistic per-person rows (who asked, which page, when). Each aggregated ask
  * spawns several individual events spread across people and recent days.
  */
+/**
+ * Canned chatbot responses per known question, used to populate the question log
+ * so admins can review exactly what the assistant replied. Keyed by the exact
+ * question text from SEED_ASKS.
+ */
+const SEED_ANSWERS: Record<string, string> = {
+  "What is our overall attendance rate this term?":
+    "Overall attendance across the trust is 94.2% this term, which is 1.8 points below your 96% target but 0.3 points above the national average of 93.9%. Attendance has dipped 0.3 points compared with last term.",
+  "Which year groups have the highest persistent absence?":
+    "Year 10 (12.4%) and Year 11 (11.1%) have the highest persistent absence, both well above the trust average of 8.6%. Year 7 is lowest at 5.2%. The biggest term-on-term rise is in Year 10, up 2.4 points.",
+  "How many pupils have unauthorised absence?":
+    "418 pupils have at least one session of unauthorised absence this term (6.1% of the roll). Of these, 92 have unauthorised absence above 5%, concentrated in Years 9–11.",
+  "Show attendance for free school meal pupils.":
+    "FSM pupils are attending at 91.4%, compared with 95.1% for non-FSM pupils — a 3.7 point gap. The gap is widest in the secondary phase, where it reaches 5.2 points.",
+  "How does our Attainment 8 compare to national average?":
+    "Your Attainment 8 score is 47.2, just above the national average of 46.3. All Saints' is your strongest at 51.8; Notre Dame trails the national figure at 43.1.",
+  "What is our current Progress 8 score?":
+    "The trust-wide Progress 8 score is +0.12, indicating pupils make slightly more progress than the national average. Two of three secondaries are positive; Notre Dame sits at -0.18.",
+  "Which pupils are below expected attainment in maths?":
+    "I couldn't return a pupil-level maths list — individual prior-attainment data isn't connected to this dashboard yet.",
+  "How many behaviour incidents this week?":
+    "There have been 134 logged behaviour incidents this week, up 31% on last week. 58% relate to low-level disruption and the largest increase is in Year 9.",
+  "Which pupils have the most detentions?":
+    "The 10 pupils with the most detentions this term each have between 9 and 15, and 7 of the 10 are in Year 9. Six also appear on the persistent absence watchlist.",
+  "What is our attendance vs last year?":
+    "Attendance is 94.2% this year versus 94.5% at the same point last year — a 0.3 point decline. The drop is driven mainly by Year 10 and Year 11.",
+  "Break attendance down by year group.":
+    "Attendance by year group: Y7 96.1%, Y8 95.3%, Y9 94.0%, Y10 92.6%, Y11 92.9%. Primary phase year groups all sit above 95%.",
+  "Who are our persistently absent pupils?":
+    "There are 591 persistently absent pupils (below 90% attendance) this term, 8.6% of the roll. 64% are secondary-aged and 38% are also eligible for free school meals.",
+  "Show persistent absence by SEND status.":
+    "Persistent absence is 14.8% for pupils with SEND support and 17.2% for those with an EHCP, compared with 7.1% for pupils with no SEND need — roughly double the rate.",
+  "What is our Progress 8 by subject bucket?":
+    "Progress 8 by bucket: English +0.21, Maths +0.04, EBacc -0.08, Open +0.16. The EBacc bucket is the only negative element, dragging the headline figure down.",
+  "Which subjects are dragging Progress 8 down?":
+    "Within the EBacc bucket, MFL (-0.34) and Geography (-0.21) are the largest negatives. Science is broadly in line with national. Open-bucket subjects are a net positive.",
+  "Show KS2 SATs results by subject.":
+    "KS2 expected standard: Reading 76%, Writing 72%, Maths 79%, and 68% reaching the expected standard in all of reading, writing and maths combined — 3 points above national.",
+  "How many pupils met the expected standard in reading?":
+    "76% of pupils met the expected standard in reading at KS2, with 28% reaching the higher standard. This is 2 points above the national average for reading.",
+  "How many pupils are on the SEND register?":
+    "There are 1,043 pupils on the SEND register across the trust (15.2% of the roll): 904 at SEND support and 139 with an EHCP.",
+  "Show progress for pupils with an EHCP.":
+    "Pupils with an EHCP have an average Progress 8 of -0.41, below the trust average. 62% are working towards their individual targets, with attendance the most common barrier flagged.",
+}
+
+/** The standard reply used when the assistant has no connected data to answer from. */
+const UNANSWERED_REPLY =
+  "I couldn't answer this from the reports currently connected. There's no dashboard or dataset that covers this yet — it's been logged as a gap to investigate."
+
+/** Resolve the response shown for a logged question. */
+function answerFor(question: string, answered: boolean): string {
+  if (!answered) return UNANSWERED_REPLY
+  return (
+    SEED_ANSWERS[question] ??
+    "Here's a summary based on the latest data connected to this report. Open the report for the full breakdown."
+  )
+}
+
 function buildSeedLog(): AskLogEntry[] {
   const log: AskLogEntry[] = []
   let counter = 0
@@ -250,6 +311,7 @@ function buildSeedLog(): AskLogEntry[] {
     for (let i = 0; i < occurrences; i++) {
       const person = LOG_PEOPLE[(counter + i) % LOG_PEOPLE.length]
       const hoursAgo = (counter * 7 + i * 13) % 96 // within last 4 days
+      const answered = ask.trend >= 0 ? true : i % 3 !== 0
       log.push({
         id: `log-${++counter}`,
         askedAt: new Date(now - hoursAgo * 60 * 60 * 1000).toISOString(),
@@ -260,7 +322,8 @@ function buildSeedLog(): AskLogEntry[] {
         school: person.school,
         page: targetName(ask.targetId),
         targetId: ask.targetId,
-        answered: ask.trend >= 0 ? true : i % 3 !== 0,
+        answered,
+        answer: answerFor(ask.question, answered),
       })
     }
   }
@@ -284,10 +347,11 @@ function buildSeedLog(): AskLogEntry[] {
       user: person.user,
       role: person.role,
       school: person.school,
-      page: "AI Assistant (no report match)",
-      targetId: "",
-      answered: false,
-    })
+        page: "AI Assistant (no report match)",
+        targetId: "",
+        answered: false,
+        answer: answerFor(u.q, false),
+      })
   }
 
   return log.sort((a, b) => new Date(b.askedAt).getTime() - new Date(a.askedAt).getTime())
@@ -301,9 +365,18 @@ const SEED_LOG: AskLogEntry[] = buildSeedLog()
 
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
 const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
+const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
 
 /** Map of report area -> admin-pinned questions surfaced on every report in that area. */
 export type AreaPinned = Record<string, string[]>
+
+/**
+ * Map of a specific report/dashboard id (as listed on the Dashboards page) ->
+ * admin-pinned questions surfaced by the chatbot ONLY when that exact report is open.
+ */
+export type ReportPinned = Record<string, string[]>
+
+const SEED_REPORT_PINNED: ReportPinned = {}
 
 /**
  * Seed area-level pins by rolling up the questions already pinned to seed targets,
@@ -352,6 +425,15 @@ export function getAreaQuestions(area: string): string[] {
   return all[normaliseArea(area)] ?? []
 }
 
+/**
+ * Read the admin-pinned questions for a single specific report/dashboard.
+ * These are surfaced by the chatbot only when that exact report is open.
+ */
+export function getReportQuestions(reportId: string): string[] {
+  const all = load<ReportPinned>(REPORT_PINNED_KEY, SEED_REPORT_PINNED)
+  return all[reportId] ?? []
+}
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
@@ -359,11 +441,13 @@ export function getAreaQuestions(area: string): string[] {
 export function useAiManagement() {
   const [targets, setTargets] = useState<ChatTarget[]>(SEED_TARGETS)
   const [areaPinned, setAreaPinned] = useState<AreaPinned>(SEED_AREA_PINNED)
+  const [reportPinned, setReportPinned] = useState<ReportPinned>(SEED_REPORT_PINNED)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setTargets(load(TARGETS_KEY, SEED_TARGETS))
     setAreaPinned(load(AREA_PINNED_KEY, SEED_AREA_PINNED))
+    setReportPinned(load(REPORT_PINNED_KEY, SEED_REPORT_PINNED))
     setMounted(true)
   }, [])
 
@@ -374,6 +458,10 @@ export function useAiManagement() {
   useEffect(() => {
     if (mounted) save(AREA_PINNED_KEY, areaPinned)
   }, [areaPinned, mounted])
+
+  useEffect(() => {
+    if (mounted) save(REPORT_PINNED_KEY, reportPinned)
+  }, [reportPinned, mounted])
 
   /** Pin a question to a report area so it is suggested on every report in that area. */
   const pinAreaQuestion = useCallback((area: string, question: string) => {
@@ -402,6 +490,33 @@ export function useAiManagement() {
     setAreaPinned((prev) => {
       const list = prev[a] ?? []
       return { ...prev, [a]: list.filter((_, i) => i !== index) }
+    })
+  }, [])
+
+  /** Pin a question to a single specific report so it is suggested only on that report. */
+  const pinReportQuestion = useCallback((reportId: string, question: string) => {
+    const q = question.trim()
+    if (!reportId || !q) return
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      if (list.some((p) => p.toLowerCase() === q.toLowerCase())) return prev
+      return { ...prev, [reportId]: [...list, q] }
+    })
+  }, [])
+
+  const updateReportPinned = useCallback((reportId: string, index: number, question: string) => {
+    const q = question.trim()
+    if (!reportId || !q) return
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      return { ...prev, [reportId]: list.map((p, i) => (i === index ? q : p)) }
+    })
+  }, [])
+
+  const removeReportPinned = useCallback((reportId: string, index: number) => {
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      return { ...prev, [reportId]: list.filter((_, i) => i !== index) }
     })
   }, [])
 
@@ -463,6 +578,7 @@ export function useAiManagement() {
     mounted,
     targets,
     areaPinned,
+    reportPinned,
     asks,
     log,
     toggleAutoSurface,
@@ -473,6 +589,9 @@ export function useAiManagement() {
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    pinReportQuestion,
+    updateReportPinned,
+    removeReportPinned,
   }
 }
 
@@ -594,6 +713,7 @@ export function logToExportRows(log: AskLogEntry[]) {
     Topic: e.topic,
     Question: e.question,
     Answered: e.answered ? "Yes" : "No",
+    Response: e.answer,
   }))
 }
 

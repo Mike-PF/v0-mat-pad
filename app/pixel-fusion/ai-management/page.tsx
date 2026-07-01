@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Button } from "@/components/ui/button"
@@ -45,13 +45,37 @@ import {
   uniqueValues,
   type ChatTarget,
   type AreaPinned,
+  type ReportPinned,
   type AskLogEntry,
   type LogFilters,
 } from "@/lib/ai-chatbot"
+import { reportCategories } from "@/components/reports-content"
 
 const NAVY = "#121051"
 
+// Sentinel for the "All reports in this area" option (Radix Select forbids "" values).
+const ALL_REPORTS = "__all_reports__"
+
 type Tab = "prompts" | "trends" | "reports"
+
+/**
+ * System reports listed on the Dashboards page, grouped by the area heading they
+ * sit under. Used to scope an AI question to a single specific report.
+ */
+function systemReportsForArea(area: string): { id: string; name: string }[] {
+  const cat = reportCategories.find((c) => c.name.toLowerCase() === area.toLowerCase())
+  if (!cat) return []
+  return cat.reports.filter((r) => r.isSystem).map((r) => ({ id: r.id, name: r.name }))
+}
+
+/** Find the human-readable name for a report id across all areas. */
+function reportNameById(reportId: string): string {
+  for (const c of reportCategories) {
+    const r = c.reports.find((x) => x.id === reportId)
+    if (r) return r.name
+  }
+  return reportId
+}
 
 export default function AiManagementPage() {
   const allowed = isPlatformAdmin()
@@ -60,30 +84,42 @@ export default function AiManagementPage() {
     mounted,
     targets,
     areaPinned,
+    reportPinned,
     asks,
     log,
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    pinReportQuestion,
+    updateReportPinned,
+    removeReportPinned,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
   const [search, setSearch] = useState("")
 
-  // Add / edit question dialog state. Questions attach to a report area.
+  // Add / edit question dialog state. Questions attach to a report area, and can
+  // optionally be scoped to one specific report within that area.
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogArea, setDialogArea] = useState<string>(REPORT_AREAS[0])
+  // ALL_REPORTS = all reports in the area; otherwise a specific report id.
+  const [dialogReport, setDialogReport] = useState<string>(ALL_REPORTS)
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
 
-  // Delete confirm
-  const [deleteConfirm, setDeleteConfirm] = useState<{ area: string; index: number } | null>(null)
+  // Delete confirm — scoped to either a report area or a single report.
+  const [deleteConfirm, setDeleteConfirm] = useState<
+    | { scope: "area"; area: string; index: number }
+    | { scope: "report"; reportId: string; index: number }
+    | null
+  >(null)
 
   const topicGroups = useMemo(() => asksByTopic(asks), [asks])
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
 
   function openAdd(area?: string) {
     setDialogArea(area ?? REPORT_AREAS[0])
+    setDialogReport(ALL_REPORTS)
     setDialogIndex(null)
     setDialogText("")
     setDialogOpen(true)
@@ -91,21 +127,40 @@ export default function AiManagementPage() {
 
   function openEdit(area: string, index: number) {
     setDialogArea(area)
+    setDialogReport(ALL_REPORTS)
     setDialogIndex(index)
     setDialogText((areaPinned[area] ?? [])[index] ?? "")
     setDialogOpen(true)
   }
 
+  function openEditReport(area: string, reportId: string, index: number) {
+    setDialogArea(area)
+    setDialogReport(reportId)
+    setDialogIndex(index)
+    setDialogText((reportPinned[reportId] ?? [])[index] ?? "")
+    setDialogOpen(true)
+  }
+
+  // When the area changes while adding, the previously chosen report no longer applies.
+  function handleDialogAreaChange(area: string) {
+    setDialogArea(area)
+    setDialogReport(ALL_REPORTS)
+  }
+
   function saveDialog() {
     if (!dialogText.trim()) return
+    const scopedToReport = dialogReport !== ALL_REPORTS
     if (dialogIndex === null) {
-      pinAreaQuestion(dialogArea, dialogText)
+      if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
+      else pinAreaQuestion(dialogArea, dialogText)
     } else {
-      updateAreaPinned(dialogArea, dialogIndex, dialogText)
+      if (scopedToReport) updateReportPinned(dialogReport, dialogIndex, dialogText)
+      else updateAreaPinned(dialogArea, dialogIndex, dialogText)
     }
     setDialogOpen(false)
     setDialogText("")
     setDialogIndex(null)
+    setDialogReport(ALL_REPORTS)
   }
 
   if (!allowed) {
@@ -195,11 +250,14 @@ export default function AiManagementPage() {
               <PromptsTab
                 targets={targets}
                 areaPinned={areaPinned}
+                reportPinned={reportPinned}
                 search={search}
                 setSearch={setSearch}
                 onAdd={openAdd}
                 onEdit={openEdit}
-                onDelete={(area, index) => setDeleteConfirm({ area, index })}
+                onEditReport={openEditReport}
+                onDelete={(area, index) => setDeleteConfirm({ scope: "area", area, index })}
+                onDeleteReport={(reportId, index) => setDeleteConfirm({ scope: "report", reportId, index })}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -217,15 +275,16 @@ export default function AiManagementPage() {
             {dialogIndex === null ? "Add a question" : "Edit question"}
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            Choose the report area this question belongs to. It will be suggested by the chatbot on every dashboard and
-            report in that area.
+            Choose the report area this question belongs to, then optionally narrow it to a single report. Area
+            questions are suggested across every dashboard and report in that area; a report-specific question is only
+            suggested when that exact report is open.
           </p>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="question-area">
                 Report area<span className="text-red-500">*</span>
               </Label>
-              <Select value={dialogArea} onValueChange={setDialogArea} disabled={dialogIndex !== null}>
+              <Select value={dialogArea} onValueChange={handleDialogAreaChange} disabled={dialogIndex !== null}>
                 <SelectTrigger id="question-area">
                   <SelectValue placeholder="Select a report area…" />
                 </SelectTrigger>
@@ -237,6 +296,27 @@ export default function AiManagementPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="question-report">Report</Label>
+              <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
+                <SelectTrigger id="question-report">
+                  <SelectValue placeholder="All reports in this area" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_REPORTS}>All reports in this area</SelectItem>
+                  {systemReportsForArea(dialogArea).map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-400">
+                {systemReportsForArea(dialogArea).length === 0
+                  ? "No system reports sit under this area on the Dashboards page."
+                  : "Leave as “All reports in this area” to suggest it everywhere in the area, or pick one report to scope it."}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="question-text">
@@ -275,10 +355,17 @@ export default function AiManagementPage() {
         <DialogContent className="max-w-sm">
           <h2 className="text-base font-semibold text-slate-900 mb-1">Remove question?</h2>
           <p className="text-sm text-slate-500 mb-6">
-            {deleteConfirm && (
+            {deleteConfirm?.scope === "area" && (
               <>
                 &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]}&rdquo; will no longer be suggested
                 across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
+              </>
+            )}
+            {deleteConfirm?.scope === "report" && (
+              <>
+                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]}&rdquo; will no longer be
+                suggested on{" "}
+                <span className="font-medium text-slate-700">{reportNameById(deleteConfirm.reportId)}</span>.
               </>
             )}
           </p>
@@ -289,7 +376,9 @@ export default function AiManagementPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (deleteConfirm) removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
+                if (deleteConfirm?.scope === "area") removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
+                else if (deleteConfirm?.scope === "report")
+                  removeReportPinned(deleteConfirm.reportId, deleteConfirm.index)
                 setDeleteConfirm(null)
               }}
             >
@@ -309,19 +398,25 @@ export default function AiManagementPage() {
 function PromptsTab({
   targets,
   areaPinned,
+  reportPinned,
   search,
   setSearch,
   onAdd,
   onEdit,
+  onEditReport,
   onDelete,
+  onDeleteReport,
 }: {
   targets: ChatTarget[]
   areaPinned: AreaPinned
+  reportPinned: ReportPinned
   search: string
   setSearch: (v: string) => void
   onAdd: (area?: string) => void
   onEdit: (area: string, index: number) => void
+  onEditReport: (area: string, reportId: string, index: number) => void
   onDelete: (area: string, index: number) => void
+  onDeleteReport: (reportId: string, index: number) => void
 }) {
   // Match areas by name, or by any report/dashboard that lives in the area.
   const visibleAreas = useMemo(() => {
@@ -374,6 +469,12 @@ function PromptsTab({
             const color = getAreaColor(area)
             const pinned = areaPinned[area] ?? []
             const areaTargets = targetsForArea(targets, area)
+            // Report-specific questions grouped by the report they are scoped to.
+            const areaReports = systemReportsForArea(area)
+              .map((r) => ({ report: r, questions: reportPinned[r.id] ?? [] }))
+              .filter((x) => x.questions.length > 0)
+            const reportQCount = areaReports.reduce((s, x) => s + x.questions.length, 0)
+            const totalCount = pinned.length + reportQCount
             return (
               <Card key={area} className="overflow-hidden">
                 <CardContent className="p-0">
@@ -387,7 +488,7 @@ function PromptsTab({
                           className="px-1.5 py-0.5 text-[10px] font-medium rounded"
                           style={{ backgroundColor: `${color}18`, color }}
                         >
-                          {pinned.length} {pinned.length === 1 ? "question" : "questions"}
+                          {totalCount} {totalCount === 1 ? "question" : "questions"}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5">
@@ -399,12 +500,9 @@ function PromptsTab({
                   </div>
 
                   {/* Pinned questions */}
-                  <div className="p-5">
-                    {pinned.length === 0 ? (
-                      <p className="text-xs text-slate-400 py-2">
-                        No questions yet. Add a question to suggest it across this area.
-                      </p>
-                    ) : (
+                  <div className="p-5 space-y-4">
+                    {/* Area-wide questions: surfaced on every report/dashboard in the area. */}
+                    {pinned.length > 0 && (
                       <div className="space-y-2">
                         {pinned.map((q, i) => (
                           <div
@@ -434,6 +532,48 @@ function PromptsTab({
                           </div>
                         ))}
                       </div>
+                    )}
+
+                    {/* Report-specific questions: surfaced only on that exact report. */}
+                    {areaReports.map(({ report, questions }) => (
+                      <div key={report.id} className="space-y-2">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                          Only on: <span className="text-slate-600 normal-case">{report.name}</span>
+                        </p>
+                        {questions.map((q, i) => (
+                          <div
+                            key={`${report.id}-${q}-${i}`}
+                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/60 text-left cursor-pointer hover:border-slate-300"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onEditReport(area, report.id, i)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault()
+                                onEditReport(area, report.id, i)
+                              }
+                            }}
+                          >
+                            <span className="flex-1 text-sm text-slate-700">{q}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onDeleteReport(report.id, i)
+                              }}
+                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                              aria-label="Remove question"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+
+                    {totalCount === 0 && (
+                      <p className="text-xs text-slate-400 py-2">
+                        No questions yet. Add a question to suggest it across this area.
+                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -498,6 +638,12 @@ function TrendsTab({
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({})
   const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
   const allExpanded = topicGroups.length > 0 && topicGroups.every((g) => expandedTopics[g.topic])
+
+  // Cap the questions shown per open topic so expanding many topics never balloons
+  // into one giant scroll. Each topic can be individually expanded to show them all.
+  const QUESTIONS_PER_TOPIC = 5
+  const [showAllQuestions, setShowAllQuestions] = useState<Record<string, boolean>>({})
+  const toggleShowAll = (topic: string) => setShowAllQuestions((prev) => ({ ...prev, [topic]: !prev[topic] }))
 
   return (
     <div className="space-y-6">
@@ -569,14 +715,27 @@ function TrendsTab({
                   </button>
                   {isOpen && (
                     <div className="mt-2 ml-6 pl-4 border-l border-slate-200 space-y-1.5">
-                      {g.questions.map((q) => (
-                        <div key={q.id} className="flex items-center gap-3 py-1">
-                          <span className="flex-1 text-sm text-slate-600">{q.question}</span>
-                          <span className="text-xs font-medium text-slate-500 shrink-0">
-                            {q.count.toLocaleString()}
-                          </span>
-                        </div>
-                      ))}
+                      {(showAllQuestions[g.topic] ? g.questions : g.questions.slice(0, QUESTIONS_PER_TOPIC)).map(
+                        (q) => (
+                          <div key={q.id} className="flex items-center gap-3 py-1">
+                            <span className="flex-1 text-sm text-slate-600">{q.question}</span>
+                            <span className="text-xs font-medium text-slate-500 shrink-0">
+                              {q.count.toLocaleString()}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                      {g.questions.length > QUESTIONS_PER_TOPIC && (
+                        <button
+                          type="button"
+                          onClick={() => toggleShowAll(g.topic)}
+                          className="mt-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                        >
+                          {showAllQuestions[g.topic]
+                            ? "Show fewer"
+                            : `Show all ${g.questions.length} questions`}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -651,6 +810,190 @@ function TrendsTab({
 // Tab 3 — Reports (exportable question log)
 // ===========================================================================
 
+/**
+ * Organisations visible to a platform admin. Each MAT groups the individual
+ * schools that appear in the question log, so filtering by a trust matches every
+ * one of its schools and the school counts stay accurate.
+ */
+const ORG_TREE: { id: string; name: string; schools: string[] }[] = [
+  { id: "mat-fuze", name: "Fuze Multi Academy Trust", schools: ["Fuze MAT (Central)", "Oakfield Primary", "Hillside Junior"] },
+  { id: "mat-st-michael", name: "St Michael's Catholic Multi Academy Trust", schools: ["St Mary's CofE"] },
+  { id: "mat-greenhill", name: "Greenhill Learning Trust", schools: ["Greenhill Academy", "Riverside High"] },
+]
+
+/** The currently selected organisation scope for the question log. */
+type OrgSelection =
+  | { type: "all" }
+  | { type: "mat"; id: string; name: string }
+  | { type: "school"; name: string }
+
+/** Resolve the parent MAT name for a given school, if any. */
+function parentMatName(school: string): string | null {
+  return ORG_TREE.find((m) => m.schools.includes(school))?.name ?? null
+}
+
+/**
+ * Searchable organisation picker shown to platform admins in place of a flat
+ * "All schools" dropdown. Lists every MAT (with school counts) and every school.
+ */
+function OrgPicker({
+  value,
+  onChange,
+  schools,
+}: {
+  value: OrgSelection
+  onChange: (sel: OrgSelection) => void
+  schools: string[]
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const q = search.trim().toLowerCase()
+  const filteredMats = ORG_TREE.filter((m) => m.name.toLowerCase().includes(q))
+  const filteredSchools = schools.filter((s) => s.toLowerCase().includes(q))
+
+  const label =
+    value.type === "all"
+      ? "All organisations"
+      : value.type === "mat"
+        ? value.name
+        : value.name
+
+  function select(sel: OrgSelection) {
+    onChange(sel)
+    setOpen(false)
+    setSearch("")
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-10 w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm hover:border-slate-300 transition-colors"
+      >
+        <span className={`flex-1 text-left truncate ${value.type === "all" ? "text-slate-500" : "text-slate-900"}`}>
+          {label}
+        </span>
+        {value.type === "mat" && (
+          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">MAT</span>
+        )}
+        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-full min-w-[300px] bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-[360px] flex flex-col">
+          <div className="p-2 border-b">
+            <Input
+              placeholder="Search MATs or schools..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9"
+              autoFocus
+            />
+          </div>
+          <div className="overflow-auto flex-1">
+            {/* All organisations */}
+            {"all organisations".includes(q) && (
+              <button
+                type="button"
+                onClick={() => select({ type: "all" })}
+                className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors ${
+                  value.type === "all" ? "bg-[#B30089] text-white font-medium" : "text-slate-900 hover:bg-slate-50"
+                }`}
+              >
+                All organisations
+              </button>
+            )}
+
+            {/* MATs */}
+            {filteredMats.length > 0 && (
+              <>
+                <div className="px-4 py-2 border-t border-b">
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Multi-Academy Trusts
+                  </span>
+                </div>
+                {filteredMats.map((mat) => {
+                  const selected = value.type === "mat" && value.id === mat.id
+                  return (
+                    <button
+                      key={mat.id}
+                      type="button"
+                      onClick={() => select({ type: "mat", id: mat.id, name: mat.name })}
+                      className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                        selected ? "bg-[#B30089]" : "hover:bg-slate-50"
+                      }`}
+                    >
+                      <span
+                        className={`text-sm flex-1 text-left truncate ${selected ? "text-white font-medium" : "text-slate-900"}`}
+                      >
+                        {mat.name}
+                      </span>
+                      <span className={`text-xs shrink-0 ${selected ? "text-white" : "text-slate-500"}`}>
+                        {mat.schools.length} {mat.schools.length === 1 ? "school" : "schools"}
+                      </span>
+                    </button>
+                  )
+                })}
+              </>
+            )}
+
+            {/* Schools */}
+            {filteredSchools.length > 0 && (
+              <>
+                <div className="px-4 py-2 border-t border-b">
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Schools</span>
+                </div>
+                {filteredSchools.map((school) => {
+                  const selected = value.type === "school" && value.name === school
+                  const parent = parentMatName(school)
+                  return (
+                    <button
+                      key={school}
+                      type="button"
+                      onClick={() => select({ type: "school", name: school })}
+                      className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                        selected ? "bg-[#B30089]" : "hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex-1 text-left min-w-0">
+                        <span
+                          className={`text-sm block truncate ${selected ? "text-white font-medium" : "text-slate-900"}`}
+                        >
+                          {school}
+                        </span>
+                        {parent && (
+                          <span className={`text-xs truncate block ${selected ? "text-white" : "text-slate-500"}`}>
+                            {parent}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
+              </>
+            )}
+
+            {filteredMats.length === 0 && filteredSchools.length === 0 && !"all organisations".includes(q) && (
+              <div className="p-4 text-center text-sm text-slate-500">No results found</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ReportsTab({ log }: { log: AskLogEntry[] }) {
   const [filters, setFilters] = useState<LogFilters>({
     search: "",
@@ -659,18 +1002,32 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
     answered: "all",
   })
 
+  // Organisation scope (platform admins can see every organisation). Kept separate
+  // from `filters.school` so a trust selection can match all of its schools.
+  const [orgSel, setOrgSel] = useState<OrgSelection>({ type: "all" })
+
   const schools = useMemo(() => uniqueValues(log, "school"), [log])
   const topics = useMemo(() => uniqueValues(log, "topic"), [log])
-  const filtered = useMemo(() => filterLog(log, filters), [log, filters])
+  const filtered = useMemo(() => {
+    const base = filterLog(log, filters)
+    if (orgSel.type === "all") return base
+    if (orgSel.type === "school") return base.filter((e) => e.school === orgSel.name)
+    const mat = ORG_TREE.find((m) => m.id === orgSel.id)
+    const matSchools = new Set(mat?.schools ?? [])
+    return base.filter((e) => matSchools.has(e.school))
+  }, [log, filters, orgSel])
 
   const unansweredCount = useMemo(() => filtered.filter((e) => !e.answered).length, [filtered])
+
+  // The log row whose full response is being viewed in the detail dialog.
+  const [selectedEntry, setSelectedEntry] = useState<AskLogEntry | null>(null)
 
   const ROW_PAGE_SIZE = 15
   const [page, setPage] = useState(1)
   // Reset to the first page whenever the filters change the result set.
   useEffect(() => {
     setPage(1)
-  }, [filters])
+  }, [filters, orgSel])
   const pageCount = Math.max(1, Math.ceil(filtered.length / ROW_PAGE_SIZE))
   const safePage = Math.min(page, pageCount)
   const pageRows = filtered.slice((safePage - 1) * ROW_PAGE_SIZE, safePage * ROW_PAGE_SIZE)
@@ -688,6 +1045,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
       { wch: 16 }, // Topic
       { wch: 52 }, // Question
       { wch: 10 }, // Answered
+      { wch: 70 }, // Response
     ]
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "AI Questions")
@@ -728,19 +1086,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
             className="pl-9"
           />
         </div>
-        <Select value={filters.school} onValueChange={(v) => setFilters((f) => ({ ...f, school: v }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="All schools" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All schools</SelectItem>
-            {schools.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <OrgPicker value={orgSel} onChange={setOrgSel} schools={schools} />
         <Select value={filters.topic} onValueChange={(v) => setFilters((f) => ({ ...f, topic: v }))}>
           <SelectTrigger>
             <SelectValue placeholder="All topics" />
@@ -810,7 +1156,20 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   pageRows.map((e) => {
                     const color = getAreaColor(e.topic)
                     return (
-                      <tr key={e.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                      <tr
+                        key={e.id}
+                        className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`View response for: ${e.question}`}
+                        onClick={() => setSelectedEntry(e)}
+                        onKeyDown={(ev) => {
+                          if (ev.key === "Enter" || ev.key === " ") {
+                            ev.preventDefault()
+                            setSelectedEntry(e)
+                          }
+                        }}
+                      >
                         <td className="px-4 py-3 whitespace-nowrap text-slate-500">{formatLogDate(e.askedAt)}</td>
                         <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800">{e.user}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.role}</td>
@@ -824,7 +1183,9 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                             {e.topic}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-700 min-w-[280px]">{e.question}</td>
+                        <td className="px-4 py-3 min-w-[280px]">
+                          <span className="text-slate-700 hover:text-slate-900 hover:underline">{e.question}</span>
+                        </td>
                         <td className="px-4 py-3 text-center">
                           {e.answered ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" aria-label="Answered" />
@@ -850,6 +1211,83 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
         pageSize={ROW_PAGE_SIZE}
         itemLabel="questions"
       />
+
+      {/* Question + response detail */}
+      <Dialog open={!!selectedEntry} onOpenChange={(open) => !open && setSelectedEntry(null)}>
+        <DialogContent className="max-w-lg">
+          {selectedEntry && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span
+                  className="px-1.5 py-0.5 text-[10px] font-medium rounded uppercase tracking-wide"
+                  style={{
+                    backgroundColor: `${getAreaColor(selectedEntry.topic)}18`,
+                    color: getAreaColor(selectedEntry.topic),
+                  }}
+                >
+                  {selectedEntry.topic}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 text-xs font-medium ${
+                    selectedEntry.answered ? "text-emerald-600" : "text-amber-600"
+                  }`}
+                >
+                  {selectedEntry.answered ? (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <XCircle className="w-3.5 h-3.5" />
+                  )}
+                  {selectedEntry.answered ? "Answered" : "Unanswered"}
+                </span>
+              </div>
+
+              {/* Question */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Question</p>
+                <p className="text-sm font-medium text-slate-900">{selectedEntry.question}</p>
+              </div>
+
+              {/* Response */}
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">AI response</p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm leading-relaxed text-slate-700">{selectedEntry.answer}</p>
+                </div>
+              </div>
+
+              {/* Meta */}
+              <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 text-sm">
+                <div>
+                  <dt className="text-xs text-slate-400">Asked by</dt>
+                  <dd className="text-slate-700">{selectedEntry.user}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">Role</dt>
+                  <dd className="text-slate-700">{selectedEntry.role}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">School / Org</dt>
+                  <dd className="text-slate-700">{selectedEntry.school}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">Page / Report</dt>
+                  <dd className="text-slate-700">{selectedEntry.page}</dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs text-slate-400">Asked</dt>
+                  <dd className="text-slate-700">{formatLogDate(selectedEntry.askedAt)}</dd>
+                </div>
+              </dl>
+
+              <div className="mt-6 flex justify-end">
+                <Button variant="outline" onClick={() => setSelectedEntry(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

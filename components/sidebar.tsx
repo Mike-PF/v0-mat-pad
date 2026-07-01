@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette, Boxes } from "lucide-react"
+import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette, MonitorCog } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { isPlatformAdmin } from "@/lib/current-org"
@@ -118,7 +118,7 @@ export function Sidebar({}: SidebarProps) {
             title="Pixel Fusion"
           >
             <IconCircle active={mounted && pathname.startsWith("/pixel-fusion")}>
-              <Boxes className="w-5 h-5" />
+              <MonitorCog className="w-5 h-5" />
             </IconCircle>
           </a>
         )}

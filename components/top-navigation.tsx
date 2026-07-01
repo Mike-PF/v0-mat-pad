@@ -125,12 +125,6 @@ export function TopNavigation() {
             <div className="text-xs text-slate-500">sections completed</div>
           </div>
         )}
-
-        {/* User Profile and Logo */}
-        <div className="flex items-center gap-4">
-          {/* MATpad Logo */}
-          <img src="/matpad-logo.svg" alt="MATpad" className="h-8 w-auto opacity-70 hover:opacity-100 transition-opacity" />
-        </div>
       </div>
     </div>
   )
