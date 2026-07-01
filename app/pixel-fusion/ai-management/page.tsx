@@ -20,8 +20,6 @@ import {
   Search,
   Plus,
   Trash2,
-  Sparkles,
-  TrendingUp,
   FileSpreadsheet,
   Download,
   MessageCircleQuestion,
@@ -102,8 +100,9 @@ export default function AiManagementPage() {
   // optionally be scoped to one specific report within that area.
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogArea, setDialogArea] = useState<string>(REPORT_AREAS[0])
-  // ALL_REPORTS = all reports in the area; otherwise a specific report id.
-  const [dialogReport, setDialogReport] = useState<string>(ALL_REPORTS)
+  // "" = nothing selected yet (shows the placeholder); ALL_REPORTS = all reports in
+  // the area; any other value = a specific report id.
+  const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
 
@@ -119,7 +118,7 @@ export default function AiManagementPage() {
 
   function openAdd(area?: string) {
     setDialogArea(area ?? REPORT_AREAS[0])
-    setDialogReport(ALL_REPORTS)
+    setDialogReport("")
     setDialogIndex(null)
     setDialogText("")
     setDialogOpen(true)
@@ -128,6 +127,7 @@ export default function AiManagementPage() {
   function openEdit(area: string, index: number) {
     setDialogArea(area)
     setDialogReport(ALL_REPORTS)
+    // (Area questions edit in place; the Report field is fixed to the whole area.)
     setDialogIndex(index)
     setDialogText((areaPinned[area] ?? [])[index] ?? "")
     setDialogOpen(true)
@@ -144,12 +144,14 @@ export default function AiManagementPage() {
   // When the area changes while adding, the previously chosen report no longer applies.
   function handleDialogAreaChange(area: string) {
     setDialogArea(area)
-    setDialogReport(ALL_REPORTS)
+    setDialogReport("")
   }
 
   function saveDialog() {
     if (!dialogText.trim()) return
-    const scopedToReport = dialogReport !== ALL_REPORTS
+    // A specific report is selected only when it's a real report id — not the
+    // unselected placeholder ("") and not the "All reports in this area" option.
+    const scopedToReport = dialogReport !== "" && dialogReport !== ALL_REPORTS
     if (dialogIndex === null) {
       if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
       else pinAreaQuestion(dialogArea, dialogText)
@@ -160,7 +162,7 @@ export default function AiManagementPage() {
     setDialogOpen(false)
     setDialogText("")
     setDialogIndex(null)
-    setDialogReport(ALL_REPORTS)
+    setDialogReport("")
   }
 
   if (!allowed) {
@@ -190,10 +192,10 @@ export default function AiManagementPage() {
     )
   }
 
-  const tabs: { id: Tab; label: string; icon: typeof Bot }[] = [
-    { id: "prompts", label: "Report Prompts", icon: Sparkles },
-    { id: "trends", label: "Question Trends", icon: TrendingUp },
-    { id: "reports", label: "Reports", icon: FileSpreadsheet },
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "prompts", label: "Report Prompts" },
+    { id: "trends", label: "Question Trends" },
+    { id: "reports", label: "Reports" },
   ]
 
   return (
@@ -299,7 +301,7 @@ export default function AiManagementPage() {
               <Label htmlFor="question-report">Report</Label>
               <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
                 <SelectTrigger id="question-report">
-                  <SelectValue placeholder="All reports in this area" />
+                  <SelectValue placeholder="Select a report…" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL_REPORTS}>All reports in this area</SelectItem>
@@ -313,7 +315,7 @@ export default function AiManagementPage() {
               <p className="text-xs text-slate-400">
                 {systemReportsForArea(dialogArea).length === 0
                   ? "No system reports sit under this area on the Dashboards page."
-                  : "Leave as “All reports in this area” to suggest it everywhere in the area, or pick one report to scope it."}
+                  : "Choose “All reports in this area” to suggest it everywhere in the area, or pick one report to scope it. Leaving this unset applies it to the whole area."}
               </p>
             </div>
             <div className="space-y-2">
