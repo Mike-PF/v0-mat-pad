@@ -113,6 +113,14 @@ export default function AiManagementPage() {
   const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
+  // Where the question being edited currently lives, so that if the admin changes the
+  // area/dashboard we can move it (remove from origin, add to the new scope) rather
+  // than just editing text in place.
+  const [editOrigin, setEditOrigin] = useState<
+    | { scope: "area"; area: string; index: number }
+    | { scope: "report"; reportId: string; index: number }
+    | null
+  >(null)
 
   // Delete confirm — scoped to either a report area or a single report.
   const [deleteConfirm, setDeleteConfirm] = useState<
@@ -128,6 +136,7 @@ export default function AiManagementPage() {
     setDialogArea(area ?? REPORT_AREAS[0])
     setDialogReport("")
     setDialogIndex(null)
+    setEditOrigin(null)
     setDialogText("")
     setDialogOpen(true)
   }
@@ -135,8 +144,8 @@ export default function AiManagementPage() {
   function openEdit(area: string, index: number) {
     setDialogArea(area)
     setDialogReport(ALL_REPORTS)
-    // (Area questions edit in place; the Report field is fixed to the whole area.)
     setDialogIndex(index)
+    setEditOrigin({ scope: "area", area, index })
     setDialogText((areaPinned[area] ?? [])[index]?.text ?? "")
     setDialogOpen(true)
   }
@@ -145,11 +154,12 @@ export default function AiManagementPage() {
     setDialogArea(area)
     setDialogReport(reportId)
     setDialogIndex(index)
+    setEditOrigin({ scope: "report", reportId, index })
     setDialogText((reportPinned[reportId] ?? [])[index]?.text ?? "")
     setDialogOpen(true)
   }
 
-  // When the area changes while adding, the previously chosen report no longer applies.
+  // When the area changes, the previously chosen dashboard no longer applies.
   function handleDialogAreaChange(area: string) {
     setDialogArea(area)
     setDialogReport("")
@@ -160,16 +170,37 @@ export default function AiManagementPage() {
     // A specific report is selected only when it's a real report id — not the
     // unselected placeholder ("") and not the "All reports in this area" option.
     const scopedToReport = dialogReport !== "" && dialogReport !== ALL_REPORTS
-    if (dialogIndex === null) {
+
+    if (dialogIndex === null || !editOrigin) {
+      // Adding a brand-new question.
       if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
       else pinAreaQuestion(dialogArea, dialogText)
     } else {
-      if (scopedToReport) updateReportPinned(dialogReport, dialogIndex, dialogText)
-      else updateAreaPinned(dialogArea, dialogIndex, dialogText)
+      // Editing an existing question. If its scope (area/dashboard) is unchanged we
+      // edit the text in place; otherwise we move it by removing it from its origin
+      // and re-adding it under the newly chosen area/dashboard.
+      const stayedInArea =
+        editOrigin.scope === "area" && !scopedToReport && editOrigin.area === dialogArea
+      const stayedOnReport =
+        editOrigin.scope === "report" && scopedToReport && editOrigin.reportId === dialogReport
+
+      if (stayedInArea) {
+        updateAreaPinned(dialogArea, editOrigin.index, dialogText)
+      } else if (stayedOnReport) {
+        updateReportPinned(dialogReport, editOrigin.index, dialogText)
+      } else {
+        // Moved to a different area or dashboard.
+        if (editOrigin.scope === "area") removeAreaPinned(editOrigin.area, editOrigin.index)
+        else removeReportPinned(editOrigin.reportId, editOrigin.index)
+        if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
+        else pinAreaQuestion(dialogArea, dialogText)
+      }
     }
+
     setDialogOpen(false)
     setDialogText("")
     setDialogIndex(null)
+    setEditOrigin(null)
     setDialogReport("")
   }
 
@@ -296,7 +327,7 @@ export default function AiManagementPage() {
               <Label htmlFor="question-area">
                 Report area<span className="text-red-500">*</span>
               </Label>
-              <Select value={dialogArea} onValueChange={handleDialogAreaChange} disabled={dialogIndex !== null}>
+              <Select value={dialogArea} onValueChange={handleDialogAreaChange}>
                 <SelectTrigger id="question-area">
                   <SelectValue placeholder="Select a report area…" />
                 </SelectTrigger>
@@ -313,7 +344,7 @@ export default function AiManagementPage() {
               <Label htmlFor="question-report">
                 Dashboard<span className="text-red-500">*</span>
               </Label>
-              <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
+              <Select value={dialogReport} onValueChange={setDialogReport}>
                 <SelectTrigger id="question-report">
                   <SelectValue placeholder="Select a dashboard…" />
                 </SelectTrigger>
