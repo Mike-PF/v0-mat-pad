@@ -20,8 +20,6 @@ import {
   Search,
   Plus,
   Trash2,
-  Sparkles,
-  TrendingUp,
   FileSpreadsheet,
   Download,
   MessageCircleQuestion,
@@ -29,6 +27,7 @@ import {
   XCircle,
   Lock,
   ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -43,9 +42,12 @@ import {
   logToExportRows,
   formatLogDate,
   uniqueValues,
+  activeCount,
+  MAX_ACTIVE_QUESTIONS,
   type ChatTarget,
   type AreaPinned,
   type ReportPinned,
+  type PinnedQuestion,
   type AskLogEntry,
   type LogFilters,
 } from "@/lib/ai-chatbot"
@@ -90,9 +92,13 @@ export default function AiManagementPage() {
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    toggleAreaPinned,
+    reorderAreaPinned,
     pinReportQuestion,
     updateReportPinned,
     removeReportPinned,
+    toggleReportPinned,
+    reorderReportPinned,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
@@ -102,10 +108,19 @@ export default function AiManagementPage() {
   // optionally be scoped to one specific report within that area.
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogArea, setDialogArea] = useState<string>(REPORT_AREAS[0])
-  // ALL_REPORTS = all reports in the area; otherwise a specific report id.
-  const [dialogReport, setDialogReport] = useState<string>(ALL_REPORTS)
+  // "" = nothing selected yet (shows the placeholder); ALL_REPORTS = all reports in
+  // the area; any other value = a specific report id.
+  const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
+  // Where the question being edited currently lives, so that if the admin changes the
+  // area/dashboard we can move it (remove from origin, add to the new scope) rather
+  // than just editing text in place.
+  const [editOrigin, setEditOrigin] = useState<
+    | { scope: "area"; area: string; index: number }
+    | { scope: "report"; reportId: string; index: number }
+    | null
+  >(null)
 
   // Delete confirm — scoped to either a report area or a single report.
   const [deleteConfirm, setDeleteConfirm] = useState<
@@ -119,8 +134,9 @@ export default function AiManagementPage() {
 
   function openAdd(area?: string) {
     setDialogArea(area ?? REPORT_AREAS[0])
-    setDialogReport(ALL_REPORTS)
+    setDialogReport("")
     setDialogIndex(null)
+    setEditOrigin(null)
     setDialogText("")
     setDialogOpen(true)
   }
@@ -129,7 +145,8 @@ export default function AiManagementPage() {
     setDialogArea(area)
     setDialogReport(ALL_REPORTS)
     setDialogIndex(index)
-    setDialogText((areaPinned[area] ?? [])[index] ?? "")
+    setEditOrigin({ scope: "area", area, index })
+    setDialogText((areaPinned[area] ?? [])[index]?.text ?? "")
     setDialogOpen(true)
   }
 
@@ -137,30 +154,54 @@ export default function AiManagementPage() {
     setDialogArea(area)
     setDialogReport(reportId)
     setDialogIndex(index)
-    setDialogText((reportPinned[reportId] ?? [])[index] ?? "")
+    setEditOrigin({ scope: "report", reportId, index })
+    setDialogText((reportPinned[reportId] ?? [])[index]?.text ?? "")
     setDialogOpen(true)
   }
 
-  // When the area changes while adding, the previously chosen report no longer applies.
+  // When the area changes, the previously chosen dashboard no longer applies.
   function handleDialogAreaChange(area: string) {
     setDialogArea(area)
-    setDialogReport(ALL_REPORTS)
+    setDialogReport("")
   }
 
   function saveDialog() {
-    if (!dialogText.trim()) return
-    const scopedToReport = dialogReport !== ALL_REPORTS
-    if (dialogIndex === null) {
+    if (!dialogText.trim() || !dialogReport) return
+    // A specific report is selected only when it's a real report id — not the
+    // unselected placeholder ("") and not the "All reports in this area" option.
+    const scopedToReport = dialogReport !== "" && dialogReport !== ALL_REPORTS
+
+    if (dialogIndex === null || !editOrigin) {
+      // Adding a brand-new question.
       if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
       else pinAreaQuestion(dialogArea, dialogText)
     } else {
-      if (scopedToReport) updateReportPinned(dialogReport, dialogIndex, dialogText)
-      else updateAreaPinned(dialogArea, dialogIndex, dialogText)
+      // Editing an existing question. If its scope (area/dashboard) is unchanged we
+      // edit the text in place; otherwise we move it by removing it from its origin
+      // and re-adding it under the newly chosen area/dashboard.
+      const stayedInArea =
+        editOrigin.scope === "area" && !scopedToReport && editOrigin.area === dialogArea
+      const stayedOnReport =
+        editOrigin.scope === "report" && scopedToReport && editOrigin.reportId === dialogReport
+
+      if (stayedInArea) {
+        updateAreaPinned(dialogArea, editOrigin.index, dialogText)
+      } else if (stayedOnReport) {
+        updateReportPinned(dialogReport, editOrigin.index, dialogText)
+      } else {
+        // Moved to a different area or dashboard.
+        if (editOrigin.scope === "area") removeAreaPinned(editOrigin.area, editOrigin.index)
+        else removeReportPinned(editOrigin.reportId, editOrigin.index)
+        if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
+        else pinAreaQuestion(dialogArea, dialogText)
+      }
     }
+
     setDialogOpen(false)
     setDialogText("")
     setDialogIndex(null)
-    setDialogReport(ALL_REPORTS)
+    setEditOrigin(null)
+    setDialogReport("")
   }
 
   if (!allowed) {
@@ -190,10 +231,10 @@ export default function AiManagementPage() {
     )
   }
 
-  const tabs: { id: Tab; label: string; icon: typeof Bot }[] = [
-    { id: "prompts", label: "Report Prompts", icon: Sparkles },
-    { id: "trends", label: "Question Trends", icon: TrendingUp },
-    { id: "reports", label: "Reports", icon: FileSpreadsheet },
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "prompts", label: "Report Prompts" },
+    { id: "trends", label: "Question Trends" },
+    { id: "reports", label: "Reports" },
   ]
 
   return (
@@ -225,7 +266,6 @@ export default function AiManagementPage() {
             {/* Tabs */}
             <div className="flex items-center gap-1 border-b border-slate-200 mb-6">
               {tabs.map((t) => {
-                const Icon = t.icon
                 const active = tab === t.id
                 return (
                   <button
@@ -237,7 +277,6 @@ export default function AiManagementPage() {
                         : "border-transparent text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
                     {t.label}
                   </button>
                 )
@@ -258,6 +297,10 @@ export default function AiManagementPage() {
                 onEditReport={openEditReport}
                 onDelete={(area, index) => setDeleteConfirm({ scope: "area", area, index })}
                 onDeleteReport={(reportId, index) => setDeleteConfirm({ scope: "report", reportId, index })}
+                onToggle={toggleAreaPinned}
+                onReorder={reorderAreaPinned}
+                onToggleReport={toggleReportPinned}
+                onReorderReport={reorderReportPinned}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -284,7 +327,7 @@ export default function AiManagementPage() {
               <Label htmlFor="question-area">
                 Report area<span className="text-red-500">*</span>
               </Label>
-              <Select value={dialogArea} onValueChange={handleDialogAreaChange} disabled={dialogIndex !== null}>
+              <Select value={dialogArea} onValueChange={handleDialogAreaChange}>
                 <SelectTrigger id="question-area">
                   <SelectValue placeholder="Select a report area…" />
                 </SelectTrigger>
@@ -298,13 +341,15 @@ export default function AiManagementPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="question-report">Report</Label>
-              <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
+              <Label htmlFor="question-report">
+                Dashboard<span className="text-red-500">*</span>
+              </Label>
+              <Select value={dialogReport} onValueChange={setDialogReport}>
                 <SelectTrigger id="question-report">
-                  <SelectValue placeholder="All reports in this area" />
+                  <SelectValue placeholder="Select a dashboard…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL_REPORTS}>All reports in this area</SelectItem>
+                  <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
                   {systemReportsForArea(dialogArea).map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}
@@ -314,8 +359,8 @@ export default function AiManagementPage() {
               </Select>
               <p className="text-xs text-slate-400">
                 {systemReportsForArea(dialogArea).length === 0
-                  ? "No system reports sit under this area on the Dashboards page."
-                  : "Leave as “All reports in this area” to suggest it everywhere in the area, or pick one report to scope it."}
+                  ? "No system dashboards sit under this area on the Dashboards page."
+                  : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
               </p>
             </div>
             <div className="space-y-2">
@@ -340,7 +385,7 @@ export default function AiManagementPage() {
             </Button>
             <Button
               onClick={saveDialog}
-              disabled={!dialogText.trim()}
+                disabled={!dialogText.trim() || !dialogReport}
               className="text-white"
               style={{ backgroundColor: NAVY }}
             >
@@ -357,14 +402,14 @@ export default function AiManagementPage() {
           <p className="text-sm text-slate-500 mb-6">
             {deleteConfirm?.scope === "area" && (
               <>
-                &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]}&rdquo; will no longer be suggested
-                across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
+                &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]?.text}&rdquo; will no longer be
+                suggested across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
               </>
             )}
             {deleteConfirm?.scope === "report" && (
               <>
-                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]}&rdquo; will no longer be
-                suggested on{" "}
+                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]?.text}&rdquo; will no longer
+                be suggested on{" "}
                 <span className="font-medium text-slate-700">{reportNameById(deleteConfirm.reportId)}</span>.
               </>
             )}
@@ -395,6 +440,129 @@ export default function AiManagementPage() {
 // Tab 1 — Report Prompts
 // ===========================================================================
 
+/**
+ * A reorderable list of pinned questions. The list order is the order questions
+ * appear in the AI chatbot; only active ones are surfaced there, capped at
+ * MAX_ACTIVE_QUESTIONS. Rows are reordered with up/down controls (matching the
+ * System Help page), toggled active/inactive, clicked to edit, and removed.
+ */
+function QuestionList({
+  questions,
+  variant,
+  onEdit,
+  onDelete,
+  onToggle,
+  onReorder,
+}: {
+  questions: PinnedQuestion[]
+  variant: "area" | "report"
+  onEdit: (index: number) => void
+  onDelete: (index: number) => void
+  onToggle: (index: number) => void
+  onReorder: (from: number, to: number) => void
+}) {
+  const active = activeCount(questions)
+  const capReached = active >= MAX_ACTIVE_QUESTIONS
+  const multiple = questions.length > 1
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-medium text-slate-400">
+          {active} of {MAX_ACTIVE_QUESTIONS} active
+        </span>
+        {capReached && (
+          <span className="text-[11px] text-slate-400">Turn one off to activate another</span>
+        )}
+      </div>
+
+      {questions.map((q, i) => {
+        // A question can only be switched on when under the active cap.
+        const toggleDisabled = !q.active && capReached
+        return (
+          <div
+            key={`${q.text}-${i}`}
+            className={`group flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 text-left transition-colors hover:border-slate-300 ${
+              variant === "report" ? "border-dashed bg-slate-50/60" : "bg-white"
+            }`}
+          >
+            {/* Order controls — up/down + badge, matching the System Help page */}
+            {multiple && (
+              <div className="flex flex-col gap-0.5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onReorder(i, i - 1)}
+                  disabled={i === 0}
+                  className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Move up"
+                >
+                  <ChevronUp className="w-4 h-4 text-slate-500" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onReorder(i, i + 1)}
+                  disabled={i === questions.length - 1}
+                  className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Move down"
+                >
+                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                </button>
+              </div>
+            )}
+
+            {multiple && (
+              <span className="text-xs font-medium text-slate-400 w-4 flex-shrink-0 text-center">{i + 1}</span>
+            )}
+
+            {/* Question text — click to edit */}
+            <button
+              type="button"
+              onClick={() => onEdit(i)}
+              className={`flex-1 text-sm text-left ${q.active ? "text-slate-700" : "text-slate-400"}`}
+            >
+              {q.text}
+            </button>
+
+            {!q.active && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-500 shrink-0">Inactive</span>
+            )}
+
+            {/* Active toggle (matches the System Help switch) */}
+            <button
+              type="button"
+              onClick={() => onToggle(i)}
+              disabled={toggleDisabled}
+              className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                q.active ? "bg-[#121051]" : "bg-slate-300"
+              } ${toggleDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+              role="switch"
+              aria-checked={q.active}
+              aria-label={q.active ? "Deactivate question" : "Activate question"}
+              title={toggleDisabled ? `Only ${MAX_ACTIVE_QUESTIONS} questions can be active at once` : undefined}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  q.active ? "translate-x-4" : "translate-x-0"
+                }`}
+              />
+            </button>
+
+            {/* Remove — always visible, matching the System Help page */}
+            <button
+              type="button"
+              onClick={() => onDelete(i)}
+              className="p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
+              aria-label="Remove question"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function PromptsTab({
   targets,
   areaPinned,
@@ -406,6 +574,10 @@ function PromptsTab({
   onEditReport,
   onDelete,
   onDeleteReport,
+  onToggle,
+  onReorder,
+  onToggleReport,
+  onReorderReport,
 }: {
   targets: ChatTarget[]
   areaPinned: AreaPinned
@@ -417,6 +589,10 @@ function PromptsTab({
   onEditReport: (area: string, reportId: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onDeleteReport: (reportId: string, index: number) => void
+  onToggle: (area: string, index: number) => void
+  onReorder: (area: string, from: number, to: number) => void
+  onToggleReport: (reportId: string, index: number) => void
+  onReorderReport: (reportId: string, from: number, to: number) => void
 }) {
   // Match areas by name, or by any report/dashboard that lives in the area.
   const visibleAreas = useMemo(() => {
@@ -500,38 +676,17 @@ function PromptsTab({
                   </div>
 
                   {/* Pinned questions */}
-                  <div className="p-5 space-y-4">
+                  <div className="p-5 space-y-5">
                     {/* Area-wide questions: surfaced on every report/dashboard in the area. */}
                     {pinned.length > 0 && (
-                      <div className="space-y-2">
-                        {pinned.map((q, i) => (
-                          <div
-                            key={`${q}-${i}`}
-                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-slate-200 bg-white text-left cursor-pointer hover:border-slate-300"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => onEdit(area, i)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault()
-                                onEdit(area, i)
-                              }
-                            }}
-                          >
-                            <span className="flex-1 text-sm text-slate-700">{q}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onDelete(area, i)
-                              }}
-                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                              aria-label="Remove question"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                      <QuestionList
+                        questions={pinned}
+                        variant="area"
+                        onEdit={(i) => onEdit(area, i)}
+                        onDelete={(i) => onDelete(area, i)}
+                        onToggle={(i) => onToggle(area, i)}
+                        onReorder={(from, to) => onReorder(area, from, to)}
+                      />
                     )}
 
                     {/* Report-specific questions: surfaced only on that exact report. */}
@@ -540,33 +695,14 @@ function PromptsTab({
                         <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                           Only on: <span className="text-slate-600 normal-case">{report.name}</span>
                         </p>
-                        {questions.map((q, i) => (
-                          <div
-                            key={`${report.id}-${q}-${i}`}
-                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/60 text-left cursor-pointer hover:border-slate-300"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => onEditReport(area, report.id, i)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault()
-                                onEditReport(area, report.id, i)
-                              }
-                            }}
-                          >
-                            <span className="flex-1 text-sm text-slate-700">{q}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onDeleteReport(report.id, i)
-                              }}
-                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                              aria-label="Remove question"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))}
+                        <QuestionList
+                          questions={questions}
+                          variant="report"
+                          onEdit={(i) => onEditReport(area, report.id, i)}
+                          onDelete={(i) => onDeleteReport(report.id, i)}
+                          onToggle={(i) => onToggleReport(report.id, i)}
+                          onReorder={(from, to) => onReorderReport(report.id, from, to)}
+                        />
                       </div>
                     ))}
 
@@ -609,6 +745,7 @@ function TrendsTab({
   targets: ChatTarget[]
   asks: ReturnType<typeof useAiManagement>["asks"]
 }) {
+  // Full sorted list of reports/dashboards by question volume (paged in the UI).
   const topTargets = useMemo(() => {
     return targets
       .map((t) => ({
@@ -617,8 +754,10 @@ function TrendsTab({
       }))
       .filter((t) => t.total > 0)
       .sort((a, b) => b.total - a.total)
-      .slice(0, 6)
   }, [targets, asks])
+
+  // Full sorted list of the most-asked questions (paged in the UI).
+  const topQuestions = useMemo(() => asks.slice().sort((a, b) => b.count - a.count), [asks])
 
   const fastestGrowing = topicGroups.slice().sort((a, b) => b.trend - a.trend)[0]?.topic ?? "—"
   // Average questions asked per day across the last 30 days.
@@ -626,7 +765,7 @@ function TrendsTab({
   // The single topic users ask about the most (topicGroups is sorted by total desc).
   const mostAskedTopic = topicGroups[0]?.topic ?? "—"
 
-  const TOPIC_PAGE_SIZE = 6
+  const TOPIC_PAGE_SIZE = 4
   const [topicPage, setTopicPage] = useState(1)
   const topicPageCount = Math.max(1, Math.ceil(topicGroups.length / TOPIC_PAGE_SIZE))
   const safeTopicPage = Math.min(topicPage, topicPageCount)
@@ -644,6 +783,21 @@ function TrendsTab({
   const QUESTIONS_PER_TOPIC = 5
   const [showAllQuestions, setShowAllQuestions] = useState<Record<string, boolean>>({})
   const toggleShowAll = (topic: string) => setShowAllQuestions((prev) => ({ ...prev, [topic]: !prev[topic] }))
+
+  // Paging for the two summary lists at the bottom of the tab.
+  const LIST_PAGE_SIZE = 8
+  const [questionPage, setQuestionPage] = useState(1)
+  const questionPageCount = Math.max(1, Math.ceil(topQuestions.length / LIST_PAGE_SIZE))
+  const safeQuestionPage = Math.min(questionPage, questionPageCount)
+  const pagedQuestions = topQuestions.slice((safeQuestionPage - 1) * LIST_PAGE_SIZE, safeQuestionPage * LIST_PAGE_SIZE)
+
+  const TARGET_PAGE_SIZE = 6
+  const [targetPage, setTargetPage] = useState(1)
+  const targetPageCount = Math.max(1, Math.ceil(topTargets.length / TARGET_PAGE_SIZE))
+  const safeTargetPage = Math.min(targetPage, targetPageCount)
+  // Keep bar scale consistent across pages using the global max (list is sorted desc).
+  const targetMax = topTargets[0]?.total ?? 1
+  const pagedTargets = topTargets.slice((safeTargetPage - 1) * TARGET_PAGE_SIZE, safeTargetPage * TARGET_PAGE_SIZE)
 
   return (
     <div className="space-y-6">
@@ -761,17 +915,25 @@ function TrendsTab({
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">Top questions overall</h3>
             <div className="space-y-1">
-              {asks
-                .slice()
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 8)
-                .map((a, i) => (
-                  <div key={a.id} className="flex items-center gap-3 py-1.5">
-                    <span className="text-xs font-semibold text-slate-300 w-4">{i + 1}</span>
-                    <span className="flex-1 text-sm text-slate-700 truncate">{a.question}</span>
-                    <span className="text-xs font-medium text-slate-500">{a.count}</span>
-                  </div>
-                ))}
+              {pagedQuestions.map((a, i) => (
+                <div key={a.id} className="flex items-center gap-3 py-1.5">
+                  <span className="text-xs font-semibold text-slate-300 w-6">
+                    {(safeQuestionPage - 1) * LIST_PAGE_SIZE + i + 1}
+                  </span>
+                  <span className="flex-1 text-sm text-slate-700 truncate">{a.question}</span>
+                  <span className="text-xs font-medium text-slate-500">{a.count}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <Pagination
+                page={safeQuestionPage}
+                pageCount={questionPageCount}
+                onPageChange={setQuestionPage}
+                totalItems={topQuestions.length}
+                pageSize={LIST_PAGE_SIZE}
+                itemLabel="questions"
+              />
             </div>
           </CardContent>
         </Card>
@@ -780,8 +942,7 @@ function TrendsTab({
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">Busiest reports & dashboards</h3>
             <div className="space-y-3">
-              {topTargets.map(({ target, total }) => {
-                const max = topTargets[0].total
+              {pagedTargets.map(({ target, total }) => {
                 const color = getAreaColor(target.area)
                 return (
                   <div key={target.id}>
@@ -792,12 +953,22 @@ function TrendsTab({
                     <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${(total / max) * 100}%`, backgroundColor: color }}
+                        style={{ width: `${(total / targetMax) * 100}%`, backgroundColor: color }}
                       />
                     </div>
                   </div>
                 )
               })}
+            </div>
+            <div className="mt-4">
+              <Pagination
+                page={safeTargetPage}
+                pageCount={targetPageCount}
+                onPageChange={setTargetPage}
+                totalItems={topTargets.length}
+                pageSize={TARGET_PAGE_SIZE}
+                itemLabel="reports"
+              />
             </div>
           </CardContent>
         </Card>
