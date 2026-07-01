@@ -27,6 +27,7 @@ import {
   XCircle,
   Lock,
   ChevronDown,
+  GripVertical,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -41,9 +42,12 @@ import {
   logToExportRows,
   formatLogDate,
   uniqueValues,
+  activeCount,
+  MAX_ACTIVE_QUESTIONS,
   type ChatTarget,
   type AreaPinned,
   type ReportPinned,
+  type PinnedQuestion,
   type AskLogEntry,
   type LogFilters,
 } from "@/lib/ai-chatbot"
@@ -88,9 +92,13 @@ export default function AiManagementPage() {
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    toggleAreaPinned,
+    reorderAreaPinned,
     pinReportQuestion,
     updateReportPinned,
     removeReportPinned,
+    toggleReportPinned,
+    reorderReportPinned,
   } = useAiManagement()
 
   const [tab, setTab] = useState<Tab>("prompts")
@@ -129,7 +137,7 @@ export default function AiManagementPage() {
     setDialogReport(ALL_REPORTS)
     // (Area questions edit in place; the Report field is fixed to the whole area.)
     setDialogIndex(index)
-    setDialogText((areaPinned[area] ?? [])[index] ?? "")
+    setDialogText((areaPinned[area] ?? [])[index]?.text ?? "")
     setDialogOpen(true)
   }
 
@@ -137,7 +145,7 @@ export default function AiManagementPage() {
     setDialogArea(area)
     setDialogReport(reportId)
     setDialogIndex(index)
-    setDialogText((reportPinned[reportId] ?? [])[index] ?? "")
+    setDialogText((reportPinned[reportId] ?? [])[index]?.text ?? "")
     setDialogOpen(true)
   }
 
@@ -258,6 +266,10 @@ export default function AiManagementPage() {
                 onEditReport={openEditReport}
                 onDelete={(area, index) => setDeleteConfirm({ scope: "area", area, index })}
                 onDeleteReport={(reportId, index) => setDeleteConfirm({ scope: "report", reportId, index })}
+                onToggle={toggleAreaPinned}
+                onReorder={reorderAreaPinned}
+                onToggleReport={toggleReportPinned}
+                onReorderReport={reorderReportPinned}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -357,14 +369,14 @@ export default function AiManagementPage() {
           <p className="text-sm text-slate-500 mb-6">
             {deleteConfirm?.scope === "area" && (
               <>
-                &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]}&rdquo; will no longer be suggested
-                across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
+                &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]?.text}&rdquo; will no longer be
+                suggested across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
               </>
             )}
             {deleteConfirm?.scope === "report" && (
               <>
-                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]}&rdquo; will no longer be
-                suggested on{" "}
+                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]?.text}&rdquo; will no longer
+                be suggested on{" "}
                 <span className="font-medium text-slate-700">{reportNameById(deleteConfirm.reportId)}</span>.
               </>
             )}
@@ -395,6 +407,133 @@ export default function AiManagementPage() {
 // Tab 1 — Report Prompts
 // ===========================================================================
 
+/**
+ * A reorderable list of pinned questions. The list order is the order questions
+ * appear in the AI chatbot; only active ones are surfaced there, capped at
+ * MAX_ACTIVE_QUESTIONS. Rows can be dragged to reorder, toggled active/inactive,
+ * clicked to edit, and removed.
+ */
+function QuestionList({
+  questions,
+  variant,
+  onEdit,
+  onDelete,
+  onToggle,
+  onReorder,
+}: {
+  questions: PinnedQuestion[]
+  variant: "area" | "report"
+  onEdit: (index: number) => void
+  onDelete: (index: number) => void
+  onToggle: (index: number) => void
+  onReorder: (from: number, to: number) => void
+}) {
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [overIndex, setOverIndex] = useState<number | null>(null)
+  const active = activeCount(questions)
+  const capReached = active >= MAX_ACTIVE_QUESTIONS
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-medium text-slate-400">
+          {active} of {MAX_ACTIVE_QUESTIONS} active
+        </span>
+        {capReached && (
+          <span className="text-[11px] text-slate-400">Turn one off to activate another</span>
+        )}
+      </div>
+
+      {questions.map((q, i) => {
+        const isDragging = dragIndex === i
+        const isDropTarget = overIndex === i && dragIndex !== null && dragIndex !== i
+        // A question can only be switched on when under the active cap.
+        const toggleDisabled = !q.active && capReached
+        return (
+          <div
+            key={`${q.text}-${i}`}
+            draggable
+            onDragStart={(e) => {
+              setDragIndex(i)
+              e.dataTransfer.effectAllowed = "move"
+            }}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setOverIndex(i)
+            }}
+            onDragEnd={() => {
+              setDragIndex(null)
+              setOverIndex(null)
+            }}
+            onDrop={(e) => {
+              e.preventDefault()
+              if (dragIndex !== null && dragIndex !== i) onReorder(dragIndex, i)
+              setDragIndex(null)
+              setOverIndex(null)
+            }}
+            className={`group flex items-center gap-2 p-2.5 rounded-lg border text-left transition-colors ${
+              variant === "report" ? "border-dashed bg-slate-50/60" : "bg-white"
+            } ${isDropTarget ? "border-[#121051] ring-1 ring-[#121051]" : "border-slate-200"} ${
+              isDragging ? "opacity-40" : "hover:border-slate-300"
+            }`}
+          >
+            {/* Drag handle */}
+            <span
+              className="p-1 -ml-1 text-slate-300 group-hover:text-slate-400 cursor-grab active:cursor-grabbing shrink-0"
+              aria-hidden="true"
+            >
+              <GripVertical className="w-4 h-4" />
+            </span>
+
+            {/* Question text — click to edit */}
+            <button
+              type="button"
+              onClick={() => onEdit(i)}
+              className={`flex-1 text-sm text-left ${q.active ? "text-slate-700" : "text-slate-400"}`}
+            >
+              {q.text}
+            </button>
+
+            {!q.active && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-500 shrink-0">Inactive</span>
+            )}
+
+            {/* Active toggle (matches the System Help switch) */}
+            <button
+              type="button"
+              onClick={() => onToggle(i)}
+              disabled={toggleDisabled}
+              className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                q.active ? "bg-[#121051]" : "bg-slate-300"
+              } ${toggleDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+              role="switch"
+              aria-checked={q.active}
+              aria-label={q.active ? "Deactivate question" : "Activate question"}
+              title={toggleDisabled ? `Only ${MAX_ACTIVE_QUESTIONS} questions can be active at once` : undefined}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  q.active ? "translate-x-4" : "translate-x-0"
+                }`}
+              />
+            </button>
+
+            {/* Remove */}
+            <button
+              type="button"
+              onClick={() => onDelete(i)}
+              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+              aria-label="Remove question"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function PromptsTab({
   targets,
   areaPinned,
@@ -406,6 +545,10 @@ function PromptsTab({
   onEditReport,
   onDelete,
   onDeleteReport,
+  onToggle,
+  onReorder,
+  onToggleReport,
+  onReorderReport,
 }: {
   targets: ChatTarget[]
   areaPinned: AreaPinned
@@ -417,6 +560,10 @@ function PromptsTab({
   onEditReport: (area: string, reportId: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onDeleteReport: (reportId: string, index: number) => void
+  onToggle: (area: string, index: number) => void
+  onReorder: (area: string, from: number, to: number) => void
+  onToggleReport: (reportId: string, index: number) => void
+  onReorderReport: (reportId: string, from: number, to: number) => void
 }) {
   // Match areas by name, or by any report/dashboard that lives in the area.
   const visibleAreas = useMemo(() => {
@@ -500,38 +647,17 @@ function PromptsTab({
                   </div>
 
                   {/* Pinned questions */}
-                  <div className="p-5 space-y-4">
+                  <div className="p-5 space-y-5">
                     {/* Area-wide questions: surfaced on every report/dashboard in the area. */}
                     {pinned.length > 0 && (
-                      <div className="space-y-2">
-                        {pinned.map((q, i) => (
-                          <div
-                            key={`${q}-${i}`}
-                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-slate-200 bg-white text-left cursor-pointer hover:border-slate-300"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => onEdit(area, i)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault()
-                                onEdit(area, i)
-                              }
-                            }}
-                          >
-                            <span className="flex-1 text-sm text-slate-700">{q}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onDelete(area, i)
-                              }}
-                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                              aria-label="Remove question"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                      <QuestionList
+                        questions={pinned}
+                        variant="area"
+                        onEdit={(i) => onEdit(area, i)}
+                        onDelete={(i) => onDelete(area, i)}
+                        onToggle={(i) => onToggle(area, i)}
+                        onReorder={(from, to) => onReorder(area, from, to)}
+                      />
                     )}
 
                     {/* Report-specific questions: surfaced only on that exact report. */}
@@ -540,33 +666,14 @@ function PromptsTab({
                         <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                           Only on: <span className="text-slate-600 normal-case">{report.name}</span>
                         </p>
-                        {questions.map((q, i) => (
-                          <div
-                            key={`${report.id}-${q}-${i}`}
-                            className="group flex items-start gap-2 p-2.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/60 text-left cursor-pointer hover:border-slate-300"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => onEditReport(area, report.id, i)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault()
-                                onEditReport(area, report.id, i)
-                              }
-                            }}
-                          >
-                            <span className="flex-1 text-sm text-slate-700">{q}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onDeleteReport(report.id, i)
-                              }}
-                              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
-                              aria-label="Remove question"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))}
+                        <QuestionList
+                          questions={questions}
+                          variant="report"
+                          onEdit={(i) => onEditReport(area, report.id, i)}
+                          onDelete={(i) => onDeleteReport(report.id, i)}
+                          onToggle={(i) => onToggleReport(report.id, i)}
+                          onReorder={(from, to) => onReorderReport(report.id, from, to)}
+                        />
                       </div>
                     ))}
 

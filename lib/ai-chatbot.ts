@@ -367,16 +367,69 @@ const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
 const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
 const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
 
+/**
+ * A single admin-pinned suggested question. Its position in the list is the order
+ * it appears in the AI chatbot; only `active` questions are surfaced there.
+ */
+export interface PinnedQuestion {
+  text: string
+  active: boolean
+}
+
+/** Maximum number of questions that can be active (surfaced) in a single list. */
+export const MAX_ACTIVE_QUESTIONS = 5
+
 /** Map of report area -> admin-pinned questions surfaced on every report in that area. */
-export type AreaPinned = Record<string, string[]>
+export type AreaPinned = Record<string, PinnedQuestion[]>
 
 /**
  * Map of a specific report/dashboard id (as listed on the Dashboards page) ->
  * admin-pinned questions surfaced by the chatbot ONLY when that exact report is open.
  */
-export type ReportPinned = Record<string, string[]>
+export type ReportPinned = Record<string, PinnedQuestion[]>
 
 const SEED_REPORT_PINNED: ReportPinned = {}
+
+/**
+ * Normalise a stored list into PinnedQuestion[]. Handles legacy data that was
+ * persisted as a plain string[] (all treated as active), and clamps the active
+ * count to MAX_ACTIVE_QUESTIONS so old data can't exceed the new cap.
+ */
+function normalisePinnedList(value: unknown): PinnedQuestion[] {
+  if (!Array.isArray(value)) return []
+  let activeSeen = 0
+  const out: PinnedQuestion[] = []
+  for (const item of value) {
+    let q: PinnedQuestion | null = null
+    if (typeof item === "string") q = { text: item, active: true }
+    else if (item && typeof item === "object" && typeof (item as any).text === "string") {
+      q = { text: (item as any).text, active: (item as any).active !== false }
+    }
+    if (!q || !q.text.trim()) continue
+    if (q.active) {
+      if (activeSeen >= MAX_ACTIVE_QUESTIONS) q.active = false
+      else activeSeen++
+    }
+    out.push(q)
+  }
+  return out
+}
+
+/** Normalise every list in a pinned map (area or report keyed). */
+function normalisePinnedMap(value: unknown): Record<string, PinnedQuestion[]> {
+  const out: Record<string, PinnedQuestion[]> = {}
+  if (value && typeof value === "object") {
+    for (const [key, list] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = normalisePinnedList(list)
+    }
+  }
+  return out
+}
+
+/** Count how many questions in a list are currently active. */
+export function activeCount(list: PinnedQuestion[]): number {
+  return list.filter((q) => q.active).length
+}
 
 /**
  * Seed area-level pins by rolling up the questions already pinned to seed targets,
@@ -388,7 +441,7 @@ function buildSeedAreaPinned(): AreaPinned {
     const area = normaliseArea(t.area)
     const arr = map[area] ?? (map[area] = [])
     for (const q of t.pinned) {
-      if (!arr.some((x) => x.toLowerCase() === q.toLowerCase())) arr.push(q)
+      if (!arr.some((x) => x.text.toLowerCase() === q.toLowerCase())) arr.push({ text: q, active: true })
     }
   }
   return map
@@ -401,6 +454,17 @@ function load<T>(key: string, fallback: T): T {
   try {
     const raw = window.localStorage.getItem(key)
     return raw ? (JSON.parse(raw) as T) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+/** Load a pinned map, migrating any legacy string[] shape to PinnedQuestion[]. */
+function loadPinnedMap(key: string, fallback: Record<string, PinnedQuestion[]>): Record<string, PinnedQuestion[]> {
+  if (typeof window === "undefined") return fallback
+  try {
+    const raw = window.localStorage.getItem(key)
+    return raw ? normalisePinnedMap(JSON.parse(raw)) : fallback
   } catch {
     return fallback
   }
@@ -421,8 +485,8 @@ function save<T>(key: string, value: T) {
  * when it is opened from a dashboard/report belonging to that area.
  */
 export function getAreaQuestions(area: string): string[] {
-  const all = load<AreaPinned>(AREA_PINNED_KEY, SEED_AREA_PINNED)
-  return all[normaliseArea(area)] ?? []
+  const all = loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED)
+  return (all[normaliseArea(area)] ?? []).filter((q) => q.active).map((q) => q.text)
 }
 
 /**
@@ -430,8 +494,8 @@ export function getAreaQuestions(area: string): string[] {
  * These are surfaced by the chatbot only when that exact report is open.
  */
 export function getReportQuestions(reportId: string): string[] {
-  const all = load<ReportPinned>(REPORT_PINNED_KEY, SEED_REPORT_PINNED)
-  return all[reportId] ?? []
+  const all = loadPinnedMap(REPORT_PINNED_KEY, SEED_REPORT_PINNED)
+  return (all[reportId] ?? []).filter((q) => q.active).map((q) => q.text)
 }
 
 // ---------------------------------------------------------------------------
@@ -446,8 +510,8 @@ export function useAiManagement() {
 
   useEffect(() => {
     setTargets(load(TARGETS_KEY, SEED_TARGETS))
-    setAreaPinned(load(AREA_PINNED_KEY, SEED_AREA_PINNED))
-    setReportPinned(load(REPORT_PINNED_KEY, SEED_REPORT_PINNED))
+    setAreaPinned(loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED))
+    setReportPinned(loadPinnedMap(REPORT_PINNED_KEY, SEED_REPORT_PINNED))
     setMounted(true)
   }, [])
 
@@ -463,15 +527,20 @@ export function useAiManagement() {
     if (mounted) save(REPORT_PINNED_KEY, reportPinned)
   }, [reportPinned, mounted])
 
-  /** Pin a question to a report area so it is suggested on every report in that area. */
+  /**
+   * Pin a question to a report area so it is suggested on every report in that area.
+   * New questions are active by default only while under the active cap; otherwise
+   * they are added inactive so the admin can enable them by turning another off.
+   */
   const pinAreaQuestion = useCallback((area: string, question: string) => {
     const q = question.trim()
     const a = normaliseArea(area)
     if (!q) return
     setAreaPinned((prev) => {
       const list = prev[a] ?? []
-      if (list.some((p) => p.toLowerCase() === q.toLowerCase())) return prev
-      return { ...prev, [a]: [...list, q] }
+      if (list.some((p) => p.text.toLowerCase() === q.toLowerCase())) return prev
+      const active = activeCount(list) < MAX_ACTIVE_QUESTIONS
+      return { ...prev, [a]: [...list, { text: q, active }] }
     })
   }, [])
 
@@ -481,7 +550,7 @@ export function useAiManagement() {
     if (!q) return
     setAreaPinned((prev) => {
       const list = prev[a] ?? []
-      return { ...prev, [a]: list.map((p, i) => (i === index ? q : p)) }
+      return { ...prev, [a]: list.map((p, i) => (i === index ? { ...p, text: q } : p)) }
     })
   }, [])
 
@@ -493,14 +562,40 @@ export function useAiManagement() {
     })
   }, [])
 
+  /** Toggle a question active/inactive. Turning on is blocked when the cap is reached. */
+  const toggleAreaPinned = useCallback((area: string, index: number) => {
+    const a = normaliseArea(area)
+    setAreaPinned((prev) => {
+      const list = prev[a] ?? []
+      const target = list[index]
+      if (!target) return prev
+      if (!target.active && activeCount(list) >= MAX_ACTIVE_QUESTIONS) return prev
+      return { ...prev, [a]: list.map((p, i) => (i === index ? { ...p, active: !p.active } : p)) }
+    })
+  }, [])
+
+  /** Move a question from one position to another (drag-to-reorder). */
+  const reorderAreaPinned = useCallback((area: string, from: number, to: number) => {
+    const a = normaliseArea(area)
+    setAreaPinned((prev) => {
+      const list = prev[a] ?? []
+      if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return prev
+      const next = [...list]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return { ...prev, [a]: next }
+    })
+  }, [])
+
   /** Pin a question to a single specific report so it is suggested only on that report. */
   const pinReportQuestion = useCallback((reportId: string, question: string) => {
     const q = question.trim()
     if (!reportId || !q) return
     setReportPinned((prev) => {
       const list = prev[reportId] ?? []
-      if (list.some((p) => p.toLowerCase() === q.toLowerCase())) return prev
-      return { ...prev, [reportId]: [...list, q] }
+      if (list.some((p) => p.text.toLowerCase() === q.toLowerCase())) return prev
+      const active = activeCount(list) < MAX_ACTIVE_QUESTIONS
+      return { ...prev, [reportId]: [...list, { text: q, active }] }
     })
   }, [])
 
@@ -509,7 +604,7 @@ export function useAiManagement() {
     if (!reportId || !q) return
     setReportPinned((prev) => {
       const list = prev[reportId] ?? []
-      return { ...prev, [reportId]: list.map((p, i) => (i === index ? q : p)) }
+      return { ...prev, [reportId]: list.map((p, i) => (i === index ? { ...p, text: q } : p)) }
     })
   }, [])
 
@@ -517,6 +612,29 @@ export function useAiManagement() {
     setReportPinned((prev) => {
       const list = prev[reportId] ?? []
       return { ...prev, [reportId]: list.filter((_, i) => i !== index) }
+    })
+  }, [])
+
+  /** Toggle a report-specific question active/inactive (capped like area questions). */
+  const toggleReportPinned = useCallback((reportId: string, index: number) => {
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      const target = list[index]
+      if (!target) return prev
+      if (!target.active && activeCount(list) >= MAX_ACTIVE_QUESTIONS) return prev
+      return { ...prev, [reportId]: list.map((p, i) => (i === index ? { ...p, active: !p.active } : p)) }
+    })
+  }, [])
+
+  /** Move a report-specific question from one position to another (drag-to-reorder). */
+  const reorderReportPinned = useCallback((reportId: string, from: number, to: number) => {
+    setReportPinned((prev) => {
+      const list = prev[reportId] ?? []
+      if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return prev
+      const next = [...list]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return { ...prev, [reportId]: next }
     })
   }, [])
 
@@ -589,9 +707,13 @@ export function useAiManagement() {
     pinAreaQuestion,
     updateAreaPinned,
     removeAreaPinned,
+    toggleAreaPinned,
+    reorderAreaPinned,
     pinReportQuestion,
     updateReportPinned,
     removeReportPinned,
+    toggleReportPinned,
+    reorderReportPinned,
   }
 }
 
