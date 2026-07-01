@@ -765,7 +765,7 @@ function TrendsTab({
   // The single topic users ask about the most (topicGroups is sorted by total desc).
   const mostAskedTopic = topicGroups[0]?.topic ?? "—"
 
-  const TOPIC_PAGE_SIZE = 6
+  const TOPIC_PAGE_SIZE = 4
   const [topicPage, setTopicPage] = useState(1)
   const topicPageCount = Math.max(1, Math.ceil(topicGroups.length / TOPIC_PAGE_SIZE))
   const safeTopicPage = Math.min(topicPage, topicPageCount)
