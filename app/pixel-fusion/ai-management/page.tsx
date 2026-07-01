@@ -27,6 +27,8 @@ import {
   Lock,
   ChevronDown,
   ChevronUp,
+  FileText,
+  Layers,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -45,7 +47,6 @@ import {
   MAX_ACTIVE_QUESTIONS,
   type ChatTarget,
   type AreaPinned,
-  type ReportPinned,
   type PinnedQuestion,
   type AskLogEntry,
   type LogFilters,
@@ -81,11 +82,20 @@ function reportNameById(reportId: string): string {
 export default function AiManagementPage() {
   const allowed = isPlatformAdmin()
 
+  // Map each system report/dashboard id to its report area, so the hook can migrate
+  // any legacy per-report pinned questions into the unified per-area lists.
+  const reportAreaMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const c of reportCategories) {
+      for (const r of c.reports) map[r.id] = c.name
+    }
+    return map
+  }, [])
+
   const {
     mounted,
     targets,
     areaPinned,
-    reportPinned,
     asks,
     log,
     pinAreaQuestion,
@@ -93,12 +103,7 @@ export default function AiManagementPage() {
     removeAreaPinned,
     toggleAreaPinned,
     reorderAreaPinned,
-    pinReportQuestion,
-    updateReportPinned,
-    removeReportPinned,
-    toggleReportPinned,
-    reorderReportPinned,
-  } = useAiManagement()
+  } = useAiManagement(reportAreaMap)
 
   const [tab, setTab] = useState<Tab>("prompts")
   const [search, setSearch] = useState("")
@@ -112,21 +117,12 @@ export default function AiManagementPage() {
   const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
-  // Where the question being edited currently lives, so that if the admin changes the
-  // area/dashboard we can move it (remove from origin, add to the new scope) rather
-  // than just editing text in place.
-  const [editOrigin, setEditOrigin] = useState<
-    | { scope: "area"; area: string; index: number }
-    | { scope: "report"; reportId: string; index: number }
-    | null
-  >(null)
+  // Which question (area + list index) is being edited, so that if the admin changes
+  // its area we can move it to the new area's list instead of editing it in place.
+  const [editOrigin, setEditOrigin] = useState<{ area: string; index: number } | null>(null)
 
-  // Delete confirm — scoped to either a report area or a single report.
-  const [deleteConfirm, setDeleteConfirm] = useState<
-    | { scope: "area"; area: string; index: number }
-    | { scope: "report"; reportId: string; index: number }
-    | null
-  >(null)
+  // Delete confirm — the area + index of the question to remove.
+  const [deleteConfirm, setDeleteConfirm] = useState<{ area: string; index: number } | null>(null)
 
   const topicGroups = useMemo(() => asksByTopic(asks), [asks])
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
@@ -141,20 +137,12 @@ export default function AiManagementPage() {
   }
 
   function openEdit(area: string, index: number) {
+    const item = (areaPinned[area] ?? [])[index]
     setDialogArea(area)
-    setDialogReport(ALL_REPORTS)
+    setDialogReport(item?.reportId ? item.reportId : ALL_REPORTS)
     setDialogIndex(index)
-    setEditOrigin({ scope: "area", area, index })
-    setDialogText((areaPinned[area] ?? [])[index]?.text ?? "")
-    setDialogOpen(true)
-  }
-
-  function openEditReport(area: string, reportId: string, index: number) {
-    setDialogArea(area)
-    setDialogReport(reportId)
-    setDialogIndex(index)
-    setEditOrigin({ scope: "report", reportId, index })
-    setDialogText((reportPinned[reportId] ?? [])[index]?.text ?? "")
+    setEditOrigin({ area, index })
+    setDialogText(item?.text ?? "")
     setDialogOpen(true)
   }
 
@@ -166,34 +154,20 @@ export default function AiManagementPage() {
 
   function saveDialog() {
     if (!dialogText.trim() || !dialogReport) return
-    // A specific report is selected only when it's a real report id — not the
-    // unselected placeholder ("") and not the "All reports in this area" option.
-    const scopedToReport = dialogReport !== "" && dialogReport !== ALL_REPORTS
+    // A specific dashboard is chosen only when it's a real report id — not the
+    // unselected placeholder ("") and not the "All dashboards in this area" option.
+    const scopedReportId = dialogReport !== "" && dialogReport !== ALL_REPORTS ? dialogReport : undefined
 
     if (dialogIndex === null || !editOrigin) {
       // Adding a brand-new question.
-      if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
-      else pinAreaQuestion(dialogArea, dialogText)
+      pinAreaQuestion(dialogArea, dialogText, scopedReportId)
+    } else if (editOrigin.area === dialogArea) {
+      // Same area: update text + scope in place, preserving the question's order.
+      updateAreaPinned(dialogArea, editOrigin.index, dialogText, scopedReportId)
     } else {
-      // Editing an existing question. If its scope (area/dashboard) is unchanged we
-      // edit the text in place; otherwise we move it by removing it from its origin
-      // and re-adding it under the newly chosen area/dashboard.
-      const stayedInArea =
-        editOrigin.scope === "area" && !scopedToReport && editOrigin.area === dialogArea
-      const stayedOnReport =
-        editOrigin.scope === "report" && scopedToReport && editOrigin.reportId === dialogReport
-
-      if (stayedInArea) {
-        updateAreaPinned(dialogArea, editOrigin.index, dialogText)
-      } else if (stayedOnReport) {
-        updateReportPinned(dialogReport, editOrigin.index, dialogText)
-      } else {
-        // Moved to a different area or dashboard.
-        if (editOrigin.scope === "area") removeAreaPinned(editOrigin.area, editOrigin.index)
-        else removeReportPinned(editOrigin.reportId, editOrigin.index)
-        if (scopedToReport) pinReportQuestion(dialogReport, dialogText)
-        else pinAreaQuestion(dialogArea, dialogText)
-      }
+      // Moved to a different area: remove from the old area, add to the new one.
+      removeAreaPinned(editOrigin.area, editOrigin.index)
+      pinAreaQuestion(dialogArea, dialogText, scopedReportId)
     }
 
     setDialogOpen(false)
@@ -282,18 +256,13 @@ export default function AiManagementPage() {
               <PromptsTab
                 targets={targets}
                 areaPinned={areaPinned}
-                reportPinned={reportPinned}
                 search={search}
                 setSearch={setSearch}
                 onAdd={openAdd}
                 onEdit={openEdit}
-                onEditReport={openEditReport}
-                onDelete={(area, index) => setDeleteConfirm({ scope: "area", area, index })}
-                onDeleteReport={(reportId, index) => setDeleteConfirm({ scope: "report", reportId, index })}
+                onDelete={(area, index) => setDeleteConfirm({ area, index })}
                 onToggle={toggleAreaPinned}
                 onReorder={reorderAreaPinned}
-                onToggleReport={toggleReportPinned}
-                onReorderReport={reorderReportPinned}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -393,19 +362,17 @@ export default function AiManagementPage() {
         <DialogContent className="max-w-sm">
           <h2 className="text-base font-semibold text-slate-900 mb-1">Remove question?</h2>
           <p className="text-sm text-slate-500 mb-6">
-            {deleteConfirm?.scope === "area" && (
-              <>
-                &ldquo;{(areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]?.text}&rdquo; will no longer be
-                suggested across <span className="font-medium text-slate-700">{deleteConfirm.area}</span>.
-              </>
-            )}
-            {deleteConfirm?.scope === "report" && (
-              <>
-                &ldquo;{(reportPinned[deleteConfirm.reportId] ?? [])[deleteConfirm.index]?.text}&rdquo; will no longer
-                be suggested on{" "}
-                <span className="font-medium text-slate-700">{reportNameById(deleteConfirm.reportId)}</span>.
-              </>
-            )}
+            {deleteConfirm &&
+              (() => {
+                const item = (areaPinned[deleteConfirm.area] ?? [])[deleteConfirm.index]
+                const where = item?.reportId ? reportNameById(item.reportId) : deleteConfirm.area
+                return (
+                  <>
+                    &ldquo;{item?.text}&rdquo; will no longer be suggested on{" "}
+                    <span className="font-medium text-slate-700">{where}</span>.
+                  </>
+                )
+              })()}
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
@@ -414,9 +381,7 @@ export default function AiManagementPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (deleteConfirm?.scope === "area") removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
-                else if (deleteConfirm?.scope === "report")
-                  removeReportPinned(deleteConfirm.reportId, deleteConfirm.index)
+                if (deleteConfirm) removeAreaPinned(deleteConfirm.area, deleteConfirm.index)
                 setDeleteConfirm(null)
               }}
             >
@@ -441,14 +406,12 @@ export default function AiManagementPage() {
  */
 function QuestionList({
   questions,
-  variant,
   onEdit,
   onDelete,
   onToggle,
   onReorder,
 }: {
   questions: PinnedQuestion[]
-  variant: "area" | "report"
   onEdit: (index: number) => void
   onDelete: (index: number) => void
   onToggle: (index: number) => void
@@ -472,11 +435,14 @@ function QuestionList({
       {questions.map((q, i) => {
         // A question can only be switched on when under the active cap.
         const toggleDisabled = !q.active && capReached
+        // Report-scoped questions are shown dashed with a chip naming the dashboard;
+        // area-wide questions are solid and chipped "All dashboards".
+        const scoped = !!q.reportId
         return (
           <div
             key={`${q.text}-${i}`}
             className={`group flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 text-left transition-colors hover:border-slate-300 ${
-              variant === "report" ? "border-dashed bg-slate-50/60" : "bg-white"
+              scoped ? "border-dashed bg-slate-50/60" : "bg-white"
             }`}
           >
             {/* Order controls — up/down + badge, matching the System Help page */}
@@ -507,13 +473,26 @@ function QuestionList({
               <span className="text-xs font-medium text-slate-400 w-4 flex-shrink-0 text-center">{i + 1}</span>
             )}
 
-            {/* Question text — click to edit */}
+            {/* Question text + scope — click to edit */}
             <button
               type="button"
               onClick={() => onEdit(i)}
-              className={`flex-1 text-sm text-left ${q.active ? "text-slate-700" : "text-slate-400"}`}
+              className="flex-1 min-w-0 text-left"
             >
-              {q.text}
+              <span className={`block text-sm ${q.active ? "text-slate-700" : "text-slate-400"}`}>{q.text}</span>
+              <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-slate-400">
+                {scoped ? (
+                  <>
+                    <FileText className="w-3 h-3" />
+                    Only on {reportNameById(q.reportId!)}
+                  </>
+                ) : (
+                  <>
+                    <Layers className="w-3 h-3" />
+                    All dashboards in this area
+                  </>
+                )}
+              </span>
             </button>
 
             {!q.active && (
@@ -559,33 +538,23 @@ function QuestionList({
 function PromptsTab({
   targets,
   areaPinned,
-  reportPinned,
   search,
   setSearch,
   onAdd,
   onEdit,
-  onEditReport,
   onDelete,
-  onDeleteReport,
   onToggle,
   onReorder,
-  onToggleReport,
-  onReorderReport,
 }: {
   targets: ChatTarget[]
   areaPinned: AreaPinned
-  reportPinned: ReportPinned
   search: string
   setSearch: (v: string) => void
   onAdd: (area?: string) => void
   onEdit: (area: string, index: number) => void
-  onEditReport: (area: string, reportId: string, index: number) => void
   onDelete: (area: string, index: number) => void
-  onDeleteReport: (reportId: string, index: number) => void
   onToggle: (area: string, index: number) => void
   onReorder: (area: string, from: number, to: number) => void
-  onToggleReport: (reportId: string, index: number) => void
-  onReorderReport: (reportId: string, from: number, to: number) => void
 }) {
   // Match areas by name, or by any report/dashboard that lives in the area.
   const visibleAreas = useMemo(() => {
@@ -636,14 +605,11 @@ function PromptsTab({
         <>
           {pageAreas.map((area) => {
             const color = getAreaColor(area)
+            // A single ordered list per area — area-wide and dashboard-specific
+            // questions together, so admins can order them relative to each other.
             const pinned = areaPinned[area] ?? []
             const areaTargets = targetsForArea(targets, area)
-            // Report-specific questions grouped by the report they are scoped to.
-            const areaReports = systemReportsForArea(area)
-              .map((r) => ({ report: r, questions: reportPinned[r.id] ?? [] }))
-              .filter((x) => x.questions.length > 0)
-            const reportQCount = areaReports.reduce((s, x) => s + x.questions.length, 0)
-            const totalCount = pinned.length + reportQCount
+            const totalCount = pinned.length
             return (
               <Card key={area} className="overflow-hidden">
                 <CardContent className="p-0">
@@ -668,38 +634,17 @@ function PromptsTab({
                     </div>
                   </div>
 
-                  {/* Pinned questions */}
+                  {/* Pinned questions — one ordered list mixing area-wide and dashboard-scoped. */}
                   <div className="p-5 space-y-5">
-                    {/* Area-wide questions: surfaced on every report/dashboard in the area. */}
-                    {pinned.length > 0 && (
+                    {pinned.length > 0 ? (
                       <QuestionList
                         questions={pinned}
-                        variant="area"
                         onEdit={(i) => onEdit(area, i)}
                         onDelete={(i) => onDelete(area, i)}
                         onToggle={(i) => onToggle(area, i)}
                         onReorder={(from, to) => onReorder(area, from, to)}
                       />
-                    )}
-
-                    {/* Report-specific questions: surfaced only on that exact report. */}
-                    {areaReports.map(({ report, questions }) => (
-                      <div key={report.id} className="space-y-2">
-                        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-                          Only on: <span className="text-slate-600 normal-case">{report.name}</span>
-                        </p>
-                        <QuestionList
-                          questions={questions}
-                          variant="report"
-                          onEdit={(i) => onEditReport(area, report.id, i)}
-                          onDelete={(i) => onDeleteReport(report.id, i)}
-                          onToggle={(i) => onToggleReport(report.id, i)}
-                          onReorder={(from, to) => onReorderReport(report.id, from, to)}
-                        />
-                      </div>
-                    ))}
-
-                    {totalCount === 0 && (
+                    ) : (
                       <p className="text-xs text-slate-400 py-2">
                         No questions yet. Add a question to suggest it across this area.
                       </p>

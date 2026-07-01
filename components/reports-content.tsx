@@ -21,7 +21,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { LoadingModal } from "@/components/ui/loading-modal"
-import { getAreaQuestions, getReportQuestions } from "@/lib/ai-chatbot"
+import { getSuggestedQuestions } from "@/lib/ai-chatbot"
 import { AttendanceHeadlinesReport } from "@/components/attendance-headlines-report"
 import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
 import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
@@ -476,11 +476,13 @@ export function ReportsContent() {
     // When opened from a dashboard/report, surface the questions an admin pinned in
     // AI Management. Report-specific questions (scoped to this exact report) come first,
     // then the broader area questions. Fall back to generic prompts otherwise.
-    const reportQuestions = selectedReportData ? getReportQuestions(selectedReportData.id) : []
-    const areaQuestions = selectedCategory ? getAreaQuestions(selectedCategory.name) : []
-    const pinnedQuestions = [...reportQuestions, ...areaQuestions].filter(
-      (q, i, arr) => arr.findIndex((x) => x.toLowerCase() === q.toLowerCase()) === i,
-    )
+    // A single ordered list per area (area-wide + this report's questions), in the
+    // exact order the admin arranged them in AI Management.
+    const pinnedQuestions = selectedCategory
+      ? getSuggestedQuestions(selectedCategory.name, selectedReportData?.id).filter(
+          (q, i, arr) => arr.findIndex((x) => x.toLowerCase() === q.toLowerCase()) === i,
+        )
+      : []
     const defaultQuestions = [
       "What's our current attendance rate?",
       "Compare KS2 results across schools",
