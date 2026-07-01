@@ -894,26 +894,12 @@ function TrendsTab({
   // The single topic users ask about the most (topicGroups is sorted by total desc).
   const mostAskedTopic = topicGroups[0]?.topic ?? "—"
 
-  const TOPIC_PAGE_SIZE = 4
-  const [topicPage, setTopicPage] = useState(1)
-  const topicPageCount = Math.max(1, Math.ceil(recentTopicGroups.length / TOPIC_PAGE_SIZE))
-  const safeTopicPage = Math.min(topicPage, topicPageCount)
   // Keep the bar scale consistent across pages using the global max (list is sorted desc).
   const topicMax = recentTopicGroups[0]?.total ?? 1
-  const pagedTopics = recentTopicGroups.slice((safeTopicPage - 1) * TOPIC_PAGE_SIZE, safeTopicPage * TOPIC_PAGE_SIZE)
 
   // Track which topic rows are expanded to reveal the questions asked within them.
-  // At most MAX_OPEN_TOPICS can be open at once to keep the panel scannable.
-  const MAX_OPEN_TOPICS = 10
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({})
-  const openCount = Object.values(expandedTopics).filter(Boolean).length
-  const openLimitReached = openCount >= MAX_OPEN_TOPICS
-  const toggleTopic = (topic: string) =>
-    setExpandedTopics((prev) => {
-      // Always allow collapsing; only block opening once the cap is hit.
-      if (!prev[topic] && Object.values(prev).filter(Boolean).length >= MAX_OPEN_TOPICS) return prev
-      return { ...prev, [topic]: !prev[topic] }
-    })
+  const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
   const allExpanded = recentTopicGroups.length > 0 && recentTopicGroups.every((g) => expandedTopics[g.topic])
 
   // Cap the questions shown per open topic so expanding many topics never balloons
@@ -921,6 +907,32 @@ function TrendsTab({
   const QUESTIONS_PER_TOPIC = 5
   const [showAllQuestions, setShowAllQuestions] = useState<Record<string, boolean>>({})
   const toggleShowAll = (topic: string) => setShowAllQuestions((prev) => ({ ...prev, [topic]: !prev[topic] }))
+
+  // Paginate by rows, not topics: each topic header and each visible question counts
+  // as one row. Expanding a topic pushes its questions (and any topics below it) onto
+  // later pages, so a single page never shows more than TOPIC_ROWS_PER_PAGE rows.
+  const TOPIC_ROWS_PER_PAGE = 10
+  type TopicRow =
+    | { kind: "topic"; g: (typeof recentTopicGroups)[number] }
+    | { kind: "question"; topic: string; q: (typeof recentTopicGroups)[number]["questions"][number] }
+    | { kind: "more"; g: (typeof recentTopicGroups)[number] }
+  const topicRows = useMemo<TopicRow[]>(() => {
+    const rows: TopicRow[] = []
+    for (const g of recentTopicGroups) {
+      rows.push({ kind: "topic", g })
+      if (expandedTopics[g.topic]) {
+        const visible = showAllQuestions[g.topic] ? g.questions : g.questions.slice(0, QUESTIONS_PER_TOPIC)
+        for (const q of visible) rows.push({ kind: "question", topic: g.topic, q })
+        if (g.questions.length > QUESTIONS_PER_TOPIC) rows.push({ kind: "more", g })
+      }
+    }
+    return rows
+  }, [recentTopicGroups, expandedTopics, showAllQuestions])
+
+  const [topicPage, setTopicPage] = useState(1)
+  const topicPageCount = Math.max(1, Math.ceil(topicRows.length / TOPIC_ROWS_PER_PAGE))
+  const safeTopicPage = Math.min(topicPage, topicPageCount)
+  const pagedRows = topicRows.slice((safeTopicPage - 1) * TOPIC_ROWS_PER_PAGE, safeTopicPage * TOPIC_ROWS_PER_PAGE)
 
   // Paging for the two summary lists at the bottom of the tab.
   const LIST_PAGE_SIZE = 8
@@ -961,11 +973,9 @@ function TrendsTab({
                 if (allExpanded) {
                   setExpandedTopics({})
                 } else {
-                  // Expand up to the open cap, keeping the highest-volume topics.
-                  setExpandedTopics(
-                    Object.fromEntries(recentTopicGroups.slice(0, MAX_OPEN_TOPICS).map((g) => [g.topic, true])),
-                  )
+                  setExpandedTopics(Object.fromEntries(recentTopicGroups.map((g) => [g.topic, true])))
                 }
+                setTopicPage(1)
               }}
               className="shrink-0 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
@@ -975,28 +985,20 @@ function TrendsTab({
           <p className="text-xs text-slate-500 mb-4">
             Questions asked in the last 7 days, grouped by keyword (Attendance, Attainment, SEND…). Use this to spot
             where demand is heading.
-            {openLimitReached && (
-              <span className="text-slate-400"> · Up to {MAX_OPEN_TOPICS} topics can be open at once.</span>
-            )}
           </p>
           <div className="space-y-4">
-            {pagedTopics.map((g) => {
-              const max = topicMax
-              const color = getAreaColor(g.topic)
-              const isOpen = !!expandedTopics[g.topic]
-              // Closed rows can't be opened once the cap is hit; open rows always collapse.
-              const blocked = !isOpen && openLimitReached
-              return (
-                <div key={g.topic}>
+            {pagedRows.map((row) => {
+              if (row.kind === "topic") {
+                const g = row.g
+                const color = getAreaColor(g.topic)
+                const isOpen = !!expandedTopics[g.topic]
+                return (
                   <button
+                    key={`t-${g.topic}`}
                     type="button"
                     onClick={() => toggleTopic(g.topic)}
                     aria-expanded={isOpen}
-                    aria-disabled={blocked}
-                    title={blocked ? `Close a topic first — up to ${MAX_OPEN_TOPICS} can be open at once.` : undefined}
-                    className={`w-full text-left rounded-md -mx-1 px-1 py-1 transition-colors ${
-                      blocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
-                    }`}
+                    className="block w-full text-left rounded-md -mx-1 px-1 py-1 transition-colors hover:bg-slate-50"
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
@@ -1014,35 +1016,34 @@ function TrendsTab({
                     <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${(g.total / max) * 100}%`, backgroundColor: color }}
+                        style={{ width: `${(g.total / topicMax) * 100}%`, backgroundColor: color }}
                       />
                     </div>
                   </button>
-                  {isOpen && (
-                    <div className="mt-2 ml-6 pl-4 border-l border-slate-200 space-y-1.5">
-                      {(showAllQuestions[g.topic] ? g.questions : g.questions.slice(0, QUESTIONS_PER_TOPIC)).map(
-                        (q) => (
-                          <div key={q.id} className="flex items-center gap-3 py-1">
-                            <span className="flex-1 text-sm text-slate-600">{q.question}</span>
-                            <span className="text-xs font-medium text-slate-500 shrink-0">
-                              {q.count.toLocaleString()}
-                            </span>
-                          </div>
-                        ),
-                      )}
-                      {g.questions.length > QUESTIONS_PER_TOPIC && (
-                        <button
-                          type="button"
-                          onClick={() => toggleShowAll(g.topic)}
-                          className="mt-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
-                        >
-                          {showAllQuestions[g.topic]
-                            ? "Show fewer"
-                            : `Show all ${g.questions.length} questions`}
-                        </button>
-                      )}
+                )
+              }
+              if (row.kind === "question") {
+                return (
+                  <div key={`q-${row.q.id}`} className="ml-6 pl-4 border-l border-slate-200">
+                    <div className="flex items-center gap-3 py-1">
+                      <span className="flex-1 text-sm text-slate-600">{row.q.question}</span>
+                      <span className="text-xs font-medium text-slate-500 shrink-0">
+                        {row.q.count.toLocaleString()}
+                      </span>
                     </div>
-                  )}
+                  </div>
+                )
+              }
+              // "more" row — toggle showing all questions for the topic.
+              return (
+                <div key={`m-${row.g.topic}`} className="ml-6 pl-4 border-l border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => toggleShowAll(row.g.topic)}
+                    className="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  >
+                    {showAllQuestions[row.g.topic] ? "Show fewer" : `Show all ${row.g.questions.length} questions`}
+                  </button>
                 </div>
               )
             })}
@@ -1055,9 +1056,9 @@ function TrendsTab({
               page={safeTopicPage}
               pageCount={topicPageCount}
               onPageChange={setTopicPage}
-              totalItems={recentTopicGroups.length}
-              pageSize={TOPIC_PAGE_SIZE}
-              itemLabel="topics"
+              totalItems={topicRows.length}
+              pageSize={TOPIC_ROWS_PER_PAGE}
+              itemLabel="rows"
             />
           </div>
         </CardContent>
