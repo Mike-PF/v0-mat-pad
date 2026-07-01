@@ -572,7 +572,7 @@ export function ReportsContent() {
 
                     {/* Suggested questions — area-specific when opened from a report */}
                     <div className="w-full">
-                      {areaQuestions.length > 0 && selectedCategory && (
+                      {pinnedQuestions.length > 0 && selectedCategory && (
                         <p className="text-xs font-medium text-slate-500 mb-2 text-left">
                           Suggested for {selectedCategory.name}
                         </p>
