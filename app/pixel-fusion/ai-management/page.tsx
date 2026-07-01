@@ -298,13 +298,13 @@ export default function AiManagementPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="question-report">Report</Label>
+              <Label htmlFor="question-report">Dashboard</Label>
               <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
                 <SelectTrigger id="question-report">
-                  <SelectValue placeholder="Select a report…" />
+                  <SelectValue placeholder="Select a dashboard…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL_REPORTS}>All reports in this area</SelectItem>
+                  <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
                   {systemReportsForArea(dialogArea).map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}
@@ -314,8 +314,8 @@ export default function AiManagementPage() {
               </Select>
               <p className="text-xs text-slate-400">
                 {systemReportsForArea(dialogArea).length === 0
-                  ? "No system reports sit under this area on the Dashboards page."
-                  : "Choose “All reports in this area” to suggest it everywhere in the area, or pick one report to scope it. Leaving this unset applies it to the whole area."}
+                  ? "No system dashboards sit under this area on the Dashboards page."
+                  : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it. Leaving this unset applies it to the whole area."}
               </p>
             </div>
             <div className="space-y-2">
