@@ -36,6 +36,7 @@ import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
 import {
   useAiManagement,
   asksByTopic,
+  asksByTopicWithinDays,
   totalAsks,
   getAreaColor,
   targetsForArea,
@@ -268,7 +269,7 @@ export default function AiManagementPage() {
                 onReorderScoped={reorderAreaScoped}
               />
             ) : tab === "trends" ? (
-              <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
+              <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} log={log} />
             ) : (
               <ReportsTab log={log} />
             )}
@@ -861,12 +862,18 @@ function TrendsTab({
   grandTotal,
   targets,
   asks,
+  log,
 }: {
   topicGroups: ReturnType<typeof asksByTopic>
   grandTotal: number
   targets: ChatTarget[]
   asks: ReturnType<typeof useAiManagement>["asks"]
+  log: ReturnType<typeof useAiManagement>["log"]
 }) {
+  // The "by topic" panel reflects only the last 7 days, derived from the question
+  // log (which carries real timestamps), while the summary cards above stay 30-day.
+  const TOPIC_WINDOW_DAYS = 7
+  const recentTopicGroups = useMemo(() => asksByTopicWithinDays(log, TOPIC_WINDOW_DAYS), [log])
   // Full sorted list of reports/dashboards by question volume (paged in the UI).
   const topTargets = useMemo(() => {
     return targets
@@ -889,16 +896,25 @@ function TrendsTab({
 
   const TOPIC_PAGE_SIZE = 4
   const [topicPage, setTopicPage] = useState(1)
-  const topicPageCount = Math.max(1, Math.ceil(topicGroups.length / TOPIC_PAGE_SIZE))
+  const topicPageCount = Math.max(1, Math.ceil(recentTopicGroups.length / TOPIC_PAGE_SIZE))
   const safeTopicPage = Math.min(topicPage, topicPageCount)
   // Keep the bar scale consistent across pages using the global max (list is sorted desc).
-  const topicMax = topicGroups[0]?.total ?? 1
-  const pagedTopics = topicGroups.slice((safeTopicPage - 1) * TOPIC_PAGE_SIZE, safeTopicPage * TOPIC_PAGE_SIZE)
+  const topicMax = recentTopicGroups[0]?.total ?? 1
+  const pagedTopics = recentTopicGroups.slice((safeTopicPage - 1) * TOPIC_PAGE_SIZE, safeTopicPage * TOPIC_PAGE_SIZE)
 
   // Track which topic rows are expanded to reveal the questions asked within them.
+  // At most MAX_OPEN_TOPICS can be open at once to keep the panel scannable.
+  const MAX_OPEN_TOPICS = 10
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({})
-  const toggleTopic = (topic: string) => setExpandedTopics((prev) => ({ ...prev, [topic]: !prev[topic] }))
-  const allExpanded = topicGroups.length > 0 && topicGroups.every((g) => expandedTopics[g.topic])
+  const openCount = Object.values(expandedTopics).filter(Boolean).length
+  const openLimitReached = openCount >= MAX_OPEN_TOPICS
+  const toggleTopic = (topic: string) =>
+    setExpandedTopics((prev) => {
+      // Always allow collapsing; only block opening once the cap is hit.
+      if (!prev[topic] && Object.values(prev).filter(Boolean).length >= MAX_OPEN_TOPICS) return prev
+      return { ...prev, [topic]: !prev[topic] }
+    })
+  const allExpanded = recentTopicGroups.length > 0 && recentTopicGroups.every((g) => expandedTopics[g.topic])
 
   // Cap the questions shown per open topic so expanding many topics never balloons
   // into one giant scroll. Each topic can be individually expanded to show them all.
@@ -945,7 +961,10 @@ function TrendsTab({
                 if (allExpanded) {
                   setExpandedTopics({})
                 } else {
-                  setExpandedTopics(Object.fromEntries(topicGroups.map((g) => [g.topic, true])))
+                  // Expand up to the open cap, keeping the highest-volume topics.
+                  setExpandedTopics(
+                    Object.fromEntries(recentTopicGroups.slice(0, MAX_OPEN_TOPICS).map((g) => [g.topic, true])),
+                  )
                 }
               }}
               className="shrink-0 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
@@ -954,20 +973,30 @@ function TrendsTab({
             </button>
           </div>
           <p className="text-xs text-slate-500 mb-4">
-            Questions are grouped by keyword (Attendance, Attainment, SEND…). Use this to spot where demand is heading.
+            Questions asked in the last 7 days, grouped by keyword (Attendance, Attainment, SEND…). Use this to spot
+            where demand is heading.
+            {openLimitReached && (
+              <span className="text-slate-400"> · Up to {MAX_OPEN_TOPICS} topics can be open at once.</span>
+            )}
           </p>
           <div className="space-y-4">
             {pagedTopics.map((g) => {
               const max = topicMax
               const color = getAreaColor(g.topic)
               const isOpen = !!expandedTopics[g.topic]
+              // Closed rows can't be opened once the cap is hit; open rows always collapse.
+              const blocked = !isOpen && openLimitReached
               return (
                 <div key={g.topic}>
                   <button
                     type="button"
                     onClick={() => toggleTopic(g.topic)}
                     aria-expanded={isOpen}
-                    className="w-full text-left rounded-md -mx-1 px-1 py-1 hover:bg-slate-50 transition-colors"
+                    aria-disabled={blocked}
+                    title={blocked ? `Close a topic first — up to ${MAX_OPEN_TOPICS} can be open at once.` : undefined}
+                    className={`w-full text-left rounded-md -mx-1 px-1 py-1 transition-colors ${
+                      blocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                    }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
@@ -1017,13 +1046,16 @@ function TrendsTab({
                 </div>
               )
             })}
+            {recentTopicGroups.length === 0 && (
+              <p className="text-sm text-slate-400 py-2">No questions have been asked in the last 7 days.</p>
+            )}
           </div>
           <div className="mt-4">
             <Pagination
               page={safeTopicPage}
               pageCount={topicPageCount}
               onPageChange={setTopicPage}
-              totalItems={topicGroups.length}
+              totalItems={recentTopicGroups.length}
               pageSize={TOPIC_PAGE_SIZE}
               itemLabel="topics"
             />

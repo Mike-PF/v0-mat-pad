@@ -776,6 +776,60 @@ export function totalAsks(asks: AskRecord[]): number {
   return asks.reduce((s, a) => s + a.count, 0)
 }
 
+/**
+ * Aggregate the question log into topic groups over a recent window (default 7 days),
+ * for the "what people are asking, by topic" panel. Counts are the number of times
+ * each question was asked within the window, and `trend` compares the window against
+ * the immediately preceding window of the same length. Returns the same shape as
+ * {@link asksByTopic} so the panel can consume either.
+ */
+export function asksByTopicWithinDays(
+  log: AskLogEntry[],
+  days = 7,
+): { topic: string; total: number; trend: number; questions: AskRecord[] }[] {
+  const now = Date.now()
+  const windowMs = days * 24 * 60 * 60 * 1000
+  const recentStart = now - windowMs
+  const prevStart = now - windowMs * 2
+
+  // topic -> question text -> occurrence counts in each window.
+  const topics = new Map<string, Map<string, { recent: number; prev: number; targetId: string }>>()
+  for (const e of log) {
+    const t = new Date(e.askedAt).getTime()
+    const inRecent = t >= recentStart
+    const inPrev = t >= prevStart && t < recentStart
+    if (!inRecent && !inPrev) continue
+    const byQ = topics.get(e.topic) ?? new Map<string, { recent: number; prev: number; targetId: string }>()
+    topics.set(e.topic, byQ)
+    const row = byQ.get(e.question) ?? { recent: 0, prev: 0, targetId: e.targetId }
+    if (inRecent) row.recent += 1
+    else row.prev += 1
+    byQ.set(e.question, row)
+  }
+
+  return Array.from(topics.entries())
+    .map(([topic, byQ]) => {
+      const questions: AskRecord[] = Array.from(byQ.entries())
+        .filter(([, v]) => v.recent > 0)
+        .map(([question, v], i): AskRecord => ({
+          id: `${topic}-${i}`,
+          targetId: v.targetId,
+          question,
+          topic,
+          count: v.recent,
+          trend: v.prev > 0 ? Math.round(((v.recent - v.prev) / v.prev) * 100) : 100,
+          lastAsked: "",
+        }))
+        .sort((a, b) => b.count - a.count)
+      const total = questions.reduce((s, q) => s + q.count, 0)
+      const prevSum = Array.from(byQ.values()).reduce((s, v) => s + v.prev, 0)
+      const trend = prevSum > 0 ? Math.round(((total - prevSum) / prevSum) * 100) : 0
+      return { topic, total, trend, questions }
+    })
+    .filter((g) => g.total > 0)
+    .sort((a, b) => b.total - a.total)
+}
+
 // ---------------------------------------------------------------------------
 // Question log helpers (Reports tab + Excel export)
 // ---------------------------------------------------------------------------
