@@ -718,6 +718,7 @@ function TrendsTab({
   targets: ChatTarget[]
   asks: ReturnType<typeof useAiManagement>["asks"]
 }) {
+  // Full sorted list of reports/dashboards by question volume (paged in the UI).
   const topTargets = useMemo(() => {
     return targets
       .map((t) => ({
@@ -726,8 +727,10 @@ function TrendsTab({
       }))
       .filter((t) => t.total > 0)
       .sort((a, b) => b.total - a.total)
-      .slice(0, 6)
   }, [targets, asks])
+
+  // Full sorted list of the most-asked questions (paged in the UI).
+  const topQuestions = useMemo(() => asks.slice().sort((a, b) => b.count - a.count), [asks])
 
   const fastestGrowing = topicGroups.slice().sort((a, b) => b.trend - a.trend)[0]?.topic ?? "—"
   // Average questions asked per day across the last 30 days.
@@ -753,6 +756,21 @@ function TrendsTab({
   const QUESTIONS_PER_TOPIC = 5
   const [showAllQuestions, setShowAllQuestions] = useState<Record<string, boolean>>({})
   const toggleShowAll = (topic: string) => setShowAllQuestions((prev) => ({ ...prev, [topic]: !prev[topic] }))
+
+  // Paging for the two summary lists at the bottom of the tab.
+  const LIST_PAGE_SIZE = 8
+  const [questionPage, setQuestionPage] = useState(1)
+  const questionPageCount = Math.max(1, Math.ceil(topQuestions.length / LIST_PAGE_SIZE))
+  const safeQuestionPage = Math.min(questionPage, questionPageCount)
+  const pagedQuestions = topQuestions.slice((safeQuestionPage - 1) * LIST_PAGE_SIZE, safeQuestionPage * LIST_PAGE_SIZE)
+
+  const TARGET_PAGE_SIZE = 6
+  const [targetPage, setTargetPage] = useState(1)
+  const targetPageCount = Math.max(1, Math.ceil(topTargets.length / TARGET_PAGE_SIZE))
+  const safeTargetPage = Math.min(targetPage, targetPageCount)
+  // Keep bar scale consistent across pages using the global max (list is sorted desc).
+  const targetMax = topTargets[0]?.total ?? 1
+  const pagedTargets = topTargets.slice((safeTargetPage - 1) * TARGET_PAGE_SIZE, safeTargetPage * TARGET_PAGE_SIZE)
 
   return (
     <div className="space-y-6">
@@ -870,17 +888,25 @@ function TrendsTab({
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">Top questions overall</h3>
             <div className="space-y-1">
-              {asks
-                .slice()
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 8)
-                .map((a, i) => (
-                  <div key={a.id} className="flex items-center gap-3 py-1.5">
-                    <span className="text-xs font-semibold text-slate-300 w-4">{i + 1}</span>
-                    <span className="flex-1 text-sm text-slate-700 truncate">{a.question}</span>
-                    <span className="text-xs font-medium text-slate-500">{a.count}</span>
-                  </div>
-                ))}
+              {pagedQuestions.map((a, i) => (
+                <div key={a.id} className="flex items-center gap-3 py-1.5">
+                  <span className="text-xs font-semibold text-slate-300 w-6">
+                    {(safeQuestionPage - 1) * LIST_PAGE_SIZE + i + 1}
+                  </span>
+                  <span className="flex-1 text-sm text-slate-700 truncate">{a.question}</span>
+                  <span className="text-xs font-medium text-slate-500">{a.count}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <Pagination
+                page={safeQuestionPage}
+                pageCount={questionPageCount}
+                onPageChange={setQuestionPage}
+                totalItems={topQuestions.length}
+                pageSize={LIST_PAGE_SIZE}
+                itemLabel="questions"
+              />
             </div>
           </CardContent>
         </Card>
@@ -889,8 +915,7 @@ function TrendsTab({
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">Busiest reports & dashboards</h3>
             <div className="space-y-3">
-              {topTargets.map(({ target, total }) => {
-                const max = topTargets[0].total
+              {pagedTargets.map(({ target, total }) => {
                 const color = getAreaColor(target.area)
                 return (
                   <div key={target.id}>
@@ -901,12 +926,22 @@ function TrendsTab({
                     <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${(total / max) * 100}%`, backgroundColor: color }}
+                        style={{ width: `${(total / targetMax) * 100}%`, backgroundColor: color }}
                       />
                     </div>
                   </div>
                 )
               })}
+            </div>
+            <div className="mt-4">
+              <Pagination
+                page={safeTargetPage}
+                pageCount={targetPageCount}
+                onPageChange={setTargetPage}
+                totalItems={topTargets.length}
+                pageSize={TARGET_PAGE_SIZE}
+                itemLabel="reports"
+              />
             </div>
           </CardContent>
         </Card>
