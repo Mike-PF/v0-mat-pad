@@ -27,7 +27,7 @@ import {
   XCircle,
   Lock,
   ChevronDown,
-  GripVertical,
+  ChevronUp,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -412,8 +412,8 @@ export default function AiManagementPage() {
 /**
  * A reorderable list of pinned questions. The list order is the order questions
  * appear in the AI chatbot; only active ones are surfaced there, capped at
- * MAX_ACTIVE_QUESTIONS. Rows can be dragged to reorder, toggled active/inactive,
- * clicked to edit, and removed.
+ * MAX_ACTIVE_QUESTIONS. Rows are reordered with up/down controls (matching the
+ * System Help page), toggled active/inactive, clicked to edit, and removed.
  */
 function QuestionList({
   questions,
@@ -430,10 +430,9 @@ function QuestionList({
   onToggle: (index: number) => void
   onReorder: (from: number, to: number) => void
 }) {
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
-  const [overIndex, setOverIndex] = useState<number | null>(null)
   const active = activeCount(questions)
   const capReached = active >= MAX_ACTIVE_QUESTIONS
+  const multiple = questions.length > 1
 
   return (
     <div className="space-y-2">
@@ -447,45 +446,42 @@ function QuestionList({
       </div>
 
       {questions.map((q, i) => {
-        const isDragging = dragIndex === i
-        const isDropTarget = overIndex === i && dragIndex !== null && dragIndex !== i
         // A question can only be switched on when under the active cap.
         const toggleDisabled = !q.active && capReached
         return (
           <div
             key={`${q.text}-${i}`}
-            draggable
-            onDragStart={(e) => {
-              setDragIndex(i)
-              e.dataTransfer.effectAllowed = "move"
-            }}
-            onDragOver={(e) => {
-              e.preventDefault()
-              setOverIndex(i)
-            }}
-            onDragEnd={() => {
-              setDragIndex(null)
-              setOverIndex(null)
-            }}
-            onDrop={(e) => {
-              e.preventDefault()
-              if (dragIndex !== null && dragIndex !== i) onReorder(dragIndex, i)
-              setDragIndex(null)
-              setOverIndex(null)
-            }}
-            className={`group flex items-center gap-2 p-2.5 rounded-lg border text-left transition-colors ${
+            className={`group flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 text-left transition-colors hover:border-slate-300 ${
               variant === "report" ? "border-dashed bg-slate-50/60" : "bg-white"
-            } ${isDropTarget ? "border-[#121051] ring-1 ring-[#121051]" : "border-slate-200"} ${
-              isDragging ? "opacity-40" : "hover:border-slate-300"
             }`}
           >
-            {/* Drag handle */}
-            <span
-              className="p-1 -ml-1 text-slate-300 group-hover:text-slate-400 cursor-grab active:cursor-grabbing shrink-0"
-              aria-hidden="true"
-            >
-              <GripVertical className="w-4 h-4" />
-            </span>
+            {/* Order controls — up/down + badge, matching the System Help page */}
+            {multiple && (
+              <div className="flex flex-col gap-0.5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onReorder(i, i - 1)}
+                  disabled={i === 0}
+                  className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Move up"
+                >
+                  <ChevronUp className="w-4 h-4 text-slate-500" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onReorder(i, i + 1)}
+                  disabled={i === questions.length - 1}
+                  className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Move down"
+                >
+                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                </button>
+              </div>
+            )}
+
+            {multiple && (
+              <span className="text-xs font-medium text-slate-400 w-4 flex-shrink-0 text-center">{i + 1}</span>
+            )}
 
             {/* Question text — click to edit */}
             <button
