@@ -156,7 +156,7 @@ export default function AiManagementPage() {
   }
 
   function saveDialog() {
-    if (!dialogText.trim()) return
+    if (!dialogText.trim() || !dialogReport) return
     // A specific report is selected only when it's a real report id — not the
     // unselected placeholder ("") and not the "All reports in this area" option.
     const scopedToReport = dialogReport !== "" && dialogReport !== ALL_REPORTS
@@ -310,7 +310,9 @@ export default function AiManagementPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="question-report">Dashboard</Label>
+              <Label htmlFor="question-report">
+                Dashboard<span className="text-red-500">*</span>
+              </Label>
               <Select value={dialogReport} onValueChange={setDialogReport} disabled={dialogIndex !== null}>
                 <SelectTrigger id="question-report">
                   <SelectValue placeholder="Select a dashboard…" />
@@ -327,7 +329,7 @@ export default function AiManagementPage() {
               <p className="text-xs text-slate-400">
                 {systemReportsForArea(dialogArea).length === 0
                   ? "No system dashboards sit under this area on the Dashboards page."
-                  : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it. Leaving this unset applies it to the whole area."}
+                  : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
               </p>
             </div>
             <div className="space-y-2">
@@ -352,7 +354,7 @@ export default function AiManagementPage() {
             </Button>
             <Button
               onClick={saveDialog}
-              disabled={!dialogText.trim()}
+                disabled={!dialogText.trim() || !dialogReport}
               className="text-white"
               style={{ backgroundColor: NAVY }}
             >
