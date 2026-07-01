@@ -520,14 +520,14 @@ function QuestionList({
               />
             </button>
 
-            {/* Remove */}
+            {/* Remove — always visible, matching the System Help page */}
             <button
               type="button"
               onClick={() => onDelete(i)}
-              className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+              className="p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
               aria-label="Remove question"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         )
