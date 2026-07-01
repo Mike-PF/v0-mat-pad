@@ -27,6 +27,7 @@ import {
   Lock,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   FileText,
   Layers,
 } from "lucide-react"
@@ -102,7 +103,7 @@ export default function AiManagementPage() {
     updateAreaPinned,
     removeAreaPinned,
     toggleAreaPinned,
-    reorderAreaPinned,
+    reorderAreaScoped,
   } = useAiManagement(reportAreaMap)
 
   const [tab, setTab] = useState<Tab>("prompts")
@@ -127,9 +128,11 @@ export default function AiManagementPage() {
   const topicGroups = useMemo(() => asksByTopic(asks), [asks])
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
 
-  function openAdd(area?: string) {
+  // `reportId` pre-selects a dashboard (used by the per-dashboard "Add question"
+  // buttons); ALL_REPORTS pre-selects the group scope.
+  function openAdd(area?: string, reportId?: string) {
     setDialogArea(area ?? REPORT_AREAS[0])
-    setDialogReport("")
+    setDialogReport(reportId ?? "")
     setDialogIndex(null)
     setEditOrigin(null)
     setDialogText("")
@@ -262,7 +265,7 @@ export default function AiManagementPage() {
                 onEdit={openEdit}
                 onDelete={(area, index) => setDeleteConfirm({ area, index })}
                 onToggle={toggleAreaPinned}
-                onReorder={reorderAreaPinned}
+                onReorderScoped={reorderAreaScoped}
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} />
@@ -410,27 +413,39 @@ function QuestionList({
   onDelete,
   onToggle,
   onReorder,
+  areaActive,
+  hideHeader,
+  hideScope,
 }: {
   questions: PinnedQuestion[]
   onEdit: (index: number) => void
   onDelete: (index: number) => void
   onToggle: (index: number) => void
   onReorder: (from: number, to: number) => void
+  // The active count/cap is shared across the whole area, so it can be passed in;
+  // otherwise it is derived from this list alone.
+  areaActive?: number
+  hideHeader?: boolean
+  // Hide the per-row scope chip when the whole list is a single scope (the section
+  // header already states it).
+  hideScope?: boolean
 }) {
-  const active = activeCount(questions)
+  const active = areaActive ?? activeCount(questions)
   const capReached = active >= MAX_ACTIVE_QUESTIONS
   const multiple = questions.length > 1
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium text-slate-400">
-          {active} of {MAX_ACTIVE_QUESTIONS} active
-        </span>
-        {capReached && (
-          <span className="text-[11px] text-slate-400">Turn one off to activate another</span>
-        )}
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-medium text-slate-400">
+            {active} of {MAX_ACTIVE_QUESTIONS} active
+          </span>
+          {capReached && (
+            <span className="text-[11px] text-slate-400">Turn one off to activate another</span>
+          )}
+        </div>
+      )}
 
       {questions.map((q, i) => {
         // A question can only be switched on when under the active cap.
@@ -480,19 +495,21 @@ function QuestionList({
               className="flex-1 min-w-0 text-left"
             >
               <span className={`block text-sm ${q.active ? "text-slate-700" : "text-slate-400"}`}>{q.text}</span>
-              <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-slate-400">
-                {scoped ? (
-                  <>
-                    <FileText className="w-3 h-3" />
-                    Only on {reportNameById(q.reportId!)}
-                  </>
-                ) : (
-                  <>
-                    <Layers className="w-3 h-3" />
-                    All dashboards in this area
-                  </>
-                )}
-              </span>
+              {!hideScope && (
+                <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-slate-400">
+                  {scoped ? (
+                    <>
+                      <FileText className="w-3 h-3" />
+                      Only on {reportNameById(q.reportId!)}
+                    </>
+                  ) : (
+                    <>
+                      <Layers className="w-3 h-3" />
+                      All dashboards in this area
+                    </>
+                  )}
+                </span>
+              )}
             </button>
 
             {!q.active && (
@@ -535,6 +552,117 @@ function QuestionList({
   )
 }
 
+/**
+ * An expandable per-dashboard section. When expanded it shows the area's group
+ * questions first (read-only context, since they are ordered at the group level),
+ * then this dashboard's own questions, which can be reordered independently of every
+ * other dashboard. This is the order the chatbot uses when opened on this dashboard.
+ */
+function DashboardOrderSection({
+  area,
+  dashboard,
+  groupItems,
+  dashItems,
+  areaActive,
+  onAdd,
+  onEdit,
+  onDelete,
+  onToggle,
+  onReorderScoped,
+}: {
+  area: string
+  dashboard: { id: string; name: string }
+  groupItems: PinnedQuestion[]
+  dashItems: { q: PinnedQuestion; i: number }[]
+  areaActive: number
+  onAdd: (area?: string, reportId?: string) => void
+  onEdit: (area: string, index: number) => void
+  onDelete: (area: string, index: number) => void
+  onToggle: (area: string, index: number) => void
+  onReorderScoped: (area: string, reportId: string | undefined, from: number, to: number) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const activeGroup = groupItems.filter((q) => q.active)
+  const activeDash = dashItems.filter((x) => x.q.active).length
+  const surfaced = activeGroup.length + activeDash
+
+  return (
+    <div className="rounded-lg border border-slate-200 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
+        aria-expanded={open}
+      >
+        {open ? (
+          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+        )}
+        <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 truncate">{dashboard.name}</span>
+        <span className="text-[11px] text-slate-400 shrink-0">
+          {surfaced} suggested{dashItems.length > 0 ? ` · ${dashItems.length} own` : ""}
+        </span>
+      </button>
+
+      {open && (
+        <div className="px-3 pb-3 pt-1 space-y-3 border-t border-slate-100">
+          {/* Group questions — shown first, ordered at the group level. */}
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Group questions (shown first)</p>
+            {activeGroup.length === 0 ? (
+              <p className="text-xs text-slate-400">No active group questions.</p>
+            ) : (
+              activeGroup.map((q, i) => (
+                <div
+                  key={`${q.text}-${i}`}
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-slate-50 text-xs text-slate-500"
+                >
+                  <Layers className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span className="flex-1 min-w-0 truncate">{q.text}</span>
+                  <span className="text-[10px] text-slate-400 shrink-0">Group</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* This dashboard's own questions — ordered independently. */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard</p>
+              <button
+                type="button"
+                onClick={() => onAdd(area, dashboard.id)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-[#121051] hover:underline"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add question
+              </button>
+            </div>
+            {dashItems.length > 0 ? (
+              <QuestionList
+                questions={dashItems.map((x) => x.q)}
+                areaActive={areaActive}
+                hideHeader
+                hideScope
+                onEdit={(i) => onEdit(area, dashItems[i].i)}
+                onDelete={(i) => onDelete(area, dashItems[i].i)}
+                onToggle={(i) => onToggle(area, dashItems[i].i)}
+                onReorder={(from, to) => onReorderScoped(area, dashboard.id, from, to)}
+              />
+            ) : (
+              <p className="text-xs text-slate-400">
+                No dashboard-specific questions yet. Add one to suggest it only on {dashboard.name}.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PromptsTab({
   targets,
   areaPinned,
@@ -544,17 +672,18 @@ function PromptsTab({
   onEdit,
   onDelete,
   onToggle,
-  onReorder,
+  onReorderScoped,
 }: {
   targets: ChatTarget[]
   areaPinned: AreaPinned
   search: string
   setSearch: (v: string) => void
-  onAdd: (area?: string) => void
+  onAdd: (area?: string, reportId?: string) => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
-  onReorder: (area: string, from: number, to: number) => void
+  // Reorder within a scope: reportId undefined = group questions, else a dashboard's.
+  onReorderScoped: (area: string, reportId: string | undefined, from: number, to: number) => void
 }) {
   // Match areas by name, or by any report/dashboard that lives in the area.
   const visibleAreas = useMemo(() => {
@@ -605,11 +734,13 @@ function PromptsTab({
         <>
           {pageAreas.map((area) => {
             const color = getAreaColor(area)
-            // A single ordered list per area — area-wide and dashboard-specific
-            // questions together, so admins can order them relative to each other.
             const pinned = areaPinned[area] ?? []
             const areaTargets = targetsForArea(targets, area)
             const totalCount = pinned.length
+            const areaActive = pinned.filter((q) => q.active).length
+            // Group ("all dashboards") questions with their flat index in the area list.
+            const groupItems = pinned.map((q, i) => ({ q, i })).filter((x) => !x.q.reportId)
+            const dashboards = systemReportsForArea(area)
             return (
               <Card key={area} className="overflow-hidden">
                 <CardContent className="p-0">
@@ -634,19 +765,72 @@ function PromptsTab({
                     </div>
                   </div>
 
-                  {/* Pinned questions — one ordered list mixing area-wide and dashboard-scoped. */}
-                  <div className="p-5 space-y-5">
-                    {pinned.length > 0 ? (
-                      <QuestionList
-                        questions={pinned}
-                        onEdit={(i) => onEdit(area, i)}
-                        onDelete={(i) => onDelete(area, i)}
-                        onToggle={(i) => onToggle(area, i)}
-                        onReorder={(from, to) => onReorder(area, from, to)}
-                      />
-                    ) : (
+                  <div className="p-5 space-y-6">
+                    {/* Group questions — surfaced on every dashboard in the area, always
+                        shown first. Order them here for the whole area. */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                          <Layers className="w-3.5 h-3.5 text-slate-400" />
+                          All dashboards in this area
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onAdd(area, ALL_REPORTS)}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-[#121051] hover:underline"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Add group question
+                        </button>
+                      </div>
+                      {groupItems.length > 0 ? (
+                        <QuestionList
+                          questions={groupItems.map((x) => x.q)}
+                          areaActive={areaActive}
+                          hideScope
+                          onEdit={(i) => onEdit(area, groupItems[i].i)}
+                          onDelete={(i) => onDelete(area, groupItems[i].i)}
+                          onToggle={(i) => onToggle(area, groupItems[i].i)}
+                          onReorder={(from, to) => onReorderScoped(area, undefined, from, to)}
+                        />
+                      ) : (
+                        <p className="text-xs text-slate-400 py-1">
+                          No group questions yet. These are suggested on every dashboard in the area.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Per-dashboard order — each dashboard shows the group questions first,
+                        then its own questions in an order you set for that dashboard. */}
+                    {dashboards.length > 0 && (
+                      <div className="space-y-2 border-t border-slate-100 pt-5">
+                        <p className="text-xs font-semibold text-slate-600">Order per dashboard</p>
+                        <div className="space-y-2">
+                          {dashboards.map((d) => {
+                            const dashItems = pinned.map((q, i) => ({ q, i })).filter((x) => x.q.reportId === d.id)
+                            return (
+                              <DashboardOrderSection
+                                key={d.id}
+                                area={area}
+                                dashboard={d}
+                                groupItems={groupItems.map((x) => x.q)}
+                                dashItems={dashItems}
+                                areaActive={areaActive}
+                                onAdd={onAdd}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                onToggle={onToggle}
+                                onReorderScoped={onReorderScoped}
+                              />
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {totalCount === 0 && dashboards.length === 0 && (
                       <p className="text-xs text-slate-400 py-2">
-                        No questions yet. Add a question to suggest it across this area.
+                        No dashboards sit under this area yet. Add a group question to suggest it across the area.
                       </p>
                     )}
                   </div>

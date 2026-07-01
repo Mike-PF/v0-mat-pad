@@ -494,16 +494,16 @@ export function getAreaQuestions(area: string): string[] {
 }
 
 /**
- * Read the admin-pinned questions the chatbot should suggest for a given context,
- * in the exact order the admin arranged them. Returns active questions in the area
- * that are either area-wide (no reportId) or scoped to the open report (`reportId`).
- * When no report is open, only area-wide questions are returned.
+ * Read the admin-pinned questions the chatbot should suggest for a given context.
+ * Group questions (no reportId, "all dashboards in this area") are always surfaced
+ * first, in the group order, followed by the open dashboard's own questions in that
+ * dashboard's order. When no report is open, only group questions are returned.
  */
 export function getSuggestedQuestions(area: string, reportId?: string): string[] {
-  const all = loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED)
-  return (all[normaliseArea(area)] ?? [])
-    .filter((q) => q.active && (!q.reportId || q.reportId === reportId))
-    .map((q) => q.text)
+  const list = (loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED)[normaliseArea(area)] ?? []).filter((q) => q.active)
+  const group = list.filter((q) => !q.reportId)
+  const dashboard = reportId ? list.filter((q) => q.reportId === reportId) : []
+  return [...group, ...dashboard].map((q) => q.text)
 }
 
 // ---------------------------------------------------------------------------
@@ -606,18 +606,36 @@ export function useAiManagement(reportAreaMap?: Record<string, string>) {
     })
   }, [])
 
-  /** Move a question from one position to another (drag-to-reorder). */
-  const reorderAreaPinned = useCallback((area: string, from: number, to: number) => {
-    const a = normaliseArea(area)
-    setAreaPinned((prev) => {
-      const list = prev[a] ?? []
-      if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return prev
-      const next = [...list]
-      const [moved] = next.splice(from, 1)
-      next.splice(to, 0, moved)
-      return { ...prev, [a]: next }
-    })
-  }, [])
+  /**
+   * Reorder questions within a single scope, leaving other scopes untouched.
+   * `reportId` undefined targets the group ("all dashboards") questions; a report id
+   * targets that dashboard's own questions. `from`/`to` are indices within that
+   * scope's questions, so each dashboard keeps its own independent order.
+   */
+  const reorderAreaScoped = useCallback(
+    (area: string, reportId: string | undefined, from: number, to: number) => {
+      const a = normaliseArea(area)
+      const rid = reportId || undefined
+      setAreaPinned((prev) => {
+        const list = prev[a] ?? []
+        // Flat positions of the items belonging to this scope, in order.
+        const slots = list.reduce<number[]>((acc, q, i) => {
+          if ((q.reportId || undefined) === rid) acc.push(i)
+          return acc
+        }, [])
+        if (from === to || from < 0 || to < 0 || from >= slots.length || to >= slots.length) return prev
+        const sub = slots.map((si) => list[si])
+        const [moved] = sub.splice(from, 1)
+        sub.splice(to, 0, moved)
+        const next = [...list]
+        slots.forEach((si, k) => {
+          next[si] = sub[k]
+        })
+        return { ...prev, [a]: next }
+      })
+    },
+    [],
+  )
 
   // Asks + the question log are analytics — read-only, not persisted/edited by admins.
   const asks = SEED_ASKS
@@ -688,7 +706,7 @@ export function useAiManagement(reportAreaMap?: Record<string, string>) {
     updateAreaPinned,
     removeAreaPinned,
     toggleAreaPinned,
-    reorderAreaPinned,
+    reorderAreaScoped,
   }
 }
 
