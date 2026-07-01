@@ -225,7 +225,6 @@ export default function AiManagementPage() {
             {/* Tabs */}
             <div className="flex items-center gap-1 border-b border-slate-200 mb-6">
               {tabs.map((t) => {
-                const Icon = t.icon
                 const active = tab === t.id
                 return (
                   <button
@@ -237,7 +236,6 @@ export default function AiManagementPage() {
                         : "border-transparent text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
                     {t.label}
                   </button>
                 )
