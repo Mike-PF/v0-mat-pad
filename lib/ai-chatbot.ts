@@ -370,25 +370,29 @@ const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
 /**
  * A single admin-pinned suggested question. Its position in the list is the order
  * it appears in the AI chatbot; only `active` questions are surfaced there.
+ *
+ * `reportId` scopes where the question appears: when empty/undefined it is an
+ * "all dashboards in this area" question surfaced on every report in the area;
+ * when set it is only surfaced on that exact report/dashboard. Both kinds live in
+ * the same per-area list so admins can order them relative to each other.
  */
 export interface PinnedQuestion {
   text: string
   active: boolean
+  reportId?: string
 }
 
 /** Maximum number of questions that can be active (surfaced) in a single list. */
 export const MAX_ACTIVE_QUESTIONS = 5
 
-/** Map of report area -> admin-pinned questions surfaced on every report in that area. */
+/**
+ * Map of report area -> ordered admin-pinned questions for that area. Each entry
+ * is either area-wide (no reportId) or scoped to a single dashboard (reportId set).
+ */
 export type AreaPinned = Record<string, PinnedQuestion[]>
 
-/**
- * Map of a specific report/dashboard id (as listed on the Dashboards page) ->
- * admin-pinned questions surfaced by the chatbot ONLY when that exact report is open.
- */
-export type ReportPinned = Record<string, PinnedQuestion[]>
-
-const SEED_REPORT_PINNED: ReportPinned = {}
+/** Legacy per-report store kept only so old data can be migrated into the area lists. */
+type LegacyReportPinned = Record<string, PinnedQuestion[]>
 
 /**
  * Normalise a stored list into PinnedQuestion[]. Handles legacy data that was
@@ -403,7 +407,8 @@ function normalisePinnedList(value: unknown): PinnedQuestion[] {
     let q: PinnedQuestion | null = null
     if (typeof item === "string") q = { text: item, active: true }
     else if (item && typeof item === "object" && typeof (item as any).text === "string") {
-      q = { text: (item as any).text, active: (item as any).active !== false }
+      const rid = typeof (item as any).reportId === "string" && (item as any).reportId ? (item as any).reportId : undefined
+      q = { text: (item as any).text, active: (item as any).active !== false, reportId: rid }
     }
     if (!q || !q.text.trim()) continue
     if (q.active) {
@@ -485,34 +490,62 @@ function save<T>(key: string, value: T) {
  * when it is opened from a dashboard/report belonging to that area.
  */
 export function getAreaQuestions(area: string): string[] {
-  const all = loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED)
-  return (all[normaliseArea(area)] ?? []).filter((q) => q.active).map((q) => q.text)
+  return getSuggestedQuestions(area)
 }
 
 /**
- * Read the admin-pinned questions for a single specific report/dashboard.
- * These are surfaced by the chatbot only when that exact report is open.
+ * Read the admin-pinned questions the chatbot should suggest for a given context.
+ * Group questions (no reportId, "all dashboards in this area") are always surfaced
+ * first, in the group order, followed by the open dashboard's own questions in that
+ * dashboard's order. When no report is open, only group questions are returned.
  */
-export function getReportQuestions(reportId: string): string[] {
-  const all = loadPinnedMap(REPORT_PINNED_KEY, SEED_REPORT_PINNED)
-  return (all[reportId] ?? []).filter((q) => q.active).map((q) => q.text)
+export function getSuggestedQuestions(area: string, reportId?: string): string[] {
+  const list = (loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED)[normaliseArea(area)] ?? []).filter((q) => q.active)
+  const group = list.filter((q) => !q.reportId)
+  const dashboard = reportId ? list.filter((q) => q.reportId === reportId) : []
+  return [...group, ...dashboard].map((q) => q.text)
 }
 
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useAiManagement() {
+/**
+ * @param reportAreaMap Optional map of report/dashboard id -> report area, used
+ * only to migrate legacy per-report pinned questions into the unified area lists.
+ */
+export function useAiManagement(reportAreaMap?: Record<string, string>) {
   const [targets, setTargets] = useState<ChatTarget[]>(SEED_TARGETS)
   const [areaPinned, setAreaPinned] = useState<AreaPinned>(SEED_AREA_PINNED)
-  const [reportPinned, setReportPinned] = useState<ReportPinned>(SEED_REPORT_PINNED)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setTargets(load(TARGETS_KEY, SEED_TARGETS))
-    setAreaPinned(loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED))
-    setReportPinned(loadPinnedMap(REPORT_PINNED_KEY, SEED_REPORT_PINNED))
+
+    const area = loadPinnedMap(AREA_PINNED_KEY, SEED_AREA_PINNED)
+    // Fold any legacy report-scoped questions (stored separately by an older version)
+    // into their area list so everything lives in one ordered list per area.
+    const legacy = loadPinnedMap(REPORT_PINNED_KEY, {}) as LegacyReportPinned
+    if (Object.keys(legacy).length > 0) {
+      for (const [reportId, list] of Object.entries(legacy)) {
+        const areaName = normaliseArea(reportAreaMap?.[reportId] ?? "")
+        if (!areaName) continue
+        const dest = area[areaName] ?? (area[areaName] = [])
+        for (const q of list) {
+          if (!dest.some((x) => x.text.toLowerCase() === q.text.toLowerCase() && x.reportId === reportId)) {
+            dest.push({ text: q.text, active: q.active, reportId })
+          }
+        }
+      }
+      // Re-clamp active counts per area after merging, then retire the legacy store.
+      for (const key of Object.keys(area)) area[key] = normalisePinnedList(area[key])
+      save(REPORT_PINNED_KEY, {})
+    }
+
+    setAreaPinned(area)
     setMounted(true)
+    // reportAreaMap is derived from static data, so this runs once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -523,34 +556,33 @@ export function useAiManagement() {
     if (mounted) save(AREA_PINNED_KEY, areaPinned)
   }, [areaPinned, mounted])
 
-  useEffect(() => {
-    if (mounted) save(REPORT_PINNED_KEY, reportPinned)
-  }, [reportPinned, mounted])
-
   /**
    * Pin a question to a report area so it is suggested on every report in that area.
    * New questions are active by default only while under the active cap; otherwise
    * they are added inactive so the admin can enable them by turning another off.
    */
-  const pinAreaQuestion = useCallback((area: string, question: string) => {
+  const pinAreaQuestion = useCallback((area: string, question: string, reportId?: string) => {
     const q = question.trim()
     const a = normaliseArea(area)
+    const rid = reportId || undefined
     if (!q) return
     setAreaPinned((prev) => {
       const list = prev[a] ?? []
-      if (list.some((p) => p.text.toLowerCase() === q.toLowerCase())) return prev
+      if (list.some((p) => p.text.toLowerCase() === q.toLowerCase() && p.reportId === rid)) return prev
       const active = activeCount(list) < MAX_ACTIVE_QUESTIONS
-      return { ...prev, [a]: [...list, { text: q, active }] }
+      return { ...prev, [a]: [...list, { text: q, active, reportId: rid }] }
     })
   }, [])
 
-  const updateAreaPinned = useCallback((area: string, index: number, question: string) => {
+  // Edits the question text and its scope (reportId) in place, keeping its position.
+  const updateAreaPinned = useCallback((area: string, index: number, question: string, reportId?: string) => {
     const q = question.trim()
     const a = normaliseArea(area)
+    const rid = reportId || undefined
     if (!q) return
     setAreaPinned((prev) => {
       const list = prev[a] ?? []
-      return { ...prev, [a]: list.map((p, i) => (i === index ? { ...p, text: q } : p)) }
+      return { ...prev, [a]: list.map((p, i) => (i === index ? { ...p, text: q, reportId: rid } : p)) }
     })
   }, [])
 
@@ -574,69 +606,36 @@ export function useAiManagement() {
     })
   }, [])
 
-  /** Move a question from one position to another (drag-to-reorder). */
-  const reorderAreaPinned = useCallback((area: string, from: number, to: number) => {
-    const a = normaliseArea(area)
-    setAreaPinned((prev) => {
-      const list = prev[a] ?? []
-      if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return prev
-      const next = [...list]
-      const [moved] = next.splice(from, 1)
-      next.splice(to, 0, moved)
-      return { ...prev, [a]: next }
-    })
-  }, [])
-
-  /** Pin a question to a single specific report so it is suggested only on that report. */
-  const pinReportQuestion = useCallback((reportId: string, question: string) => {
-    const q = question.trim()
-    if (!reportId || !q) return
-    setReportPinned((prev) => {
-      const list = prev[reportId] ?? []
-      if (list.some((p) => p.text.toLowerCase() === q.toLowerCase())) return prev
-      const active = activeCount(list) < MAX_ACTIVE_QUESTIONS
-      return { ...prev, [reportId]: [...list, { text: q, active }] }
-    })
-  }, [])
-
-  const updateReportPinned = useCallback((reportId: string, index: number, question: string) => {
-    const q = question.trim()
-    if (!reportId || !q) return
-    setReportPinned((prev) => {
-      const list = prev[reportId] ?? []
-      return { ...prev, [reportId]: list.map((p, i) => (i === index ? { ...p, text: q } : p)) }
-    })
-  }, [])
-
-  const removeReportPinned = useCallback((reportId: string, index: number) => {
-    setReportPinned((prev) => {
-      const list = prev[reportId] ?? []
-      return { ...prev, [reportId]: list.filter((_, i) => i !== index) }
-    })
-  }, [])
-
-  /** Toggle a report-specific question active/inactive (capped like area questions). */
-  const toggleReportPinned = useCallback((reportId: string, index: number) => {
-    setReportPinned((prev) => {
-      const list = prev[reportId] ?? []
-      const target = list[index]
-      if (!target) return prev
-      if (!target.active && activeCount(list) >= MAX_ACTIVE_QUESTIONS) return prev
-      return { ...prev, [reportId]: list.map((p, i) => (i === index ? { ...p, active: !p.active } : p)) }
-    })
-  }, [])
-
-  /** Move a report-specific question from one position to another (drag-to-reorder). */
-  const reorderReportPinned = useCallback((reportId: string, from: number, to: number) => {
-    setReportPinned((prev) => {
-      const list = prev[reportId] ?? []
-      if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return prev
-      const next = [...list]
-      const [moved] = next.splice(from, 1)
-      next.splice(to, 0, moved)
-      return { ...prev, [reportId]: next }
-    })
-  }, [])
+  /**
+   * Reorder questions within a single scope, leaving other scopes untouched.
+   * `reportId` undefined targets the group ("all dashboards") questions; a report id
+   * targets that dashboard's own questions. `from`/`to` are indices within that
+   * scope's questions, so each dashboard keeps its own independent order.
+   */
+  const reorderAreaScoped = useCallback(
+    (area: string, reportId: string | undefined, from: number, to: number) => {
+      const a = normaliseArea(area)
+      const rid = reportId || undefined
+      setAreaPinned((prev) => {
+        const list = prev[a] ?? []
+        // Flat positions of the items belonging to this scope, in order.
+        const slots = list.reduce<number[]>((acc, q, i) => {
+          if ((q.reportId || undefined) === rid) acc.push(i)
+          return acc
+        }, [])
+        if (from === to || from < 0 || to < 0 || from >= slots.length || to >= slots.length) return prev
+        const sub = slots.map((si) => list[si])
+        const [moved] = sub.splice(from, 1)
+        sub.splice(to, 0, moved)
+        const next = [...list]
+        slots.forEach((si, k) => {
+          next[si] = sub[k]
+        })
+        return { ...prev, [a]: next }
+      })
+    },
+    [],
+  )
 
   // Asks + the question log are analytics — read-only, not persisted/edited by admins.
   const asks = SEED_ASKS
@@ -696,7 +695,6 @@ export function useAiManagement() {
     mounted,
     targets,
     areaPinned,
-    reportPinned,
     asks,
     log,
     toggleAutoSurface,
@@ -708,12 +706,7 @@ export function useAiManagement() {
     updateAreaPinned,
     removeAreaPinned,
     toggleAreaPinned,
-    reorderAreaPinned,
-    pinReportQuestion,
-    updateReportPinned,
-    removeReportPinned,
-    toggleReportPinned,
-    reorderReportPinned,
+    reorderAreaScoped,
   }
 }
 
@@ -781,6 +774,60 @@ export function asksByTopic(
 
 export function totalAsks(asks: AskRecord[]): number {
   return asks.reduce((s, a) => s + a.count, 0)
+}
+
+/**
+ * Aggregate the question log into topic groups over a recent window (default 7 days),
+ * for the "what people are asking, by topic" panel. Counts are the number of times
+ * each question was asked within the window, and `trend` compares the window against
+ * the immediately preceding window of the same length. Returns the same shape as
+ * {@link asksByTopic} so the panel can consume either.
+ */
+export function asksByTopicWithinDays(
+  log: AskLogEntry[],
+  days = 7,
+): { topic: string; total: number; trend: number; questions: AskRecord[] }[] {
+  const now = Date.now()
+  const windowMs = days * 24 * 60 * 60 * 1000
+  const recentStart = now - windowMs
+  const prevStart = now - windowMs * 2
+
+  // topic -> question text -> occurrence counts in each window.
+  const topics = new Map<string, Map<string, { recent: number; prev: number; targetId: string }>>()
+  for (const e of log) {
+    const t = new Date(e.askedAt).getTime()
+    const inRecent = t >= recentStart
+    const inPrev = t >= prevStart && t < recentStart
+    if (!inRecent && !inPrev) continue
+    const byQ = topics.get(e.topic) ?? new Map<string, { recent: number; prev: number; targetId: string }>()
+    topics.set(e.topic, byQ)
+    const row = byQ.get(e.question) ?? { recent: 0, prev: 0, targetId: e.targetId }
+    if (inRecent) row.recent += 1
+    else row.prev += 1
+    byQ.set(e.question, row)
+  }
+
+  return Array.from(topics.entries())
+    .map(([topic, byQ]) => {
+      const questions: AskRecord[] = Array.from(byQ.entries())
+        .filter(([, v]) => v.recent > 0)
+        .map(([question, v], i): AskRecord => ({
+          id: `${topic}-${i}`,
+          targetId: v.targetId,
+          question,
+          topic,
+          count: v.recent,
+          trend: v.prev > 0 ? Math.round(((v.recent - v.prev) / v.prev) * 100) : 100,
+          lastAsked: "",
+        }))
+        .sort((a, b) => b.count - a.count)
+      const total = questions.reduce((s, q) => s + q.count, 0)
+      const prevSum = Array.from(byQ.values()).reduce((s, v) => s + v.prev, 0)
+      const trend = prevSum > 0 ? Math.round(((total - prevSum) / prevSum) * 100) : 0
+      return { topic, total, trend, questions }
+    })
+    .filter((g) => g.total > 0)
+    .sort((a, b) => b.total - a.total)
 }
 
 // ---------------------------------------------------------------------------
