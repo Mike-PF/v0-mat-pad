@@ -28,8 +28,6 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronRight,
-  FileText,
-  Layers,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -498,17 +496,7 @@ function QuestionList({
               <span className={`block text-sm ${q.active ? "text-slate-700" : "text-slate-400"}`}>{q.text}</span>
               {!hideScope && (
                 <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-slate-400">
-                  {scoped ? (
-                    <>
-                      <FileText className="w-3 h-3" />
-                      Only on {reportNameById(q.reportId!)}
-                    </>
-                  ) : (
-                    <>
-                      <Layers className="w-3 h-3" />
-                      All dashboards in this area
-                    </>
-                  )}
+                  {scoped ? `Only on ${reportNameById(q.reportId!)}` : "All dashboards in this area"}
                 </span>
               )}
             </button>
@@ -600,7 +588,6 @@ function DashboardOrderSection({
         ) : (
           <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
         )}
-        <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 truncate">{dashboard.name}</span>
         <span className="text-[11px] text-slate-400 shrink-0">
           {surfaced} suggested{dashItems.length > 0 ? ` · ${dashItems.length} own` : ""}
@@ -620,7 +607,6 @@ function DashboardOrderSection({
                   key={`${q.text}-${i}`}
                   className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-slate-50 text-xs text-slate-500"
                 >
-                  <Layers className="w-3 h-3 text-slate-400 shrink-0" />
                   <span className="flex-1 min-w-0 truncate">{q.text}</span>
                   <span className="text-[10px] text-slate-400 shrink-0">Group</span>
                 </div>
@@ -773,10 +759,7 @@ function PromptsTab({
                         shown first. Order them here for the whole area. */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                          <Layers className="w-3.5 h-3.5 text-slate-400" />
-                          All dashboards in this area
-                        </div>
+                        <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
                         <Button
                           type="button"
                           variant="outline"
