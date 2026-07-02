@@ -632,14 +632,16 @@ function DashboardOrderSection({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard</p>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => onAdd(area, dashboard.id)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-[#121051] hover:underline"
+                className="h-8 bg-white text-xs font-medium text-slate-700"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 mr-1" />
                 Add question
-              </button>
+              </Button>
             </div>
             {dashItems.length > 0 ? (
               <QuestionList
@@ -775,14 +777,16 @@ function PromptsTab({
                           <Layers className="w-3.5 h-3.5 text-slate-400" />
                           All dashboards in this area
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => onAdd(area, ALL_REPORTS)}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-[#121051] hover:underline"
+                          className="h-8 bg-white text-xs font-medium text-slate-700"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="w-3.5 h-3.5 mr-1" />
                           Add group question
-                        </button>
+                        </Button>
                       </div>
                       {groupItems.length > 0 ? (
                         <QuestionList
