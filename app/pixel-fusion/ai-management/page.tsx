@@ -28,6 +28,7 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronRight,
+  ChevronsUpDown,
 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
@@ -1307,6 +1308,27 @@ function OrgPicker({
   )
 }
 
+/** Columns the question log can be sorted by. */
+type SortKey = "askedAt" | "user" | "role" | "school" | "page" | "topic" | "question" | "answered"
+
+/** Return a new array of log entries sorted by the given column and direction. */
+function sortLog(entries: AskLogEntry[], key: SortKey, dir: "asc" | "desc"): AskLogEntry[] {
+  const factor = dir === "asc" ? 1 : -1
+  return [...entries].sort((a, b) => {
+    let cmp: number
+    if (key === "askedAt") {
+      cmp = new Date(a.askedAt).getTime() - new Date(b.askedAt).getTime()
+    } else if (key === "answered") {
+      cmp = Number(a.answered) - Number(b.answered)
+    } else {
+      cmp = String(a[key] ?? "").localeCompare(String(b[key] ?? ""), undefined, { sensitivity: "base" })
+    }
+    // Stable tie-break by date so equal keys keep a predictable order.
+    if (cmp === 0) cmp = new Date(a.askedAt).getTime() - new Date(b.askedAt).getTime()
+    return cmp * factor
+  })
+}
+
 function ReportsTab({ log }: { log: AskLogEntry[] }) {
   const [filters, setFilters] = useState<LogFilters>({
     search: "",
@@ -1319,16 +1341,30 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
   // from `filters.school` so a trust selection can match all of its schools.
   const [orgSel, setOrgSel] = useState<OrgSelection>({ type: "all" })
 
+  // Column sorting. Defaults to newest-first by date & time.
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "askedAt", dir: "desc" })
+  function toggleSort(key: SortKey) {
+    setSort((prev) =>
+      prev.key === key
+        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+        : // New column: dates start newest-first, everything else A→Z.
+          { key, dir: key === "askedAt" ? "desc" : "asc" },
+    )
+  }
+
   const schools = useMemo(() => uniqueValues(log, "school"), [log])
   const topics = useMemo(() => uniqueValues(log, "topic"), [log])
   const filtered = useMemo(() => {
     const base = filterLog(log, filters)
-    if (orgSel.type === "all") return base
-    if (orgSel.type === "school") return base.filter((e) => e.school === orgSel.name)
-    const mat = ORG_TREE.find((m) => m.id === orgSel.id)
-    const matSchools = new Set(mat?.schools ?? [])
-    return base.filter((e) => matSchools.has(e.school))
-  }, [log, filters, orgSel])
+    let scoped = base
+    if (orgSel.type === "school") scoped = base.filter((e) => e.school === orgSel.name)
+    else if (orgSel.type === "mat") {
+      const mat = ORG_TREE.find((m) => m.id === orgSel.id)
+      const matSchools = new Set(mat?.schools ?? [])
+      scoped = base.filter((e) => matSchools.has(e.school))
+    }
+    return sortLog(scoped, sort.key, sort.dir)
+  }, [log, filters, orgSel, sort])
 
   const unansweredCount = useMemo(() => filtered.filter((e) => !e.answered).length, [filtered])
 
@@ -1340,7 +1376,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
   // Reset to the first page whenever the filters change the result set.
   useEffect(() => {
     setPage(1)
-  }, [filters, orgSel])
+  }, [filters, orgSel, sort])
   const pageCount = Math.max(1, Math.ceil(filtered.length / ROW_PAGE_SIZE))
   const safePage = Math.min(page, pageCount)
   const pageRows = filtered.slice((safePage - 1) * ROW_PAGE_SIZE, safePage * ROW_PAGE_SIZE)
@@ -1364,6 +1400,43 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
     XLSX.utils.book_append_sheet(workbook, worksheet, "AI Questions")
     const stamp = new Date().toISOString().slice(0, 10)
     XLSX.writeFile(workbook, `ai-chatbot-questions-${stamp}.xlsx`)
+  }
+
+  // A clickable column header that sorts the log by `sortKey`. Shows a direction
+  // arrow only on the active column.
+  function SortHeader({
+    label,
+    sortKey,
+    align = "left",
+  }: {
+    label: string
+    sortKey: SortKey
+    align?: "left" | "center"
+  }) {
+    const active = sort.key === sortKey
+    return (
+      <th className={`px-4 py-3 whitespace-nowrap ${align === "center" ? "text-center" : ""}`}>
+        <button
+          type="button"
+          onClick={() => toggleSort(sortKey)}
+          aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+          className={`inline-flex items-center gap-1 font-semibold uppercase tracking-wide transition-colors hover:text-slate-700 ${
+            active ? "text-slate-700" : "text-slate-500"
+          } ${align === "center" ? "justify-center" : ""}`}
+        >
+          {label}
+          {active ? (
+            sort.dir === "asc" ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )
+          ) : (
+            <ChevronsUpDown className="w-3.5 h-3.5 text-slate-300" />
+          )}
+        </button>
+      </th>
+    )
   }
 
   return (
@@ -1448,14 +1521,14 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  <th className="px-4 py-3 whitespace-nowrap">Date &amp; time</th>
-                  <th className="px-4 py-3 whitespace-nowrap">User</th>
-                  <th className="px-4 py-3 whitespace-nowrap">Role</th>
-                  <th className="px-4 py-3 whitespace-nowrap">School / Org</th>
-                  <th className="px-4 py-3 whitespace-nowrap">Page / Report</th>
-                  <th className="px-4 py-3 whitespace-nowrap">Topic</th>
-                  <th className="px-4 py-3">Question</th>
-                  <th className="px-4 py-3 whitespace-nowrap text-center">Answered</th>
+                  <SortHeader label="Date & time" sortKey="askedAt" />
+                  <SortHeader label="User" sortKey="user" />
+                  <SortHeader label="Role" sortKey="role" />
+                  <SortHeader label="School / Org" sortKey="school" />
+                  <SortHeader label="Page / Report" sortKey="page" />
+                  <SortHeader label="Topic" sortKey="topic" />
+                  <SortHeader label="Question" sortKey="question" />
+                  <SortHeader label="Answered" sortKey="answered" align="center" />
                 </tr>
               </thead>
               <tbody>
