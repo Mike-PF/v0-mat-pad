@@ -19,7 +19,6 @@ import {
   Search,
   Plus,
   Trash2,
-  FileSpreadsheet,
   Download,
   MessageCircleQuestion,
   CheckCircle2,
@@ -1441,25 +1440,13 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Intro + export */}
-      <Card>
-        <CardContent className="p-5 flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <FileSpreadsheet className="w-4 h-4 text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-900">AI question log</h3>
-            </div>
-            <p className="text-xs text-slate-500">
-              Every question asked to the chatbot — who asked it, their role and school, and the page they were on. Use
-              the filters below, then export the current view to Excel.
-            </p>
-          </div>
-          <Button onClick={handleExport} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-            <Download className="w-4 h-4 mr-2" />
-            Export to Excel ({filtered.length})
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Export */}
+      <div className="flex justify-end">
+        <Button onClick={handleExport} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
+          <Download className="w-4 h-4 mr-2" />
+          Export to Excel ({filtered.length})
+        </Button>
+      </div>
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
