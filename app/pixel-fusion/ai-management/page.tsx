@@ -20,7 +20,6 @@ import {
   Plus,
   Trash2,
   Download,
-  MessageCircleQuestion,
   CheckCircle2,
   XCircle,
   Lock,
@@ -950,10 +949,7 @@ function TrendsTab({
       <Card>
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <div className="flex items-center gap-2">
-              <MessageCircleQuestion className="w-4 h-4 text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-900">What people are asking, by topic</h3>
-            </div>
+            <h3 className="text-sm font-semibold text-slate-900">What people are asking, by topic</h3>
             <button
               type="button"
               onClick={() => {
