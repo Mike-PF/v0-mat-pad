@@ -1436,14 +1436,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Export */}
-      <div className="flex justify-end">
-        <Button onClick={handleExport} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-          <Download className="w-4 h-4 mr-2" />
-          Export to Excel ({filtered.length})
-        </Button>
-      </div>
-
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="relative">
@@ -1484,17 +1476,23 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
         </Select>
       </div>
 
-      {/* Summary line */}
-      <div className="flex items-center gap-4 text-xs text-slate-500">
-        <span>
-          Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of {log.length} questions
-        </span>
-        {unansweredCount > 0 && (
-          <span className="inline-flex items-center gap-1 text-amber-600">
-            <XCircle className="w-3.5 h-3.5" />
-            {unansweredCount} unanswered (gaps to investigate)
+      {/* Summary line + export */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 text-xs text-slate-500">
+          <span>
+            Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of {log.length} questions
           </span>
-        )}
+          {unansweredCount > 0 && (
+            <span className="inline-flex items-center gap-1 text-amber-600">
+              <XCircle className="w-3.5 h-3.5" />
+              {unansweredCount} unanswered (gaps to investigate)
+            </span>
+          )}
+        </div>
+        <Button onClick={handleExport} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
+          <Download className="w-4 h-4 mr-2" />
+          Export to Excel ({filtered.length})
+        </Button>
       </div>
 
       {/* Table */}
