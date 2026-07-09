@@ -181,7 +181,6 @@ export const defaultNotifications: WhatsNewItem[] = [
     date: "Today",
     visible: true,
     isNew: true,
-    newSince: new Date().toISOString(),
     body: "We have released an updated Attendance Dashboard with several improvements based on user feedback:\n\n• Persistent Absence cohort drill-down now available at pupil level\n• Comparison against national and regional averages added to all charts\n• New 'at risk' threshold alerts for pupils approaching 90% threshold\n• Export to Excel now includes all filters applied\n\nThe dashboard is available from the Dashboards section in the left-hand navigation. Watch the short walkthrough video below for an overview of the new features.",
     video: {
       url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
