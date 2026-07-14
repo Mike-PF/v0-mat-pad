@@ -129,7 +129,7 @@ export function HomeContent() {
     if (selectedTab === "all") return true
     if (selectedTab === "updates") return item.type === "update"
     if (selectedTab === "deadlines") return item.type === "deadline"
-    if (selectedTab === "system") return item.type === "maintenance" || item.type === "issue"
+    if (selectedTab === "system") return item.type === "system"
     return true
   })
 

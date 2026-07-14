@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Megaphone, CalendarDays, Wrench, AlertCircle, Info, type LucideIcon } from "lucide-react"
 
-export type NotificationType = "update" | "deadline" | "maintenance" | "issue"
+export type NotificationType = "update" | "deadline" | "system"
 
 /**
  * Who a notification is shown to.
@@ -141,8 +141,7 @@ const ACCENT = "#B30089"
 export const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
   { value: "update", label: "Update" },
   { value: "deadline", label: "Deadline" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "issue", label: "Known Issue" },
+  { value: "system", label: "System" },
 ]
 
 export function getTypeIcon(type: string): LucideIcon {
@@ -151,6 +150,8 @@ export function getTypeIcon(type: string): LucideIcon {
       return Megaphone
     case "deadline":
       return CalendarDays
+    case "system":
+    // Legacy types kept for any notifications saved before types were consolidated.
     case "maintenance":
       return Wrench
     case "issue":
@@ -166,8 +167,9 @@ export function getTypeColor(type: string): string {
       return "#5B9BF5"
     case "deadline":
       return ACCENT
+    case "system":
     case "maintenance":
-      return "#8b5cf6"
+      return "#64748b"
     case "issue":
       return "#ef4444"
     default:
@@ -230,7 +232,7 @@ export const defaultNotifications: WhatsNewItem[] = [
   },
   {
     id: "scheduled-maintenance",
-    type: "maintenance",
+    type: "system",
     title: "Scheduled maintenance",
     description: "System unavailable 02:00–04:00 GMT on 18 January",
     date: "18 Jan",
@@ -240,7 +242,7 @@ export const defaultNotifications: WhatsNewItem[] = [
   },
   {
     id: "export-delays",
-    type: "issue",
+    type: "system",
     title: "Known issue: Export delays",
     description: "Large exports may take longer than usual",
     date: "Active",
