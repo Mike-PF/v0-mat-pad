@@ -26,6 +26,45 @@ export type NotificationAudience = {
   targets?: AudienceTarget[]
 }
 
+/**
+ * A downloadable file attached to a notification. When `dataUrl` is present the
+ * file can be downloaded directly from the homepage (it holds the encoded file
+ * contents). Seed items may omit it, in which case the attachment is display-only.
+ */
+export type NotificationDocument = {
+  name: string
+  /** Human-readable size, e.g. "142 KB". */
+  size: string
+  /** File extension used for the badge label and colour, e.g. "pdf", "xlsx", "docx". */
+  type: string
+  /** Encoded file contents (data URL) used to download the file. */
+  dataUrl?: string
+}
+
+/** Format a byte count as a short human-readable size (e.g. 142 KB, 1.2 MB). */
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+/** Derive a lowercase file extension (used for the badge) from a filename. */
+export function fileExtension(name: string): string {
+  const parts = name.split(".")
+  return parts.length > 1 ? parts.pop()!.toLowerCase() : "file"
+}
+
+/** Trigger a browser download of a document that carries a data URL. */
+export function downloadDocument(doc: NotificationDocument): void {
+  if (typeof window === "undefined" || !doc.dataUrl) return
+  const link = document.createElement("a")
+  link.href = doc.dataUrl
+  link.download = doc.name
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 export type WhatsNewItem = {
   id: string
   type: NotificationType
@@ -41,7 +80,7 @@ export type WhatsNewItem = {
   isActive?: boolean
   body?: string
   video?: { url: string; title: string }
-  documents?: { name: string; size: string; type: "pdf" | "xlsx" | "docx" }[]
+  documents?: NotificationDocument[]
   /** Audience the notification is delivered to. Defaults to all users when omitted. */
   audience?: NotificationAudience
 }
