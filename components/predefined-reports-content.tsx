@@ -870,6 +870,11 @@ export function PredefinedReportsContent() {
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
         report={previewReport}
+        schoolName={
+          selectedSchool ||
+          (schools.includes(selectedScope) ? selectedScope : "") ||
+          "St Clare Catholic Multi Academy Trust"
+        }
         onSelectReport={(report) => {
           handleReportSelect(report)
           setShowPreviewModal(false)
