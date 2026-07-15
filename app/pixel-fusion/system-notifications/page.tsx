@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
@@ -18,7 +18,22 @@ import {
 } from "@/components/ui/select"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Trash2, X, Search, Eye, Bell, Monitor, Play, ExternalLink, Users, Building2, School, Check } from "lucide-react"
+import {
+  Trash2,
+  X,
+  Search,
+  Eye,
+  Bell,
+  Monitor,
+  Play,
+  ExternalLink,
+  Users,
+  Building2,
+  School,
+  Check,
+  Upload,
+  Download,
+} from "lucide-react"
 import {
   useNotifications,
   getTypeIcon,
@@ -26,10 +41,14 @@ import {
   getTypeLabel,
   isCurrentlyNew,
   describeAudience,
+  formatFileSize,
+  fileExtension,
+  downloadDocument,
   NOTIFICATION_TYPES,
   ORG_DIRECTORY,
   type NotificationType,
   type WhatsNewItem,
+  type NotificationDocument,
   type AudienceScope,
   type AudienceTarget,
 } from "@/lib/notifications"
@@ -59,6 +78,10 @@ export default function SystemNotificationsPage() {
   const [formBody, setFormBody] = useState("")
   const [formVideoUrl, setFormVideoUrl] = useState("")
   const [formVideoTitle, setFormVideoTitle] = useState("")
+  // Downloadable file attachments, stored as data URLs so they persist and can be
+  // downloaded from the homepage.
+  const [formDocuments, setFormDocuments] = useState<NotificationDocument[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formIsUrgent, setFormIsUrgent] = useState(false)
   const [formIsNew, setFormIsNew] = useState(false)
   const [formIsActive, setFormIsActive] = useState(false)
@@ -88,6 +111,7 @@ export default function SystemNotificationsPage() {
     setFormBody("")
     setFormVideoUrl("")
     setFormVideoTitle("")
+    setFormDocuments([])
     setFormIsUrgent(false)
     setFormIsNew(false)
     setFormIsActive(false)
@@ -112,6 +136,7 @@ export default function SystemNotificationsPage() {
     setFormBody(item.body ?? "")
     setFormVideoUrl(item.video?.url ?? "")
     setFormVideoTitle(item.video?.title ?? "")
+    setFormDocuments(item.documents ?? [])
     setFormIsUrgent(Boolean(item.isUrgent))
     setFormIsNew(Boolean(item.isNew))
     setFormIsActive(Boolean(item.isActive))
@@ -123,6 +148,45 @@ export default function SystemNotificationsPage() {
 
   const handleToggleVisible = (id: string) => {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, visible: !i.visible } : i)))
+  }
+
+  // Read chosen files into memory as data URLs so they persist in localStorage and
+  // can be downloaded from the homepage.
+  const handleFilesSelected = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return
+    const files = Array.from(fileList)
+    Promise.all(
+      files.map(
+        (file) =>
+          new Promise<NotificationDocument>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () =>
+              resolve({
+                name: file.name,
+                size: formatFileSize(file.size),
+                type: fileExtension(file.name),
+                dataUrl: typeof reader.result === "string" ? reader.result : undefined,
+              })
+            reader.onerror = () => reject(reader.error)
+            reader.readAsDataURL(file)
+          }),
+      ),
+    )
+      .then((docs) => setFormDocuments((prev) => [...prev, ...docs]))
+      .catch(() =>
+        showToast({
+          variant: "error",
+          title: "Couldn't attach file",
+          message: "The selected file could not be read. Please try again.",
+          primaryAction: { label: "Dismiss" },
+        }),
+      )
+    // Reset the input so selecting the same file again re-triggers onChange.
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
+  const removeDocument = (index: number) => {
+    setFormDocuments((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSave = () => {
@@ -174,6 +238,7 @@ export default function SystemNotificationsPage() {
                 daysLeft: daysLeftNum,
                 body: formBody.trim() || undefined,
                 video,
+                documents: formDocuments.length > 0 ? formDocuments : undefined,
                 isUrgent: formIsUrgent,
                 isNew: formIsNew,
                 // Preserve the original "new since" date if it was already new; otherwise stamp now.
@@ -201,6 +266,7 @@ export default function SystemNotificationsPage() {
         daysLeft: daysLeftNum,
         body: formBody.trim() || undefined,
         video,
+        documents: formDocuments.length > 0 ? formDocuments : undefined,
         isUrgent: formIsUrgent,
         isNew: formIsNew,
         newSince: formIsNew ? new Date().toISOString() : undefined,
@@ -562,6 +628,68 @@ export default function SystemNotificationsPage() {
               </div>
             </div>
 
+            {/* File attachments — downloadable from the homepage */}
+            <div>
+              <Label>Attachments</Label>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Attach files users can download from the homepage when they open this notification.
+              </p>
+              {formDocuments.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {formDocuments.map((doc, i) => {
+                    const docColors: Record<string, string> = {
+                      pdf: "text-red-600 bg-red-50",
+                      xlsx: "text-emerald-600 bg-emerald-50",
+                      xls: "text-emerald-600 bg-emerald-50",
+                      docx: "text-blue-600 bg-blue-50",
+                      doc: "text-blue-600 bg-blue-50",
+                    }
+                    const colors = docColors[doc.type] || "text-slate-600 bg-slate-50"
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-200 bg-white"
+                      >
+                        <div
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-[10px] ${colors}`}
+                        >
+                          {doc.type.slice(0, 4).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">{doc.name}</p>
+                          <p className="text-xs text-slate-400">{doc.size}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeDocument(i)}
+                          className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
+                          aria-label={`Remove ${doc.name}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-2 w-full text-slate-700"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {formDocuments.length > 0 ? "Add another file" : "Attach a file"}
+              </Button>
+            </div>
+
             <div className="rounded-lg border border-slate-200 divide-y divide-slate-100">
               <div className="flex items-center justify-between px-3 py-2.5">
                 <div>
@@ -824,22 +952,32 @@ export default function SystemNotificationsPage() {
                         docx: "text-blue-600 bg-blue-50",
                       }
                       const colors = docColors[doc.type] || "text-slate-600 bg-slate-50"
+                      const downloadable = Boolean(doc.dataUrl)
                       return (
-                        <div
+                        <button
                           key={i}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 text-left"
+                          type="button"
+                          disabled={!downloadable}
+                          onClick={() => downloadDocument(doc)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 text-left transition-colors ${
+                            downloadable ? "hover:border-slate-300 hover:bg-slate-50" : "cursor-default"
+                          }`}
                         >
                           <div
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs ${colors}`}
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-[10px] ${colors}`}
                           >
-                            {doc.type.toUpperCase()}
+                            {doc.type.slice(0, 4).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-800 truncate">{doc.name}</p>
                             <p className="text-xs text-slate-400">{doc.size}</p>
                           </div>
-                          <ExternalLink className="w-3.5 h-3.5 text-slate-300 shrink-0" />
-                        </div>
+                          {downloadable ? (
+                            <Download className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          ) : (
+                            <ExternalLink className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                          )}
+                        </button>
                       )
                     })}
                   </div>

@@ -16,13 +16,14 @@ import {
   TrendingUp,
   TrendingDown,
   ExternalLink,
+  Download,
   X,
   Play,
   ChevronRight,
   CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
-import { useNotifications, getTypeIcon, getTypeColor, isCurrentlyNew, type WhatsNewItem } from "@/lib/notifications"
+import { useNotifications, getTypeIcon, getTypeColor, isCurrentlyNew, downloadDocument, type WhatsNewItem } from "@/lib/notifications"
 
 const ACCENT = "hsl(314 100% 35%)"
 
@@ -128,7 +129,7 @@ export function HomeContent() {
     if (selectedTab === "all") return true
     if (selectedTab === "updates") return item.type === "update"
     if (selectedTab === "deadlines") return item.type === "deadline"
-    if (selectedTab === "system") return item.type === "maintenance" || item.type === "issue"
+    if (selectedTab === "system") return item.type === "system"
     return true
   })
 
@@ -211,21 +212,29 @@ export function HomeContent() {
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Attachments</p>
                   {selectedItem.documents.map((doc, i) => {
-                    const docColors: Record<string, string> = { pdf: "text-red-600 bg-red-50", xlsx: "text-emerald-600 bg-emerald-50", docx: "text-blue-600 bg-blue-50" }
+                    const docColors: Record<string, string> = { pdf: "text-red-600 bg-red-50", xlsx: "text-emerald-600 bg-emerald-50", xls: "text-emerald-600 bg-emerald-50", docx: "text-blue-600 bg-blue-50", doc: "text-blue-600 bg-blue-50" }
                     const colors = docColors[doc.type] || "text-slate-600 bg-slate-50"
+                    const downloadable = Boolean(doc.dataUrl)
                     return (
                       <button
                         key={i}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
+                        type="button"
+                        disabled={!downloadable}
+                        onClick={() => downloadDocument(doc)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 transition-all text-left group ${downloadable ? "hover:border-slate-300 hover:shadow-sm" : "cursor-default"}`}
                       >
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs ${colors}`}>
-                          {doc.type.toUpperCase()}
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-[10px] ${colors}`}>
+                          {doc.type.slice(0, 4).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-800 truncate">{doc.name}</p>
                           <p className="text-xs text-slate-400">{doc.size}</p>
                         </div>
-                        <ExternalLink className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
+                        {downloadable ? (
+                          <Download className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
+                        ) : (
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                        )}
                       </button>
                     )
                   })}

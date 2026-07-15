@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Megaphone, CalendarDays, Wrench, AlertCircle, Info, type LucideIcon } from "lucide-react"
 
-export type NotificationType = "update" | "deadline" | "maintenance" | "issue"
+export type NotificationType = "update" | "deadline" | "system"
 
 /**
  * Who a notification is shown to.
@@ -26,6 +26,45 @@ export type NotificationAudience = {
   targets?: AudienceTarget[]
 }
 
+/**
+ * A downloadable file attached to a notification. When `dataUrl` is present the
+ * file can be downloaded directly from the homepage (it holds the encoded file
+ * contents). Seed items may omit it, in which case the attachment is display-only.
+ */
+export type NotificationDocument = {
+  name: string
+  /** Human-readable size, e.g. "142 KB". */
+  size: string
+  /** File extension used for the badge label and colour, e.g. "pdf", "xlsx", "docx". */
+  type: string
+  /** Encoded file contents (data URL) used to download the file. */
+  dataUrl?: string
+}
+
+/** Format a byte count as a short human-readable size (e.g. 142 KB, 1.2 MB). */
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+/** Derive a lowercase file extension (used for the badge) from a filename. */
+export function fileExtension(name: string): string {
+  const parts = name.split(".")
+  return parts.length > 1 ? parts.pop()!.toLowerCase() : "file"
+}
+
+/** Trigger a browser download of a document that carries a data URL. */
+export function downloadDocument(doc: NotificationDocument): void {
+  if (typeof window === "undefined" || !doc.dataUrl) return
+  const link = document.createElement("a")
+  link.href = doc.dataUrl
+  link.download = doc.name
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 export type WhatsNewItem = {
   id: string
   type: NotificationType
@@ -41,7 +80,7 @@ export type WhatsNewItem = {
   isActive?: boolean
   body?: string
   video?: { url: string; title: string }
-  documents?: { name: string; size: string; type: "pdf" | "xlsx" | "docx" }[]
+  documents?: NotificationDocument[]
   /** Audience the notification is delivered to. Defaults to all users when omitted. */
   audience?: NotificationAudience
 }
@@ -102,8 +141,7 @@ const ACCENT = "#B30089"
 export const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
   { value: "update", label: "Update" },
   { value: "deadline", label: "Deadline" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "issue", label: "Known Issue" },
+  { value: "system", label: "System" },
 ]
 
 export function getTypeIcon(type: string): LucideIcon {
@@ -112,6 +150,8 @@ export function getTypeIcon(type: string): LucideIcon {
       return Megaphone
     case "deadline":
       return CalendarDays
+    case "system":
+    // Legacy types kept for any notifications saved before types were consolidated.
     case "maintenance":
       return Wrench
     case "issue":
@@ -127,8 +167,9 @@ export function getTypeColor(type: string): string {
       return "#5B9BF5"
     case "deadline":
       return ACCENT
+    case "system":
     case "maintenance":
-      return "#8b5cf6"
+      return "#64748b"
     case "issue":
       return "#ef4444"
     default:
@@ -191,7 +232,7 @@ export const defaultNotifications: WhatsNewItem[] = [
   },
   {
     id: "scheduled-maintenance",
-    type: "maintenance",
+    type: "system",
     title: "Scheduled maintenance",
     description: "System unavailable 02:00–04:00 GMT on 18 January",
     date: "18 Jan",
@@ -201,7 +242,7 @@ export const defaultNotifications: WhatsNewItem[] = [
   },
   {
     id: "export-delays",
-    type: "issue",
+    type: "system",
     title: "Known issue: Export delays",
     description: "Large exports may take longer than usual",
     date: "Active",
