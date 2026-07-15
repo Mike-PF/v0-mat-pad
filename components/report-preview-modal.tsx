@@ -19,7 +19,8 @@ interface ReportPreviewModalProps {
   onClose: () => void
   report: Report | null
   onSelectReport: (report: Report) => void
-  schoolName?: string
+  schools?: string[]
+  scopeLabel?: string
 }
 
 export function ReportPreviewModal({
@@ -27,9 +28,17 @@ export function ReportPreviewModal({
   onClose,
   report,
   onSelectReport,
-  schoolName = "St Clare Catholic Multi Academy Trust",
+  schools = ["St Clare Catholic Multi Academy Trust"],
+  scopeLabel = "Whole MAT",
 }: ReportPreviewModalProps) {
   if (!isOpen || !report) return null
+
+  const schoolCount = schools.length
+  const isSingleSchool = schoolCount === 1
+  // On the mock front page we show the scope: the school name when there is
+  // exactly one, otherwise the scope label with a school count.
+  const scopeSummary = isSingleSchool ? schools[0] : `${scopeLabel} · ${schoolCount} schools`
+  const feedCoverage = isSingleSchool ? schools[0] : `${schoolCount} schools`
 
   const getFrequencyColor = (frequency: string) => {
     switch (frequency.toLowerCase()) {
@@ -293,7 +302,7 @@ export function ReportPreviewModal({
                   {/* Title */}
                   <div className="flex-1 flex flex-col justify-center">
                     <h1 className="text-lg font-bold text-slate-900 mb-2 leading-tight">{report.name}</h1>
-                    <p className="text-sm text-slate-600 mb-4">{schoolName}</p>
+                    <p className="text-sm text-slate-600 mb-4">{scopeSummary}</p>
 
                     {/* Key Info */}
                     <div className="space-y-2 text-xs">
@@ -333,10 +342,35 @@ export function ReportPreviewModal({
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Building2 className="w-4 h-4 text-primary" />
                 <span>
-                  Feeding data for <span className="font-medium text-slate-900">{schoolName}</span>
+                  Feeding data for{" "}
+                  <span className="font-medium text-slate-900">
+                    {isSingleSchool ? schools[0] : `${schoolCount} schools`}
+                  </span>
+                  {!isSingleSchool && <span className="text-slate-500"> ({scopeLabel})</span>}
                 </span>
               </div>
             </div>
+
+            {/* Schools contributing to the feeds */}
+            {!isSingleSchool && (
+              <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Schools included ({schoolCount})
+                </p>
+                <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+                  {schools.map((school) => (
+                    <span
+                      key={school}
+                      className="inline-flex items-center gap-1 rounded-full border border-primary/15 bg-primary/5 px-2.5 py-1 text-xs text-primary"
+                    >
+                      <Building2 className="h-3 w-3" />
+                      {school}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {previewContent.dataFeeds.map((feed, index) => (
                 <div key={index} className="p-4 border border-slate-200 rounded-lg bg-slate-50">
@@ -347,7 +381,7 @@ export function ReportPreviewModal({
                       <span className="text-xs text-green-600">Live</span>
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-primary mb-2">{schoolName}</p>
+                  <p className="text-xs font-medium text-primary mb-2">{feedCoverage}</p>
                   <p className="text-sm text-slate-600 mb-3">{feed.description}</p>
                   <div className="text-xs text-slate-500">
                     Last refreshed: {new Date(feed.lastRefresh).toLocaleString()}

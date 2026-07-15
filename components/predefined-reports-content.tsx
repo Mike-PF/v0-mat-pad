@@ -870,10 +870,20 @@ export function PredefinedReportsContent() {
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
         report={previewReport}
-        schoolName={
-          selectedSchool ||
-          (schools.includes(selectedScope) ? selectedScope : "") ||
-          "St Clare Catholic Multi Academy Trust"
+        schools={(() => {
+          // A single explicitly-chosen school
+          if (selectedScope === "Individual School" && selectedSchool) return [selectedSchool]
+          if (schools.includes(selectedScope)) return [selectedScope]
+          // Phase scopes resolve to the schools in that phase
+          if (selectedScope === "Secondary Phase") return schools.filter((s) => s.includes("High School"))
+          if (selectedScope === "Primary Phase") return schools.filter((s) => s.includes("Primary"))
+          // Whole MAT (or nothing selected yet) covers every school in the trust
+          return schools
+        })()}
+        scopeLabel={
+          selectedScope === "Individual School"
+            ? selectedSchool || "Individual School"
+            : selectedScope || "Whole MAT"
         }
         onSelectReport={(report) => {
           handleReportSelect(report)
