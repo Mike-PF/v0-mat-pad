@@ -22,7 +22,6 @@ import {
   Download,
   X,
   Check,
-  Send,
   ImageIcon,
   GitBranch,
   MousePointer,
@@ -2253,31 +2252,17 @@ export function DocumentCreationContent() {
                               variant="outline"
                               size="sm"
                               onClick={() => handlePublishDocument(doc)}
-                              className={
-                                config?.isPublished
-                                  ? "bg-[#b30089] text-white border-[#b30089] hover:bg-[#b30089]/90"
-                                  : "group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
-                              }
+                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
                             >
-                              <Send
-                                className={`w-4 h-4 mr-2 transition-colors ${
-                                  config?.isPublished ? "text-white" : "group-hover:!text-white"
-                                }`}
-                                style={config?.isPublished ? {} : { color: "#0f0d42" }}
-                              />
-                              <span>{config?.isPublished ? "Published" : "Publish"}</span>
+                              {config?.isPublished ? "Published" : "Publish"}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleEditDocument(doc)}
-                              className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
                             >
-                              <Edit
-                                className="w-4 h-4 mr-2 transition-colors group-hover:!text-white"
-                                style={{ color: "#0f0d42" }}
-                              />
-                              <span>Edit</span>
+                              Edit
                             </Button>
                           </>
                         )}
@@ -2286,12 +2271,9 @@ export function DocumentCreationContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownloadDocument(doc)}
-                          className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                          className="border-slate-200 text-slate-700 hover:bg-slate-50"
                         >
-                          <Download
-                            className="w-4 h-4 transition-colors group-hover:!text-white"
-                            style={{ color: "#0f0d42" }}
-                          />
+                          <Download className="w-4 h-4" />
                         </Button>
 
                         {config?.isActive && (
