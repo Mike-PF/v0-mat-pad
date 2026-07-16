@@ -237,6 +237,7 @@ export function DocumentCreationContent() {
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [showDocumentEditor, setShowDocumentEditor] = useState(false)
   const [configSaved, setConfigSaved] = useState(false)
+  const [editingForm, setEditingForm] = useState(false)
   const [documentName, setDocumentName] = useState("")
   const [formLinks, setFormLinks] = useState<string[]>([])
   const [formListOpen, setFormListOpen] = useState(false)
@@ -430,11 +431,13 @@ export function DocumentCreationContent() {
     setShowDocumentEditor(false)
     setIsCreatingNew(false)
     setConfigSaved(false)
+    setEditingForm(false)
   }
 
   const handleSaveConfiguration = () => {
     if (!documentName.trim()) return
     setConfigSaved(true)
+    setEditingForm(false)
     setNotificationMessage("Configuration saved!")
     setShowNotification(true)
   }
@@ -442,6 +445,7 @@ export function DocumentCreationContent() {
   const handleSaveFromEditor = () => {
     setShowDocumentEditor(false)
     setConfigSaved(false)
+    setEditingForm(false)
     setNotificationMessage("Document saved successfully!")
     setShowNotification(true)
   }
@@ -1088,15 +1092,16 @@ export function DocumentCreationContent() {
   }
 
   // Stage 1: Configuration panel — shown before saving
-  if (showDocumentEditor && !configSaved) {
+  if (showDocumentEditor) {
     return (
-      <>
+      <div className="flex flex-col h-[calc(100vh-120px)] gap-4">
         <UploadModal
           isOpen={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onFileSelect={handleFileUpload}
           isProcessing={isProcessing}
         />
+        {(!configSaved || editingForm) && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between mb-4">
@@ -1249,22 +1254,18 @@ export function DocumentCreationContent() {
             </div>
           </CardHeader>
         </Card>
-      </>
-    )
-  }
+        )}
 
-  // Stage 2: Document editor — shown after configuration is saved
-  if (showDocumentEditor && configSaved) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-120px)]">
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <DocumentEditor
-            documentName={documentName}
-            onExit={handleExitEditor}
-            onSave={handleSaveFromEditor}
-            onEditForm={() => setConfigSaved(false)}
-          />
-        </div>
+        {configSaved && (
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <DocumentEditor
+              documentName={documentName}
+              onExit={handleExitEditor}
+              onSave={handleSaveFromEditor}
+              onEditForm={() => setEditingForm(true)}
+            />
+          </div>
+        )}
       </div>
     )
   }
