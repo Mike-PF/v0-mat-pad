@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from "react"
 import {
-  ZoomOut,
-  ZoomIn,
+  Menu,
+  MinusCircle,
+  PlusCircle,
+  MessageSquare,
   Search,
-  Printer,
   FolderOpen,
   Code,
   X,
@@ -365,6 +366,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
   const [showStyleDropdown, setShowStyleDropdown] = useState(false)
   const [showFontDropdown, setShowFontDropdown] = useState(false)
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false)
+  const [showVariables, setShowVariables] = useState(true)
   
   // Template variables sidebar state
   const [searchQuery, setSearchQuery] = useState("")
@@ -427,29 +429,27 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
     <div className="flex flex-col h-full bg-slate-100">
       {/* Top Bar - Editor Controls */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Menu */}
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Menu">
+            <Menu className="w-5 h-5 text-slate-600" />
+          </button>
+
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1 border-r border-slate-200 pr-3">
-            <span className="text-sm text-slate-600 min-w-[50px]">{zoom}%</span>
-            <button
-              onClick={handleZoomOut}
-              className="p-1 hover:bg-slate-100 rounded"
-              title="Zoom out"
-            >
-              <ZoomOut className="w-4 h-4 text-slate-500" />
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-slate-700 font-medium min-w-[42px]">{zoom}%</span>
+            <ChevronDown className="w-3 h-3 text-slate-500" />
+            <button onClick={handleZoomOut} className="p-1 hover:bg-slate-100 rounded" title="Zoom out">
+              <MinusCircle className="w-5 h-5 text-slate-500" />
             </button>
-            <button
-              onClick={handleZoomIn}
-              className="p-1 hover:bg-slate-100 rounded"
-              title="Zoom in"
-            >
-              <ZoomIn className="w-4 h-4 text-slate-500" />
+            <button onClick={handleZoomIn} className="p-1 hover:bg-slate-100 rounded" title="Zoom in">
+              <PlusCircle className="w-5 h-5 text-slate-500" />
             </button>
           </div>
 
           {/* Document Title */}
           <span className="text-sm text-slate-700 font-medium">
-            {documentName || "Untitled Document"}
+            {documentName || "Untitled.docx"}
           </span>
         </div>
 
@@ -471,26 +471,40 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button className="p-1.5 hover:bg-slate-100 rounded" title="Search">
             <Search className="w-4 h-4 text-slate-500" />
           </button>
-          <button className="p-1.5 hover:bg-slate-100 rounded" title="Print">
-            <Printer className="w-4 h-4 text-slate-500" />
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Comments">
+            <MessageSquare className="w-4 h-4 text-slate-500" />
           </button>
-          <button className="flex items-center gap-1 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded">
+          <button className="flex items-center gap-1.5 px-2 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded">
             <FolderOpen className="w-4 h-4" />
-            Open file
-          </button>
-          <button className="p-1.5 hover:bg-slate-100 rounded" title="Embed">
-            <Code className="w-4 h-4 text-slate-500" />
+            Open File
           </button>
           <button
+            onClick={() => setShowVariables((v) => !v)}
+            className={`flex items-center gap-1.5 px-2 py-1 text-sm rounded transition-colors ${
+              showVariables ? "text-slate-900 bg-slate-100" : "text-slate-600 hover:bg-slate-100"
+            }`}
+            title="Toggle template variables panel"
+          >
+            <Code className="w-4 h-4" />
+            Add variables
+          </button>
+          <Button
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50"
+          >
+            Edit Form
+          </Button>
+          <Button
             onClick={onExit}
-            className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50"
           >
             Exit
-          </button>
+          </Button>
           <Button
             onClick={onSave}
             className="text-white"
@@ -665,6 +679,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Template Variables Sidebar */}
+        {showVariables && (
         <div ref={sidebarRef} className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
 
           {/* Header */}
@@ -775,6 +790,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
             </div>
           )}
         </div>
+        )}
 
         {/* Document Canvas */}
         <div className="flex-1 overflow-auto p-8 bg-slate-200">
