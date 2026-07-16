@@ -416,6 +416,7 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
     const span = document.createElement("span")
     span.className = "doc-highlight"
     span.setAttribute("data-question", selectedQuestion)
+    span.setAttribute("title", `Linked to: ${selectedQuestion}`)
     try {
       range.surroundContents(span)
     } catch {
@@ -993,7 +994,9 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
                                       key={i}
                                       className="group flex items-start gap-1.5 rounded bg-amber-50 border border-amber-100 px-2 py-1 text-xs text-slate-600"
                                     >
-                                      <span className="flex-1 line-clamp-2">{text}</span>
+                                      <span className="flex-1 line-clamp-2" title={text}>
+                                        {text}
+                                      </span>
                                       <button
                                         onClick={() => removeAssociation(question, i)}
                                         className="mt-0.5 shrink-0 text-slate-400 hover:text-slate-700"
