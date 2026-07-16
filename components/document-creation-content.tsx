@@ -1215,10 +1215,11 @@ export function DocumentCreationContent() {
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
                 >
                   <option value="">Select a section name</option>
-                  <option value="school">School</option>
-                  <option value="trust">Trust</option>
-                  <option value="la">Local Authority</option>
-                  <option value="national">National</option>
+                  <option value="School Improvement">School Improvement</option>
+                  <option value="Governor Reporting">Governor Reporting</option>
+                  <option value="Attendance & Welfare">Attendance & Welfare</option>
+                  <option value="Statutory & Compliance">Statutory & Compliance</option>
+                  <option value="Performance Analytics">Performance Analytics</option>
                 </select>
               </div>
               <div>
