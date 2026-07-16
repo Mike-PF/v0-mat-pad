@@ -413,7 +413,7 @@ export function DocumentCreationContent() {
     setIsCreatingNew(true)
     setShowDocumentEditor(true)
     setSelectedDocument(null)
-    setDocumentName("New Document")
+    setDocumentName("")
     setSelectedSP("")
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -1119,16 +1119,16 @@ export function DocumentCreationContent() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-4 gap-6 items-end">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
                 <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
                   {selectedOrganization?.name || selectedSchoolUrn}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Document Name <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Document Name: <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="text"
@@ -1137,8 +1137,11 @@ export function DocumentCreationContent() {
                   onChange={(e) => setDocumentName(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-6 items-start">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Form List</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Form List:</label>
                 <div className="relative">
                   <button
                     type="button"
@@ -1203,8 +1206,8 @@ export function DocumentCreationContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Section Name <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Section Name: <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={sectionName}
@@ -1218,30 +1221,29 @@ export function DocumentCreationContent() {
                   <option value="national">National</option>
                 </select>
               </div>
-            </div>
-
-            <div className="mt-4 flex items-center gap-3">
-              <label className="text-sm font-medium text-slate-700">Report Level:</label>
-              <div className="flex items-center gap-2">
-                <span className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
-                  School
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                    reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
-                  }`}
-                >
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Level:</label>
+                <div className="flex items-center gap-2 py-2">
                   <span
-                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                      reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                    className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
+                  >
+                    School
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                      reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
                     }`}
-                  />
-                </button>
-                <span className={`text-sm ${reportLevel === "mat" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
-                  MAT
-                </span>
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                        reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  {reportLevel === "mat" && <span className="text-sm font-medium text-slate-900">MAT</span>}
+                </div>
               </div>
             </div>
           </CardHeader>
