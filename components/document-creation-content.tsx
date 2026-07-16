@@ -1262,6 +1262,7 @@ export function DocumentCreationContent() {
             documentName={documentName}
             onExit={handleExitEditor}
             onSave={handleSaveFromEditor}
+            onEditForm={() => setConfigSaved(false)}
           />
         </div>
       </div>

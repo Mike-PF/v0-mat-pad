@@ -355,9 +355,10 @@ interface DocumentEditorProps {
   documentName: string
   onExit: () => void
   onSave: () => void
+  onEditForm?: () => void
 }
 
-export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorProps) {
+export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: DocumentEditorProps) {
   const [zoom, setZoom] = useState(100)
   const [activeTab, setActiveTab] = useState<"Home" | "Layout" | "Insert">("Home")
   const [selectedStyle, setSelectedStyle] = useState("Normal Text")
@@ -493,6 +494,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
             Add variables
           </button>
           <Button
+            onClick={onEditForm}
             variant="outline"
             className="border-slate-200 text-slate-700 hover:bg-slate-50"
           >
