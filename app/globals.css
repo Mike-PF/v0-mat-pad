@@ -137,3 +137,10 @@
   text-align: left;
   vertical-align: top;
 }
+
+/* Text highlighted and linked to a form question */
+.doc-content .doc-highlight {
+  background-color: #fde68a;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px #fcd34d;
+}

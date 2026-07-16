@@ -391,11 +391,72 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
   const [showQuestions, setShowQuestions] = useState(false)
   const [questionSearch, setQuestionSearch] = useState("")
   const [expandedSections, setExpandedSections] = useState<string[]>([])
+  const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null)
+  const [questionAssociations, setQuestionAssociations] = useState<Record<string, string[]>>({})
+  const [docHtml, setDocHtml] = useState(loadedDocumentHtml)
+  const canvasRef = useRef<HTMLDivElement>(null)
 
   const toggleExpandedSection = (section: string) =>
     setExpandedSections((prev) =>
       prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section],
     )
+
+  // Associate the currently highlighted document text with the active question
+  const handleDocMouseUp = () => {
+    if (!selectedQuestion) return
+    const selection = window.getSelection()
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0) return
+    const text = selection.toString().trim()
+    if (!text) return
+
+    const range = selection.getRangeAt(0)
+    if (!canvasRef.current?.contains(range.commonAncestorContainer)) return
+
+    // Visually highlight the selected text in the document
+    const span = document.createElement("span")
+    span.className = "doc-highlight"
+    span.setAttribute("data-question", selectedQuestion)
+    try {
+      range.surroundContents(span)
+    } catch {
+      span.appendChild(range.extractContents())
+      range.insertNode(span)
+    }
+    selection.removeAllRanges()
+
+    // Persist the mutated markup so React's committed HTML matches the DOM
+    if (canvasRef.current) setDocHtml(canvasRef.current.innerHTML)
+
+    setQuestionAssociations((prev) => ({
+      ...prev,
+      [selectedQuestion]: [...(prev[selectedQuestion] || []), text],
+    }))
+  }
+
+  const removeAssociation = (question: string, index: number) => {
+    setQuestionAssociations((prev) => {
+      const next = { ...prev }
+      const list = [...(next[question] || [])]
+      list.splice(index, 1)
+      if (list.length === 0) delete next[question]
+      else next[question] = list
+      return next
+    })
+    // Unwrap the matching highlight span in the document
+    const spans = canvasRef.current?.querySelectorAll<HTMLSpanElement>(
+      `span.doc-highlight[data-question="${CSS.escape(question)}"]`,
+    )
+    if (spans && spans[index]) {
+      const span = spans[index]
+      const parent = span.parentNode
+      if (parent) {
+        while (span.firstChild) parent.insertBefore(span.firstChild, span)
+        parent.removeChild(span)
+        parent.normalize()
+      }
+    }
+    if (canvasRef.current) setDocHtml(canvasRef.current.innerHTML)
+  }
 
   // Template variables sidebar state
   const [searchQuery, setSearchQuery] = useState("")
@@ -839,6 +900,22 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
             <div className="p-4 border-b border-slate-200 flex-shrink-0">
               <h2 className="text-sm font-semibold text-slate-800 mb-3">Questions</h2>
 
+              {selectedQuestion ? (
+                <div className="mb-3 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                  Highlight text in the document to link it to this question.
+                  <button
+                    onClick={() => setSelectedQuestion(null)}
+                    className="ml-1 font-medium underline hover:no-underline"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <p className="mb-3 text-xs text-slate-500">
+                  Select a question, then highlight text in the document to associate it.
+                </p>
+              )}
+
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -891,15 +968,46 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
 
                     {isExpanded && (
                       <div className="pb-2">
-                        {questions.map((question) => (
-                          <button
-                            key={question}
-                            onClick={() => navigator.clipboard.writeText(question)}
-                            className="w-full text-left pl-10 pr-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                          >
-                            {question}
-                          </button>
-                        ))}
+                        {questions.map((question) => {
+                          const isActive = selectedQuestion === question
+                          const associations = questionAssociations[question] || []
+                          return (
+                            <div key={question}>
+                              <button
+                                onClick={() => setSelectedQuestion(isActive ? null : question)}
+                                className={`w-full text-left pl-10 pr-4 py-2 text-sm transition-colors ${
+                                  isActive
+                                    ? "bg-amber-50 text-slate-900 font-medium border-l-2 border-amber-400"
+                                    : "text-slate-600 hover:bg-slate-50 border-l-2 border-transparent"
+                                }`}
+                              >
+                                {question}
+                                {associations.length > 0 && (
+                                  <span className="ml-2 text-xs text-slate-400">({associations.length})</span>
+                                )}
+                              </button>
+                              {associations.length > 0 && (
+                                <div className="pl-10 pr-4 pb-2 space-y-1">
+                                  {associations.map((text, i) => (
+                                    <div
+                                      key={i}
+                                      className="group flex items-start gap-1.5 rounded bg-amber-50 border border-amber-100 px-2 py-1 text-xs text-slate-600"
+                                    >
+                                      <span className="flex-1 line-clamp-2">{text}</span>
+                                      <button
+                                        onClick={() => removeAssociation(question, i)}
+                                        className="mt-0.5 shrink-0 text-slate-400 hover:text-slate-700"
+                                        title="Remove association"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
@@ -920,9 +1028,11 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
             }}
           >
             <div
-              className="doc-content p-16"
+              ref={canvasRef}
+              onMouseUp={handleDocMouseUp}
+              className={`doc-content p-16 ${selectedQuestion ? "cursor-text" : ""}`}
               style={{ minHeight: "1056px" }}
-              dangerouslySetInnerHTML={{ __html: loadedDocumentHtml }}
+              dangerouslySetInnerHTML={{ __html: docHtml }}
             />
           </div>
         </div>
