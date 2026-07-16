@@ -32,6 +32,27 @@ import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
 
+const FORM_LINK_OPTIONS = [
+  "Head Report (24/25)",
+  "KS2 Archive",
+  "Mike 1e",
+  "New Form13a",
+  "Autumn Term Review",
+  "Spring Term Review",
+  "Summer Term Review",
+  "Annual Safeguarding Return",
+  "Attendance & Punctuality Survey",
+  "Behaviour & Exclusions Log",
+  "Pupil Premium Impact Form",
+  "SEND Provision Audit",
+  "Governor Visit Questionnaire",
+  "Staff Wellbeing Survey",
+  "Curriculum Intent Review",
+  "Parent Voice Questionnaire",
+  "Self-Evaluation Form (SEF)",
+  "Ofsted Readiness Checklist",
+]
+
 const mats = [
   { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
   { urn: "MAT002", name: "Catholic Diocese of Hallam", type: "mat" as const },
@@ -218,7 +239,8 @@ export function DocumentCreationContent() {
   const [showDocumentEditor, setShowDocumentEditor] = useState(false)
   const [configSaved, setConfigSaved] = useState(false)
   const [documentName, setDocumentName] = useState("")
-  const [formList, setFormList] = useState("")
+  const [formLinks, setFormLinks] = useState<string[]>([])
+  const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
@@ -1096,7 +1118,9 @@ export function DocumentCreationContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Document Name <span className="text-red-500">*</span>
+                </label>
                 <Input
                   type="text"
                   placeholder="Enter document name..."
@@ -1106,17 +1130,68 @@ export function DocumentCreationContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Form List</label>
-                <select
-                  value={formList}
-                  onChange={(e) => setFormList(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                >
-                  <option value="">Select a form link</option>
-                  <option value="form-1">Autumn Term Form</option>
-                  <option value="form-2">Spring Term Form</option>
-                  <option value="form-3">Summer Term Form</option>
-                  <option value="form-4">Annual Review Form</option>
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setFormListOpen((v) => !v)}
+                    className="flex w-full items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                  >
+                    <span className={formLinks.length === 0 ? "text-slate-400" : "truncate"}>
+                      {formLinks.length === 0
+                        ? "Select a form link"
+                        : formLinks.length === 1
+                          ? formLinks[0]
+                          : `${formLinks.length} forms selected`}
+                    </span>
+                    {formLinks.length > 0 ? (
+                      <X
+                        className="h-4 w-4 shrink-0 text-slate-400 hover:text-slate-600"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setFormLinks([])
+                        }}
+                      />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
+                    )}
+                  </button>
+
+                  {formListOpen && (
+                    <>
+                      {/* Click-away overlay */}
+                      <div className="fixed inset-0 z-40" onClick={() => setFormListOpen(false)} aria-hidden="true" />
+                      <div className="absolute left-0 right-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                        <label className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <input
+                            type="checkbox"
+                            checked={formLinks.length === 0}
+                            onChange={() => setFormLinks([])}
+                            className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                          />
+                          No form link selected
+                        </label>
+                        {FORM_LINK_OPTIONS.map((option) => (
+                          <label
+                            key={option}
+                            className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formLinks.includes(option)}
+                              onChange={() =>
+                                setFormLinks((prev) =>
+                                  prev.includes(option) ? prev.filter((f) => f !== option) : [...prev, option],
+                                )
+                              }
+                              className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                            />
+                            {option}
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
