@@ -9,6 +9,7 @@ import {
   Search,
   FolderOpen,
   Code,
+  ListChecks,
   X,
   Bold,
   Italic,
@@ -31,6 +32,40 @@ import { Button } from "@/components/ui/button"
 
 const ACCENT = "hsl(314 100% 35%)"
 const NAVY = "#121051"
+
+// Questions organized by section - a section can have many questions
+const questionSections: Record<string, string[]> = {
+  "School Improvement": [
+    "What are the key priorities for this term?",
+    "How is progress measured against the improvement plan?",
+    "What interventions have been put in place?",
+    "Which year groups require additional support?",
+  ],
+  "Governor Reporting": [
+    "What updates should be shared with the governing body?",
+    "Are there any safeguarding concerns to report?",
+    "What is the current budget position?",
+    "Which strategic decisions require governor approval?",
+  ],
+  "Attendance & Welfare": [
+    "What is the current overall attendance rate?",
+    "How many pupils are persistently absent?",
+    "What welfare support is being provided?",
+    "Are there any patterns in absence data?",
+  ],
+  "Statutory & Compliance": [
+    "Are all statutory policies up to date?",
+    "When was the last compliance audit completed?",
+    "Are there any outstanding actions from inspections?",
+    "Is staff training current and recorded?",
+  ],
+  "Performance Analytics": [
+    "How does performance compare to national averages?",
+    "What trends are visible in the latest data?",
+    "Which cohorts are outperforming expectations?",
+    "What areas need targeted improvement?",
+  ],
+}
 
 // Template variables organized by category - expanded for scale
 const templateVariables: Record<string, string[]> = {
@@ -368,7 +403,15 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
   const [showFontDropdown, setShowFontDropdown] = useState(false)
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false)
   const [showVariables, setShowVariables] = useState(true)
-  
+  const [showQuestions, setShowQuestions] = useState(false)
+  const [questionSearch, setQuestionSearch] = useState("")
+  const [expandedSections, setExpandedSections] = useState<string[]>([])
+
+  const toggleExpandedSection = (section: string) =>
+    setExpandedSections((prev) =>
+      prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section],
+    )
+
   // Template variables sidebar state
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
@@ -492,6 +535,16 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
           >
             <Code className="w-4 h-4" />
             Add variables
+          </button>
+          <button
+            onClick={() => setShowQuestions((v) => !v)}
+            className={`flex items-center gap-1.5 px-2 py-1 text-sm rounded transition-colors ${
+              showQuestions ? "text-slate-900 bg-slate-100" : "text-slate-600 hover:bg-slate-100"
+            }`}
+            title="Toggle questions panel"
+          >
+            <ListChecks className="w-4 h-4" />
+            Add questions
           </button>
           <Button
             onClick={onEditForm}
@@ -792,6 +845,83 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
             </div>
           )}
         </div>
+        )}
+
+        {/* Questions Sidebar */}
+        {showQuestions && (
+          <div className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-slate-200 flex-shrink-0">
+              <h2 className="text-sm font-semibold text-slate-800 mb-3">Questions</h2>
+
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search questions..."
+                  value={questionSearch}
+                  onChange={(e) => setQuestionSearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-300"
+                />
+                {questionSearch && (
+                  <button
+                    onClick={() => setQuestionSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+                  >
+                    <X className="w-3 h-3 text-slate-400" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Sections with questions */}
+            <div className="flex-1 overflow-y-auto">
+              {Object.keys(questionSections).map((section) => {
+                const q = questionSearch.toLowerCase()
+                const questions = questionSections[section].filter((question) =>
+                  q ? question.toLowerCase().includes(q) : true,
+                )
+                if (questions.length === 0) return null
+                // Auto-expand while searching, otherwise respect manual toggle
+                const isExpanded = q ? true : expandedSections.includes(section)
+                return (
+                  <div key={section} className="border-b border-slate-100">
+                    <button
+                      onClick={() => toggleExpandedSection(section)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-slate-800 hover:bg-slate-50 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-400" />
+                        )}
+                        {section}
+                      </span>
+                      <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                        {questions.length}
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="pb-2">
+                        {questions.map((question) => (
+                          <button
+                            key={question}
+                            onClick={() => navigator.clipboard.writeText(question)}
+                            className="w-full text-left pl-10 pr-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         )}
 
         {/* Document Canvas */}
