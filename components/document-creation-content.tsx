@@ -2091,13 +2091,7 @@ export function DocumentCreationContent() {
 
         {!isCreatingNew && !selectedDocument && (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Select Organization</CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Choose a MAT or school to view and manage its document configurations
-              </p>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="relative max-w-md">
                 <select
                   value={selectedSchoolUrn}
