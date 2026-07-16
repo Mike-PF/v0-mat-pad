@@ -544,7 +544,7 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
             title="Toggle questions panel"
           >
             <ListChecks className="w-4 h-4" />
-            Add questions
+            Form Questions
           </button>
           <Button
             onClick={onEditForm}
