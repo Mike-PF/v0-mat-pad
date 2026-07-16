@@ -2218,7 +2218,7 @@ export function DocumentCreationContent() {
         )}
 
         {selectedSchoolUrn && !isCreatingNew && !selectedDocument && (
-          <Card>
+          <Card className="mt-8">
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-lg">Document Configurations</CardTitle>
