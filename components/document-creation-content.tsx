@@ -258,6 +258,8 @@ export function DocumentCreationContent() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [tags, setTags] = useState<any[]>([]) // Renamed from systemTags for clarity
   const [searchQuery, setSearchQuery] = useState("")
+  const [docSearchQuery, setDocSearchQuery] = useState("")
+  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
   const [sortBy, setSortBy] = useState<"name" | "order" | "category">("order")
@@ -392,8 +394,16 @@ export function DocumentCreationContent() {
 
   const filteredDocuments = useMemo(() => {
     if (!selectedSchoolUrn) return []
-    return documents.filter((doc) => doc.schoolUrn === selectedSchoolUrn)
-  }, [documents, selectedSchoolUrn])
+    const forOrg = documents.filter((doc) => doc.schoolUrn === selectedSchoolUrn)
+    const q = docSearchQuery.trim().toLowerCase()
+    if (!q) return forOrg
+    return forOrg.filter(
+      (doc) =>
+        doc.name?.toLowerCase().includes(q) ||
+        doc.sp?.toLowerCase().includes(q) ||
+        doc.uploadedFile?.toLowerCase().includes(q),
+    )
+  }, [documents, selectedSchoolUrn, docSearchQuery])
 
   const handleCreateNew = () => {
     if (!selectedSchoolUrn) {
@@ -2092,32 +2102,117 @@ export function DocumentCreationContent() {
         {!isCreatingNew && !selectedDocument && (
           <Card>
             <CardContent className="pt-6">
-              <div className="relative max-w-md">
-                <select
-                  value={selectedSchoolUrn}
-                  onChange={(e) => setSelectedSchoolUrn(e.target.value)}
-                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  <option value="">Please select an organization...</option>
+              {!selectedSchoolUrn ? (
+                <div className="relative max-w-md">
+                  <select
+                    value={selectedSchoolUrn}
+                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
+                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">Please select an organization...</option>
 
-                  <optgroup label="MATs (Multi-Academy Trusts)">
-                    {mats.map((mat) => (
-                      <option key={mat.urn} value={mat.urn}>
-                        {mat.name}
-                      </option>
-                    ))}
-                  </optgroup>
+                    <optgroup label="MATs (Multi-Academy Trusts)">
+                      {mats.map((mat) => (
+                        <option key={mat.urn} value={mat.urn}>
+                          {mat.name}
+                        </option>
+                      ))}
+                    </optgroup>
 
-                  <optgroup label="Schools">
-                    {schools.map((school) => (
-                      <option key={school.urn} value={school.urn}>
-                        {school.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              </div>
+                    <optgroup label="Schools">
+                      {schools.map((school) => (
+                        <option key={school.urn} value={school.urn}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    {/* Selected organization chip dropdown */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setOrgDropdownOpen((v) => !v)}
+                        className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                      >
+                        <span className="font-medium">{selectedOrganization?.name}</span>
+                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
+                          {selectedOrganization?.type === "mat" ? "MAT" : "School"}
+                        </span>
+                        <ChevronDown className="h-4 w-4 text-slate-500" />
+                      </button>
+
+                      {orgDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setOrgDropdownOpen(false)}
+                            aria-hidden="true"
+                          />
+                          <div className="absolute left-0 z-50 mt-1 max-h-72 w-80 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                            <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              MATs (Multi-Academy Trusts)
+                            </p>
+                            {mats.map((mat) => (
+                              <button
+                                key={mat.urn}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSchoolUrn(mat.urn)
+                                  setOrgDropdownOpen(false)
+                                }}
+                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                                  mat.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
+                                }`}
+                              >
+                                {mat.name}
+                              </button>
+                            ))}
+                            <p className="mt-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Schools
+                            </p>
+                            {schools.map((school) => (
+                              <button
+                                key={school.urn}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSchoolUrn(school.urn)
+                                  setOrgDropdownOpen(false)
+                                }}
+                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                                  school.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
+                                }`}
+                              >
+                                {school.name}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSchoolUrn("")}
+                      className="text-sm font-medium text-slate-600 hover:text-primary"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+
+                  <Button
+                    onClick={handleCreateNew}
+                    className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Document
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -2125,20 +2220,18 @@ export function DocumentCreationContent() {
         {selectedSchoolUrn && !isCreatingNew && !selectedDocument && (
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Document Configurations</CardTitle>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Manage document templates for {selectedOrganization?.name}
-                  </p>
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="text-lg">Document Configurations</CardTitle>
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search by title, procedure, file name..."
+                    value={docSearchQuery}
+                    onChange={(e) => setDocSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
                 </div>
-                <Button
-                  onClick={handleCreateNew}
-                  className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Document
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -2151,15 +2244,7 @@ export function DocumentCreationContent() {
                       className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-l-4 hover:border-l-[#b30089] transition-all"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5" style={{ color: "#0f0d42" }} />
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-slate-900">{doc.name}</h3>
-                          <p className="text-sm text-slate-600">
-                            {doc.sp} • {doc.uploadedFile} • {doc.tagCount} tags
-                          </p>
-                        </div>
+                        <h3 className="font-semibold text-slate-900">{doc.name}</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         {config?.isActive && (
