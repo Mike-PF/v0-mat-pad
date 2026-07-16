@@ -29,6 +29,7 @@ import {
   Pilcrow,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { loadedDocumentHtml } from "@/lib/loaded-document"
 
 const ACCENT = "hsl(314 100% 35%)"
 const NAVY = "#121051"
@@ -370,22 +371,6 @@ const exampleData: Record<string, string> = {
 }
 
 // Sample document content for display
-const sampleDocumentContent = [
-  { title: "The 'Double Serialisation' Failure", page: 16 },
-  { title: "RESTful Resource Naming (Resource vs. Action)", page: 16 },
-  { title: "Implementation Standards", page: 17, indent: 0 },
-  { title: "The RESTful Verb Breakdown", page: 17, indent: 1 },
-  { title: "Standardising Query Parameters", page: 19 },
-  { title: "Secrets & Configuration Management", page: 19 },
-  { title: "Image & Asset Optimisation", page: 19 },
-  { title: "Database Migrations – Version Control", page: 20 },
-  { title: "Git Branching & Standards", page: 21 },
-  { title: "Branch Naming Convention", page: 21, indent: 1 },
-  { title: "The Workflow: Trunk-Based Development", page: 21, indent: 1 },
-  { title: "Commit & Merge Standards", page: 22, indent: 1 },
-  { title: "Definition of Done (DoD)", page: 22 },
-]
-
 interface DocumentEditorProps {
   documentName: string
   onExit: () => void
@@ -930,55 +915,15 @@ export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: Doc
             className="mx-auto bg-white shadow-lg"
             style={{
               width: `${(816 * zoom) / 100}px`,
-              minHeight: `${(1056 * zoom) / 100}px`,
               transform: `scale(${zoom / 100})`,
               transformOrigin: "top center",
             }}
           >
-            {/* Page 1 */}
-            <div className="p-16" style={{ minHeight: "1056px" }}>
-              {/* Table of Contents style content */}
-              <div className="space-y-2">
-                {sampleDocumentContent.slice(0, 6).map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-end gap-2"
-                    style={{ paddingLeft: item.indent ? `${item.indent * 24}px` : "0" }}
-                  >
-                    <span className="text-sm text-slate-800 shrink-0">{item.title}</span>
-                    <span className="flex-1 border-b border-dotted border-slate-400 mb-1" />
-                    <span className="text-sm text-slate-800 shrink-0">{item.page}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Page 2 */}
-          <div
-            className="mx-auto bg-white shadow-lg mt-8"
-            style={{
-              width: `${(816 * zoom) / 100}px`,
-              minHeight: `${(1056 * zoom) / 100}px`,
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: "top center",
-            }}
-          >
-            <div className="p-16" style={{ minHeight: "1056px" }}>
-              <div className="space-y-2">
-                {sampleDocumentContent.slice(6).map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-end gap-2"
-                    style={{ paddingLeft: item.indent ? `${item.indent * 24}px` : "0" }}
-                  >
-                    <span className="text-sm text-slate-800 shrink-0">{item.title}</span>
-                    <span className="flex-1 border-b border-dotted border-slate-400 mb-1" />
-                    <span className="text-sm text-slate-800 shrink-0">{item.page}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <div
+              className="doc-content p-16"
+              style={{ minHeight: "1056px" }}
+              dangerouslySetInnerHTML={{ __html: loadedDocumentHtml }}
+            />
           </div>
         </div>
       </div>
