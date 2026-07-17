@@ -22,7 +22,6 @@ import {
   Download,
   X,
   Check,
-  Send,
   ImageIcon,
   GitBranch,
   MousePointer,
@@ -31,6 +30,27 @@ import {
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
+
+const FORM_LINK_OPTIONS = [
+  "Head Report (24/25)",
+  "KS2 Archive",
+  "Mike 1e",
+  "New Form13a",
+  "Autumn Term Review",
+  "Spring Term Review",
+  "Summer Term Review",
+  "Annual Safeguarding Return",
+  "Attendance & Punctuality Survey",
+  "Behaviour & Exclusions Log",
+  "Pupil Premium Impact Form",
+  "SEND Provision Audit",
+  "Governor Visit Questionnaire",
+  "Staff Wellbeing Survey",
+  "Curriculum Intent Review",
+  "Parent Voice Questionnaire",
+  "Self-Evaluation Form (SEF)",
+  "Ofsted Readiness Checklist",
+]
 
 const mats = [
   { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
@@ -217,8 +237,10 @@ export function DocumentCreationContent() {
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [showDocumentEditor, setShowDocumentEditor] = useState(false)
   const [configSaved, setConfigSaved] = useState(false)
+  const [editingForm, setEditingForm] = useState(false)
   const [documentName, setDocumentName] = useState("")
-  const [formList, setFormList] = useState("")
+  const [formLinks, setFormLinks] = useState<string[]>([])
+  const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
@@ -236,6 +258,8 @@ export function DocumentCreationContent() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [tags, setTags] = useState<any[]>([]) // Renamed from systemTags for clarity
   const [searchQuery, setSearchQuery] = useState("")
+  const [docSearchQuery, setDocSearchQuery] = useState("")
+  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
   const [sortBy, setSortBy] = useState<"name" | "order" | "category">("order")
@@ -370,8 +394,16 @@ export function DocumentCreationContent() {
 
   const filteredDocuments = useMemo(() => {
     if (!selectedSchoolUrn) return []
-    return documents.filter((doc) => doc.schoolUrn === selectedSchoolUrn)
-  }, [documents, selectedSchoolUrn])
+    const forOrg = documents.filter((doc) => doc.schoolUrn === selectedSchoolUrn)
+    const q = docSearchQuery.trim().toLowerCase()
+    if (!q) return forOrg
+    return forOrg.filter(
+      (doc) =>
+        doc.name?.toLowerCase().includes(q) ||
+        doc.sp?.toLowerCase().includes(q) ||
+        doc.uploadedFile?.toLowerCase().includes(q),
+    )
+  }, [documents, selectedSchoolUrn, docSearchQuery])
 
   const handleCreateNew = () => {
     if (!selectedSchoolUrn) {
@@ -382,7 +414,7 @@ export function DocumentCreationContent() {
     setIsCreatingNew(true)
     setShowDocumentEditor(true)
     setSelectedDocument(null)
-    setDocumentName("New Document")
+    setDocumentName("")
     setSelectedSP("")
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -399,11 +431,13 @@ export function DocumentCreationContent() {
     setShowDocumentEditor(false)
     setIsCreatingNew(false)
     setConfigSaved(false)
+    setEditingForm(false)
   }
 
   const handleSaveConfiguration = () => {
     if (!documentName.trim()) return
     setConfigSaved(true)
+    setEditingForm(false)
     setNotificationMessage("Configuration saved!")
     setShowNotification(true)
   }
@@ -411,6 +445,7 @@ export function DocumentCreationContent() {
   const handleSaveFromEditor = () => {
     setShowDocumentEditor(false)
     setConfigSaved(false)
+    setEditingForm(false)
     setNotificationMessage("Document saved successfully!")
     setShowNotification(true)
   }
@@ -1057,15 +1092,16 @@ export function DocumentCreationContent() {
   }
 
   // Stage 1: Configuration panel — shown before saving
-  if (showDocumentEditor && !configSaved) {
+  if (showDocumentEditor) {
     return (
-      <>
+      <div className="flex flex-col h-[calc(100vh-120px)] gap-4">
         <UploadModal
           isOpen={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onFileSelect={handleFileUpload}
           isProcessing={isProcessing}
         />
+        {(!configSaved || editingForm) && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between mb-4">
@@ -1088,15 +1124,17 @@ export function DocumentCreationContent() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-4 gap-6 items-end">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Organization</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
                 <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
                   {selectedOrganization?.name || selectedSchoolUrn}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Document Name: <span className="text-red-500">*</span>
+                </label>
                 <Input
                   type="text"
                   placeholder="Enter document name..."
@@ -1104,23 +1142,77 @@ export function DocumentCreationContent() {
                   onChange={(e) => setDocumentName(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-6 items-start">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Form List</label>
-                <select
-                  value={formList}
-                  onChange={(e) => setFormList(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                >
-                  <option value="">Select a form link</option>
-                  <option value="form-1">Autumn Term Form</option>
-                  <option value="form-2">Spring Term Form</option>
-                  <option value="form-3">Summer Term Form</option>
-                  <option value="form-4">Annual Review Form</option>
-                </select>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Form List:</label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setFormListOpen((v) => !v)}
+                    className="flex w-full items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                  >
+                    <span className={formLinks.length === 0 ? "text-slate-400" : "truncate"}>
+                      {formLinks.length === 0
+                        ? "Select a form link"
+                        : formLinks.length === 1
+                          ? formLinks[0]
+                          : `${formLinks.length} forms selected`}
+                    </span>
+                    {formLinks.length > 0 ? (
+                      <X
+                        className="h-4 w-4 shrink-0 text-slate-400 hover:text-slate-600"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setFormLinks([])
+                        }}
+                      />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
+                    )}
+                  </button>
+
+                  {formListOpen && (
+                    <>
+                      {/* Click-away overlay */}
+                      <div className="fixed inset-0 z-40" onClick={() => setFormListOpen(false)} aria-hidden="true" />
+                      <div className="absolute left-0 right-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                        <label className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <input
+                            type="checkbox"
+                            checked={formLinks.length === 0}
+                            onChange={() => setFormLinks([])}
+                            className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                          />
+                          No form link selected
+                        </label>
+                        {FORM_LINK_OPTIONS.map((option) => (
+                          <label
+                            key={option}
+                            className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formLinks.includes(option)}
+                              onChange={() =>
+                                setFormLinks((prev) =>
+                                  prev.includes(option) ? prev.filter((f) => f !== option) : [...prev, option],
+                                )
+                              }
+                              className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                            />
+                            {option}
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Section Name <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Section Name: <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={sectionName}
@@ -1128,55 +1220,52 @@ export function DocumentCreationContent() {
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
                 >
                   <option value="">Select a section name</option>
-                  <option value="school">School</option>
-                  <option value="trust">Trust</option>
-                  <option value="la">Local Authority</option>
-                  <option value="national">National</option>
+                  <option value="School Improvement">School Improvement</option>
+                  <option value="Governor Reporting">Governor Reporting</option>
+                  <option value="Attendance & Welfare">Attendance & Welfare</option>
+                  <option value="Statutory & Compliance">Statutory & Compliance</option>
+                  <option value="Performance Analytics">Performance Analytics</option>
                 </select>
               </div>
-            </div>
-
-            <div className="mt-4 flex items-center gap-3">
-              <label className="text-sm font-medium text-slate-700">Report Level:</label>
-              <div className="flex items-center gap-2">
-                <span className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
-                  School
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                    reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
-                  }`}
-                >
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Level:</label>
+                <div className="flex items-center gap-2 py-2">
                   <span
-                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                      reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                    className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
+                  >
+                    School
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                      reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
                     }`}
-                  />
-                </button>
-                <span className={`text-sm ${reportLevel === "mat" ? "text-slate-900 font-medium" : "text-slate-400"}`}>
-                  MAT
-                </span>
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                        reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  {reportLevel === "mat" && <span className="text-sm font-medium text-slate-900">MAT</span>}
+                </div>
               </div>
             </div>
           </CardHeader>
         </Card>
-      </>
-    )
-  }
+        )}
 
-  // Stage 2: Document editor — shown after configuration is saved
-  if (showDocumentEditor && configSaved) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-120px)]">
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <DocumentEditor
-            documentName={documentName}
-            onExit={handleExitEditor}
-            onSave={handleSaveFromEditor}
-          />
-        </div>
+        {configSaved && (
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <DocumentEditor
+              documentName={documentName}
+              onExit={handleExitEditor}
+              onSave={handleSaveFromEditor}
+              onEditForm={() => setEditingForm(true)}
+            />
+          </div>
+        )}
       </div>
     )
   }
@@ -2016,60 +2105,137 @@ export function DocumentCreationContent() {
 
         {!isCreatingNew && !selectedDocument && (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Select Organization</CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Choose a MAT or school to view and manage its document configurations
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="relative max-w-md">
-                <select
-                  value={selectedSchoolUrn}
-                  onChange={(e) => setSelectedSchoolUrn(e.target.value)}
-                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  <option value="">Please select an organization...</option>
+            <CardContent className="pt-6">
+              {!selectedSchoolUrn ? (
+                <div className="relative max-w-md">
+                  <select
+                    value={selectedSchoolUrn}
+                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
+                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">Please select an organization...</option>
 
-                  <optgroup label="MATs (Multi-Academy Trusts)">
-                    {mats.map((mat) => (
-                      <option key={mat.urn} value={mat.urn}>
-                        {mat.name}
-                      </option>
-                    ))}
-                  </optgroup>
+                    <optgroup label="MATs (Multi-Academy Trusts)">
+                      {mats.map((mat) => (
+                        <option key={mat.urn} value={mat.urn}>
+                          {mat.name}
+                        </option>
+                      ))}
+                    </optgroup>
 
-                  <optgroup label="Schools">
-                    {schools.map((school) => (
-                      <option key={school.urn} value={school.urn}>
-                        {school.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              </div>
+                    <optgroup label="Schools">
+                      {schools.map((school) => (
+                        <option key={school.urn} value={school.urn}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    {/* Selected organization chip dropdown */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setOrgDropdownOpen((v) => !v)}
+                        className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                      >
+                        <span className="font-medium">{selectedOrganization?.name}</span>
+                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
+                          {selectedOrganization?.type === "mat" ? "MAT" : "School"}
+                        </span>
+                        <ChevronDown className="h-4 w-4 text-slate-500" />
+                      </button>
+
+                      {orgDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setOrgDropdownOpen(false)}
+                            aria-hidden="true"
+                          />
+                          <div className="absolute left-0 z-50 mt-1 max-h-72 w-80 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                            <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              MATs (Multi-Academy Trusts)
+                            </p>
+                            {mats.map((mat) => (
+                              <button
+                                key={mat.urn}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSchoolUrn(mat.urn)
+                                  setOrgDropdownOpen(false)
+                                }}
+                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                                  mat.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
+                                }`}
+                              >
+                                {mat.name}
+                              </button>
+                            ))}
+                            <p className="mt-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Schools
+                            </p>
+                            {schools.map((school) => (
+                              <button
+                                key={school.urn}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSchoolUrn(school.urn)
+                                  setOrgDropdownOpen(false)
+                                }}
+                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                                  school.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
+                                }`}
+                              >
+                                {school.name}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSchoolUrn("")}
+                      className="text-sm font-medium text-slate-600 hover:text-primary"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+
+                  <Button
+                    onClick={handleCreateNew}
+                    className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Document
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
         {selectedSchoolUrn && !isCreatingNew && !selectedDocument && (
-          <Card>
+          <Card className="mt-6">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Document Configurations</CardTitle>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Manage document templates for {selectedOrganization?.name}
-                  </p>
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="text-lg">Document Configurations</CardTitle>
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search by title, procedure, file name..."
+                    value={docSearchQuery}
+                    onChange={(e) => setDocSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
                 </div>
-                <Button
-                  onClick={handleCreateNew}
-                  className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Document
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -2082,15 +2248,7 @@ export function DocumentCreationContent() {
                       className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-l-4 hover:border-l-[#b30089] transition-all"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5" style={{ color: "#0f0d42" }} />
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-slate-900">{doc.name}</h3>
-                          <p className="text-sm text-slate-600">
-                            {doc.sp} • {doc.uploadedFile} • {doc.tagCount} tags
-                          </p>
-                        </div>
+                        <h3 className="font-semibold text-slate-900">{doc.name}</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         {config?.isActive && (
@@ -2099,31 +2257,17 @@ export function DocumentCreationContent() {
                               variant="outline"
                               size="sm"
                               onClick={() => handlePublishDocument(doc)}
-                              className={
-                                config?.isPublished
-                                  ? "bg-[#b30089] text-white border-[#b30089] hover:bg-[#b30089]/90"
-                                  : "group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
-                              }
+                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
                             >
-                              <Send
-                                className={`w-4 h-4 mr-2 transition-colors ${
-                                  config?.isPublished ? "text-white" : "group-hover:!text-white"
-                                }`}
-                                style={config?.isPublished ? {} : { color: "#0f0d42" }}
-                              />
-                              <span>{config?.isPublished ? "Published" : "Publish"}</span>
+                              {config?.isPublished ? "Published" : "Publish"}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleEditDocument(doc)}
-                              className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
                             >
-                              <Edit
-                                className="w-4 h-4 mr-2 transition-colors group-hover:!text-white"
-                                style={{ color: "#0f0d42" }}
-                              />
-                              <span>Edit</span>
+                              Edit
                             </Button>
                           </>
                         )}
@@ -2132,12 +2276,9 @@ export function DocumentCreationContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownloadDocument(doc)}
-                          className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                          className="border-slate-200 text-slate-700 hover:bg-slate-50"
                         >
-                          <Download
-                            className="w-4 h-4 transition-colors group-hover:!text-white"
-                            style={{ color: "#0f0d42" }}
-                          />
+                          <Download className="w-4 h-4" />
                         </Button>
 
                         {config?.isActive && (

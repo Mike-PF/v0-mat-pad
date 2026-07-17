@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect } from "react"
 import {
-  ZoomOut,
-  ZoomIn,
+  Menu,
+  MinusCircle,
+  PlusCircle,
+  MessageSquare,
   Search,
-  Printer,
   FolderOpen,
   Code,
+  ListChecks,
   X,
   Bold,
   Italic,
@@ -27,9 +29,44 @@ import {
   Pilcrow,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { loadedDocumentHtml } from "@/lib/loaded-document"
 
 const ACCENT = "hsl(314 100% 35%)"
 const NAVY = "#121051"
+
+// Questions organized by section - a section can have many questions
+const questionSections: Record<string, string[]> = {
+  "School Improvement": [
+    "What are the key priorities for this term?",
+    "How is progress measured against the improvement plan?",
+    "What interventions have been put in place?",
+    "Which year groups require additional support?",
+  ],
+  "Governor Reporting": [
+    "What updates should be shared with the governing body?",
+    "Are there any safeguarding concerns to report?",
+    "What is the current budget position?",
+    "Which strategic decisions require governor approval?",
+  ],
+  "Attendance & Welfare": [
+    "What is the current overall attendance rate?",
+    "How many pupils are persistently absent?",
+    "What welfare support is being provided?",
+    "Are there any patterns in absence data?",
+  ],
+  "Statutory & Compliance": [
+    "Are all statutory policies up to date?",
+    "When was the last compliance audit completed?",
+    "Are there any outstanding actions from inspections?",
+    "Is staff training current and recorded?",
+  ],
+  "Performance Analytics": [
+    "How does performance compare to national averages?",
+    "What trends are visible in the latest data?",
+    "Which cohorts are outperforming expectations?",
+    "What areas need targeted improvement?",
+  ],
+}
 
 // Template variables organized by category - expanded for scale
 const templateVariables: Record<string, string[]> = {
@@ -334,29 +371,14 @@ const exampleData: Record<string, string> = {
 }
 
 // Sample document content for display
-const sampleDocumentContent = [
-  { title: "The 'Double Serialisation' Failure", page: 16 },
-  { title: "RESTful Resource Naming (Resource vs. Action)", page: 16 },
-  { title: "Implementation Standards", page: 17, indent: 0 },
-  { title: "The RESTful Verb Breakdown", page: 17, indent: 1 },
-  { title: "Standardising Query Parameters", page: 19 },
-  { title: "Secrets & Configuration Management", page: 19 },
-  { title: "Image & Asset Optimisation", page: 19 },
-  { title: "Database Migrations – Version Control", page: 20 },
-  { title: "Git Branching & Standards", page: 21 },
-  { title: "Branch Naming Convention", page: 21, indent: 1 },
-  { title: "The Workflow: Trunk-Based Development", page: 21, indent: 1 },
-  { title: "Commit & Merge Standards", page: 22, indent: 1 },
-  { title: "Definition of Done (DoD)", page: 22 },
-]
-
 interface DocumentEditorProps {
   documentName: string
   onExit: () => void
   onSave: () => void
+  onEditForm?: () => void
 }
 
-export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorProps) {
+export function DocumentEditor({ documentName, onExit, onSave, onEditForm }: DocumentEditorProps) {
   const [zoom, setZoom] = useState(100)
   const [activeTab, setActiveTab] = useState<"Home" | "Layout" | "Insert">("Home")
   const [selectedStyle, setSelectedStyle] = useState("Normal Text")
@@ -365,7 +387,78 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
   const [showStyleDropdown, setShowStyleDropdown] = useState(false)
   const [showFontDropdown, setShowFontDropdown] = useState(false)
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false)
-  
+  const [showVariables, setShowVariables] = useState(true)
+  const [showQuestions, setShowQuestions] = useState(false)
+  const [questionSearch, setQuestionSearch] = useState("")
+  const [expandedSections, setExpandedSections] = useState<string[]>([])
+  const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null)
+  const [questionAssociations, setQuestionAssociations] = useState<Record<string, string[]>>({})
+  const [docHtml, setDocHtml] = useState(loadedDocumentHtml)
+  const canvasRef = useRef<HTMLDivElement>(null)
+
+  const toggleExpandedSection = (section: string) =>
+    setExpandedSections((prev) =>
+      prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section],
+    )
+
+  // Associate the currently highlighted document text with the active question
+  const handleDocMouseUp = () => {
+    if (!selectedQuestion) return
+    const selection = window.getSelection()
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0) return
+    const text = selection.toString().trim()
+    if (!text) return
+
+    const range = selection.getRangeAt(0)
+    if (!canvasRef.current?.contains(range.commonAncestorContainer)) return
+
+    // Visually highlight the selected text in the document
+    const span = document.createElement("span")
+    span.className = "doc-highlight"
+    span.setAttribute("data-question", selectedQuestion)
+    span.setAttribute("title", `Linked to: ${selectedQuestion}`)
+    try {
+      range.surroundContents(span)
+    } catch {
+      span.appendChild(range.extractContents())
+      range.insertNode(span)
+    }
+    selection.removeAllRanges()
+
+    // Persist the mutated markup so React's committed HTML matches the DOM
+    if (canvasRef.current) setDocHtml(canvasRef.current.innerHTML)
+
+    setQuestionAssociations((prev) => ({
+      ...prev,
+      [selectedQuestion]: [...(prev[selectedQuestion] || []), text],
+    }))
+  }
+
+  const removeAssociation = (question: string, index: number) => {
+    setQuestionAssociations((prev) => {
+      const next = { ...prev }
+      const list = [...(next[question] || [])]
+      list.splice(index, 1)
+      if (list.length === 0) delete next[question]
+      else next[question] = list
+      return next
+    })
+    // Unwrap the matching highlight span in the document
+    const spans = canvasRef.current?.querySelectorAll<HTMLSpanElement>(
+      `span.doc-highlight[data-question="${CSS.escape(question)}"]`,
+    )
+    if (spans && spans[index]) {
+      const span = spans[index]
+      const parent = span.parentNode
+      if (parent) {
+        while (span.firstChild) parent.insertBefore(span.firstChild, span)
+        parent.removeChild(span)
+        parent.normalize()
+      }
+    }
+    if (canvasRef.current) setDocHtml(canvasRef.current.innerHTML)
+  }
+
   // Template variables sidebar state
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
@@ -427,29 +520,27 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
     <div className="flex flex-col h-full bg-slate-100">
       {/* Top Bar - Editor Controls */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Menu */}
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Menu">
+            <Menu className="w-5 h-5 text-slate-600" />
+          </button>
+
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1 border-r border-slate-200 pr-3">
-            <span className="text-sm text-slate-600 min-w-[50px]">{zoom}%</span>
-            <button
-              onClick={handleZoomOut}
-              className="p-1 hover:bg-slate-100 rounded"
-              title="Zoom out"
-            >
-              <ZoomOut className="w-4 h-4 text-slate-500" />
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-slate-700 font-medium min-w-[42px]">{zoom}%</span>
+            <ChevronDown className="w-3 h-3 text-slate-500" />
+            <button onClick={handleZoomOut} className="p-1 hover:bg-slate-100 rounded" title="Zoom out">
+              <MinusCircle className="w-5 h-5 text-slate-500" />
             </button>
-            <button
-              onClick={handleZoomIn}
-              className="p-1 hover:bg-slate-100 rounded"
-              title="Zoom in"
-            >
-              <ZoomIn className="w-4 h-4 text-slate-500" />
+            <button onClick={handleZoomIn} className="p-1 hover:bg-slate-100 rounded" title="Zoom in">
+              <PlusCircle className="w-5 h-5 text-slate-500" />
             </button>
           </div>
 
           {/* Document Title */}
           <span className="text-sm text-slate-700 font-medium">
-            {documentName || "Untitled Document"}
+            {documentName || "Untitled.docx"}
           </span>
         </div>
 
@@ -471,26 +562,51 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button className="p-1.5 hover:bg-slate-100 rounded" title="Search">
             <Search className="w-4 h-4 text-slate-500" />
           </button>
-          <button className="p-1.5 hover:bg-slate-100 rounded" title="Print">
-            <Printer className="w-4 h-4 text-slate-500" />
+          <button className="p-1.5 hover:bg-slate-100 rounded" title="Comments">
+            <MessageSquare className="w-4 h-4 text-slate-500" />
           </button>
-          <button className="flex items-center gap-1 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded">
+          <button className="flex items-center gap-1.5 px-2 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded">
             <FolderOpen className="w-4 h-4" />
-            Open file
-          </button>
-          <button className="p-1.5 hover:bg-slate-100 rounded" title="Embed">
-            <Code className="w-4 h-4 text-slate-500" />
+            Open File
           </button>
           <button
+            onClick={() => setShowVariables((v) => !v)}
+            className={`flex items-center gap-1.5 px-2 py-1 text-sm rounded transition-colors ${
+              showVariables ? "text-slate-900 bg-slate-100" : "text-slate-600 hover:bg-slate-100"
+            }`}
+            title="Toggle template variables panel"
+          >
+            <Code className="w-4 h-4" />
+            Add variables
+          </button>
+          <button
+            onClick={() => setShowQuestions((v) => !v)}
+            className={`flex items-center gap-1.5 px-2 py-1 text-sm rounded transition-colors ${
+              showQuestions ? "text-slate-900 bg-slate-100" : "text-slate-600 hover:bg-slate-100"
+            }`}
+            title="Toggle questions panel"
+          >
+            <ListChecks className="w-4 h-4" />
+            Form Questions
+          </button>
+          <Button
+            onClick={onEditForm}
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50"
+          >
+            Edit Form
+          </Button>
+          <Button
             onClick={onExit}
-            className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50"
           >
             Exit
-          </button>
+          </Button>
           <Button
             onClick={onSave}
             className="text-white"
@@ -665,6 +781,7 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Template Variables Sidebar */}
+        {showVariables && (
         <div ref={sidebarRef} className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
 
           {/* Header */}
@@ -775,6 +892,133 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
             </div>
           )}
         </div>
+        )}
+
+        {/* Questions Sidebar */}
+        {showQuestions && (
+          <div className="w-72 h-full bg-white border-r border-slate-200 flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-slate-200 flex-shrink-0">
+              <h2 className="text-sm font-semibold text-slate-800 mb-3">Questions</h2>
+
+              {selectedQuestion ? (
+                <div className="mb-3 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                  Highlight text in the document to link it to this question.
+                  <button
+                    onClick={() => setSelectedQuestion(null)}
+                    className="ml-1 font-medium underline hover:no-underline"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <p className="mb-3 text-xs text-slate-500">
+                  Select a question, then highlight text in the document to associate it.
+                </p>
+              )}
+
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search questions..."
+                  value={questionSearch}
+                  onChange={(e) => setQuestionSearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-300"
+                />
+                {questionSearch && (
+                  <button
+                    onClick={() => setQuestionSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+                  >
+                    <X className="w-3 h-3 text-slate-400" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Sections with questions */}
+            <div className="flex-1 overflow-y-auto">
+              {Object.keys(questionSections).map((section) => {
+                const q = questionSearch.toLowerCase()
+                const questions = questionSections[section].filter((question) =>
+                  q ? question.toLowerCase().includes(q) : true,
+                )
+                if (questions.length === 0) return null
+                // Auto-expand while searching, otherwise respect manual toggle
+                const isExpanded = q ? true : expandedSections.includes(section)
+                return (
+                  <div key={section} className="border-b border-slate-100">
+                    <button
+                      onClick={() => toggleExpandedSection(section)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-slate-800 hover:bg-slate-50 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-400" />
+                        )}
+                        {section}
+                      </span>
+                      <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                        {questions.length}
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="pb-2">
+                        {questions.map((question) => {
+                          const isActive = selectedQuestion === question
+                          const associations = questionAssociations[question] || []
+                          return (
+                            <div key={question}>
+                              <button
+                                onClick={() => setSelectedQuestion(isActive ? null : question)}
+                                className={`w-full text-left pl-10 pr-4 py-2 text-sm transition-colors ${
+                                  isActive
+                                    ? "bg-amber-50 text-slate-900 font-medium border-l-2 border-amber-400"
+                                    : "text-slate-600 hover:bg-slate-50 border-l-2 border-transparent"
+                                }`}
+                              >
+                                {question}
+                                {associations.length > 0 && (
+                                  <span className="ml-2 text-xs text-slate-400">({associations.length})</span>
+                                )}
+                              </button>
+                              {associations.length > 0 && (
+                                <div className="pl-10 pr-4 pb-2 space-y-1">
+                                  {associations.map((text, i) => (
+                                    <div
+                                      key={i}
+                                      className="group flex items-start gap-1.5 rounded bg-amber-50 border border-amber-100 px-2 py-1 text-xs text-slate-600"
+                                    >
+                                      <span className="flex-1 line-clamp-2" title={text}>
+                                        {text}
+                                      </span>
+                                      <button
+                                        onClick={() => removeAssociation(question, i)}
+                                        className="mt-0.5 shrink-0 text-slate-400 hover:text-slate-700"
+                                        title="Remove association"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Document Canvas */}
         <div className="flex-1 overflow-auto p-8 bg-slate-200">
@@ -782,55 +1026,17 @@ export function DocumentEditor({ documentName, onExit, onSave }: DocumentEditorP
             className="mx-auto bg-white shadow-lg"
             style={{
               width: `${(816 * zoom) / 100}px`,
-              minHeight: `${(1056 * zoom) / 100}px`,
               transform: `scale(${zoom / 100})`,
               transformOrigin: "top center",
             }}
           >
-            {/* Page 1 */}
-            <div className="p-16" style={{ minHeight: "1056px" }}>
-              {/* Table of Contents style content */}
-              <div className="space-y-2">
-                {sampleDocumentContent.slice(0, 6).map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-end gap-2"
-                    style={{ paddingLeft: item.indent ? `${item.indent * 24}px` : "0" }}
-                  >
-                    <span className="text-sm text-slate-800 shrink-0">{item.title}</span>
-                    <span className="flex-1 border-b border-dotted border-slate-400 mb-1" />
-                    <span className="text-sm text-slate-800 shrink-0">{item.page}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Page 2 */}
-          <div
-            className="mx-auto bg-white shadow-lg mt-8"
-            style={{
-              width: `${(816 * zoom) / 100}px`,
-              minHeight: `${(1056 * zoom) / 100}px`,
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: "top center",
-            }}
-          >
-            <div className="p-16" style={{ minHeight: "1056px" }}>
-              <div className="space-y-2">
-                {sampleDocumentContent.slice(6).map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-end gap-2"
-                    style={{ paddingLeft: item.indent ? `${item.indent * 24}px` : "0" }}
-                  >
-                    <span className="text-sm text-slate-800 shrink-0">{item.title}</span>
-                    <span className="flex-1 border-b border-dotted border-slate-400 mb-1" />
-                    <span className="text-sm text-slate-800 shrink-0">{item.page}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <div
+              ref={canvasRef}
+              onMouseUp={handleDocMouseUp}
+              className={`doc-content p-16 ${selectedQuestion ? "cursor-text" : ""}`}
+              style={{ minHeight: "1056px" }}
+              dangerouslySetInnerHTML={{ __html: docHtml }}
+            />
           </div>
         </div>
       </div>
