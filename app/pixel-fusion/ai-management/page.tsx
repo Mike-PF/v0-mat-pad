@@ -778,32 +778,11 @@ function PromptsTab({
                   </div>
 
                   <div className="p-5 space-y-6">
-                    {/* Group questions — surfaced on every dashboard in the area, always
-                        shown first. Order them here for the whole area. */}
-                    <div className="space-y-2">
-                      <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
-                      {groupItems.length > 0 ? (
-                        <QuestionList
-                          questions={groupItems.map((x) => x.q)}
-                          areaActive={areaActive}
-                          hideScope
-                          onEdit={(i) => onEdit(area, groupItems[i].i)}
-                          onDelete={(i) => onDelete(area, groupItems[i].i)}
-                          onToggle={(i) => onToggle(area, groupItems[i].i)}
-                          onReorder={(from, to) => onReorderScoped(area, undefined, from, to)}
-                        />
-                      ) : (
-                        <p className="text-xs text-slate-400 py-1">
-                          No group questions yet. These are suggested on every dashboard in the area.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Per-dashboard order — only dashboards that actually have their own
-                        questions are listed, keeping the area compact. Use "Add dashboard
-                        question" to scope a new question to a specific dashboard. */}
+                    {/* Per-dashboard questions — these are the most important, so they are
+                        shown first. Only dashboards that actually have their own questions
+                        are listed, keeping the area compact. */}
                     {dashboards.length > 0 && (
-                      <div className="space-y-2 border-t border-slate-100 pt-5">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold text-slate-600">Dashboard-specific questions</p>
                           <Button
@@ -841,6 +820,27 @@ function PromptsTab({
                         )}
                       </div>
                     )}
+
+                    {/* Group questions — surfaced on every dashboard in the area. Shown after
+                        the dashboard-specific questions. Order them here for the whole area. */}
+                    <div className="space-y-2 border-t border-slate-100 pt-5">
+                      <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
+                      {groupItems.length > 0 ? (
+                        <QuestionList
+                          questions={groupItems.map((x) => x.q)}
+                          areaActive={areaActive}
+                          hideScope
+                          onEdit={(i) => onEdit(area, groupItems[i].i)}
+                          onDelete={(i) => onDelete(area, groupItems[i].i)}
+                          onToggle={(i) => onToggle(area, groupItems[i].i)}
+                          onReorder={(from, to) => onReorderScoped(area, undefined, from, to)}
+                        />
+                      ) : (
+                        <p className="text-xs text-slate-400 py-1">
+                          No group questions yet. These are suggested on every dashboard in the area.
+                        </p>
+                      )}
+                    </div>
 
                     {totalCount === 0 && dashboards.length === 0 && (
                       <p className="text-xs text-slate-400 py-2">
