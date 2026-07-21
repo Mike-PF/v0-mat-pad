@@ -462,19 +462,6 @@ export default function ConnectionManagementPage() {
         <main className="flex-1 px-4 pb-8 overflow-auto">
           <Card className="bg-white border-slate-200">
             <CardContent className="p-6">
-              {/* Header */}
-              <div className="flex items-start gap-3 mb-5">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "#B3008918" }}
-                >
-                  <Cable className="w-5 h-5" style={{ color: "#B30089" }} />
-                </div>
-                <div>
-                  <h1 className="text-lg font-semibold text-slate-900">Connection Management</h1>
-                </div>
-              </div>
-
               {/* Platform-wide summary chips */}
               <div className="flex flex-wrap items-center gap-2 text-xs mb-5">
                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 text-slate-600">
