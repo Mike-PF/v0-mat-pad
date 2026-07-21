@@ -218,13 +218,6 @@ export default function AiManagementPage() {
         </div>
         <main className="flex-1 overflow-y-auto px-4 pb-8">
           <div className="w-full">
-            {/* Header */}
-            <div className="flex items-start gap-3 mb-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">AI Management</h1>
-              </div>
-            </div>
-
             {/* Tabs */}
             <div className="flex items-center gap-1 border-b border-slate-200 mb-6">
               {tabs.map((t) => {
