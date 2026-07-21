@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  Search,
   Cable,
   CheckCircle2,
   XCircle,
@@ -501,13 +500,11 @@ export default function ConnectionManagementPage() {
               {!selected ? (
                 /* ---------------- Providers overview ---------------- */
                 <>
-                  <div className="relative mb-5 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <div className="mb-5 max-w-md">
                     <Input
-                      placeholder="Search providers by name, source or category..."
+                      placeholder="Search..."
                       value={providerSearch}
                       onChange={(e) => setProviderSearch(e.target.value)}
-                      className="pl-9"
                     />
                   </div>
 
@@ -671,16 +668,14 @@ export default function ConnectionManagementPage() {
 
                         {/* Drill-in filters */}
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                          <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <div className="flex-1">
                             <Input
-                              placeholder="Search by school name or URN..."
+                              placeholder="Search..."
                               value={connSearch}
                               onChange={(e) => {
                                 setConnSearch(e.target.value)
                                 setPage(1)
                               }}
-                              className="pl-9"
                             />
                           </div>
                           <Select
