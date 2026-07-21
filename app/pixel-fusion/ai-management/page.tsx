@@ -114,6 +114,9 @@ export default function AiManagementPage() {
   const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
+  // When true, the dialog is in "dashboard question" mode: the group ("all dashboards")
+  // scope is hidden so the admin must pick a specific dashboard.
+  const [dialogDashboardOnly, setDialogDashboardOnly] = useState(false)
   // Which question (area + list index) is being edited, so that if the admin changes
   // its area we can move it to the new area's list instead of editing it in place.
   const [editOrigin, setEditOrigin] = useState<{ area: string; index: number } | null>(null)
@@ -126,12 +129,13 @@ export default function AiManagementPage() {
 
   // `reportId` pre-selects a dashboard (used by the per-dashboard "Add question"
   // buttons); ALL_REPORTS pre-selects the group scope.
-  function openAdd(area?: string, reportId?: string) {
+  function openAdd(area?: string, reportId?: string, dashboardOnly = false) {
     setDialogArea(area ?? REPORT_AREAS[0])
     setDialogReport(reportId ?? "")
     setDialogIndex(null)
     setEditOrigin(null)
     setDialogText("")
+    setDialogDashboardOnly(dashboardOnly)
     setDialogOpen(true)
   }
 
@@ -142,6 +146,8 @@ export default function AiManagementPage() {
     setDialogIndex(index)
     setEditOrigin({ area, index })
     setDialogText(item?.text ?? "")
+    // Editing a dashboard-scoped question keeps it dashboard-only.
+    setDialogDashboardOnly(!!item?.reportId)
     setDialogOpen(true)
   }
 
@@ -265,12 +271,16 @@ export default function AiManagementPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
-            {dialogIndex === null ? "Add a question" : "Edit question"}
+            {dialogIndex === null
+              ? dialogDashboardOnly
+                ? "Add a dashboard question"
+                : "Add a question"
+              : "Edit question"}
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            Choose the report area this question belongs to, then optionally narrow it to a single report. Area
-            questions are suggested across every dashboard and report in that area; a report-specific question is only
-            suggested when that exact report is open.
+            {dialogDashboardOnly
+              ? "Choose the report area and the specific dashboard this question should be suggested on. It is only surfaced when that exact dashboard is open."
+              : "Choose the report area this question belongs to, then optionally narrow it to a single report. Area questions are suggested across every dashboard and report in that area; a report-specific question is only suggested when that exact report is open."}
           </p>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -299,7 +309,9 @@ export default function AiManagementPage() {
                   <SelectValue placeholder="Select a dashboard…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
+                  {!dialogDashboardOnly && (
+                    <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
+                  )}
                   {systemReportsForArea(dialogArea).map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}
@@ -310,7 +322,9 @@ export default function AiManagementPage() {
               <p className="text-xs text-slate-400">
                 {systemReportsForArea(dialogArea).length === 0
                   ? "No system dashboards sit under this area on the Dashboards page."
-                  : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
+                  : dialogDashboardOnly
+                    ? "Pick the dashboard this question should be suggested on."
+                    : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
               </p>
             </div>
             <div className="space-y-2">
@@ -550,7 +564,7 @@ function DashboardOrderSection({
   groupItems: PinnedQuestion[]
   dashItems: { q: PinnedQuestion; i: number }[]
   areaActive: number
-  onAdd: (area?: string, reportId?: string) => void
+  onAdd: (area?: string, reportId?: string, dashboardOnly?: boolean) => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
@@ -608,7 +622,7 @@ function DashboardOrderSection({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => onAdd(area, dashboard.id)}
+                onClick={() => onAdd(area, dashboard.id, true)}
                 className="h-8 bg-white text-xs font-medium text-slate-700"
               >
                 Add question
@@ -652,7 +666,7 @@ function PromptsTab({
   areaPinned: AreaPinned
   search: string
   setSearch: (v: string) => void
-  onAdd: (area?: string, reportId?: string) => void
+  onAdd: (area?: string, reportId?: string, dashboardOnly?: boolean) => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
@@ -712,6 +726,14 @@ function PromptsTab({
             // Group ("all dashboards") questions with their flat index in the area list.
             const groupItems = pinned.map((q, i) => ({ q, i })).filter((x) => !x.q.reportId)
             const dashboards = systemReportsForArea(area)
+            // Only dashboards that have at least one of their own questions, so the
+            // area doesn't list out every dashboard that has nothing attached.
+            const dashboardsWithQuestions = dashboards
+              .map((dashboard) => ({
+                dashboard,
+                dashItems: pinned.map((q, i) => ({ q, i })).filter((x) => x.q.reportId === dashboard.id),
+              }))
+              .filter((x) => x.dashItems.length > 0)
             return (
               <Card key={area} className="overflow-hidden">
                 <CardContent className="p-0">
@@ -769,19 +791,30 @@ function PromptsTab({
                       )}
                     </div>
 
-                    {/* Per-dashboard order — each dashboard shows the group questions first,
-                        then its own questions in an order you set for that dashboard. */}
+                    {/* Per-dashboard order — only dashboards that actually have their own
+                        questions are listed, keeping the area compact. Use "Add dashboard
+                        question" to scope a new question to a specific dashboard. */}
                     {dashboards.length > 0 && (
                       <div className="space-y-2 border-t border-slate-100 pt-5">
-                        <p className="text-xs font-semibold text-slate-600">Order per dashboard</p>
-                        <div className="space-y-2">
-                          {dashboards.map((d) => {
-                            const dashItems = pinned.map((q, i) => ({ q, i })).filter((x) => x.q.reportId === d.id)
-                            return (
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold text-slate-600">Dashboard-specific questions</p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onAdd(area, undefined, true)}
+                            className="h-8 bg-white text-xs font-medium text-slate-700"
+                          >
+                            Add dashboard question
+                          </Button>
+                        </div>
+                        {dashboardsWithQuestions.length > 0 ? (
+                          <div className="space-y-2">
+                            {dashboardsWithQuestions.map(({ dashboard, dashItems }) => (
                               <DashboardOrderSection
-                                key={d.id}
+                                key={dashboard.id}
                                 area={area}
-                                dashboard={d}
+                                dashboard={dashboard}
                                 groupItems={groupItems.map((x) => x.q)}
                                 dashItems={dashItems}
                                 areaActive={areaActive}
@@ -791,9 +824,13 @@ function PromptsTab({
                                 onToggle={onToggle}
                                 onReorderScoped={onReorderScoped}
                               />
-                            )
-                          })}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-400 py-1">
+                            No dashboard-specific questions yet. Add one to suggest it on a single dashboard.
+                          </p>
+                        )}
                       </div>
                     )}
 
