@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  Search,
   Plus,
   Trash2,
   Download,
@@ -224,10 +223,6 @@ export default function AiManagementPage() {
             <div className="flex items-start gap-3 mb-6">
               <div>
                 <h1 className="text-xl font-bold text-slate-900">AI Management</h1>
-                <p className="text-sm text-slate-500 mt-0.5">
-                  Attach AI questions to specific reports and dashboards. The chatbot tailors what it suggests on each
-                  page based on what users actually ask, and you can export the full question log for reporting.
-                </p>
               </div>
             </div>
 
@@ -696,13 +691,11 @@ function PromptsTab({
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="flex-1">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search report areas…"
-            className="pl-9"
+            placeholder="Search..."
           />
         </div>
         <Button onClick={() => onAdd()} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
@@ -1438,13 +1431,11 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
     <div className="space-y-4">
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div>
           <Input
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Search"
-            className="pl-9"
+            placeholder="Search..."
           />
         </div>
         <OrgPicker value={orgSel} onChange={setOrgSel} schools={schools} />
