@@ -537,7 +537,7 @@ export default function ConnectionManagementPage() {
                             >
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-16 h-9 flex-shrink-0 flex items-center justify-center rounded-md border border-slate-200 bg-white">
+                                  <div className="w-16 h-9 flex-shrink-0 flex items-center justify-center rounded-md bg-white">
                                     {p.logoImage ? (
                                       <Image
                                         src={p.logoImage}
