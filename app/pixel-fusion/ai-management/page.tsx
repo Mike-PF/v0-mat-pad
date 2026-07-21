@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  Plus,
   Trash2,
   Download,
   CheckCircle2,
@@ -619,7 +618,6 @@ function DashboardOrderSection({
                 onClick={() => onAdd(area, dashboard.id)}
                 className="h-8 bg-white text-xs font-medium text-slate-700"
               >
-                <Plus className="w-3.5 h-3.5 mr-1" />
                 Add question
               </Button>
             </div>
@@ -699,7 +697,6 @@ function PromptsTab({
           />
         </div>
         <Button onClick={() => onAdd()} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-          <Plus className="w-4 h-4 mr-1.5" />
           Add question
         </Button>
       </div>
@@ -759,8 +756,7 @@ function PromptsTab({
                           onClick={() => onAdd(area, ALL_REPORTS)}
                           className="h-8 bg-white text-xs font-medium text-slate-700"
                         >
-                          <Plus className="w-3.5 h-3.5 mr-1" />
-                          Add group question
+                Add group question
                         </Button>
                       </div>
                       {groupItems.length > 0 ? (
