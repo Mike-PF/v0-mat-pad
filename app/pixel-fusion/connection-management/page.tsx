@@ -820,10 +820,10 @@ export default function ConnectionManagementPage() {
 
       {/* Connection detail dialog */}
       <Dialog open={!!detailConn} onOpenChange={(open) => !open && setDetailConn(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           {detailConn && (
             <>
-              <div className="flex items-start justify-between gap-3 mb-1">
+              <div className="flex items-start justify-between gap-3 mb-1 pr-8">
                 <div>
                   <h2 className="text-base font-semibold text-slate-900">{detailConn.school}</h2>
                   <p className="text-xs text-slate-400">
