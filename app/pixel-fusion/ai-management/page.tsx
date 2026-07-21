@@ -114,6 +114,11 @@ export default function AiManagementPage() {
   const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
+  // Which form the dialog shows:
+  //  - "any": both Report area + Dashboard fields (top toolbar add / edit)
+  //  - "group": whole-area question — Dashboard field hidden
+  //  - "dashboard": single-dashboard question — Report area field hidden (already known)
+  const [dialogMode, setDialogMode] = useState<"any" | "group" | "dashboard">("any")
   // Which question (area + list index) is being edited, so that if the admin changes
   // its area we can move it to the new area's list instead of editing it in place.
   const [editOrigin, setEditOrigin] = useState<{ area: string; index: number } | null>(null)
@@ -125,13 +130,15 @@ export default function AiManagementPage() {
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
 
   // `reportId` pre-selects a dashboard (used by the per-dashboard "Add question"
-  // buttons); ALL_REPORTS pre-selects the group scope.
-  function openAdd(area?: string, reportId?: string) {
+  // buttons); ALL_REPORTS pre-selects the group scope. `mode` controls which fields
+  // the form shows.
+  function openAdd(area?: string, reportId?: string, mode: "any" | "group" | "dashboard" = "any") {
     setDialogArea(area ?? REPORT_AREAS[0])
     setDialogReport(reportId ?? "")
     setDialogIndex(null)
     setEditOrigin(null)
     setDialogText("")
+    setDialogMode(mode)
     setDialogOpen(true)
   }
 
@@ -142,6 +149,8 @@ export default function AiManagementPage() {
     setDialogIndex(index)
     setEditOrigin({ area, index })
     setDialogText(item?.text ?? "")
+    // Edits show both fields so the question can be re-scoped or moved.
+    setDialogMode("any")
     setDialogOpen(true)
   }
 
@@ -265,54 +274,74 @@ export default function AiManagementPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
-            {dialogIndex === null ? "Add a question" : "Edit question"}
+            {dialogIndex === null
+              ? dialogMode === "dashboard"
+                ? "Add a dashboard question"
+                : dialogMode === "group"
+                  ? "Add a group question"
+                  : "Add a question"
+              : "Edit question"}
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            Choose the report area this question belongs to, then optionally narrow it to a single report. Area
-            questions are suggested across every dashboard and report in that area; a report-specific question is only
-            suggested when that exact report is open.
+            {dialogMode === "dashboard"
+              ? "Pick the dashboard this question should be suggested on. It is only surfaced when that exact dashboard is open."
+              : dialogMode === "group"
+                ? "This question is suggested across every dashboard and report in the area."
+                : "Choose the report area this question belongs to, then optionally narrow it to a single report. Area questions are suggested across every dashboard and report in that area; a report-specific question is only suggested when that exact report is open."}
           </p>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="question-area">
-                Report area<span className="text-red-500">*</span>
-              </Label>
-              <Select value={dialogArea} onValueChange={handleDialogAreaChange}>
-                <SelectTrigger id="question-area">
-                  <SelectValue placeholder="Select a report area…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REPORT_AREAS.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="question-report">
-                Dashboard<span className="text-red-500">*</span>
-              </Label>
-              <Select value={dialogReport} onValueChange={setDialogReport}>
-                <SelectTrigger id="question-report">
-                  <SelectValue placeholder="Select a dashboard…" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
-                  {systemReportsForArea(dialogArea).map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-slate-400">
-                {systemReportsForArea(dialogArea).length === 0
-                  ? "No system dashboards sit under this area on the Dashboards page."
-                  : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
+            {dialogMode === "dashboard" ? (
+              <p className="text-xs text-slate-500">
+                Report area: <span className="font-medium text-slate-700">{dialogArea}</span>
               </p>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="question-area">
+                  Report area<span className="text-red-500">*</span>
+                </Label>
+                <Select value={dialogArea} onValueChange={handleDialogAreaChange}>
+                  <SelectTrigger id="question-area">
+                    <SelectValue placeholder="Select a report area…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REPORT_AREAS.map((area) => (
+                      <SelectItem key={area} value={area}>
+                        {area}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {dialogMode !== "group" && (
+              <div className="space-y-2">
+                <Label htmlFor="question-report">
+                  Dashboard<span className="text-red-500">*</span>
+                </Label>
+                <Select value={dialogReport} onValueChange={setDialogReport}>
+                  <SelectTrigger id="question-report">
+                    <SelectValue placeholder="Select a dashboard…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dialogMode === "any" && (
+                      <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
+                    )}
+                    {systemReportsForArea(dialogArea).map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-400">
+                  {systemReportsForArea(dialogArea).length === 0
+                    ? "No system dashboards sit under this area on the Dashboards page."
+                    : dialogMode === "dashboard"
+                      ? "Pick the dashboard this question should be suggested on."
+                      : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="question-text">
                 Question<span className="text-red-500">*</span>
@@ -550,7 +579,7 @@ function DashboardOrderSection({
   groupItems: PinnedQuestion[]
   dashItems: { q: PinnedQuestion; i: number }[]
   areaActive: number
-  onAdd: (area?: string, reportId?: string) => void
+  onAdd: (area?: string, reportId?: string, mode?: "any" | "group" | "dashboard") => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
@@ -582,38 +611,10 @@ function DashboardOrderSection({
 
       {open && (
         <div className="px-3 pb-3 pt-1 space-y-3 border-t border-slate-100">
-          {/* Group questions — shown first, ordered at the group level. */}
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Group questions (shown first)</p>
-            {activeGroup.length === 0 ? (
-              <p className="text-xs text-slate-400">No active group questions.</p>
-            ) : (
-              activeGroup.map((q, i) => (
-                <div
-                  key={`${q.text}-${i}`}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-slate-50 text-xs text-slate-500"
-                >
-                  <span className="flex-1 min-w-0 truncate">{q.text}</span>
-                  <span className="text-[10px] text-slate-400 shrink-0">Group</span>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* This dashboard's own questions — ordered independently. */}
+          {/* This dashboard's own questions — the most important, shown first and
+              ordered independently. */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onAdd(area, dashboard.id)}
-                className="h-8 bg-white text-xs font-medium text-slate-700"
-              >
-                Add question
-              </Button>
-            </div>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard (shown first)</p>
             {dashItems.length > 0 ? (
               <QuestionList
                 questions={dashItems.map((x) => x.q)}
@@ -629,6 +630,24 @@ function DashboardOrderSection({
               <p className="text-xs text-slate-400">
                 No dashboard-specific questions yet. Add one to suggest it only on {dashboard.name}.
               </p>
+            )}
+          </div>
+
+          {/* Group questions — shown after the dashboard's own questions. */}
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Group questions</p>
+            {activeGroup.length === 0 ? (
+              <p className="text-xs text-slate-400">No active group questions.</p>
+            ) : (
+              activeGroup.map((q, i) => (
+                <div
+                  key={`${q.text}-${i}`}
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-slate-50 text-xs text-slate-500"
+                >
+                  <span className="flex-1 min-w-0 truncate">{q.text}</span>
+                  <span className="text-[10px] text-slate-400 shrink-0">Group</span>
+                </div>
+              ))
             )}
           </div>
         </div>
@@ -652,7 +671,7 @@ function PromptsTab({
   areaPinned: AreaPinned
   search: string
   setSearch: (v: string) => void
-  onAdd: (area?: string, reportId?: string) => void
+  onAdd: (area?: string, reportId?: string, mode?: "any" | "group" | "dashboard") => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
@@ -689,8 +708,12 @@ function PromptsTab({
             placeholder="Search..."
           />
         </div>
-        <Button onClick={() => onAdd()} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-          Add question
+        <Button
+          onClick={() => onAdd(undefined, ALL_REPORTS, "group")}
+          className="text-white shrink-0"
+          style={{ backgroundColor: NAVY }}
+        >
+          Add Group Question
         </Button>
       </div>
 
@@ -712,6 +735,14 @@ function PromptsTab({
             // Group ("all dashboards") questions with their flat index in the area list.
             const groupItems = pinned.map((q, i) => ({ q, i })).filter((x) => !x.q.reportId)
             const dashboards = systemReportsForArea(area)
+            // Only dashboards that have at least one of their own questions, so the
+            // area doesn't list out every dashboard that has nothing attached.
+            const dashboardsWithQuestions = dashboards
+              .map((dashboard) => ({
+                dashboard,
+                dashItems: pinned.map((q, i) => ({ q, i })).filter((x) => x.q.reportId === dashboard.id),
+              }))
+              .filter((x) => x.dashItems.length > 0)
             return (
               <Card key={area} className="overflow-hidden">
                 <CardContent className="p-0">
@@ -737,21 +768,53 @@ function PromptsTab({
                   </div>
 
                   <div className="p-5 space-y-6">
-                    {/* Group questions — surfaced on every dashboard in the area, always
-                        shown first. Order them here for the whole area. */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onAdd(area, ALL_REPORTS)}
-                          className="h-8 bg-white text-xs font-medium text-slate-700"
-                        >
-                Add group question
-                        </Button>
+                    {/* Per-dashboard questions — these are the most important, so they are
+                        shown first. Only dashboards that actually have their own questions
+                        are listed, keeping the area compact. */}
+                    {dashboards.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold text-slate-600">Dashboard-specific questions</p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onAdd(area, undefined, "dashboard")}
+                            className="h-8 bg-white text-xs font-medium text-slate-700"
+                          >
+                            Add dashboard question
+                          </Button>
+                        </div>
+                        {dashboardsWithQuestions.length > 0 ? (
+                          <div className="space-y-2">
+                            {dashboardsWithQuestions.map(({ dashboard, dashItems }) => (
+                              <DashboardOrderSection
+                                key={dashboard.id}
+                                area={area}
+                                dashboard={dashboard}
+                                groupItems={groupItems.map((x) => x.q)}
+                                dashItems={dashItems}
+                                areaActive={areaActive}
+                                onAdd={onAdd}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                onToggle={onToggle}
+                                onReorderScoped={onReorderScoped}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-400 py-1">
+                            No dashboard-specific questions yet. Add one to suggest it on a single dashboard.
+                          </p>
+                        )}
                       </div>
+                    )}
+
+                    {/* Group questions — surfaced on every dashboard in the area. Shown after
+                        the dashboard-specific questions. Order them here for the whole area. */}
+                    <div className="space-y-2 border-t border-slate-100 pt-5">
+                      <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
                       {groupItems.length > 0 ? (
                         <QuestionList
                           questions={groupItems.map((x) => x.q)}
@@ -768,34 +831,6 @@ function PromptsTab({
                         </p>
                       )}
                     </div>
-
-                    {/* Per-dashboard order — each dashboard shows the group questions first,
-                        then its own questions in an order you set for that dashboard. */}
-                    {dashboards.length > 0 && (
-                      <div className="space-y-2 border-t border-slate-100 pt-5">
-                        <p className="text-xs font-semibold text-slate-600">Order per dashboard</p>
-                        <div className="space-y-2">
-                          {dashboards.map((d) => {
-                            const dashItems = pinned.map((q, i) => ({ q, i })).filter((x) => x.q.reportId === d.id)
-                            return (
-                              <DashboardOrderSection
-                                key={d.id}
-                                area={area}
-                                dashboard={d}
-                                groupItems={groupItems.map((x) => x.q)}
-                                dashItems={dashItems}
-                                areaActive={areaActive}
-                                onAdd={onAdd}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                onToggle={onToggle}
-                                onReorderScoped={onReorderScoped}
-                              />
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
 
                     {totalCount === 0 && dashboards.length === 0 && (
                       <p className="text-xs text-slate-400 py-2">
