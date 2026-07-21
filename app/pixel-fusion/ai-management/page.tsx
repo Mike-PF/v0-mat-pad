@@ -611,27 +611,10 @@ function DashboardOrderSection({
 
       {open && (
         <div className="px-3 pb-3 pt-1 space-y-3 border-t border-slate-100">
-          {/* Group questions — shown first, ordered at the group level. */}
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Group questions (shown first)</p>
-            {activeGroup.length === 0 ? (
-              <p className="text-xs text-slate-400">No active group questions.</p>
-            ) : (
-              activeGroup.map((q, i) => (
-                <div
-                  key={`${q.text}-${i}`}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-slate-50 text-xs text-slate-500"
-                >
-                  <span className="flex-1 min-w-0 truncate">{q.text}</span>
-                  <span className="text-[10px] text-slate-400 shrink-0">Group</span>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* This dashboard's own questions — ordered independently. */}
+          {/* This dashboard's own questions — the most important, shown first and
+              ordered independently. */}
           <div className="space-y-2">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard (shown first)</p>
             {dashItems.length > 0 ? (
               <QuestionList
                 questions={dashItems.map((x) => x.q)}
@@ -647,6 +630,24 @@ function DashboardOrderSection({
               <p className="text-xs text-slate-400">
                 No dashboard-specific questions yet. Add one to suggest it only on {dashboard.name}.
               </p>
+            )}
+          </div>
+
+          {/* Group questions — shown after the dashboard's own questions. */}
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Group questions</p>
+            {activeGroup.length === 0 ? (
+              <p className="text-xs text-slate-400">No active group questions.</p>
+            ) : (
+              activeGroup.map((q, i) => (
+                <div
+                  key={`${q.text}-${i}`}
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-slate-50 text-xs text-slate-500"
+                >
+                  <span className="flex-1 min-w-0 truncate">{q.text}</span>
+                  <span className="text-[10px] text-slate-400 shrink-0">Group</span>
+                </div>
+              ))
             )}
           </div>
         </div>
