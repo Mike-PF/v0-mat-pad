@@ -631,18 +631,7 @@ function DashboardOrderSection({
 
           {/* This dashboard's own questions — ordered independently. */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onAdd(area, dashboard.id, "dashboard")}
-                className="h-8 bg-white text-xs font-medium text-slate-700"
-              >
-                Add question
-              </Button>
-            </div>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Only on this dashboard</p>
             {dashItems.length > 0 ? (
               <QuestionList
                 questions={dashItems.map((x) => x.q)}
