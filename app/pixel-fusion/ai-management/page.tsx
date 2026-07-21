@@ -718,8 +718,12 @@ function PromptsTab({
             placeholder="Search..."
           />
         </div>
-        <Button onClick={() => onAdd()} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-          Add question
+        <Button
+          onClick={() => onAdd(undefined, ALL_REPORTS, "group")}
+          className="text-white shrink-0"
+          style={{ backgroundColor: NAVY }}
+        >
+          Add Group Question
         </Button>
       </div>
 
@@ -777,18 +781,7 @@ function PromptsTab({
                     {/* Group questions — surfaced on every dashboard in the area, always
                         shown first. Order them here for the whole area. */}
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onAdd(area, ALL_REPORTS, "group")}
-                          className="h-8 bg-white text-xs font-medium text-slate-700"
-                        >
-                Add group question
-                        </Button>
-                      </div>
+                      <div className="text-xs font-semibold text-slate-600">All dashboards in this area</div>
                       {groupItems.length > 0 ? (
                         <QuestionList
                           questions={groupItems.map((x) => x.q)}
