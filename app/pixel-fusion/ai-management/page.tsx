@@ -114,9 +114,11 @@ export default function AiManagementPage() {
   const [dialogReport, setDialogReport] = useState<string>("")
   const [dialogIndex, setDialogIndex] = useState<number | null>(null) // null = adding new
   const [dialogText, setDialogText] = useState("")
-  // When true, the dialog is in "dashboard question" mode: the group ("all dashboards")
-  // scope is hidden so the admin must pick a specific dashboard.
-  const [dialogDashboardOnly, setDialogDashboardOnly] = useState(false)
+  // Which form the dialog shows:
+  //  - "any": both Report area + Dashboard fields (top toolbar add / edit)
+  //  - "group": whole-area question — Dashboard field hidden
+  //  - "dashboard": single-dashboard question — Report area field hidden (already known)
+  const [dialogMode, setDialogMode] = useState<"any" | "group" | "dashboard">("any")
   // Which question (area + list index) is being edited, so that if the admin changes
   // its area we can move it to the new area's list instead of editing it in place.
   const [editOrigin, setEditOrigin] = useState<{ area: string; index: number } | null>(null)
@@ -128,14 +130,15 @@ export default function AiManagementPage() {
   const grandTotal = useMemo(() => totalAsks(asks), [asks])
 
   // `reportId` pre-selects a dashboard (used by the per-dashboard "Add question"
-  // buttons); ALL_REPORTS pre-selects the group scope.
-  function openAdd(area?: string, reportId?: string, dashboardOnly = false) {
+  // buttons); ALL_REPORTS pre-selects the group scope. `mode` controls which fields
+  // the form shows.
+  function openAdd(area?: string, reportId?: string, mode: "any" | "group" | "dashboard" = "any") {
     setDialogArea(area ?? REPORT_AREAS[0])
     setDialogReport(reportId ?? "")
     setDialogIndex(null)
     setEditOrigin(null)
     setDialogText("")
-    setDialogDashboardOnly(dashboardOnly)
+    setDialogMode(mode)
     setDialogOpen(true)
   }
 
@@ -146,8 +149,8 @@ export default function AiManagementPage() {
     setDialogIndex(index)
     setEditOrigin({ area, index })
     setDialogText(item?.text ?? "")
-    // Editing a dashboard-scoped question keeps it dashboard-only.
-    setDialogDashboardOnly(!!item?.reportId)
+    // Edits show both fields so the question can be re-scoped or moved.
+    setDialogMode("any")
     setDialogOpen(true)
   }
 
@@ -272,61 +275,73 @@ export default function AiManagementPage() {
         <DialogContent className="max-w-lg">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
             {dialogIndex === null
-              ? dialogDashboardOnly
+              ? dialogMode === "dashboard"
                 ? "Add a dashboard question"
-                : "Add a question"
+                : dialogMode === "group"
+                  ? "Add a group question"
+                  : "Add a question"
               : "Edit question"}
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            {dialogDashboardOnly
-              ? "Choose the report area and the specific dashboard this question should be suggested on. It is only surfaced when that exact dashboard is open."
-              : "Choose the report area this question belongs to, then optionally narrow it to a single report. Area questions are suggested across every dashboard and report in that area; a report-specific question is only suggested when that exact report is open."}
+            {dialogMode === "dashboard"
+              ? "Pick the dashboard this question should be suggested on. It is only surfaced when that exact dashboard is open."
+              : dialogMode === "group"
+                ? "This question is suggested across every dashboard and report in the area."
+                : "Choose the report area this question belongs to, then optionally narrow it to a single report. Area questions are suggested across every dashboard and report in that area; a report-specific question is only suggested when that exact report is open."}
           </p>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="question-area">
-                Report area<span className="text-red-500">*</span>
-              </Label>
-              <Select value={dialogArea} onValueChange={handleDialogAreaChange}>
-                <SelectTrigger id="question-area">
-                  <SelectValue placeholder="Select a report area…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REPORT_AREAS.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="question-report">
-                Dashboard<span className="text-red-500">*</span>
-              </Label>
-              <Select value={dialogReport} onValueChange={setDialogReport}>
-                <SelectTrigger id="question-report">
-                  <SelectValue placeholder="Select a dashboard…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {!dialogDashboardOnly && (
-                    <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
-                  )}
-                  {systemReportsForArea(dialogArea).map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-slate-400">
-                {systemReportsForArea(dialogArea).length === 0
-                  ? "No system dashboards sit under this area on the Dashboards page."
-                  : dialogDashboardOnly
-                    ? "Pick the dashboard this question should be suggested on."
-                    : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
+            {dialogMode === "dashboard" ? (
+              <p className="text-xs text-slate-500">
+                Report area: <span className="font-medium text-slate-700">{dialogArea}</span>
               </p>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="question-area">
+                  Report area<span className="text-red-500">*</span>
+                </Label>
+                <Select value={dialogArea} onValueChange={handleDialogAreaChange}>
+                  <SelectTrigger id="question-area">
+                    <SelectValue placeholder="Select a report area…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REPORT_AREAS.map((area) => (
+                      <SelectItem key={area} value={area}>
+                        {area}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {dialogMode !== "group" && (
+              <div className="space-y-2">
+                <Label htmlFor="question-report">
+                  Dashboard<span className="text-red-500">*</span>
+                </Label>
+                <Select value={dialogReport} onValueChange={setDialogReport}>
+                  <SelectTrigger id="question-report">
+                    <SelectValue placeholder="Select a dashboard…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dialogMode === "any" && (
+                      <SelectItem value={ALL_REPORTS}>All dashboards in this area</SelectItem>
+                    )}
+                    {systemReportsForArea(dialogArea).map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-400">
+                  {systemReportsForArea(dialogArea).length === 0
+                    ? "No system dashboards sit under this area on the Dashboards page."
+                    : dialogMode === "dashboard"
+                      ? "Pick the dashboard this question should be suggested on."
+                      : "Choose “All dashboards in this area” to suggest it everywhere in the area, or pick one dashboard to scope it."}
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="question-text">
                 Question<span className="text-red-500">*</span>
@@ -564,7 +579,7 @@ function DashboardOrderSection({
   groupItems: PinnedQuestion[]
   dashItems: { q: PinnedQuestion; i: number }[]
   areaActive: number
-  onAdd: (area?: string, reportId?: string, dashboardOnly?: boolean) => void
+  onAdd: (area?: string, reportId?: string, mode?: "any" | "group" | "dashboard") => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
@@ -622,7 +637,7 @@ function DashboardOrderSection({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => onAdd(area, dashboard.id, true)}
+                onClick={() => onAdd(area, dashboard.id, "dashboard")}
                 className="h-8 bg-white text-xs font-medium text-slate-700"
               >
                 Add question
@@ -666,7 +681,7 @@ function PromptsTab({
   areaPinned: AreaPinned
   search: string
   setSearch: (v: string) => void
-  onAdd: (area?: string, reportId?: string, dashboardOnly?: boolean) => void
+  onAdd: (area?: string, reportId?: string, mode?: "any" | "group" | "dashboard") => void
   onEdit: (area: string, index: number) => void
   onDelete: (area: string, index: number) => void
   onToggle: (area: string, index: number) => void
@@ -768,7 +783,7 @@ function PromptsTab({
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => onAdd(area, ALL_REPORTS)}
+                          onClick={() => onAdd(area, ALL_REPORTS, "group")}
                           className="h-8 bg-white text-xs font-medium text-slate-700"
                         >
                 Add group question
@@ -802,7 +817,7 @@ function PromptsTab({
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => onAdd(area, undefined, true)}
+                            onClick={() => onAdd(area, undefined, "dashboard")}
                             className="h-8 bg-white text-xs font-medium text-slate-700"
                           >
                             Add dashboard question
