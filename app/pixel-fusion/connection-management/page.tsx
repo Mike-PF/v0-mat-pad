@@ -31,8 +31,7 @@ import {
   ChevronLeft,
   ArrowLeft,
   School,
-  Building2,
-} from "lucide-react"
+  } from "lucide-react"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
 
 const NAVY = "#121051"
@@ -480,11 +479,9 @@ export default function ConnectionManagementPage() {
               {/* Platform-wide summary chips */}
               <div className="flex flex-wrap items-center gap-2 text-xs mb-5">
                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 text-slate-600">
-                  <Building2 className="w-3.5 h-3.5" />
                   {providers.length} providers
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 text-slate-600">
-                  <School className="w-3.5 h-3.5" />
                   {totals.total.toLocaleString()} connections
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-50 text-green-700">
