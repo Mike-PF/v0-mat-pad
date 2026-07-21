@@ -690,8 +690,8 @@ function PromptsTab({
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="w-full sm:max-w-xs">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
