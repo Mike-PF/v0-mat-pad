@@ -16,8 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  Search,
-  Plus,
   Trash2,
   Download,
   CheckCircle2,
@@ -220,17 +218,6 @@ export default function AiManagementPage() {
         </div>
         <main className="flex-1 overflow-y-auto px-4 pb-8">
           <div className="w-full">
-            {/* Header */}
-            <div className="flex items-start gap-3 mb-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">AI Management</h1>
-                <p className="text-sm text-slate-500 mt-0.5">
-                  Attach AI questions to specific reports and dashboards. The chatbot tailors what it suggests on each
-                  page based on what users actually ask, and you can export the full question log for reporting.
-                </p>
-              </div>
-            </div>
-
             {/* Tabs */}
             <div className="flex items-center gap-1 border-b border-slate-200 mb-6">
               {tabs.map((t) => {
@@ -624,7 +611,6 @@ function DashboardOrderSection({
                 onClick={() => onAdd(area, dashboard.id)}
                 className="h-8 bg-white text-xs font-medium text-slate-700"
               >
-                <Plus className="w-3.5 h-3.5 mr-1" />
                 Add question
               </Button>
             </div>
@@ -695,18 +681,15 @@ function PromptsTab({
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="w-full sm:max-w-xs">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search report areas…"
-            className="pl-9"
+            placeholder="Search..."
           />
         </div>
         <Button onClick={() => onAdd()} className="text-white shrink-0" style={{ backgroundColor: NAVY }}>
-          <Plus className="w-4 h-4 mr-1.5" />
           Add question
         </Button>
       </div>
@@ -766,8 +749,7 @@ function PromptsTab({
                           onClick={() => onAdd(area, ALL_REPORTS)}
                           className="h-8 bg-white text-xs font-medium text-slate-700"
                         >
-                          <Plus className="w-3.5 h-3.5 mr-1" />
-                          Add group question
+                Add group question
                         </Button>
                       </div>
                       {groupItems.length > 0 ? (
@@ -1438,13 +1420,11 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
     <div className="space-y-4">
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div>
           <Input
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Search"
-            className="pl-9"
+            placeholder="Search..."
           />
         </div>
         <OrgPicker value={orgSel} onChange={setOrgSel} schools={schools} />

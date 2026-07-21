@@ -41,6 +41,7 @@ export function TopNavigation() {
         { id: "system-help", label: "System Help", href: "/pixel-fusion/system-help" },
         { id: "system-notifications", label: "System Notifications", href: "/pixel-fusion/system-notifications" },
         { id: "ai-management", label: "AI Management", href: "/pixel-fusion/ai-management" },
+        { id: "connection-management", label: "Connection Management", href: "/pixel-fusion/connection-management" },
       ]
     }
 
