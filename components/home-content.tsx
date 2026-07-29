@@ -97,27 +97,152 @@ const schoolsOverview = [
   },
 ]
 
-// Ofsted data
-const ofstedData = [
-  { name: "All Saints' Catholic High School", abbr: "ASHS", judgement: "Good", date: "Mar 2023" },
-  { name: "Emmaus Catholic Primary School", abbr: "ECPS", judgement: "Outstanding", date: "Sep 2022" },
-  { name: "Notre Dame High School", abbr: "NDHS", judgement: "Requires Improvement", date: "Jan 2024" },
+// Ofsted judgements, ordered by concern (worst first) so "needs attention" surfaces at the top.
+const OFSTED_JUDGEMENTS = ["Inadequate", "Requires Improvement", "Good", "Outstanding"] as const
+type OfstedJudgement = (typeof OFSTED_JUDGEMENTS)[number]
+
+interface OfstedSchool {
+  name: string
+  abbr: string
+  judgement: OfstedJudgement
+  date: string
+}
+
+// Build a realistic MAT-sized dataset. Deterministic so it stays stable across renders.
+const SAINT_NAMES = [
+  "All Saints",
+  "St Aidan",
+  "St Bede",
+  "St Cuthbert",
+  "St Dominic",
+  "St Edmund",
+  "St Francis",
+  "St Gregory",
+  "St Hilda",
+  "St Ignatius",
+  "St John Fisher",
+  "St Katherine",
+  "St Leonard",
+  "St Margaret",
+  "St Nicholas",
+  "St Oswald",
+  "St Patrick",
+  "St Ralph",
+  "St Teresa",
+  "St Ursula",
+  "St Vincent",
+  "St Wilfrid",
+  "Blessed Sacrament",
+  "Holy Cross",
+  "Holy Family",
+  "Christ the King",
+  "Corpus Christi",
+  "Emmaus",
+  "Good Shepherd",
+  "Notre Dame",
+  "Our Lady",
+  "Sacred Heart",
 ]
+const SCHOOL_TYPES = [
+  "Catholic Primary School",
+  "Catholic High School",
+  "Catholic Voluntary Academy",
+  "Catholic Junior School",
+  "Catholic Infant School",
+]
+
+function buildOfstedData(count: number): OfstedSchool[] {
+  // Weighted, realistic distribution (mostly Good, some Outstanding, fewer concerns).
+  const pattern: OfstedJudgement[] = [
+    "Good",
+    "Good",
+    "Outstanding",
+    "Good",
+    "Requires Improvement",
+    "Good",
+    "Good",
+    "Outstanding",
+    "Good",
+    "Requires Improvement",
+    "Good",
+    "Good",
+    "Outstanding",
+    "Good",
+    "Inadequate",
+    "Good",
+    "Good",
+    "Requires Improvement",
+    "Good",
+    "Outstanding",
+  ]
+  const months = ["Jan", "Mar", "May", "Jun", "Sep", "Nov"]
+  const schools: OfstedSchool[] = []
+  for (let i = 0; i < count; i++) {
+    const saint = SAINT_NAMES[i % SAINT_NAMES.length]
+    const type = SCHOOL_TYPES[Math.floor(i / SAINT_NAMES.length) % SCHOOL_TYPES.length]
+    const name = `${saint} ${type}`
+    const abbr = saint
+      .replace(/^St /, "")
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+    const judgement = pattern[i % pattern.length]
+    const year = 2021 + (i % 4)
+    const month = months[i % months.length]
+    schools.push({ name, abbr, judgement, date: `${month} ${year}` })
+  }
+  return schools
+}
+
+// Change this number to scale the trust size (handles 5, 10, 50, 66, ...).
+const ofstedData: OfstedSchool[] = buildOfstedData(66)
 
 const getOfstedColor = (judgement: string) => {
   switch (judgement) {
     case "Outstanding":
-      return { bg: "bg-emerald-100", text: "text-emerald-700" }
+      return { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500", bar: "bg-emerald-500" }
     case "Good":
-      return { bg: "bg-blue-100", text: "text-blue-700" }
+      return { bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-500", bar: "bg-blue-500" }
     case "Requires Improvement":
-      return { bg: "bg-amber-100", text: "text-amber-700" }
+      return { bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-500", bar: "bg-amber-500" }
     case "Inadequate":
-      return { bg: "bg-red-100", text: "text-red-700" }
+      return { bg: "bg-red-100", text: "text-red-700", dot: "bg-red-500", bar: "bg-red-500" }
     default:
-      return { bg: "bg-slate-100", text: "text-slate-700" }
+      return { bg: "bg-slate-100", text: "text-slate-700", dot: "bg-slate-400", bar: "bg-slate-400" }
   }
 }
+
+const ofstedShortLabel = (judgement: string) => {
+  switch (judgement) {
+    case "Requires Improvement":
+      return "RI"
+    default:
+      return judgement
+  }
+}
+
+// Ordering index used to surface concerns (Inadequate → RI) first when listing schools.
+const ofstedConcernOrder: Record<OfstedJudgement, number> = {
+  Inadequate: 0,
+  "Requires Improvement": 1,
+  Good: 2,
+  Outstanding: 3,
+}
+
+const ofstedTotal = ofstedData.length
+const ofstedCounts = OFSTED_JUDGEMENTS.map((judgement) => ({
+  judgement,
+  count: ofstedData.filter((s) => s.judgement === judgement).length,
+})).filter((c) => c.count > 0)
+const ofstedSorted = [...ofstedData].sort((a, b) => {
+  const order = ofstedConcernOrder[a.judgement] - ofstedConcernOrder[b.judgement]
+  return order !== 0 ? order : a.name.localeCompare(b.name)
+})
+const ofstedConcernCount = ofstedData.filter(
+  (s) => s.judgement === "Inadequate" || s.judgement === "Requires Improvement",
+).length
 
 export function HomeContent() {
   const [selectedTab, setSelectedTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
@@ -552,40 +677,77 @@ export function HomeContent() {
         </CardContent>
       </Card>
 
-      {/* Ofsted Section - Simplified */}
+      {/* Ofsted Section - scales from a handful of schools to a full trust */}
       <Card className="bg-white border-slate-200">
         <CardHeader className="pb-3 px-5 pt-5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-slate-400" />
               <CardTitle className="text-sm font-semibold text-slate-900">Ofsted Judgements</CardTitle>
+              <span className="text-xs text-slate-400">{ofstedTotal} schools</span>
             </div>
             <span className="text-xs text-slate-400">Note: Subject to change with new framework</span>
           </div>
         </CardHeader>
-        <CardContent className="px-5 pb-5">
-          <div className="flex items-center gap-4">
-            {ofstedData.map((school) => {
+        <CardContent className="px-5 pb-5 space-y-4">
+          {/* Distribution summary — a proportion bar plus per-judgement counts */}
+          <div className="space-y-2">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+              {ofstedCounts.map(({ judgement, count }) => (
+                <div
+                  key={judgement}
+                  className={getOfstedColor(judgement).bar}
+                  style={{ width: `${(count / ofstedTotal) * 100}%` }}
+                  title={`${judgement}: ${count}`}
+                />
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              {ofstedCounts.map(({ judgement, count }) => {
+                const colors = getOfstedColor(judgement)
+                return (
+                  <div key={judgement} className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                    <span className="text-xs text-slate-600">{judgement}</span>
+                    <span className="text-xs font-semibold text-slate-900">{count}</span>
+                  </div>
+                )
+              })}
+              {ofstedConcernCount > 0 && (
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-xs font-medium text-amber-700">
+                    {ofstedConcernCount} need attention
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Compact, scrollable school list — concerns surface first */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
+            {ofstedSorted.map((school) => {
               const colors = getOfstedColor(school.judgement)
-              const isRI = school.judgement === "Requires Improvement"
+              const isConcern =
+                school.judgement === "Requires Improvement" || school.judgement === "Inadequate"
               return (
                 <div
                   key={school.name}
-                  className="flex-1 flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white" style={{ backgroundColor: ACCENT }}>
-                      {school.abbr.substring(0, 2)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">{school.name}</p>
-                      <p className="text-xs text-slate-400">Last inspected: {school.date}</p>
-                    </div>
+                  <span className={`w-1.5 self-stretch rounded-full shrink-0 ${colors.dot}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-slate-800 truncate" title={school.name}>
+                      {school.name}
+                    </p>
+                    <p className="text-[11px] text-slate-400">Inspected {school.date}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {isRI && <AlertTriangle className="w-4 h-4 text-amber-500" />}
-                    <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${colors.bg} ${colors.text}`}>
-                      {school.judgement}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {isConcern && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${colors.bg} ${colors.text}`}
+                    >
+                      {ofstedShortLabel(school.judgement)}
                     </span>
                   </div>
                 </div>
