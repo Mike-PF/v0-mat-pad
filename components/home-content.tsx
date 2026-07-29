@@ -247,6 +247,9 @@ const ofstedConcernCount = ofstedData.filter(
 export function HomeContent() {
   const [selectedTab, setSelectedTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
   const [selectedItem, setSelectedItem] = useState<WhatsNewItem | null>(null)
+  // Ofsted judgement filter — null means "show all judgements".
+  const [ofstedFilter, setOfstedFilter] = useState<OfstedJudgement | null>(null)
+  const ofstedVisible = ofstedFilter ? ofstedSorted.filter((s) => s.judgement === ofstedFilter) : ofstedSorted
   const { items: notifications } = useNotifications()
 
   const filteredNews = notifications.filter((item) => {
@@ -702,15 +705,40 @@ export function HomeContent() {
                 />
               ))}
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {/* Legend doubles as a filter — click a judgement to narrow the list */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setOfstedFilter(null)}
+                aria-pressed={ofstedFilter === null}
+                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                  ofstedFilter === null
+                    ? "border-slate-300 bg-slate-100 text-slate-900"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <span>All</span>
+                <span className="font-semibold text-slate-900">{ofstedTotal}</span>
+              </button>
               {ofstedCounts.map(({ judgement, count }) => {
                 const colors = getOfstedColor(judgement)
+                const active = ofstedFilter === judgement
                 return (
-                  <div key={judgement} className="flex items-center gap-1.5">
+                  <button
+                    key={judgement}
+                    type="button"
+                    onClick={() => setOfstedFilter(active ? null : judgement)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      active
+                        ? "border-slate-300 bg-slate-100 text-slate-900"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
                     <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
-                    <span className="text-xs text-slate-600">{judgement}</span>
-                    <span className="text-xs font-semibold text-slate-900">{count}</span>
-                  </div>
+                    <span>{judgement}</span>
+                    <span className="font-semibold text-slate-900">{count}</span>
+                  </button>
                 )
               })}
               {ofstedConcernCount > 0 && (
@@ -726,7 +754,7 @@ export function HomeContent() {
 
           {/* Compact, scrollable school list — concerns surface first */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
-            {ofstedSorted.map((school) => {
+            {ofstedVisible.map((school) => {
               const colors = getOfstedColor(school.judgement)
               const isConcern =
                 school.judgement === "Requires Improvement" || school.judgement === "Inadequate"
@@ -753,6 +781,11 @@ export function HomeContent() {
                 </div>
               )
             })}
+            {ofstedVisible.length === 0 && (
+              <p className="col-span-full py-6 text-center text-xs text-slate-400">
+                No schools match this judgement.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
