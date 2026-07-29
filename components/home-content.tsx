@@ -240,9 +240,6 @@ const ofstedSorted = [...ofstedData].sort((a, b) => {
   const order = ofstedConcernOrder[a.judgement] - ofstedConcernOrder[b.judgement]
   return order !== 0 ? order : a.name.localeCompare(b.name)
 })
-const ofstedConcernCount = ofstedData.filter(
-  (s) => s.judgement === "Inadequate" || s.judgement === "Requires Improvement",
-).length
 
 export function HomeContent() {
   const [selectedTab, setSelectedTab] = useState<"all" | "updates" | "deadlines" | "system">("all")
@@ -741,14 +738,6 @@ export function HomeContent() {
                   </button>
                 )
               })}
-              {ofstedConcernCount > 0 && (
-                <div className="flex items-center gap-1.5 ml-auto">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="text-xs font-medium text-amber-700">
-                    {ofstedConcernCount} need attention
-                  </span>
-                </div>
-              )}
             </div>
           </div>
 
