@@ -228,7 +228,7 @@ export function FormsReportPanel({
             <select
               value={selectedForm}
               onChange={(e) => onFormChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#121051] focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051]"
             >
               <option value="">Please select a form type...</option>
               {forms.map((form) => (
@@ -245,7 +245,7 @@ export function FormsReportPanel({
             <select
               value={selectedSchool}
               onChange={(e) => onSchoolChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#121051] focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051]"
             >
               <option value="">Please select a school...</option>
               {schools.map((school) => (
@@ -262,7 +262,7 @@ export function FormsReportPanel({
             <select
               value={selectedTerm}
               onChange={(e) => onTermChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#121051] focus:outline-none focus:ring-2 focus:ring-[#121051] focus:border-[#121051]"
             >
               <option value="">Please select a term...</option>
               {terms.map((term) => (
