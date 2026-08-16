@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, CheckCircle, Circle, RotateCcw } from "lucide-react"
+import { ChevronDown, CheckCircle, Circle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -218,7 +218,6 @@ export function FormsReportPanel({
             onClick={onClearForm}
             className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
           >
-            <RotateCcw className="w-4 h-4 mr-1" />
             Clear Form
           </Button>
         </div>
