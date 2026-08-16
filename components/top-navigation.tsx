@@ -67,8 +67,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
 
     // Default tabs for forms and other pages
     return [
-      { id: "dashboard", label: "Dashboard", href: "/forms" },
-      { id: "maintenance", label: "Maintenance", href: "/forms/maintenance" },
+      { id: "dashboard", label: "Forms", href: "/forms" },
     ]
   }
 
