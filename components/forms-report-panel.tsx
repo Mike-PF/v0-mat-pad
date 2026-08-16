@@ -21,6 +21,7 @@ interface FormsReportPanelProps {
   activeSection: string
   onSectionClick: (sectionId: string) => void
   onClearForm: () => void
+  showSections: boolean
 }
 
 export function FormsReportPanel({
@@ -33,6 +34,7 @@ export function FormsReportPanel({
   activeSection,
   onSectionClick,
   onClearForm,
+  showSections,
 }: FormsReportPanelProps) {
   const forms = [
     "Headteacher's Report - Educational",
@@ -276,7 +278,8 @@ export function FormsReportPanel({
         </div>
       </div>
 
-      {/* Report Sections Navigation */}
+      {/* Report Sections Navigation — only once a form, school and term are chosen */}
+      {showSections && (
       <div className="flex-1 flex flex-col min-h-0">
         <div className="p-4 border-b border-slate-200 flex-shrink-0">
           <h3 className="font-semibold text-lg">Report Sections</h3>
@@ -337,6 +340,7 @@ export function FormsReportPanel({
           </nav>
         </div>
       </div>
+      )}
     </div>
   )
 }
