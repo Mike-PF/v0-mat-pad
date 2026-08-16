@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
-export function TopNavigation() {
+export function TopNavigation({ showProgress = true }: { showProgress?: boolean }) {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
 
@@ -114,7 +114,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {mounted && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
+        {mounted && showProgress && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">

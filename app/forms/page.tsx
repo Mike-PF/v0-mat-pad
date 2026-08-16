@@ -50,7 +50,7 @@ export default function FormsPage() {
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
-          <TopNavigation />
+          <TopNavigation showProgress={isReady} />
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
