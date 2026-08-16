@@ -211,8 +211,7 @@ export function FormsReportPanel({
     <div className="bg-white border border-slate-200 rounded-lg h-full flex flex-col">
       {/* Forms Selection Section */}
       <div className="p-4 border-b border-slate-200 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-2xl">Forms</h3>
+        <div className="flex items-center justify-end mb-4">
           <Button
             variant="outline"
             size="sm"
