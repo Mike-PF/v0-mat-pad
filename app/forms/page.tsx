@@ -27,6 +27,10 @@ export default function FormsPage() {
     setFormData((prev) => ({ ...prev, [questionId]: value }))
   }
 
+  // The report sections and the form itself only appear once a form type, school
+  // and term have all been selected. Until then the page stays blank.
+  const isReady = Boolean(selectedForm && selectedSchool && selectedTerm)
+
   const clearForm = () => {
     if (window.confirm("Are you sure you want to clear all form data? This action cannot be undone.")) {
       // Reset dropdowns to "Please select" state
@@ -46,7 +50,7 @@ export default function FormsPage() {
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
-          <TopNavigation />
+          <TopNavigation showProgress={isReady} />
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
@@ -63,18 +67,30 @@ export default function FormsPage() {
                 activeSection={activeSection}
                 onSectionClick={scrollToSection}
                 onClearForm={clearForm}
+                showSections={isReady}
               />
             </div>
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto">
-              <QuestionSection
-                activeSection={activeSection}
-                formData={formData}
-                onUpdateData={updateFormData}
-                sectionRefs={sectionRefs}
-                onSectionChange={setActiveSection}
-              />
+              {isReady ? (
+                <QuestionSection
+                  activeSection={activeSection}
+                  formData={formData}
+                  onUpdateData={updateFormData}
+                  sectionRefs={sectionRefs}
+                  onSectionChange={setActiveSection}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">
+                  <div className="max-w-sm px-6 text-center">
+                    <p className="text-base font-medium text-slate-900">Select a form to begin</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Choose a form type, school and term to load the report sections and start filling in the report.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
