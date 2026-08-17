@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { ScrollingDatePicker } from "@/components/ui/scrolling-date-picker"
 
 import {
   Dialog,
@@ -2075,11 +2076,16 @@ export default function OrganisationPage() {
 
             <div>
               <label className="text-xs text-slate-500 block mb-1">Expiry Date</label>
-              <Input
-                type="date"
-                value={newOrgExpiry}
-                onChange={(e) => setNewOrgExpiry(e.target.value)}
-                className="h-9"
+              <ScrollingDatePicker
+                value={newOrgExpiry ? new Date(`${newOrgExpiry}T00:00:00`) : null}
+                onChange={(date) => {
+                  const y = date.getFullYear()
+                  const m = String(date.getMonth() + 1).padStart(2, "0")
+                  const d = String(date.getDate()).padStart(2, "0")
+                  setNewOrgExpiry(`${y}-${m}-${d}`)
+                }}
+                placeholder="Select a date"
+                className="w-full"
               />
             </div>
           </div>
