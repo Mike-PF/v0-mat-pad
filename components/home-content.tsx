@@ -204,11 +204,11 @@ const getOfstedColor = (judgement: string) => {
     case "Outstanding":
       return { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500", bar: "bg-emerald-500" }
     case "Good":
-      return { bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-500", bar: "bg-blue-500" }
+      return { bg: "bg-[#33295e]/10", text: "text-[#33295e]", dot: "bg-[#33295e]", bar: "bg-[#33295e]" }
     case "Requires Improvement":
-      return { bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-500", bar: "bg-amber-500" }
+      return { bg: "bg-[#f4c95d]/25", text: "text-[#8a6a12]", dot: "bg-[#f4c95d]", bar: "bg-[#f4c95d]" }
     case "Inadequate":
-      return { bg: "bg-red-100", text: "text-red-700", dot: "bg-red-500", bar: "bg-red-500" }
+      return { bg: "bg-[#fd6d6d]/15", text: "text-[#d24f4f]", dot: "bg-[#fd6d6d]", bar: "bg-[#fd6d6d]" }
     default:
       return { bg: "bg-slate-100", text: "text-slate-700", dot: "bg-slate-400", bar: "bg-slate-400" }
   }
