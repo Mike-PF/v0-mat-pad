@@ -188,7 +188,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
                 type="button"
                 onClick={() => scrollToMonth(todayIndex < 0 ? 0 : todayIndex)}
                 className="text-base font-medium hover:underline"
-                style={{ color: NAVY }}
+                style={{ color: ACCENT }}
               >
                 Today
               </button>
@@ -229,7 +229,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
                               )}
                               style={{
                                 ...(isSelected ? { backgroundColor: NAVY } : {}),
-                                ...(!isSelected && isToday ? { borderColor: NAVY, color: NAVY } : {}),
+                                ...(!isSelected && isToday ? { borderColor: ACCENT, color: ACCENT } : {}),
                               }}
                             >
                               {cell.date.getDate()}
