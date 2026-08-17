@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import * as PopoverPrimitive from "@radix-ui/react-popover"
+import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
 const NAVY = "#121051"
@@ -131,10 +132,13 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
           </span>
         </button>
       </PopoverTrigger>
-      <PopoverContent
+      <PopoverPrimitive.Content
         align="start"
         sideOffset={6}
-        className="w-auto overflow-hidden rounded-xl border border-slate-200 p-0 shadow-xl"
+        // Rendered WITHOUT a portal so the panel stays inside the dialog's
+        // scroll-lock boundary — otherwise react-remove-scroll blocks wheel
+        // scrolling on the month list and year sidebar.
+        className="z-50 w-auto overflow-hidden rounded-xl border border-slate-200 bg-popover p-0 text-popover-foreground shadow-xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
       >
         <div className="flex h-[420px]">
           {/* Sidebar: scrollable month list grouped by year */}
@@ -238,7 +242,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
             </div>
           </div>
         </div>
-      </PopoverContent>
+      </PopoverPrimitive.Content>
     </Popover>
   )
 }
