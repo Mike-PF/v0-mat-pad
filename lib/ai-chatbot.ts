@@ -91,14 +91,14 @@ export const AREA_COLORS: Record<string, string> = {
   Attainment: "#5B9BF5", // Blue
   Behaviour: "#F79400", // Orange
   Finance: "#2395A4", // Teal
-  Safeguarding: "#F7555A", // Red
+  Safeguarding: "#fd6d6d", // Red
   SEND: "#715DBF", // Purple
   Staffing: "#B3008B", // Magenta
   Curriculum: "#6AD0D5", // Light Teal
   Pastoral: "#33295e", // Brand Navy
   Other: "#64748B", // slate-500 (neutral catch-all)
   // Legacy areas still present in seed data / logs.
-  "Ofsted & Compliance": "#F7555A",
+  "Ofsted & Compliance": "#fd6d6d",
   Assessment: "#B3008B",
   General: "#64748B",
 }

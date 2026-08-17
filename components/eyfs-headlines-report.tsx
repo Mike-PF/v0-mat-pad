@@ -153,7 +153,7 @@ const chartSections = [
   },
   {
     title: "All understanding the world ELGs",
-    headerBg: "#F7555A",
+    headerBg: "#fd6d6d",
     subtitle: "Schools - Sheffield | Pupil group- All pupils | Sex- All pupils",
     matData: [79.2, 80.5, 77.8, 78.6],
     natData: [78.4, 80.2, 80.6, 80.8],

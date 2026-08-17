@@ -333,7 +333,7 @@ export const reportCategories = [
   {
     id: "estates",
     name: "Estates",
-    color: "#F7555A",
+    color: "#fd6d6d",
     reports: [
       {
         id: "capacity-planning",

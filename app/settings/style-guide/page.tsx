@@ -58,7 +58,7 @@ const categoryColors: Swatch[] = [
   { name: "Green", value: "#5BBE80", textLight: true },
   { name: "Teal", value: "#2395A4", textLight: true },
   { name: "Light Teal", value: "#6AD0D5" },
-  { name: "Red", value: "#F7555A", textLight: true },
+  { name: "Red", value: "#fd6d6d", textLight: true },
 ]
 
 const semanticTokens = [
