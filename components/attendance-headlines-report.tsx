@@ -163,7 +163,7 @@ export function AttendanceHeadlinesReport() {
                   <span className="inline-block w-4 h-0.5 bg-[#2395A4]" />MAT (selected pupils)
                 </span>
                 <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <span className="inline-block w-4 h-0.5 bg-[#121051]" />National (all pupils)
+                  <span className="inline-block w-4 h-0.5 bg-[#33295e]" />National (all pupils)
                 </span>
               </div>
               <ResponsiveContainer width="100%" height={155}>
@@ -172,7 +172,7 @@ export function AttendanceHeadlinesReport() {
                   <YAxis domain={[94.5, 100]} tick={{ fontSize: 8 }} tickFormatter={v => `${v}%`} />
                   <Tooltip formatter={(v: number) => `${v}%`} />
                   <Line type="monotone" dataKey="mat" stroke="#2395A4" strokeWidth={2} dot={{ r: 3, fill: "#2395A4" }} />
-                  <Line type="monotone" dataKey="nat" stroke="#121051" strokeWidth={2} dot={{ r: 3, fill: "#121051" }} />
+                  <Line type="monotone" dataKey="nat" stroke="#33295e" strokeWidth={2} dot={{ r: 3, fill: "#33295e" }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -202,7 +202,7 @@ export function AttendanceHeadlinesReport() {
                   >
                     {bandData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle" fontSize={18} fontWeight="bold" fill="#121051">31</text>
+                  <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle" fontSize={18} fontWeight="bold" fill="#33295e">31</text>
                   <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" fontSize={8} fill="#666">(38.27%)</text>
                 </PieChart>
               </ResponsiveContainer>

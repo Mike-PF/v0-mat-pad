@@ -327,7 +327,7 @@ export default function DashboardSettingsPage() {
                   <Button 
                     onClick={handleIngest}
                     className="text-white"
-                    style={{ backgroundColor: "#121051" }}
+                    style={{ backgroundColor: "#33295e" }}
                   >
                     Pull Reports
                   </Button>
@@ -356,13 +356,13 @@ export default function DashboardSettingsPage() {
                         <td className="py-4 px-4">
                           <span 
                             className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white"
-                            style={{ backgroundColor: report.reportType === "system" ? "#121051" : "#B30089" }}
+                            style={{ backgroundColor: report.reportType === "system" ? "#33295e" : "#B30089" }}
                           >
                             {report.reportType === "system" ? "System" : "Custom"}
                           </span>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="text-sm text-[#121051] font-medium">{report.powerBiName}</span>
+                          <span className="text-sm text-[#33295e] font-medium">{report.powerBiName}</span>
                         </td>
                         <td className="py-4 px-4">
                           <Select
@@ -405,7 +405,7 @@ export default function DashboardSettingsPage() {
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <button 
-                                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#121051] transition-colors"
+                                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#33295e] transition-colors"
                                     >
                                       <span className="flex-1 truncate text-slate-700">
                                         {report.organisations.length > 0 
@@ -473,7 +473,7 @@ export default function DashboardSettingsPage() {
                                                 checked={report.organisations.includes(org.id)}
                                                 onCheckedChange={() => handleSchoolToggle(report.id, org.id)}
                                                 disabled={hasMATSelected(report)}
-                                                className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                                className="data-[state=checked]:bg-[#33295e] data-[state=checked]:border-[#33295e]"
                                               />
                                               <span className="text-sm text-slate-900">{org.name}</span>
                                             </label>
@@ -513,7 +513,7 @@ export default function DashboardSettingsPage() {
                                   <PopoverTrigger asChild>
                                     <button 
                                       disabled={report.organisations.length === 0}
-                                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#121051] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
+                                      className="flex items-center gap-2 h-9 w-[200px] px-3 bg-white border border-slate-200 rounded-md text-sm text-left hover:border-[#33295e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
                                     >
                                       <span className="flex-1 truncate text-slate-700">
                                         {report.organisations.length === 0 
@@ -559,7 +559,7 @@ export default function DashboardSettingsPage() {
                                                 <Checkbox
                                                   checked={report.roles.includes(role.id)}
                                                   onCheckedChange={() => handleRoleToggle(report.id, role.id)}
-                                                  className="data-[state=checked]:bg-[#121051] data-[state=checked]:border-[#121051]"
+                                                  className="data-[state=checked]:bg-[#33295e] data-[state=checked]:border-[#33295e]"
                                                 />
                                                 <span className="text-sm text-slate-900">{role.name}</span>
                                               </label>
@@ -617,7 +617,7 @@ export default function DashboardSettingsPage() {
                             <Switch
                               checked={report.active}
                               onCheckedChange={(value) => handleActiveChange(report.id, value)}
-                              className="data-[state=checked]:bg-[#121051]"
+                              className="data-[state=checked]:bg-[#33295e]"
                             />
                           </div>
                         </td>
@@ -628,7 +628,7 @@ export default function DashboardSettingsPage() {
                               size="sm"
                               disabled={!hasChanges(report) || savingIds.has(report.id)}
                               className="text-white px-6 disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100 min-w-[64px]"
-                              style={{ backgroundColor: hasChanges(report) || savingIds.has(report.id) ? "#121051" : undefined }}
+                              style={{ backgroundColor: hasChanges(report) || savingIds.has(report.id) ? "#33295e" : undefined }}
                             >
                               Save
                             </Button>
@@ -637,7 +637,7 @@ export default function DashboardSettingsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleClone(report.id)}
-                                className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                                className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                               >
                                 Clone
                               </Button>
@@ -681,7 +681,7 @@ export default function DashboardSettingsPage() {
                         onClick={() => setCurrentPage(1)}
                         className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
                           currentPage === 1 
-                            ? "bg-[#121051] text-white" 
+                            ? "bg-[#33295e] text-white" 
                             : "text-slate-600 hover:bg-slate-100"
                         }`}
                       >
@@ -706,7 +706,7 @@ export default function DashboardSettingsPage() {
                             onClick={() => setCurrentPage(page)}
                             className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
                               currentPage === page 
-                                ? "bg-[#121051] text-white" 
+                                ? "bg-[#33295e] text-white" 
                                 : "text-slate-600 hover:bg-slate-100"
                             }`}
                           >
@@ -725,7 +725,7 @@ export default function DashboardSettingsPage() {
                           onClick={() => setCurrentPage(totalPages)}
                           className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
                             currentPage === totalPages 
-                              ? "bg-[#121051] text-white" 
+                              ? "bg-[#33295e] text-white" 
                               : "text-slate-600 hover:bg-slate-100"
                           }`}
                         >

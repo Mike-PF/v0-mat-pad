@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Plus, Send, Star, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-const NAVY = "#121051"
+const NAVY = "#33295e"
 const ACCENT = "#B30089"
 
 interface ChatMessage {

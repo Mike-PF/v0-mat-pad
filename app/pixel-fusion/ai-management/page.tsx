@@ -50,7 +50,7 @@ import {
 } from "@/lib/ai-chatbot"
 import { reportCategories } from "@/components/reports-content"
 
-const NAVY = "#121051"
+const NAVY = "#33295e"
 
 // Sentinel for the "All reports in this area" option (Radix Select forbids "" values).
 const ALL_REPORTS = "__all_reports__"
@@ -237,7 +237,7 @@ export default function AiManagementPage() {
                     onClick={() => setTab(t.id)}
                     className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
                       active
-                        ? "border-[#121051] text-[#121051]"
+                        ? "border-[#33295e] text-[#33295e]"
                         : "border-transparent text-slate-500 hover:text-slate-800"
                     }`}
                   >
@@ -526,7 +526,7 @@ function QuestionList({
               onClick={() => onToggle(i)}
               disabled={toggleDisabled}
               className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                q.active ? "bg-[#121051]" : "bg-slate-300"
+                q.active ? "bg-[#33295e]" : "bg-slate-300"
               } ${toggleDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
               role="switch"
               aria-checked={q.active}

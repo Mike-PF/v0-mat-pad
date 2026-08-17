@@ -310,7 +310,7 @@ export default function RolesPage() {
                 </Button>
                 <Button
                   className="text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                   onClick={handleSaveRole}
                 >
                   {editingRole?.id === 0 ? "Create role" : "Save"}
@@ -321,7 +321,7 @@ export default function RolesPage() {
             {/* Users Card */}
             <Card className="mb-4">
               <CardContent className="py-4">
-                <h3 className="text-sm font-semibold text-[#121051] mb-4">Users</h3>
+                <h3 className="text-sm font-semibold text-[#33295e] mb-4">Users</h3>
                 
                 {/* Users Dropdown and Search Row */}
                 <div className="flex items-center justify-between mb-4">
@@ -332,7 +332,7 @@ export default function RolesPage() {
                     >
                       {selectedUsers.length > 0 ? (
                         <>
-                          <span className="flex items-center justify-center w-5 h-5 bg-[#121051] text-white text-xs rounded-full flex-shrink-0">
+                          <span className="flex items-center justify-center w-5 h-5 bg-[#33295e] text-white text-xs rounded-full flex-shrink-0">
                             {selectedUsers.length}
                           </span>
                           <span className="text-sm text-slate-700 flex-1 truncate">
@@ -456,7 +456,7 @@ export default function RolesPage() {
                           onClick={() => setUserPage(1)}
                           className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
                             userPage === 1 
-                              ? "bg-[#121051] text-white" 
+                              ? "bg-[#33295e] text-white" 
                               : "text-slate-600 hover:bg-slate-100"
                           }`}
                         >
@@ -481,7 +481,7 @@ export default function RolesPage() {
                               onClick={() => setUserPage(page)}
                               className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
                                 userPage === page 
-                                  ? "bg-[#121051] text-white" 
+                                  ? "bg-[#33295e] text-white" 
                                   : "text-slate-600 hover:bg-slate-100"
                               }`}
                             >
@@ -500,7 +500,7 @@ export default function RolesPage() {
                             onClick={() => setUserPage(totalUserPages)}
                             className={`h-8 w-8 text-sm flex items-center justify-center rounded ${
                               userPage === totalUserPages 
-                                ? "bg-[#121051] text-white" 
+                                ? "bg-[#33295e] text-white" 
                                 : "text-slate-600 hover:bg-slate-100"
                             }`}
                           >
@@ -715,7 +715,7 @@ export default function RolesPage() {
                 {selectedOrganisation && (
                   <button
                     onClick={() => setSelectedOrganisation(null)}
-                    className="text-sm text-[#121051] hover:underline"
+                    className="text-sm text-[#33295e] hover:underline"
                   >
                     Clear Selection
                   </button>
@@ -732,7 +732,7 @@ export default function RolesPage() {
                 <div className="flex items-center justify-end mb-6">
                   <Button 
                     className="text-white"
-                    style={{ backgroundColor: "#121051" }}
+                    style={{ backgroundColor: "#33295e" }}
                     onClick={handleAddRole}
                   >
                     Add role
@@ -786,7 +786,7 @@ export default function RolesPage() {
                                         e.stopPropagation()
                                         handleDeleteClick(role)
                                       }}
-                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                      className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
@@ -806,7 +806,7 @@ export default function RolesPage() {
                                         e.stopPropagation()
                                         handleEditRole(role)
                                       }}
-                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                      className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Pencil className="w-4 h-4" />
                                     </button>
@@ -847,7 +847,7 @@ export default function RolesPage() {
                 <Button
                   onClick={handleConfirmDelete}
                   className="px-4 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Delete
                 </Button>
@@ -875,7 +875,7 @@ export default function RolesPage() {
                 <Button
                   onClick={handleConfirmRemoveUser}
                   className="px-4 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Remove
                 </Button>

@@ -521,7 +521,7 @@ export default function UsersPage() {
                       setSelectedType(null)
                       setSelectedId(null)
                     }}
-                    className="text-sm text-[#121051] hover:underline"
+                    className="text-sm text-[#33295e] hover:underline"
                   >
                     Clear Selection
                   </button>
@@ -539,7 +539,7 @@ export default function UsersPage() {
                   <Button 
                     onClick={handleAddUser}
                     className="text-white"
-                    style={{ backgroundColor: "#121051" }}
+                    style={{ backgroundColor: "#33295e" }}
                   >
                     Add user
                   </Button>
@@ -641,7 +641,7 @@ export default function UsersPage() {
                                         e.stopPropagation()
                                         handleDeleteClick(user)
                                       }}
-                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                      className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
@@ -661,7 +661,7 @@ export default function UsersPage() {
                                         e.stopPropagation()
                                         handleEditUser(user)
                                       }}
-                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                      className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Pencil className="w-4 h-4" />
                                     </button>
@@ -703,7 +703,7 @@ export default function UsersPage() {
                 <Button
                   onClick={handleConfirmDelete}
                   className="px-4 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Delete
                 </Button>
@@ -777,7 +777,7 @@ export default function UsersPage() {
                       <span className="text-sm text-slate-900 flex-1 truncate">All Schools</span>
                     ) : editSelectedSchools.length > 0 ? (
                       <>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#121051" }}>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#33295e" }}>
                           {editSelectedSchools.length}
                         </span>
                         <span className="text-sm text-slate-900 flex-1 truncate">
@@ -853,7 +853,7 @@ export default function UsersPage() {
                   >
                     {editSelectedRoles.length > 0 ? (
                       <>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#121051" }}>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#33295e" }}>
                           {editSelectedRoles.length}
                         </span>
                         <span className="text-sm text-slate-900 flex-1 truncate">
@@ -904,7 +904,7 @@ export default function UsersPage() {
                 <Button
                   onClick={handleSaveUser}
                   className="px-6 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Save
                 </Button>
@@ -991,7 +991,7 @@ export default function UsersPage() {
                 <Button
                   onClick={() => setPermissionsModalOpen(false)}
                   className="px-6 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Close
                 </Button>

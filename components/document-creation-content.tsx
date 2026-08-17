@@ -1117,7 +1117,7 @@ export function DocumentCreationContent() {
               <Button
                 onClick={handleSaveConfiguration}
                 disabled={!documentName.trim() || !sectionName}
-                className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors disabled:opacity-50"
+                className="bg-[#33295e] hover:bg-[#B30089] text-white transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Configuration
@@ -1183,7 +1183,7 @@ export function DocumentCreationContent() {
                             type="checkbox"
                             checked={formLinks.length === 0}
                             onChange={() => setFormLinks([])}
-                            className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                            className="h-4 w-4 rounded border-slate-300 accent-[#33295e]"
                           />
                           No form link selected
                         </label>
@@ -1200,7 +1200,7 @@ export function DocumentCreationContent() {
                                   prev.includes(option) ? prev.filter((f) => f !== option) : [...prev, option],
                                 )
                               }
-                              className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                              className="h-4 w-4 rounded border-slate-300 accent-[#33295e]"
                             />
                             {option}
                           </label>
@@ -1239,7 +1239,7 @@ export function DocumentCreationContent() {
                     type="button"
                     onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                      reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
+                      reportLevel === "mat" ? "bg-[#33295e]" : "bg-slate-300"
                     }`}
                   >
                     <span
@@ -1347,7 +1347,7 @@ export function DocumentCreationContent() {
                       }
                     }}
                     disabled={!manualTagName.trim()}
-                    className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                    className="bg-[#33295e] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
                   >
                     Create Tag
                   </Button>
@@ -1911,7 +1911,7 @@ export function DocumentCreationContent() {
                       !conditionalTrueAction ||
                       !conditionalFalseAction
                     }
-                    className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                    className="bg-[#33295e] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
                   >
                     Save Logic
                   </Button>
@@ -2044,7 +2044,7 @@ export function DocumentCreationContent() {
                     <Button
                       onClick={handleSave}
                       disabled={!selectedSP || !documentName || !uploadedFile}
-                      className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                      className="bg-[#33295e] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Save Configuration
@@ -2210,7 +2210,7 @@ export function DocumentCreationContent() {
 
                   <Button
                     onClick={handleCreateNew}
-                    className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
+                    className="bg-[#33295e] hover:bg-[#B30089] text-white transition-colors"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create New Document
@@ -2432,7 +2432,7 @@ export function DocumentCreationContent() {
                           {documentTags.length - documentTags.filter((t) => t.matched).length}
                         </div>
                       </div>
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#121051" }}>
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#33295e" }}>
                         <div className="text-xs text-white/90">Available System</div>
                         <div className="text-xl font-bold text-white">{tags.filter((t) => !t.matched).length}</div>
                       </div>
@@ -2549,7 +2549,7 @@ export function DocumentCreationContent() {
                                     {docTag.id === rangeStartTagId && (
                                       <div
                                         className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
-                                        style={{ backgroundColor: "#121051", color: "white" }}
+                                        style={{ backgroundColor: "#33295e", color: "white" }}
                                       >
                                         <Check className="w-3 h-3" />
                                         Range Start Selected
@@ -2558,7 +2558,7 @@ export function DocumentCreationContent() {
                                     {docTag.id === rangeEndTagId && (
                                       <div
                                         className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
-                                        style={{ backgroundColor: "#121051", color: "white" }}
+                                        style={{ backgroundColor: "#33295e", color: "white" }}
                                       >
                                         <Check className="w-3 h-3" />
                                         Range End Selected

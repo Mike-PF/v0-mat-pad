@@ -1558,7 +1558,7 @@ This would generate an Excel file with ${selectedFields.length * selectedPupils.
                   onClick={handleExport}
                   disabled={!canExport()}
                   className="w-full text-white"
-                  style={{ backgroundColor: canExport() ? "#121051" : undefined }}
+                  style={{ backgroundColor: canExport() ? "#33295e" : undefined }}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export Data

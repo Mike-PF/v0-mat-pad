@@ -95,7 +95,7 @@ export const AREA_COLORS: Record<string, string> = {
   SEND: "#715DBF", // Purple
   Staffing: "#B3008B", // Magenta
   Curriculum: "#6AD0D5", // Light Teal
-  Pastoral: "#121051", // Brand Navy
+  Pastoral: "#33295e", // Brand Navy
   Other: "#64748B", // slate-500 (neutral catch-all)
   // Legacy areas still present in seed data / logs.
   "Ofsted & Compliance": "#F7555A",

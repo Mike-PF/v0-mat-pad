@@ -5,7 +5,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
-const NAVY = "#121051"
+const NAVY = "#33295e"
 const WEEKDAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
 
 interface ScrollingDatePickerProps {
@@ -122,7 +122,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
           type="button"
           className={cn(
             "flex w-64 items-center rounded-lg border-2 px-4 py-2.5 text-left text-base transition-colors",
-            open ? "border-[#121051]" : "border-slate-300 hover:border-slate-400",
+            open ? "border-[#33295e]" : "border-slate-300 hover:border-slate-400",
             className,
           )}
           style={open ? { borderColor: NAVY } : undefined}
@@ -163,7 +163,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
                     type="button"
                     onClick={() => scrollToMonth(i)}
                     className={cn(
-                      "block w-full px-5 py-1.5 text-left text-lg transition-colors hover:text-[#121051]",
+                      "block w-full px-5 py-1.5 text-left text-lg transition-colors hover:text-[#33295e]",
                       isActive ? "font-bold" : "font-normal text-slate-500",
                     )}
                     style={isActive ? { color: NAVY } : undefined}

@@ -61,7 +61,7 @@ export function Sidebar({}: SidebarProps) {
   return (
     <div
       className="flex flex-col relative w-[60px]"
-      style={{ backgroundColor: "#121051" }}
+      style={{ backgroundColor: "#33295e" }}
     >
       {/* Nav Items */}
       <nav className="flex-1 pt-4 px-2 space-y-1">

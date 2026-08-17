@@ -103,7 +103,7 @@ const chartSections = [
   },
   {
     title: "All personal, social and emotional development ELGs",
-    headerBg: "#121051",
+    headerBg: "#33295e",
     subtitle: "Schools - Sheffield | Pupil group- All pupils | Sex- All pupils",
     matData: [84.2, 83.5, 81.8, 83.1],
     natData: [82.8, 83.1, 83.4, 83.6],
@@ -233,7 +233,7 @@ function TrendChart({ section }: { section: typeof chartSections[0] }) {
       <div className="px-3 pt-2 pb-1">
         <div className="flex items-center gap-3 text-[10px] text-slate-500 mb-1">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#5B9BF5] inline-block"></span>MAT/school(s)</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#121051] inline-block"></span>National</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#33295e] inline-block"></span>National</span>
         </div>
         <ResponsiveContainer width="100%" height={130}>
           <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -251,7 +251,7 @@ function TrendChart({ section }: { section: typeof chartSections[0] }) {
               formatter={(value: number) => [`${value}%`]}
             />
             <Line type="monotone" dataKey="mat" stroke="#5B9BF5" strokeWidth={2} dot={{ r: 3, fill: "#5B9BF5" }} />
-            <Line type="monotone" dataKey="nat" stroke="#121051" strokeWidth={2} dot={{ r: 3, fill: "#121051" }} />
+            <Line type="monotone" dataKey="nat" stroke="#33295e" strokeWidth={2} dot={{ r: 3, fill: "#33295e" }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

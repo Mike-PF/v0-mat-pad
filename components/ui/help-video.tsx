@@ -66,7 +66,7 @@ export function HelpVideo({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#121051] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#B30089]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{title}</h3>
                 <p className="text-sm text-white/80">{description}</p>
@@ -192,7 +192,7 @@ export function MultiVideoHelpBanner({
             className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#121051] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#B30089]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{activeVideo.title}</h3>
                 <p className="text-sm text-white/80">{activeVideo.description}</p>
@@ -285,7 +285,7 @@ export function PageHelpBanner({
             className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#121051] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#B30089]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{pageTitle}</h3>
                 <p className="text-sm text-white/80">{pageDescription}</p>

@@ -53,7 +53,7 @@ import {
   type AudienceTarget,
 } from "@/lib/notifications"
 
-const NAVY = "#121051"
+const NAVY = "#33295e"
 
 export default function SystemNotificationsPage() {
   const { items, setItems, hydrated } = useNotifications()
@@ -494,12 +494,12 @@ export default function SystemNotificationsPage() {
                               checked={item.visible}
                               onCheckedChange={() => handleToggleVisible(item.id)}
                               aria-label={`Toggle visibility of ${item.title}`}
-                              className="data-[state=checked]:bg-[#121051]"
+                              className="data-[state=checked]:bg-[#33295e]"
                             />
                           </label>
                           <button
                             onClick={() => setPreviewItem(item)}
-                            className="p-1.5 rounded-md text-slate-400 hover:text-[#121051] hover:bg-slate-100 transition-colors"
+                            className="p-1.5 rounded-md text-slate-400 hover:text-[#33295e] hover:bg-slate-100 transition-colors"
                             aria-label={`Preview ${item.title}`}
                             title="Preview how this looks when opened"
                           >
@@ -696,21 +696,21 @@ export default function SystemNotificationsPage() {
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;NEW&quot;</p>
                   <p className="text-xs text-slate-500">Shows a blue NEW badge for 3 days</p>
                 </div>
-                <Switch checked={formIsNew} onCheckedChange={setFormIsNew} className="data-[state=checked]:bg-[#121051]" />
+                <Switch checked={formIsNew} onCheckedChange={setFormIsNew} className="data-[state=checked]:bg-[#33295e]" />
               </div>
               <div className="flex items-center justify-between px-3 py-2.5">
                 <div>
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;URGENT&quot;</p>
                   <p className="text-xs text-slate-500">Highlights the item in red</p>
                 </div>
-                <Switch checked={formIsUrgent} onCheckedChange={setFormIsUrgent} className="data-[state=checked]:bg-[#121051]" />
+                <Switch checked={formIsUrgent} onCheckedChange={setFormIsUrgent} className="data-[state=checked]:bg-[#33295e]" />
               </div>
               <div className="flex items-center justify-between px-3 py-2.5">
                 <div>
                   <p className="text-sm font-medium text-slate-800">Mark as &quot;Active&quot;</p>
                   <p className="text-xs text-slate-500">Highlights ongoing issues in amber</p>
                 </div>
-                <Switch checked={formIsActive} onCheckedChange={setFormIsActive} className="data-[state=checked]:bg-[#121051]" />
+                <Switch checked={formIsActive} onCheckedChange={setFormIsActive} className="data-[state=checked]:bg-[#33295e]" />
               </div>
             </div>
 
@@ -723,12 +723,12 @@ export default function SystemNotificationsPage() {
                   onClick={() => setFormAudienceScope("all")}
                   className={`flex items-start gap-2 p-3 rounded-lg border text-left transition-colors ${
                     formAudienceScope === "all"
-                      ? "border-[#121051] bg-[#121051]/5"
+                      ? "border-[#33295e] bg-[#33295e]/5"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <Users
-                    className={`w-4 h-4 mt-0.5 shrink-0 ${formAudienceScope === "all" ? "text-[#121051]" : "text-slate-400"}`}
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${formAudienceScope === "all" ? "text-[#33295e]" : "text-slate-400"}`}
                   />
                   <div>
                     <p className="text-sm font-medium text-slate-800">All system users</p>
@@ -740,12 +740,12 @@ export default function SystemNotificationsPage() {
                   onClick={() => setFormAudienceScope("targeted")}
                   className={`flex items-start gap-2 p-3 rounded-lg border text-left transition-colors ${
                     formAudienceScope === "targeted"
-                      ? "border-[#121051] bg-[#121051]/5"
+                      ? "border-[#33295e] bg-[#33295e]/5"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <Building2
-                    className={`w-4 h-4 mt-0.5 shrink-0 ${formAudienceScope === "targeted" ? "text-[#121051]" : "text-slate-400"}`}
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${formAudienceScope === "targeted" ? "text-[#33295e]" : "text-slate-400"}`}
                   />
                   <div>
                     <p className="text-sm font-medium text-slate-800">Specific organisations</p>
@@ -1026,7 +1026,7 @@ function TargetRow({
     >
       <span
         className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
-          selected ? "bg-[#121051] border-[#121051]" : "border-slate-300 bg-white"
+          selected ? "bg-[#33295e] border-[#33295e]" : "border-slate-300 bg-white"
         }`}
       >
         {selected && <Check className="w-3 h-3 text-white" />}
