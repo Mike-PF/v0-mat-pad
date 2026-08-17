@@ -356,7 +356,7 @@ export default function DashboardSettingsPage() {
                         <td className="py-4 px-4">
                           <span 
                             className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white"
-                            style={{ backgroundColor: report.reportType === "system" ? "#33295e" : "#B30089" }}
+                            style={{ backgroundColor: report.reportType === "system" ? "#33295e" : "#fd6d6d" }}
                           >
                             {report.reportType === "system" ? "System" : "Custom"}
                           </span>
@@ -439,7 +439,7 @@ export default function DashboardSettingsPage() {
                                               key={org.id}
                                               onClick={() => handleMATSelect(report.id, org.id)}
                                               className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
-                                                report.organisations.includes(org.id) ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                                report.organisations.includes(org.id) ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                               }`}
                                             >
                                               <span className={`text-sm ${report.organisations.includes(org.id) ? "text-white font-medium" : "text-slate-900"}`}>

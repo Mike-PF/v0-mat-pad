@@ -5,7 +5,7 @@ import { Plus, Send, Star, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const NAVY = "#33295e"
-const ACCENT = "#B30089"
+const ACCENT = "#fd6d6d"
 
 interface ChatMessage {
   id: string

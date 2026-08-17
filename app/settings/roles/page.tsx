@@ -358,7 +358,7 @@ export default function RolesPage() {
                               onClick={() => handleToggleUser(user.id)}
                               className={`w-full flex items-center px-4 py-2.5 transition-colors text-left ${
                                 isSelected 
-                                  ? "bg-[#B30089]" 
+                                  ? "bg-[#fd6d6d]" 
                                   : "hover:bg-slate-100"
                               }`}
                             >
@@ -653,7 +653,7 @@ export default function RolesPage() {
                                   setOrgSearch("")
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                  selectedOrganisation === mat.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                  selectedOrganisation === mat.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                 }`}
                               >
                                 <span className={`text-sm flex-1 text-left truncate ${selectedOrganisation === mat.id ? "text-white font-medium" : "text-slate-900"}`}>
@@ -684,7 +684,7 @@ export default function RolesPage() {
                                   setOrgSearch("")
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                  selectedOrganisation === school.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                  selectedOrganisation === school.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                 }`}
                               >
                                 <div className="flex-1 text-left min-w-0">

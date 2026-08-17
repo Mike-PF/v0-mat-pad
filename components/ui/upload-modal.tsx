@@ -72,8 +72,8 @@ export function UploadModal({ isOpen, onClose, onFileSelect, isProcessing = fals
           <div
             className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
               dragActive
-                ? "border-[#b30089] bg-[#b30089]/5"
-                : "border-slate-300 hover:border-[#b30089] hover:bg-[#b30089]/5"
+                ? "border-[#fd6d6d] bg-[#fd6d6d]/5"
+                : "border-slate-300 hover:border-[#fd6d6d] hover:bg-[#fd6d6d]/5"
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}

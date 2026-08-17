@@ -559,7 +559,7 @@ export default function OrganisationPage() {
                               key={mat.id}
                               onClick={() => handleSelect("mat", mat.id)}
                               className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                selectedType === "mat" && selectedId === mat.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                selectedType === "mat" && selectedId === mat.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                               }`}
                             >
                               <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-white font-medium" : "text-slate-900"}`}>
@@ -588,7 +588,7 @@ export default function OrganisationPage() {
                                 key={school.id}
                                 onClick={() => handleSelect("school", school.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                  selectedType === "school" && selectedId === school.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                  selectedType === "school" && selectedId === school.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                 }`}
                               >
                                 <div className="flex-1 text-left min-w-0">

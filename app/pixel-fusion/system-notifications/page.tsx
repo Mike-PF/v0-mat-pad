@@ -351,9 +351,9 @@ export default function SystemNotificationsPage() {
                 <div className="flex items-start gap-3">
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "#B3008918" }}
+                    style={{ backgroundColor: "#fd6d6d18" }}
                   >
-                    <Bell className="w-5 h-5" style={{ color: "#B30089" }} />
+                    <Bell className="w-5 h-5" style={{ color: "#fd6d6d" }} />
                   </div>
                   <div>
                     <h1 className="text-lg font-semibold text-slate-900">System Notifications</h1>

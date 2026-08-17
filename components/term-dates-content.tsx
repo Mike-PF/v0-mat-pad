@@ -240,7 +240,7 @@ export function TermDatesContent() {
                   (activeTab === "termdates" && !hasTermDatesToSave) || 
                   (activeTab === "censusdates" && !hasCensusDatesToSave)
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#B30089]"
+                    : "hover:bg-[#fd6d6d]"
                 }`}
                 style={{ backgroundColor: "#33295e" }}
                 disabled={(activeTab === "termdates" && !hasTermDatesToSave) || 
@@ -275,7 +275,7 @@ export function TermDatesContent() {
                         <div
                           onClick={() => handleSchoolChange(systemDatesOption)}
                           className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
-                            selectedSchool === systemDatesOption ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            selectedSchool === systemDatesOption ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                           }`}
                         >
                           <span className="text-sm">{systemDatesOption}</span>
@@ -286,7 +286,7 @@ export function TermDatesContent() {
                             key={school}
                             onClick={() => handleSchoolChange(school)}
                             className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
-                              selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              selectedSchool === school ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                             }`}
                           >
                             <span className="text-sm">{school}</span>
@@ -328,7 +328,7 @@ export function TermDatesContent() {
                             key={year.value}
                             onClick={() => handleAcademicYearChange(year.value)}
                             className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
-                              selectedAcademicYear === year.value ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              selectedAcademicYear === year.value ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                             }`}
                           >
                             <span className="text-sm">{year.label}</span>
@@ -368,7 +368,7 @@ export function TermDatesContent() {
                 onClick={() => handleTabChange("termdates")}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "termdates"
-                    ? "text-slate-900 border-[#B30089]"
+                    ? "text-slate-900 border-[#fd6d6d]"
                     : "text-slate-600 border-transparent hover:text-slate-900"
                 }`}
               >
@@ -378,7 +378,7 @@ export function TermDatesContent() {
                 onClick={() => handleTabChange("censusdates")}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "censusdates"
-                    ? "text-slate-900 border-[#B30089]"
+                    ? "text-slate-900 border-[#fd6d6d]"
                     : "text-slate-600 border-transparent hover:text-slate-900"
                 }`}
               >

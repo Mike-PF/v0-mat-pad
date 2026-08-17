@@ -27,7 +27,7 @@ export function HelpVideo({
       {buttonVariant === "icon" && (
         <button
           onClick={() => setIsOpen(true)}
-          className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500 hover:text-[#B30089]"
+          className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500 hover:text-[#fd6d6d]"
           title="Watch help video"
         >
           <HelpCircle className="w-5 h-5" />
@@ -37,7 +37,7 @@ export function HelpVideo({
       {buttonVariant === "text" && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-1.5 text-sm text-[#B30089] hover:text-[#8a006a] transition-colors font-medium"
+          className="flex items-center gap-1.5 text-sm text-[#fd6d6d] hover:text-[#e85555] transition-colors font-medium"
         >
           <PlayCircle className="w-4 h-4" />
           Watch tutorial
@@ -48,7 +48,7 @@ export function HelpVideo({
         <Button
           onClick={() => setIsOpen(true)}
           variant="outline"
-          className="flex items-center gap-2 border-[#B30089] text-[#B30089] hover:bg-[#B30089]/5 hover:text-[#B30089]"
+          className="flex items-center gap-2 border-[#fd6d6d] text-[#fd6d6d] hover:bg-[#fd6d6d]/5 hover:text-[#fd6d6d]"
         >
           <PlayCircle className="w-4 h-4" />
           Help Video
@@ -66,7 +66,7 @@ export function HelpVideo({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#fd6d6d]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{title}</h3>
                 <p className="text-sm text-white/80">{description}</p>
@@ -94,7 +94,7 @@ export function HelpVideo({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <p className="text-sm text-slate-500">
                 Still need help? Contact support at{" "}
-                <a href="mailto:support@matpad.co.uk" className="text-[#B30089] hover:underline">
+                <a href="mailto:support@matpad.co.uk" className="text-[#fd6d6d] hover:underline">
                   support@matpad.co.uk
                 </a>
               </p>
@@ -144,8 +144,8 @@ export function MultiVideoHelpBanner({
         className="mb-4 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors p-4 flex items-center gap-4"
       >
         {/* Icon */}
-        <div className="w-10 h-10 rounded-full bg-[#B30089]/10 flex items-center justify-center flex-shrink-0">
-          <PlayCircle className="w-5 h-5 text-[#B30089]" />
+        <div className="w-10 h-10 rounded-full bg-[#fd6d6d]/10 flex items-center justify-center flex-shrink-0">
+          <PlayCircle className="w-5 h-5 text-[#fd6d6d]" />
         </div>
 
         {/* Content */}
@@ -169,9 +169,9 @@ export function MultiVideoHelpBanner({
               }}
               className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex items-center gap-3 group"
             >
-              <PlayCircle className="w-5 h-5 text-[#B30089] flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <PlayCircle className="w-5 h-5 text-[#fd6d6d] flex-shrink-0 group-hover:scale-110 transition-transform" />
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-slate-900 group-hover:text-[#B30089]">{video.title}</h4>
+                <h4 className="text-sm font-medium text-slate-900 group-hover:text-[#fd6d6d]">{video.title}</h4>
                 <p className="text-xs text-slate-500">{video.description}</p>
               </div>
               {video.duration && (
@@ -192,7 +192,7 @@ export function MultiVideoHelpBanner({
             className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#fd6d6d]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{activeVideo.title}</h3>
                 <p className="text-sm text-white/80">{activeVideo.description}</p>
@@ -218,7 +218,7 @@ export function MultiVideoHelpBanner({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <p className="text-sm text-slate-500">
                 Still need help? Contact support at{" "}
-                <a href="mailto:support@matpad.co.uk" className="text-[#B30089] hover:underline">
+                <a href="mailto:support@matpad.co.uk" className="text-[#fd6d6d] hover:underline">
                   support@matpad.co.uk
                 </a>
               </p>
@@ -255,8 +255,8 @@ export function PageHelpBanner({
     <>
       <div className="mb-6 rounded-lg border border-slate-200 bg-white p-4 flex items-center gap-4">
         {/* Icon */}
-        <div className="w-14 h-14 rounded-full bg-[#B30089]/10 flex items-center justify-center flex-shrink-0">
-          <PlayCircle className="w-6 h-6 text-[#B30089]" />
+        <div className="w-14 h-14 rounded-full bg-[#fd6d6d]/10 flex items-center justify-center flex-shrink-0">
+          <PlayCircle className="w-6 h-6 text-[#fd6d6d]" />
         </div>
 
         {/* Content */}
@@ -268,7 +268,7 @@ export function PageHelpBanner({
         {/* Watch Tutorial Button */}
         <Button
           onClick={() => setIsOpen(true)}
-          className="bg-[#B30089] hover:bg-[#8a006a] text-white flex items-center gap-2 flex-shrink-0"
+          className="bg-[#fd6d6d] hover:bg-[#e85555] text-white flex items-center gap-2 flex-shrink-0"
         >
           <PlayCircle className="w-4 h-4" />
           Watch Tutorial
@@ -285,7 +285,7 @@ export function PageHelpBanner({
             className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#fd6d6d]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{pageTitle}</h3>
                 <p className="text-sm text-white/80">{pageDescription}</p>
@@ -311,7 +311,7 @@ export function PageHelpBanner({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <p className="text-sm text-slate-500">
                 Still need help? Contact support at{" "}
-                <a href="mailto:support@matpad.co.uk" className="text-[#B30089] hover:underline">
+                <a href="mailto:support@matpad.co.uk" className="text-[#fd6d6d] hover:underline">
                   support@matpad.co.uk
                 </a>
               </p>

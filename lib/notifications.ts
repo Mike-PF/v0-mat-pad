@@ -136,7 +136,7 @@ export function describeAudience(audience?: NotificationAudience): string {
   return `${targets.length} organisations`
 }
 
-const ACCENT = "#B30089"
+const ACCENT = "#fd6d6d"
 
 export const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
   { value: "update", label: "Update" },
