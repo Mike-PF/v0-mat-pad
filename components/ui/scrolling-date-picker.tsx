@@ -6,6 +6,8 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
 const NAVY = "#33295e"
+const ACCENT = "#fd6d6d"
+const ACCENT_MUTED = "#fd6d6d99" // accent with ~60% opacity for inactive sidebar entries
 const WEEKDAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
 
 interface ScrollingDatePickerProps {
@@ -142,7 +144,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
       >
         <div className="flex h-[420px]">
           {/* Sidebar: scrollable month list grouped by year */}
-          <div className="w-24 shrink-0 overflow-y-auto border-r border-slate-100 bg-slate-50 py-3">
+          <div className="w-24 shrink-0 overflow-y-auto border-r border-slate-100 bg-[#fd6d6d]/10 py-3">
             {months.map((m, i) => {
               const date = new Date(m.year, m.month, 1)
               const isActive = i === activeIndex
@@ -153,7 +155,7 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
                       type="button"
                       onClick={() => scrollToMonth(i)}
                       className="block w-full px-5 py-1.5 text-left text-lg font-bold"
-                      style={{ color: NAVY }}
+                      style={{ color: ACCENT }}
                     >
                       {m.year}
                     </button>
@@ -163,10 +165,10 @@ export function ScrollingDatePicker({ value, onChange, placeholder = "Select a d
                     type="button"
                     onClick={() => scrollToMonth(i)}
                     className={cn(
-                      "block w-full px-5 py-1.5 text-left text-lg transition-colors hover:text-[#33295e]",
-                      isActive ? "font-bold" : "font-normal text-slate-500",
+                      "block w-full px-5 py-1.5 text-left text-lg transition-colors",
+                      isActive ? "font-bold" : "font-normal",
                     )}
-                    style={isActive ? { color: NAVY } : undefined}
+                    style={{ color: isActive ? ACCENT : ACCENT_MUTED }}
                   >
                     {formatShortMonth(date)}
                   </button>
