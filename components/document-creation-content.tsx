@@ -1109,7 +1109,7 @@ export function DocumentCreationContent() {
                 variant="outline"
                 size="sm"
                 onClick={handleExitEditor}
-                className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                className="hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to List
@@ -1117,7 +1117,7 @@ export function DocumentCreationContent() {
               <Button
                 onClick={handleSaveConfiguration}
                 disabled={!documentName.trim() || !sectionName}
-                className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors disabled:opacity-50"
+                className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Configuration
@@ -1183,7 +1183,7 @@ export function DocumentCreationContent() {
                             type="checkbox"
                             checked={formLinks.length === 0}
                             onChange={() => setFormLinks([])}
-                            className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                            className="h-4 w-4 rounded border-slate-300 accent-[#33295e]"
                           />
                           No form link selected
                         </label>
@@ -1200,7 +1200,7 @@ export function DocumentCreationContent() {
                                   prev.includes(option) ? prev.filter((f) => f !== option) : [...prev, option],
                                 )
                               }
-                              className="h-4 w-4 rounded border-slate-300 accent-[#121051]"
+                              className="h-4 w-4 rounded border-slate-300 accent-[#33295e]"
                             />
                             {option}
                           </label>
@@ -1239,7 +1239,7 @@ export function DocumentCreationContent() {
                     type="button"
                     onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                      reportLevel === "mat" ? "bg-[#121051]" : "bg-slate-300"
+                      reportLevel === "mat" ? "bg-[#33295e]" : "bg-slate-300"
                     }`}
                   >
                     <span
@@ -1324,7 +1324,7 @@ export function DocumentCreationContent() {
                       setShowManualTagModal(false)
                       setManualTagName("")
                     }}
-                    className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                    className="hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                   >
                     Cancel
                   </Button>
@@ -1347,7 +1347,7 @@ export function DocumentCreationContent() {
                       }
                     }}
                     disabled={!manualTagName.trim()}
-                    className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white disabled:opacity-50 transition-colors"
                   >
                     Create Tag
                   </Button>
@@ -1401,7 +1401,7 @@ export function DocumentCreationContent() {
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
                     <div className="text-sm font-medium text-slate-600 mb-2">Preview:</div>
                     <div className="font-mono text-sm">
-                      <span className="text-[#b30089] font-semibold">FormatOther</span>
+                      <span className="text-[#fd6d6d] font-semibold">FormatOther</span>
                       <span className="text-slate-700">(</span>
                       <span className="text-blue-600">{formatOtherText}</span>
                       <span className="text-slate-700">)</span>
@@ -1447,7 +1447,7 @@ export function DocumentCreationContent() {
                       setCurrentFormattingTagId(null)
                       setFormatOtherText("")
                     }}
-                    className="bg-[#b30089] hover:bg-[#8a0068] text-white"
+                    className="bg-[#fd6d6d] hover:bg-[#8a0068] text-white"
                   >
                     Save Format
                   </Button>
@@ -1491,7 +1491,7 @@ export function DocumentCreationContent() {
                   <select
                     value={colourDropdown1}
                     onChange={(e) => setColourDropdown1(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b30089]"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#fd6d6d]"
                   >
                     <option value="">Please Select......</option>
                     {Array.from({ length: 100 }, (_, i) => {
@@ -1561,7 +1561,7 @@ export function DocumentCreationContent() {
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
                     <div className="text-sm font-medium text-slate-600 mb-2">Preview:</div>
                     <div className="font-mono text-sm">
-                      <span className="text-[#b30089] font-semibold">colour</span>
+                      <span className="text-[#fd6d6d] font-semibold">colour</span>
                       <span className="text-slate-700">(</span>
                       <span className="text-blue-600">{colourDropdown1}</span>
                       {colourDropdown2 && (
@@ -1646,7 +1646,7 @@ export function DocumentCreationContent() {
 
                       console.log("[v0] Colour configuration saved successfully")
                     }}
-                    className="bg-[#b30089] hover:bg-[#8a0068] text-white"
+                    className="bg-[#fd6d6d] hover:bg-[#8a0068] text-white"
                   >
                     Save Colour
                   </Button>
@@ -1826,13 +1826,13 @@ export function DocumentCreationContent() {
                     <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Condition Preview</p>
                     <p className="text-sm text-slate-700 font-mono">
                       <span className="font-semibold">IF</span>{" "}
-                      <span className="text-[#B30089]">
+                      <span className="text-[#fd6d6d]">
                         {conditionalSystemTag
                           ? tags.find((t) => t.id === conditionalSystemTag)?.name || "[System Tag]"
                           : "[System Tag]"}
                       </span>{" "}
                       <span className="font-semibold">{conditionalOperator || "[Operator]"}</span>{" "}
-                      <span className="text-[#B30089]">
+                      <span className="text-[#fd6d6d]">
                         {conditionalValue === "Other"
                           ? conditionalOtherText || "[Value]"
                           : conditionalValue || "[Value]"}
@@ -1868,7 +1868,7 @@ export function DocumentCreationContent() {
                       setConditionalFalseAction("") // Corrected setter call
                       setConditionalTagSearch("")
                     }}
-                    className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                    className="hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                   >
                     Cancel
                   </Button>
@@ -1911,7 +1911,7 @@ export function DocumentCreationContent() {
                       !conditionalTrueAction ||
                       !conditionalFalseAction
                     }
-                    className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white disabled:opacity-50 transition-colors"
                   >
                     Save Logic
                   </Button>
@@ -1936,7 +1936,7 @@ export function DocumentCreationContent() {
               <div className="flex gap-3">
                 <Button
                   onClick={handleSaveConfirm}
-                  className="flex-1 text-white hover:bg-[#B30089] hover:border-[#B30089] transition-colors"
+                  className="flex-1 text-white hover:bg-[#fd6d6d] hover:border-[#fd6d6d] transition-colors"
                   style={{ backgroundColor: "#0f0d42" }}
                 >
                   OK
@@ -1944,7 +1944,7 @@ export function DocumentCreationContent() {
                 <Button
                   onClick={handleSaveCancel}
                   variant="outline"
-                  className="flex-1 bg-transparent hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                  className="flex-1 bg-transparent hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                 >
                   Cancel
                 </Button>
@@ -1970,7 +1970,7 @@ export function DocumentCreationContent() {
               <p className="text-slate-700 mb-6">{notificationMessage}</p>
               <Button
                 onClick={() => setShowNotification(false)}
-                className="w-full text-white hover:bg-[#B30089] hover:border-[#B30089] transition-colors"
+                className="w-full text-white hover:bg-[#fd6d6d] hover:border-[#fd6d6d] transition-colors"
                 style={{ backgroundColor: "#0f0d42" }}
               >
                 OK
@@ -1993,7 +1993,7 @@ export function DocumentCreationContent() {
                       setIsCreatingNew(false)
                       setSelectedDocument(null)
                     }}
-                    className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                    className="hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to List
@@ -2013,12 +2013,12 @@ export function DocumentCreationContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => document.getElementById("report-image-upload")?.click()}
-                          className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                          className="group hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                           title={reportImage ? `Current: ${reportImage.name}` : "Upload Report Image"}
                         >
                           <ImageIcon
                             className="w-4 h-4 transition-colors group-hover:!text-white"
-                            style={{ color: reportImage ? "#b30089" : "#0f0d42" }}
+                            style={{ color: reportImage ? "#fd6d6d" : "#0f0d42" }}
                           />
                         </Button>
                         <Button
@@ -2032,7 +2032,7 @@ export function DocumentCreationContent() {
                             setNotificationMessage(`Downloading ${uploadedFile.name}...`)
                             setShowNotification(true)
                           }}
-                          className="group hover:bg-[#b30089] hover:text-white hover:border-[#b30089] transition-colors"
+                          className="group hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                         >
                           <Download
                             className="w-4 h-4 transition-colors group-hover:!text-white"
@@ -2044,7 +2044,7 @@ export function DocumentCreationContent() {
                     <Button
                       onClick={handleSave}
                       disabled={!selectedSP || !documentName || !uploadedFile}
-                      className="bg-[#121051] hover:bg-[#B30089] text-white disabled:opacity-50 transition-colors"
+                      className="bg-[#33295e] hover:bg-[#fd6d6d] text-white disabled:opacity-50 transition-colors"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Save Configuration
@@ -2076,7 +2076,7 @@ export function DocumentCreationContent() {
                       variant="outline"
                       onClick={() => setShowUploadModal(true)}
                       disabled={isProcessing}
-                      className="w-full justify-start text-left font-normal hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                      className="w-full justify-start text-left font-normal hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                     >
                       {isProcessing ? "Processing..." : uploadedFile ? uploadedFile.name : "Upload Document"}
                     </Button>
@@ -2092,7 +2092,7 @@ export function DocumentCreationContent() {
                     className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                       activeTab === "datapoint"
                         ? "text-slate-900 border-primary"
-                        : "text-slate-600 border-transparent hover:text-[#b30089] hover:border-[#b30089]/30"
+                        : "text-slate-600 border-transparent hover:text-[#fd6d6d] hover:border-[#fd6d6d]/30"
                     }`}
                   >
                     Data Point
@@ -2210,7 +2210,7 @@ export function DocumentCreationContent() {
 
                   <Button
                     onClick={handleCreateNew}
-                    className="bg-[#121051] hover:bg-[#B30089] text-white transition-colors"
+                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create New Document
@@ -2245,7 +2245,7 @@ export function DocumentCreationContent() {
                   return (
                     <div
                       key={doc.id}
-                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-l-4 hover:border-l-[#b30089] transition-all"
+                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-l-4 hover:border-l-[#fd6d6d] transition-all"
                     >
                       <div className="flex items-center gap-4">
                         <h3 className="font-semibold text-slate-900">{doc.name}</h3>
@@ -2315,7 +2315,7 @@ export function DocumentCreationContent() {
                                         : config?.roles || "All"
                                     }
                                     onChange={(e) => handleRolesChange(doc.id, e.target.value)}
-                                    className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#b30089]"
+                                    className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d]"
                                   >
                                     <option value="All">All</option>
                                     <option value="Specific">Specific</option>
@@ -2343,7 +2343,7 @@ export function DocumentCreationContent() {
                                             [doc.id]: { ...prev[doc.id], selectedRoles: selectedOptions },
                                           }))
                                         }}
-                                        className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#b30089] min-w-[120px]"
+                                        className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d] min-w-[120px]"
                                         size={3}
                                       >
                                         <option value="Admin">Admin</option>
@@ -2426,13 +2426,13 @@ export function DocumentCreationContent() {
                           {documentTags.filter((t) => t.matched).length}
                         </div>
                       </div>
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#B30089" }}>
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#fd6d6d" }}>
                         <div className="text-xs text-white/90">Unmatched</div>
                         <div className="text-xl font-bold text-white">
                           {documentTags.length - documentTags.filter((t) => t.matched).length}
                         </div>
                       </div>
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#121051" }}>
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: "#33295e" }}>
                         <div className="text-xs text-white/90">Available System</div>
                         <div className="text-xl font-bold text-white">{tags.filter((t) => !t.matched).length}</div>
                       </div>
@@ -2454,7 +2454,7 @@ export function DocumentCreationContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowDocTagFilterDropdown(!showDocTagFilterDropdown)}
-                        className="flex items-center gap-2 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                        className="flex items-center gap-2 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                       >
                         <Sliders className="w-4 h-4" />
                         Filter
@@ -2475,7 +2475,7 @@ export function DocumentCreationContent() {
                                 }`}
                               >
                                 <span>All</span>
-                                {docTagFilter === "all" && <Check className="w-4 h-4" style={{ color: "#B30089" }} />}
+                                {docTagFilter === "all" && <Check className="w-4 h-4" style={{ color: "#fd6d6d" }} />}
                               </button>
                               <button
                                 onClick={() => {
@@ -2488,7 +2488,7 @@ export function DocumentCreationContent() {
                               >
                                 <span>Matched</span>
                                 {docTagFilter === "matched" && (
-                                  <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                  <Check className="w-4 h-4" style={{ color: "#fd6d6d" }} />
                                 )}
                               </button>
                               <button
@@ -2502,7 +2502,7 @@ export function DocumentCreationContent() {
                               >
                                 <span>Not Matched</span>
                                 {docTagFilter === "notmatched" && (
-                                  <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                  <Check className="w-4 h-4" style={{ color: "#fd6d6d" }} />
                                 )}
                               </button>
                             </div>
@@ -2549,7 +2549,7 @@ export function DocumentCreationContent() {
                                     {docTag.id === rangeStartTagId && (
                                       <div
                                         className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
-                                        style={{ backgroundColor: "#121051", color: "white" }}
+                                        style={{ backgroundColor: "#33295e", color: "white" }}
                                       >
                                         <Check className="w-3 h-3" />
                                         Range Start Selected
@@ -2558,7 +2558,7 @@ export function DocumentCreationContent() {
                                     {docTag.id === rangeEndTagId && (
                                       <div
                                         className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
-                                        style={{ backgroundColor: "#121051", color: "white" }}
+                                        style={{ backgroundColor: "#33295e", color: "white" }}
                                       >
                                         <Check className="w-3 h-3" />
                                         Range End Selected
@@ -2615,7 +2615,7 @@ export function DocumentCreationContent() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => handleRangeStart(docTag.id)}
-                                          className="flex items-center gap-1.5 transition-colors bg-white border-slate-300 text-slate-900 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="flex items-center gap-1.5 transition-colors bg-white border-slate-300 text-slate-900 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d]"
                                         >
                                           Range Start
                                         </Button>
@@ -2625,12 +2625,12 @@ export function DocumentCreationContent() {
                                           onClick={() => {
                                             handleOpenIfModal(docTag.id)
                                           }}
-                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d]"
                                           title="Add IF conditional logic"
                                         >
                                           <GitBranch
                                             className={`w-4 h-4 transition-colors group-hover:text-white ${
-                                              tagConditionalLogic[docTag.id] ? "text-[#b30089]" : "text-[#0f0d42]"
+                                              tagConditionalLogic[docTag.id] ? "text-[#fd6d6d]" : "text-[#0f0d42]"
                                             }`}
                                           />
                                         </Button>
@@ -2643,10 +2643,10 @@ export function DocumentCreationContent() {
                                           variant="outline"
                                           size="sm"
                                           onClick={handleCancelRange}
-                                          className="flex items-center gap-1.5 transition-colors hover:bg-[#9a0074] hover:border-[#9a0074] bg-transparent"
+                                          className="flex items-center gap-1.5 transition-colors hover:bg-[#e85555] hover:border-[#e85555] bg-transparent"
                                           style={{
-                                            backgroundColor: "#B30089",
-                                            borderColor: "#B30089",
+                                            backgroundColor: "#fd6d6d",
+                                            borderColor: "#fd6d6d",
                                             color: "white",
                                           }}
                                         >
@@ -2658,12 +2658,12 @@ export function DocumentCreationContent() {
                                           onClick={() => {
                                             handleOpenIfModal(docTag.id)
                                           }}
-                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d]"
                                           title="Add IF conditional logic"
                                         >
                                           <GitBranch
                                             className={`w-4 h-4 transition-colors group-hover:text-white ${
-                                              tagConditionalLogic[docTag.id] ? "text-[#b30089]" : "text-[#0f0d42]"
+                                              tagConditionalLogic[docTag.id] ? "text-[#fd6d6d]" : "text-[#0f0d42]"
                                             }`}
                                           />
                                         </Button>
@@ -2676,12 +2676,12 @@ export function DocumentCreationContent() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => handleRangeEnd(docTag.id)}
-                                          className="flex items-center gap-1.5 transition-colors bg-white border-slate-300 text-slate-900 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="flex items-center gap-1.5 transition-colors bg-white border-slate-300 text-slate-900 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d]"
                                           style={
                                             rangeEndTagId === docTag.id
                                               ? {
-                                                  backgroundColor: "#B30089",
-                                                  borderColor: "#B30089",
+                                                  backgroundColor: "#fd6d6d",
+                                                  borderColor: "#fd6d6d",
                                                   color: "white",
                                                 }
                                               : undefined
@@ -2695,12 +2695,12 @@ export function DocumentCreationContent() {
                                           onClick={() => {
                                             handleOpenIfModal(docTag.id)
                                           }}
-                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#B30089] hover:text-white hover:border-[#B30089]"
+                                          className="group flex items-center justify-center transition-colors bg-white border-slate-300 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d]"
                                           title="Add IF conditional logic"
                                         >
                                           <GitBranch
                                             className={`w-4 h-4 transition-colors group-hover:text-white ${
-                                              tagConditionalLogic[docTag.id] ? "text-[#b30089]" : "text-[#0f0d42]"
+                                              tagConditionalLogic[docTag.id] ? "text-[#fd6d6d]" : "text-[#0f0d42]"
                                             }`}
                                           />
                                         </Button>
@@ -2713,7 +2713,7 @@ export function DocumentCreationContent() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleUnmatchTag(docTag.id)}
-                                    className="text-red-600 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                                    className="text-red-600 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                                   >
                                     <X className="w-4 h-4 mr-1" />
                                     Unmatch
@@ -2769,7 +2769,7 @@ export function DocumentCreationContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowManualTagModal(true)}
-                        className="flex items-center gap-2 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                        className="flex items-center gap-2 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         Add Tag
@@ -2779,7 +2779,7 @@ export function DocumentCreationContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                          className="flex items-center gap-2 hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                          className="flex items-center gap-2 hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                         >
                           <Sliders className="w-4 h-4" />
                           Filter
@@ -2804,7 +2804,7 @@ export function DocumentCreationContent() {
                                 >
                                   <span>All</span>
                                   {systemTagFilter === "all" && (
-                                    <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                    <Check className="w-4 h-4" style={{ color: "#fd6d6d" }} />
                                   )}
                                 </button>
                                 <button
@@ -2818,7 +2818,7 @@ export function DocumentCreationContent() {
                                 >
                                   <span>Filter By Answers</span>
                                   {systemTagFilter === "answers" && (
-                                    <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                    <Check className="w-4 h-4" style={{ color: "#fd6d6d" }} />
                                   )}
                                 </button>
                                 <button
@@ -2832,7 +2832,7 @@ export function DocumentCreationContent() {
                                 >
                                   <span>Filter By Ranges</span>
                                   {systemTagFilter === "ranges" && (
-                                    <Check className="w-4 h-4" style={{ color: "#B30089" }} />
+                                    <Check className="w-4 h-4" style={{ color: "#fd6d6d" }} />
                                   )}
                                 </button>
                               </div>
@@ -2870,7 +2870,7 @@ export function DocumentCreationContent() {
                         return (
                           <div
                             key={tag.id}
-                            className="p-3 border rounded-lg bg-white border-slate-200 hover:border-l-4 hover:border-l-[#b30089] transition-all cursor-pointer"
+                            className="p-3 border rounded-lg bg-white border-slate-200 hover:border-l-4 hover:border-l-[#fd6d6d] transition-all cursor-pointer"
                             onClick={() => {
                               // This onClick is for the default "Match" behavior if no tag is selected
                               const firstUnmatched = documentTags.find((dt) => !dt.matched)
@@ -2907,16 +2907,16 @@ export function DocumentCreationContent() {
                                   style={
                                     selectingTagMode?.systemTagId === tag.id
                                       ? {
-                                          backgroundColor: "#B30089",
+                                          backgroundColor: "#fd6d6d",
                                           color: "white",
-                                          borderColor: "#B30089",
+                                          borderColor: "#fd6d6d",
                                         }
                                       : undefined
                                   }
                                   className={
                                     selectingTagMode?.systemTagId === tag.id
-                                      ? "hover:bg-[#9a0074] hover:border-[#9a0074] transition-colors"
-                                      : "hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                                      ? "hover:bg-[#e85555] hover:border-[#e85555] transition-colors"
+                                      : "hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                                   }
                                 >
                                   {selectingTagMode?.systemTagId === tag.id ? "Selected" : "Select Tag"}
@@ -2931,7 +2931,7 @@ export function DocumentCreationContent() {
                                       handleMatchTag(firstUnmatched.id, tag.id)
                                     }
                                   }}
-                                  className="hover:bg-[#B30089] hover:text-white hover:border-[#B30089] transition-colors"
+                                  className="hover:bg-[#fd6d6d] hover:text-white hover:border-[#fd6d6d] transition-colors"
                                 >
                                   <Link className="w-3 h-3 mr-1" />
                                   Match

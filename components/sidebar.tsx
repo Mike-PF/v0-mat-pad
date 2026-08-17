@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { isPlatformAdmin } from "@/lib/current-org"
 
-const ACCENT = "hsl(314 100% 35%)"
+const ACCENT = "#fd6d6d"
 
 const schools = [
   { id: "1", name: "All Saints' Catholic High School", abbr: "ASHS" },
@@ -61,7 +61,7 @@ export function Sidebar({}: SidebarProps) {
   return (
     <div
       className="flex flex-col relative w-[60px]"
-      style={{ backgroundColor: "#121051" }}
+      style={{ backgroundColor: "#33295e" }}
     >
       {/* Nav Items */}
       <nav className="flex-1 pt-4 px-2 space-y-1">

@@ -33,7 +33,7 @@ import {
   } from "lucide-react"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
 
-const NAVY = "#121051"
+const NAVY = "#33295e"
 
 type ConnStatus = "healthy" | "error" | "warning" | "syncing" | "disabled"
 
@@ -766,7 +766,7 @@ export default function ConnectionManagementPage() {
                                           checked={c.enabled}
                                           onCheckedChange={() => toggleConnection(c.id)}
                                           aria-label={`Toggle ${c.school}`}
-                                          className="data-[state=checked]:bg-[#121051]"
+                                          className="data-[state=checked]:bg-[#33295e]"
                                         />
                                       </td>
                                     </tr>

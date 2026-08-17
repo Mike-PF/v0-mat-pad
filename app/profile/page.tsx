@@ -60,7 +60,7 @@ const userData = {
   ],
 }
 
-const ACCENT = 'hsl(314 100% 35%)'
+const ACCENT = '#fd6d6d'
 
 function getRoleBadgeColor(role: string): string {
   const colors: Record<string, string> = {

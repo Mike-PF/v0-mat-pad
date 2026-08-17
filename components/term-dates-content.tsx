@@ -240,9 +240,9 @@ export function TermDatesContent() {
                   (activeTab === "termdates" && !hasTermDatesToSave) || 
                   (activeTab === "censusdates" && !hasCensusDatesToSave)
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#B30089]"
+                    : "hover:bg-[#fd6d6d]"
                 }`}
-                style={{ backgroundColor: "#121051" }}
+                style={{ backgroundColor: "#33295e" }}
                 disabled={(activeTab === "termdates" && !hasTermDatesToSave) || 
                          (activeTab === "censusdates" && !hasCensusDatesToSave)}
               >
@@ -262,7 +262,7 @@ export function TermDatesContent() {
                 </label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="flex items-center gap-2 h-11 w-full px-3 bg-white border border-slate-200 rounded-lg text-sm text-left hover:border-[#121051] transition-colors">
+                    <button className="flex items-center gap-2 h-11 w-full px-3 bg-white border border-slate-200 rounded-lg text-sm text-left hover:border-[#33295e] transition-colors">
                       <span className="flex-1 truncate text-slate-700">
                         {selectedSchool || (activeTab === "censusdates" ? "Select..." : "Select school...")}
                       </span>
@@ -275,7 +275,7 @@ export function TermDatesContent() {
                         <div
                           onClick={() => handleSchoolChange(systemDatesOption)}
                           className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
-                            selectedSchool === systemDatesOption ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                            selectedSchool === systemDatesOption ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                           }`}
                         >
                           <span className="text-sm">{systemDatesOption}</span>
@@ -286,7 +286,7 @@ export function TermDatesContent() {
                             key={school}
                             onClick={() => handleSchoolChange(school)}
                             className={`w-full flex items-center px-3 py-2.5 cursor-pointer transition-colors ${
-                              selectedSchool === school ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              selectedSchool === school ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                             }`}
                           >
                             <span className="text-sm">{school}</span>
@@ -310,7 +310,7 @@ export function TermDatesContent() {
                       className={`flex items-center gap-2 h-11 w-full px-3 border border-slate-200 rounded-lg text-sm text-left transition-colors ${
                         !selectedSchool 
                           ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                          : "bg-white text-slate-700 hover:border-[#121051]"
+                          : "bg-white text-slate-700 hover:border-[#33295e]"
                       }`}
                       disabled={!selectedSchool}
                     >
@@ -328,7 +328,7 @@ export function TermDatesContent() {
                             key={year.value}
                             onClick={() => handleAcademicYearChange(year.value)}
                             className={`w-full flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
-                              selectedAcademicYear === year.value ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              selectedAcademicYear === year.value ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                             }`}
                           >
                             <span className="text-sm">{year.label}</span>
@@ -354,7 +354,7 @@ export function TermDatesContent() {
                     handleSchoolChange("")
                     handleAcademicYearChange("")
                   }}
-                  className="text-sm text-[#121051] hover:underline h-11 flex items-center"
+                  className="text-sm text-[#33295e] hover:underline h-11 flex items-center"
                 >
                   Clear Selection
                 </button>
@@ -368,7 +368,7 @@ export function TermDatesContent() {
                 onClick={() => handleTabChange("termdates")}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "termdates"
-                    ? "text-slate-900 border-[#B30089]"
+                    ? "text-slate-900 border-[#fd6d6d]"
                     : "text-slate-600 border-transparent hover:text-slate-900"
                 }`}
               >
@@ -378,7 +378,7 @@ export function TermDatesContent() {
                 onClick={() => handleTabChange("censusdates")}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "censusdates"
-                    ? "text-slate-900 border-[#B30089]"
+                    ? "text-slate-900 border-[#fd6d6d]"
                     : "text-slate-600 border-transparent hover:text-slate-900"
                 }`}
               >
@@ -499,7 +499,7 @@ export function TermDatesContent() {
               {/* Autumn Census */}
               <div className="border border-slate-200 rounded-lg p-5 bg-white">
                 <div className="mb-4">
-                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Autumn Census</h3>
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#33295e" }}>Autumn Census</h3>
                   <p className="text-sm text-slate-500">September - December</p>
                 </div>
                 <div>
@@ -517,7 +517,7 @@ export function TermDatesContent() {
               {/* Spring Census */}
               <div className="border border-slate-200 rounded-lg p-5 bg-white">
                 <div className="mb-4">
-                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Spring Census</h3>
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#33295e" }}>Spring Census</h3>
                   <p className="text-sm text-slate-500">January - March</p>
                 </div>
                 <div>
@@ -535,7 +535,7 @@ export function TermDatesContent() {
               {/* Summer Census */}
               <div className="border border-slate-200 rounded-lg p-5 bg-white">
                 <div className="mb-4">
-                  <h3 className="font-semibold text-slate-900" style={{ color: "#121051" }}>Summer Census</h3>
+                  <h3 className="font-semibold text-slate-900" style={{ color: "#33295e" }}>Summer Census</h3>
                   <p className="text-sm text-slate-500">April - July</p>
                 </div>
                 <div>
@@ -556,26 +556,26 @@ export function TermDatesContent() {
 
       {/* Census Dates Summary */}
       {selectedSchool && selectedAcademicYear && activeTab === "censusdates" && (
-        <Card className="border-l-4" style={{ borderLeftColor: "#121051" }}>
+        <Card className="border-l-4" style={{ borderLeftColor: "#33295e" }}>
           <CardContent className="py-4">
-            <h4 className="font-semibold mb-3" style={{ color: "#121051" }}>Census Dates Summary</h4>
+            <h4 className="font-semibold mb-3" style={{ color: "#33295e" }}>Census Dates Summary</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
               <div>
-                <span style={{ color: "#121051" }} className="font-medium">Total Census:</span>
+                <span style={{ color: "#33295e" }} className="font-medium">Total Census:</span>
                 <span className="ml-2 text-slate-700">3 census dates</span>
               </div>
               <div>
-                <span style={{ color: "#121051" }} className="font-medium">Academic Year:</span>
+                <span style={{ color: "#33295e" }} className="font-medium">Academic Year:</span>
                 <span className="ml-2 text-slate-700">{selectedAcademicYear}</span>
               </div>
               <div>
-                <span style={{ color: "#121051" }} className="font-medium">Status:</span>
+                <span style={{ color: "#33295e" }} className="font-medium">Status:</span>
                 <span className="ml-2 text-slate-700">
                   {Object.values(censusDates).filter((date) => date).length === 3 ? "Complete" : "Incomplete"}
                 </span>
               </div>
               <div>
-                <span style={{ color: "#121051" }} className="font-medium">Completion:</span>
+                <span style={{ color: "#33295e" }} className="font-medium">Completion:</span>
                 <span className="ml-2 text-slate-700">
                   {Object.values(censusDates).filter((date) => date).length} / 3 dates
                 </span>

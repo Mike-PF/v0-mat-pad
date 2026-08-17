@@ -457,7 +457,7 @@ export default function UsersPage() {
                                 key={mat.id}
                                 onClick={() => handleSelect("mat", mat.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                  selectedType === "mat" && selectedId === mat.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                  selectedType === "mat" && selectedId === mat.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                 }`}
                               >
                                 <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-white font-medium" : "text-slate-900"}`}>
@@ -486,7 +486,7 @@ export default function UsersPage() {
                                   key={school.id}
                                   onClick={() => handleSelect("school", school.id)}
                                   className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                    selectedType === "school" && selectedId === school.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                    selectedType === "school" && selectedId === school.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                   }`}
                                 >
                                   <div className="flex-1 text-left min-w-0">
@@ -521,7 +521,7 @@ export default function UsersPage() {
                       setSelectedType(null)
                       setSelectedId(null)
                     }}
-                    className="text-sm text-[#121051] hover:underline"
+                    className="text-sm text-[#33295e] hover:underline"
                   >
                     Clear Selection
                   </button>
@@ -539,7 +539,7 @@ export default function UsersPage() {
                   <Button 
                     onClick={handleAddUser}
                     className="text-white"
-                    style={{ backgroundColor: "#121051" }}
+                    style={{ backgroundColor: "#33295e" }}
                   >
                     Add user
                   </Button>
@@ -585,7 +585,7 @@ export default function UsersPage() {
                                   <button 
                                     type="button" 
                                     onClick={() => handleViewPermissions(user.roles)}
-                                    className="text-left hover:text-[#B30089] transition-colors underline decoration-dotted underline-offset-2"
+                                    className="text-left hover:text-[#fd6d6d] transition-colors underline decoration-dotted underline-offset-2"
                                   >
                                     {user.roles.join(", ")}
                                   </button>
@@ -612,7 +612,7 @@ export default function UsersPage() {
                                     <button type="button" className="text-left">
                                       <div className="flex flex-col gap-0.5">
                                         <span>{user.schools[0].urn} {user.schools[0].name}</span>
-                                        <span className="text-[#B30089] hover:underline cursor-pointer">
+                                        <span className="text-[#fd6d6d] hover:underline cursor-pointer">
                                           +{user.schools.length - 1} more schools
                                         </span>
                                       </div>
@@ -641,7 +641,7 @@ export default function UsersPage() {
                                         e.stopPropagation()
                                         handleDeleteClick(user)
                                       }}
-                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                      className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
@@ -661,7 +661,7 @@ export default function UsersPage() {
                                         e.stopPropagation()
                                         handleEditUser(user)
                                       }}
-                                      className="p-2 text-slate-400 hover:text-[#121051] hover:bg-slate-50 rounded transition-colors"
+                                      className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
                                     >
                                       <Pencil className="w-4 h-4" />
                                     </button>
@@ -703,7 +703,7 @@ export default function UsersPage() {
                 <Button
                   onClick={handleConfirmDelete}
                   className="px-4 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Delete
                 </Button>
@@ -777,7 +777,7 @@ export default function UsersPage() {
                       <span className="text-sm text-slate-900 flex-1 truncate">All Schools</span>
                     ) : editSelectedSchools.length > 0 ? (
                       <>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#121051" }}>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#33295e" }}>
                           {editSelectedSchools.length}
                         </span>
                         <span className="text-sm text-slate-900 flex-1 truncate">
@@ -812,7 +812,7 @@ export default function UsersPage() {
                           if (!editAllSchools) setEditSelectedSchools([])
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                          editAllSchools ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                          editAllSchools ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                         }`}
                       >
                         All Schools
@@ -828,7 +828,7 @@ export default function UsersPage() {
                               toggleSchool(school)
                             }}
                             className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                              isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              isSelected ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                             }`}
                           >
                             {school.name}
@@ -853,7 +853,7 @@ export default function UsersPage() {
                   >
                     {editSelectedRoles.length > 0 ? (
                       <>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#121051" }}>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium text-white" style={{ backgroundColor: "#33295e" }}>
                           {editSelectedRoles.length}
                         </span>
                         <span className="text-sm text-slate-900 flex-1 truncate">
@@ -888,7 +888,7 @@ export default function UsersPage() {
                             type="button"
                             onClick={() => toggleRole(role)}
                             className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                              isSelected ? "bg-[#B30089] text-white" : "hover:bg-slate-50 text-slate-900"
+                              isSelected ? "bg-[#fd6d6d] text-white" : "hover:bg-slate-50 text-slate-900"
                             }`}
                           >
                             {role}
@@ -904,7 +904,7 @@ export default function UsersPage() {
                 <Button
                   onClick={handleSaveUser}
                   className="px-6 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Save
                 </Button>
@@ -991,7 +991,7 @@ export default function UsersPage() {
                 <Button
                   onClick={() => setPermissionsModalOpen(false)}
                   className="px-6 text-white"
-                  style={{ backgroundColor: "#121051" }}
+                  style={{ backgroundColor: "#33295e" }}
                 >
                   Close
                 </Button>

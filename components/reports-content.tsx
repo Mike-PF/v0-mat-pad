@@ -171,7 +171,7 @@ export const reportCategories = [
   {
     id: "behaviour",
     name: "Behaviour",
-    color: "#B3008B",
+    color: "#fd6d6d",
     reports: [
       {
         id: "behaviour-overview",
@@ -333,7 +333,7 @@ export const reportCategories = [
   {
     id: "estates",
     name: "Estates",
-    color: "#F7555A",
+    color: "#fd6d6d",
     reports: [
       {
         id: "capacity-planning",
@@ -497,7 +497,7 @@ export function ReportsContent() {
           <button
             onClick={() => setShowAiChat(true)}
             className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
-            style={{ backgroundColor: "#B30089" }}
+            style={{ backgroundColor: "#fd6d6d" }}
             aria-label="Open AI Chat"
           >
             <Sparkles className="w-8 h-8 text-white" />
@@ -522,7 +522,7 @@ export function ReportsContent() {
         <button
           onClick={() => setChatMinimized(false)}
           className="fixed bottom-8 right-0 z-40 flex items-center gap-1.5 rounded-l-full py-2 pl-3 pr-2 shadow-lg hover:shadow-xl transition-all text-white"
-          style={{ backgroundColor: "#B30089" }}
+          style={{ backgroundColor: "#fd6d6d" }}
           aria-label="Show AI Chat button"
           title="Show AI Chat"
         >
@@ -536,7 +536,7 @@ export function ReportsContent() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-end md:p-6">
           <div className="w-full md:w-96 bg-white rounded-t-lg md:rounded-lg shadow-2xl flex flex-col max-h-[80vh] md:max-h-[600px]">
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#B30089] to-[#121051] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
+            <div className="bg-gradient-to-r from-[#fd6d6d] to-[#33295e] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
               <div>
                 <h3 className="text-white font-semibold">MATpad AI</h3>
                 <p className="text-white/80 text-sm">Ask about your data</p>
@@ -565,7 +565,7 @@ export function ReportsContent() {
                 {chatMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#E8D5E8" }}>
-                      <Sparkles className="w-10 h-10" style={{ color: "#B30089" }} />
+                      <Sparkles className="w-10 h-10" style={{ color: "#fd6d6d" }} />
                     </div>
                     <h4 className="text-lg font-semibold text-slate-900 mb-2">How can I help?</h4>
                     <p className="text-sm text-slate-600 mb-6">Ask me anything about your reports, attendance data, attainment figures, or get insights from your school data.</p>
@@ -600,7 +600,7 @@ export function ReportsContent() {
                         <div
                           className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-line ${
                             msg.role === "user"
-                              ? "bg-[#121051] text-white"
+                              ? "bg-[#33295e] text-white"
                               : "bg-slate-100 text-slate-800"
                           }`}
                         >
@@ -638,7 +638,7 @@ export function ReportsContent() {
                     onClick={handleSendChatMessage}
                     disabled={!chatInput.trim()}
                     className="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
-                    style={{ backgroundColor: chatInput.trim() ? "#B30089" : "#C0C0C0" }}
+                    style={{ backgroundColor: chatInput.trim() ? "#fd6d6d" : "#C0C0C0" }}
                   >
                     <Send className="w-4 h-4 text-white" />
                   </button>
@@ -661,7 +661,7 @@ export function ReportsContent() {
           {/* Header with report info */}
           <div 
             className="px-6 py-2 flex items-center gap-4 border-b border-white/10"
-            style={{ backgroundColor: selectedCategory?.color || "#121051" }}
+            style={{ backgroundColor: selectedCategory?.color || "#33295e" }}
           >
             <Button
               variant="ghost"
@@ -795,9 +795,9 @@ export function ReportsContent() {
                               <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: report.categoryColor }} />
                               <div className="flex-1 min-w-0 pr-6">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="font-medium text-slate-900 group-hover:text-[#121051] transition-colors line-clamp-1">{report.name}</h3>
+                                  <h3 className="font-medium text-slate-900 group-hover:text-[#33295e] transition-colors line-clamp-1">{report.name}</h3>
                                   {isSystem ? (
-                                    <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#121051]/10 text-[#121051]">
+                                    <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#33295e]/10 text-[#33295e]">
                                       System
                                     </span>
                                   ) : (
@@ -877,13 +877,13 @@ export function ReportsContent() {
                             <div className="flex-1 min-w-0 pr-6">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <h3 className={`font-medium transition-colors line-clamp-1 ${
-                                  isInactive ? "text-slate-400" : "text-slate-900 group-hover:text-[#121051]"
+                                  isInactive ? "text-slate-400" : "text-slate-900 group-hover:text-[#33295e]"
                                 }`}>
                                   {report.name}
                                 </h3>
                                 {isSystem ? (
                                   <span className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                    isInactive ? "bg-slate-200 text-slate-400" : "bg-[#121051]/10 text-[#121051]"
+                                    isInactive ? "bg-slate-200 text-slate-400" : "bg-[#33295e]/10 text-[#33295e]"
                                   }`}>
                                     System
                                   </span>
@@ -938,7 +938,7 @@ export function ReportsContent() {
               <p className="text-slate-500">No reports found matching "{searchQuery}"</p>
               <button
                 onClick={() => setSearchQuery("")}
-                className="text-[#121051] hover:underline mt-2 text-sm"
+                className="text-[#33295e] hover:underline mt-2 text-sm"
               >
                 Clear search
               </button>
