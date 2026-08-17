@@ -25,7 +25,7 @@ import {
 import Link from "next/link"
 import { useNotifications, getTypeIcon, getTypeColor, isCurrentlyNew, downloadDocument, type WhatsNewItem } from "@/lib/notifications"
 
-const ACCENT = "hsl(314 100% 35%)"
+const ACCENT = "#fd6d6d"
 
 // --- Mock data ---
 

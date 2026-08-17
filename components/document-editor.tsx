@@ -31,7 +31,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { loadedDocumentHtml } from "@/lib/loaded-document"
 
-const ACCENT = "hsl(314 100% 35%)"
+const ACCENT = "#fd6d6d"
 const NAVY = "#33295e"
 
 // Questions organized by section - a section can have many questions

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { isPlatformAdmin } from "@/lib/current-org"
 
-const ACCENT = "hsl(314 100% 35%)"
+const ACCENT = "#fd6d6d"
 
 const schools = [
   { id: "1", name: "All Saints' Catholic High School", abbr: "ASHS" },
