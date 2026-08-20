@@ -456,26 +456,36 @@ export function TermDatesContent() {
             </div>
 
             {/* Summary Information */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Academic Year Summary</h4>
+            <div className="mt-8 p-4 rounded-lg" style={{ backgroundColor: "#fd6d6d1a" }}>
+              <h4 className="font-medium mb-2" style={{ color: "#33295e" }}>
+                Academic Year Summary
+              </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-700 font-medium">Total Terms:</span>
-                  <span className="ml-2 text-blue-900">6 half terms</span>
+                  <span className="font-medium" style={{ color: "#33295e" }}>
+                    Total Terms:
+                  </span>
+                  <span className="ml-2 text-slate-700">6 half terms</span>
                 </div>
                 <div>
-                  <span className="text-blue-700 font-medium">Academic Year:</span>
-                  <span className="ml-2 text-blue-900">{selectedAcademicYear}</span>
+                  <span className="font-medium" style={{ color: "#33295e" }}>
+                    Academic Year:
+                  </span>
+                  <span className="ml-2 text-slate-700">{selectedAcademicYear}</span>
                 </div>
                 <div>
-                  <span className="text-blue-700 font-medium">Year Status:</span>
-                  <span className="ml-2 text-blue-900">
+                  <span className="font-medium" style={{ color: "#33295e" }}>
+                    Year Status:
+                  </span>
+                  <span className="ml-2 text-slate-700">
                     {yearStatus?.text.replace(" Academic Year", "").replace("Current Active Year", "Current")}
                   </span>
                 </div>
                 <div>
-                  <span className="text-blue-700 font-medium">Completion:</span>
-                  <span className="ml-2 text-blue-900">
+                  <span className="font-medium" style={{ color: "#33295e" }}>
+                    Completion:
+                  </span>
+                  <span className="ml-2 text-slate-700">
                     {Object.values(termDates).filter((term) => term.start && term.end).length}/6 terms
                   </span>
                 </div>
