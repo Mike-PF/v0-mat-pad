@@ -25,7 +25,10 @@ import {
   ChevronUp,
   ChevronRight,
   ChevronsUpDown,
+  Eye,
 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 import * as XLSX from "xlsx"
 import { isPlatformAdmin, CURRENT_ORG } from "@/lib/current-org"
 import {
@@ -590,24 +593,82 @@ function DashboardOrderSection({
   const activeDash = dashItems.filter((x) => x.q.active).length
   const surfaced = activeGroup.length + activeDash
 
+  // The exact questions a user is shown when they open the AI chatbot on this
+  // dashboard, in display order: this dashboard's own active questions first,
+  // then the area-wide group questions. Powers the hover preview.
+  const surfacedQuestions = [
+    ...dashItems.filter((x) => x.q.active).map((x) => ({ text: x.q.text, scope: "This dashboard" as const })),
+    ...activeGroup.map((q) => ({ text: q.text, scope: "Group" as const })),
+  ]
+
   return (
     <div className="rounded-lg border border-slate-200 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
-        aria-expanded={open}
-      >
-        {open ? (
-          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
-        ) : (
-          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-        )}
-        <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 truncate">{dashboard.name}</span>
-        <span className="text-[11px] text-slate-400 shrink-0">
-          {surfaced} suggested{dashItems.length > 0 ? ` · ${dashItems.length} own` : ""}
-        </span>
-      </button>
+      <div className="flex items-center hover:bg-slate-50 transition-colors">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2.5 text-left"
+          aria-expanded={open}
+        >
+          {open ? (
+            <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+          )}
+          <span className="flex-1 min-w-0 text-sm font-medium text-slate-700 truncate">{dashboard.name}</span>
+          <span className="text-[11px] text-slate-400 shrink-0">
+            {surfaced} suggested{dashItems.length > 0 ? ` · ${dashItems.length} own` : ""}
+          </span>
+        </button>
+
+        {/* Hover preview: the exact questions shown on this dashboard's chatbot. */}
+        <TooltipProvider delayDuration={100}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className="mr-2 ml-1 inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:text-[#33295e] hover:bg-slate-100 transition-colors shrink-0"
+                aria-label={`Preview the ${surfaced} question${surfaced === 1 ? "" : "s"} shown on ${dashboard.name}`}
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="left"
+              align="start"
+              className="max-w-xs bg-white text-slate-700 border border-slate-200 shadow-lg p-0"
+            >
+              <div className="px-3 py-2 border-b border-slate-100">
+                <p className="text-xs font-semibold text-slate-900">Questions shown on this dashboard</p>
+                <p className="text-[11px] text-slate-400">{dashboard.name}</p>
+              </div>
+              {surfacedQuestions.length > 0 ? (
+                <ol className="py-1.5 max-h-72 overflow-y-auto">
+                  {surfacedQuestions.map((q, i) => (
+                    <li key={`${q.text}-${i}`} className="flex items-start gap-2 px-3 py-1">
+                      <span className="text-[11px] font-medium text-slate-300 w-4 shrink-0 text-right leading-5">
+                        {i + 1}
+                      </span>
+                      <span className="flex-1 text-xs leading-5">{q.text}</span>
+                      <span
+                        className={cn(
+                          "text-[9px] uppercase tracking-wide shrink-0 mt-0.5",
+                          q.scope === "This dashboard" ? "text-[#fd6d6d]" : "text-slate-400",
+                        )}
+                      >
+                        {q.scope === "This dashboard" ? "Specific" : "Group"}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="px-3 py-3 text-xs text-slate-400">No active questions are shown on this dashboard yet.</p>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
       {open && (
         <div className="px-3 pb-3 pt-1 space-y-3 border-t border-slate-100">

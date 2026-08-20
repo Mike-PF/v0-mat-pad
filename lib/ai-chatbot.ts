@@ -366,6 +366,9 @@ const SEED_LOG: AskLogEntry[] = buildSeedLog()
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
 const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
 const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
+/** One-time flag so dashboard-specific test questions are seeded into existing stores exactly once.
+ *  Bump the version suffix to re-run the one-time seed for browsers that already ran an earlier one. */
+const SPECIFIC_SEED_FLAG_KEY = "matpad:ai-mgmt-specific-seed-v4"
 
 /**
  * A single admin-pinned suggested question. Its position in the list is the order
@@ -440,6 +443,33 @@ export function activeCount(list: PinnedQuestion[]): number {
  * Seed area-level pins by rolling up the questions already pinned to seed targets,
  * grouped by their (normalised) report area. Preserves existing demo content.
  */
+/**
+ * Test data for dashboard-specific questions. Each entry is scoped to a single
+ * system dashboard via `reportId` (ids come from `reportCategories` on the
+ * Dashboards page), so it surfaces the "Dashboard-specific questions" sections on
+ * the AI Management → Report Prompts tab. `area` must be one of REPORT_AREAS.
+ */
+const SEED_SPECIFIC_QUESTIONS: { area: string; reportId: string; text: string; active?: boolean }[] = [
+  // Attendance
+  { area: "Attendance", reportId: "attendance-headlines", text: "Which year group has the lowest attendance this term?" },
+  { area: "Attendance", reportId: "attendance-headlines", text: "How does our attendance compare to the same point last year?" },
+  { area: "Attendance", reportId: "persistent-absence", text: "How many pupils are persistently absent and who are they?" },
+  { area: "Attendance", reportId: "persistent-absence", text: "What is the trend in persistent absence over the last three terms?", active: false },
+  // Attainment
+  { area: "Attainment", reportId: "ks4-outcomes", text: "What is our Progress 8 score and how does it compare to national?" },
+  { area: "Attainment", reportId: "ks2-outcomes", text: "What percentage of pupils met the expected standard in reading, writing and maths?" },
+  { area: "Attainment", reportId: "phonics-screening", text: "What is our Year 1 phonics pass rate this year?" },
+  // Behaviour
+  { area: "Behaviour", reportId: "exclusions", text: "How many suspensions have we issued this term and why?" },
+  { area: "Behaviour", reportId: "behaviour-overview", text: "Which pupils have the most behaviour incidents logged?", active: false },
+  // Finance
+  { area: "Finance", reportId: "budget-summary", text: "Are we forecasting a surplus or deficit this financial year?" },
+  { area: "Finance", reportId: "staffing-costs", text: "What proportion of our budget is spent on staffing?" },
+  // Safeguarding
+  { area: "Safeguarding", reportId: "cpoms-overview", text: "How many safeguarding concerns were logged this month?" },
+  { area: "Safeguarding", reportId: "lac-overview", text: "How many looked-after children do we currently have on roll?" },
+]
+
 function buildSeedAreaPinned(): AreaPinned {
   const map: AreaPinned = {}
   for (const t of SEED_TARGETS) {
@@ -447,6 +477,14 @@ function buildSeedAreaPinned(): AreaPinned {
     const arr = map[area] ?? (map[area] = [])
     for (const q of t.pinned) {
       if (!arr.some((x) => x.text.toLowerCase() === q.toLowerCase())) arr.push({ text: q, active: true })
+    }
+  }
+  // Append dashboard-specific test questions, scoped to a single report each.
+  for (const s of SEED_SPECIFIC_QUESTIONS) {
+    const area = normaliseArea(s.area)
+    const arr = map[area] ?? (map[area] = [])
+    if (!arr.some((x) => x.text.toLowerCase() === s.text.toLowerCase() && x.reportId === s.reportId)) {
+      arr.push({ text: s.text, active: s.active !== false, reportId: s.reportId })
     }
   }
   return map
@@ -540,6 +578,25 @@ export function useAiManagement(reportAreaMap?: Record<string, string>) {
       // Re-clamp active counts per area after merging, then retire the legacy store.
       for (const key of Object.keys(area)) area[key] = normalisePinnedList(area[key])
       save(REPORT_PINNED_KEY, {})
+    }
+
+    // One-time seed of dashboard-specific test questions into existing stores.
+    // Guarded by a flag so it runs once and future deletions are respected.
+    // NOTE: we persist the seeded map AND the flag synchronously here. React
+    // StrictMode invokes this effect twice on mount; by writing the seeded data
+    // straight to localStorage, the second pass (which sees the flag already set
+    // and skips seeding) reloads the already-seeded data instead of clobbering it.
+    if (typeof window !== "undefined" && !window.localStorage.getItem(SPECIFIC_SEED_FLAG_KEY)) {
+      for (const s of SEED_SPECIFIC_QUESTIONS) {
+        const areaName = normaliseArea(s.area)
+        const dest = area[areaName] ?? (area[areaName] = [])
+        if (!dest.some((x) => x.text.toLowerCase() === s.text.toLowerCase() && x.reportId === s.reportId)) {
+          dest.push({ text: s.text, active: s.active !== false, reportId: s.reportId })
+        }
+      }
+      for (const key of Object.keys(area)) area[key] = normalisePinnedList(area[key])
+      save(AREA_PINNED_KEY, area)
+      save(SPECIFIC_SEED_FLAG_KEY, "1")
     }
 
     setAreaPinned(area)
