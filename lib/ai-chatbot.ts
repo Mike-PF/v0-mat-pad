@@ -366,8 +366,9 @@ const SEED_LOG: AskLogEntry[] = buildSeedLog()
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
 const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
 const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
-/** One-time flag so dashboard-specific test questions are seeded into existing stores exactly once. */
-const SPECIFIC_SEED_FLAG_KEY = "matpad:ai-mgmt-specific-seed-v1"
+/** One-time flag so dashboard-specific test questions are seeded into existing stores exactly once.
+ *  Bump the version suffix to re-run the one-time seed for browsers that already ran an earlier one. */
+const SPECIFIC_SEED_FLAG_KEY = "matpad:ai-mgmt-specific-seed-v2"
 
 /**
  * A single admin-pinned suggested question. Its position in the list is the order
