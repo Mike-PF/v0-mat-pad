@@ -440,6 +440,33 @@ export function activeCount(list: PinnedQuestion[]): number {
  * Seed area-level pins by rolling up the questions already pinned to seed targets,
  * grouped by their (normalised) report area. Preserves existing demo content.
  */
+/**
+ * Test data for dashboard-specific questions. Each entry is scoped to a single
+ * system dashboard via `reportId` (ids come from `reportCategories` on the
+ * Dashboards page), so it surfaces the "Dashboard-specific questions" sections on
+ * the AI Management → Report Prompts tab. `area` must be one of REPORT_AREAS.
+ */
+const SEED_SPECIFIC_QUESTIONS: { area: string; reportId: string; text: string; active?: boolean }[] = [
+  // Attendance
+  { area: "Attendance", reportId: "attendance-headlines", text: "Which year group has the lowest attendance this term?" },
+  { area: "Attendance", reportId: "attendance-headlines", text: "How does our attendance compare to the same point last year?" },
+  { area: "Attendance", reportId: "persistent-absence", text: "How many pupils are persistently absent and who are they?" },
+  { area: "Attendance", reportId: "persistent-absence", text: "What is the trend in persistent absence over the last three terms?", active: false },
+  // Attainment
+  { area: "Attainment", reportId: "ks4-outcomes", text: "What is our Progress 8 score and how does it compare to national?" },
+  { area: "Attainment", reportId: "ks2-outcomes", text: "What percentage of pupils met the expected standard in reading, writing and maths?" },
+  { area: "Attainment", reportId: "phonics-screening", text: "What is our Year 1 phonics pass rate this year?" },
+  // Behaviour
+  { area: "Behaviour", reportId: "exclusions", text: "How many suspensions have we issued this term and why?" },
+  { area: "Behaviour", reportId: "behaviour-overview", text: "Which pupils have the most behaviour incidents logged?", active: false },
+  // Finance
+  { area: "Finance", reportId: "budget-summary", text: "Are we forecasting a surplus or deficit this financial year?" },
+  { area: "Finance", reportId: "staffing-costs", text: "What proportion of our budget is spent on staffing?" },
+  // Safeguarding
+  { area: "Safeguarding", reportId: "cpoms-overview", text: "How many safeguarding concerns were logged this month?" },
+  { area: "Safeguarding", reportId: "lac-overview", text: "How many looked-after children do we currently have on roll?" },
+]
+
 function buildSeedAreaPinned(): AreaPinned {
   const map: AreaPinned = {}
   for (const t of SEED_TARGETS) {
@@ -447,6 +474,14 @@ function buildSeedAreaPinned(): AreaPinned {
     const arr = map[area] ?? (map[area] = [])
     for (const q of t.pinned) {
       if (!arr.some((x) => x.text.toLowerCase() === q.toLowerCase())) arr.push({ text: q, active: true })
+    }
+  }
+  // Append dashboard-specific test questions, scoped to a single report each.
+  for (const s of SEED_SPECIFIC_QUESTIONS) {
+    const area = normaliseArea(s.area)
+    const arr = map[area] ?? (map[area] = [])
+    if (!arr.some((x) => x.text.toLowerCase() === s.text.toLowerCase() && x.reportId === s.reportId)) {
+      arr.push({ text: s.text, active: s.active !== false, reportId: s.reportId })
     }
   }
   return map
