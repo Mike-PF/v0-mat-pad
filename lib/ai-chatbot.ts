@@ -368,7 +368,7 @@ const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
 const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
 /** One-time flag so dashboard-specific test questions are seeded into existing stores exactly once.
  *  Bump the version suffix to re-run the one-time seed for browsers that already ran an earlier one. */
-const SPECIFIC_SEED_FLAG_KEY = "matpad:ai-mgmt-specific-seed-v2"
+const SPECIFIC_SEED_FLAG_KEY = "matpad:ai-mgmt-specific-seed-v4"
 
 /**
  * A single admin-pinned suggested question. Its position in the list is the order
@@ -582,6 +582,10 @@ export function useAiManagement(reportAreaMap?: Record<string, string>) {
 
     // One-time seed of dashboard-specific test questions into existing stores.
     // Guarded by a flag so it runs once and future deletions are respected.
+    // NOTE: we persist the seeded map AND the flag synchronously here. React
+    // StrictMode invokes this effect twice on mount; by writing the seeded data
+    // straight to localStorage, the second pass (which sees the flag already set
+    // and skips seeding) reloads the already-seeded data instead of clobbering it.
     if (typeof window !== "undefined" && !window.localStorage.getItem(SPECIFIC_SEED_FLAG_KEY)) {
       for (const s of SEED_SPECIFIC_QUESTIONS) {
         const areaName = normaliseArea(s.area)
@@ -591,6 +595,7 @@ export function useAiManagement(reportAreaMap?: Record<string, string>) {
         }
       }
       for (const key of Object.keys(area)) area[key] = normalisePinnedList(area[key])
+      save(AREA_PINNED_KEY, area)
       save(SPECIFIC_SEED_FLAG_KEY, "1")
     }
 
