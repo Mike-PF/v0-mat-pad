@@ -366,6 +366,8 @@ const SEED_LOG: AskLogEntry[] = buildSeedLog()
 const TARGETS_KEY = "matpad:ai-mgmt-targets-v1"
 const AREA_PINNED_KEY = "matpad:ai-mgmt-area-pinned-v1"
 const REPORT_PINNED_KEY = "matpad:ai-mgmt-report-pinned-v1"
+/** One-time flag so dashboard-specific test questions are seeded into existing stores exactly once. */
+const SPECIFIC_SEED_FLAG_KEY = "matpad:ai-mgmt-specific-seed-v1"
 
 /**
  * A single admin-pinned suggested question. Its position in the list is the order
@@ -575,6 +577,20 @@ export function useAiManagement(reportAreaMap?: Record<string, string>) {
       // Re-clamp active counts per area after merging, then retire the legacy store.
       for (const key of Object.keys(area)) area[key] = normalisePinnedList(area[key])
       save(REPORT_PINNED_KEY, {})
+    }
+
+    // One-time seed of dashboard-specific test questions into existing stores.
+    // Guarded by a flag so it runs once and future deletions are respected.
+    if (typeof window !== "undefined" && !window.localStorage.getItem(SPECIFIC_SEED_FLAG_KEY)) {
+      for (const s of SEED_SPECIFIC_QUESTIONS) {
+        const areaName = normaliseArea(s.area)
+        const dest = area[areaName] ?? (area[areaName] = [])
+        if (!dest.some((x) => x.text.toLowerCase() === s.text.toLowerCase() && x.reportId === s.reportId)) {
+          dest.push({ text: s.text, active: s.active !== false, reportId: s.reportId })
+        }
+      }
+      for (const key of Object.keys(area)) area[key] = normalisePinnedList(area[key])
+      save(SPECIFIC_SEED_FLAG_KEY, "1")
     }
 
     setAreaPinned(area)
