@@ -2262,8 +2262,6 @@ export function DocumentCreationContent() {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">File</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Tags</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Live</th>
@@ -2279,12 +2277,6 @@ export function DocumentCreationContent() {
                           <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
                             <td className="py-4 px-4">
                               <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="text-sm text-slate-600">{doc.uploadedFile}</span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="text-sm text-slate-600">{doc.tagCount}</span>
                             </td>
                             <td className="py-4 px-4">
                               <select
