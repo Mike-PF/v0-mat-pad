@@ -1184,33 +1184,6 @@ export function DocumentCreationContent() {
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
-                <div className="relative">
-                  <select
-                    value={selectedSchoolUrn}
-                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
-                    className="w-full appearance-none px-3 py-2 pr-10 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-                  >
-                    <option value="">Select an organisation...</option>
-                    <optgroup label="MATs (Multi-Academy Trusts)">
-                      {mats.map((mat) => (
-                        <option key={mat.urn} value={mat.urn}>
-                          {mat.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Schools">
-                      {schools.map((school) => (
-                        <option key={school.urn} value={school.urn}>
-                          {school.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                </div>
-              </div>
-              <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
                   Document Name: <span className="text-red-500">*</span>
                 </label>
@@ -1221,9 +1194,81 @@ export function DocumentCreationContent() {
                   onChange={(e) => setDocumentName(e.target.value)}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Report Area: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={sectionName}
+                  onChange={(e) => setSectionName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="">Select a report area</option>
+                  <option value="School Improvement">School Improvement</option>
+                  <option value="Governor Reporting">Governor Reporting</option>
+                  <option value="Attendance & Welfare">Attendance & Welfare</option>
+                  <option value="Statutory & Compliance">Statutory & Compliance</option>
+                  <option value="Performance Analytics">Performance Analytics</option>
+                </select>
+              </div>
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-6 items-start">
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Data:</label>
+                <div className="flex items-center gap-2 py-2">
+                  <span
+                    className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
+                  >
+                    School
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReportLevel((v) => (v === "school" ? "mat" : "school"))
+                      setSelectedSchoolUrn("")
+                    }}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                      reportLevel === "mat" ? "bg-[#33295e]" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                        reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span
+                    className={`text-sm ${reportLevel === "mat" ? "text-slate-900 font-medium" : "text-slate-400"}`}
+                  >
+                    MAT
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
+                <div className="relative">
+                  <select
+                    value={selectedSchoolUrn}
+                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
+                    className="w-full appearance-none px-3 py-2 pr-10 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                  >
+                    <option value="">{reportLevel === "mat" ? "Select a MAT..." : "Select a school..."}</option>
+                    {reportLevel === "mat"
+                      ? mats.map((mat) => (
+                          <option key={mat.urn} value={mat.urn}>
+                            {mat.name}
+                          </option>
+                        ))
+                      : schools.map((school) => (
+                          <option key={school.urn} value={school.urn}>
+                            {school.name}
+                          </option>
+                        ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Form List:</label>
                 <div className="relative">
@@ -1287,47 +1332,6 @@ export function DocumentCreationContent() {
                       </div>
                     </>
                   )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">
-                  Report Area: <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={sectionName}
-                  onChange={(e) => setSectionName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                >
-                  <option value="">Select a section name</option>
-                  <option value="School Improvement">School Improvement</option>
-                  <option value="Governor Reporting">Governor Reporting</option>
-                  <option value="Attendance & Welfare">Attendance & Welfare</option>
-                  <option value="Statutory & Compliance">Statutory & Compliance</option>
-                  <option value="Performance Analytics">Performance Analytics</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Data:</label>
-                <div className="flex items-center gap-2 py-2">
-                  <span
-                    className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
-                  >
-                    School
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                      reportLevel === "mat" ? "bg-[#33295e]" : "bg-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                        reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                  {reportLevel === "mat" && <span className="text-sm font-medium text-slate-900">MAT</span>}
                 </div>
               </div>
             </div>
