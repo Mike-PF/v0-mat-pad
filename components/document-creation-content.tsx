@@ -2330,24 +2330,14 @@ export function DocumentCreationContent() {
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2 justify-end">
                                 {config?.isActive && (
-                                  <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handlePublishDocument(doc)}
-                                      className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                    >
-                                      {config?.isPublished ? "Published" : "Publish"}
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleEditDocument(doc)}
-                                      className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                    >
-                                      Edit
-                                    </Button>
-                                  </>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditDocument(doc)}
+                                    className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                  >
+                                    Edit
+                                  </Button>
                                 )}
                                 <Button
                                   variant="outline"
