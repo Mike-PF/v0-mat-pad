@@ -261,7 +261,6 @@ export function DocumentCreationContent() {
   const [formLinks, setFormLinks] = useState<string[]>([])
   const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
-  const [reportType, setReportType] = useState<"System" | "Custom">("System")
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
@@ -1181,26 +1180,6 @@ export function DocumentCreationContent() {
                 <Save className="w-4 h-4 mr-2" />
                 Save Configuration
               </Button>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-slate-900 mb-2">Report Type:</label>
-              <div className="flex items-center gap-2">
-                {(["System", "Custom"] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setReportType(type)}
-                    className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                      reportType === type
-                        ? "bg-[#33295e] text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-6">
@@ -2239,6 +2218,7 @@ export function DocumentCreationContent() {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
                           Document Description
                         </th>
@@ -2255,6 +2235,11 @@ export function DocumentCreationContent() {
                           <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
                             <td className="py-4 px-4">
                               <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <span className="inline-flex items-center rounded-md bg-[#33295e] px-2.5 py-1 text-xs font-medium text-white">
+                                System
+                              </span>
                             </td>
                             <td className="py-4 px-4 max-w-xs">
                               <span className="text-sm text-slate-600">{doc.description ?? "—"}</span>
