@@ -2165,8 +2165,8 @@ export function DocumentCreationContent() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-lg">Document Configurations</CardTitle>
-                <div className="flex items-center gap-3">
+                <CardTitle className="text-lg whitespace-nowrap">Document Configurations</CardTitle>
+                <div className="flex flex-1 justify-center">
                   <div className="relative w-full max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <Input
@@ -2177,13 +2177,13 @@ export function DocumentCreationContent() {
                       className="pl-9"
                     />
                   </div>
-                  <Button
-                    onClick={handleCreateNew}
-                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors whitespace-nowrap"
-                  >
-                    Create New Document
-                  </Button>
                 </div>
+                <Button
+                  onClick={handleCreateNew}
+                  className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors whitespace-nowrap"
+                >
+                  Create New Document
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
