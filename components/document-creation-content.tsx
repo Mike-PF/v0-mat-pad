@@ -30,6 +30,7 @@ import {
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
+import { OrganizationPicker } from "@/components/organization-picker"
 
 const FORM_LINK_OPTIONS = [
   "Head Report (24/25)",
@@ -53,9 +54,9 @@ const FORM_LINK_OPTIONS = [
 ]
 
 const mats = [
-  { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
-  { urn: "MAT002", name: "Catholic Diocese of Hallam", type: "mat" as const },
-  { urn: "MAT003", name: "Northern Education Trust", type: "mat" as const },
+  { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const, schoolCount: 10 },
+  { urn: "MAT002", name: "Catholic Diocese of Hallam", type: "mat" as const, schoolCount: 9 },
+  { urn: "MAT003", name: "Northern Education Trust", type: "mat" as const, schoolCount: 3 },
 ]
 
 const schools = [
@@ -344,6 +345,7 @@ export function DocumentCreationContent() {
       roles: string
       selectedRoles: string[]
       reportArea: string
+      organizations: string[]
     }
   }>({})
 
@@ -357,6 +359,7 @@ export function DocumentCreationContent() {
         roles: doc.roles ?? "All",
         selectedRoles: doc.roles === "Specific" ? ["Admin", "Teacher"] : [],
         reportArea: doc.reportArea ?? "",
+        organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
       }
     })
     setDocumentConfigs(configs)
@@ -390,6 +393,13 @@ export function DocumentCreationContent() {
     setDocumentConfigs((prev) => ({
       ...prev,
       [docId]: { ...prev[docId], reportArea },
+    }))
+  }
+
+  const handleOrganizationsChange = (docId: string, organizations: string[]) => {
+    setDocumentConfigs((prev) => ({
+      ...prev,
+      [docId]: { ...prev[docId], organizations },
     }))
   }
 
@@ -2276,6 +2286,7 @@ export function DocumentCreationContent() {
                           Document Description
                         </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Live</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Roles</th>
@@ -2307,6 +2318,14 @@ export function DocumentCreationContent() {
                                   </option>
                                 ))}
                               </select>
+                            </td>
+                            <td className="py-4 px-4">
+                              <OrganizationPicker
+                                mats={mats}
+                                schools={schools}
+                                selected={config?.organizations ?? []}
+                                onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
+                              />
                             </td>
                             <td className="py-4 px-4">
                               <span
