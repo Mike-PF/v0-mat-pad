@@ -1185,8 +1185,29 @@ export function DocumentCreationContent() {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
-                <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
-                  {selectedOrganization?.name || selectedSchoolUrn}
+                <div className="relative">
+                  <select
+                    value={selectedSchoolUrn}
+                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
+                    className="w-full appearance-none px-3 py-2 pr-10 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                  >
+                    <option value="">Select an organisation...</option>
+                    <optgroup label="MATs (Multi-Academy Trusts)">
+                      {mats.map((mat) => (
+                        <option key={mat.urn} value={mat.urn}>
+                          {mat.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Schools">
+                      {schools.map((school) => (
+                        <option key={school.urn} value={school.urn}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                 </div>
               </div>
               <div>
