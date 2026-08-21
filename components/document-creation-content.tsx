@@ -1307,7 +1307,7 @@ export function DocumentCreationContent() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Level:</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Data:</label>
                 <div className="flex items-center gap-2 py-2">
                   <span
                     className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
