@@ -2217,6 +2217,7 @@ export function DocumentCreationContent() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
                           Document Description
@@ -2232,6 +2233,11 @@ export function DocumentCreationContent() {
                         const config = documentConfigs[doc.id] // Get config for this document
                         return (
                           <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                            <td className="py-4 px-4">
+                              <span className="inline-flex items-center rounded-md bg-[#33295e] px-2.5 py-1 text-xs font-medium text-white">
+                                System
+                              </span>
+                            </td>
                             <td className="py-4 px-4">
                               <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
                             </td>
