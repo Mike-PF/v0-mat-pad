@@ -1291,7 +1291,7 @@ export function DocumentCreationContent() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
-                  Section Name: <span className="text-red-500">*</span>
+                  Report Area: <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={sectionName}
