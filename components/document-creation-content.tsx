@@ -30,6 +30,7 @@ import {
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
+import { OrganizationPicker } from "@/components/organization-picker"
 
 const FORM_LINK_OPTIONS = [
   "Head Report (24/25)",
@@ -53,9 +54,9 @@ const FORM_LINK_OPTIONS = [
 ]
 
 const mats = [
-  { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const },
-  { urn: "MAT002", name: "Catholic Diocese of Hallam", type: "mat" as const },
-  { urn: "MAT003", name: "Northern Education Trust", type: "mat" as const },
+  { urn: "MAT001", name: "Bright Futures Educational Trust", type: "mat" as const, schoolCount: 10 },
+  { urn: "MAT002", name: "Catholic Diocese of Hallam", type: "mat" as const, schoolCount: 9 },
+  { urn: "MAT003", name: "Northern Education Trust", type: "mat" as const, schoolCount: 3 },
 ]
 
 const schools = [
@@ -87,10 +88,19 @@ const reportSPs = [
   "SP_SafeguardingOverview",
 ]
 
+const REPORT_AREA_OPTIONS = [
+  "School Improvement",
+  "Governor Reporting",
+  "Attendance & Welfare",
+  "Statutory & Compliance",
+  "Performance Analytics",
+]
+
 const mockSavedDocuments = [
   {
     id: "doc1",
     name: "Attendance Report Template",
+    description: "Termly attendance summary with absence and persistent-absence breakdowns",
     sp: "SP_AttendanceReport",
     uploadedFile: "attendance_template.docx",
     tagCount: 45,
@@ -103,6 +113,7 @@ const mockSavedDocuments = [
   {
     id: "doc2",
     name: "SEND Provision Report",
+    description: "Overview of SEND provision, EHCP status and intervention tracking",
     sp: "SP_SENDProvisionReport",
     uploadedFile: "send_report.docx",
     tagCount: 78,
@@ -115,6 +126,7 @@ const mockSavedDocuments = [
   {
     id: "doc3",
     name: "Behaviour Analysis Template",
+    description: "Behaviour incident trends, sanctions and rewards analysis",
     sp: "SP_BehaviourAnalysis",
     uploadedFile: "behaviour_template.docx",
     tagCount: 52,
@@ -127,6 +139,7 @@ const mockSavedDocuments = [
   {
     id: "doc4",
     name: "MAT-Wide Financial Summary",
+    description: "Consolidated trust-wide budget, spend and reserves summary",
     sp: "SP_FinancialSummary",
     uploadedFile: "mat_financial_summary.docx",
     tagCount: 120,
@@ -139,6 +152,7 @@ const mockSavedDocuments = [
   {
     id: "doc5",
     name: "Trust Safeguarding Overview",
+    description: "Safeguarding concerns, referrals and CPOMS activity across the trust",
     sp: "SP_SafeguardingOverview",
     uploadedFile: "trust_safeguarding.docx",
     tagCount: 95,
@@ -151,6 +165,7 @@ const mockSavedDocuments = [
   {
     id: "doc6",
     name: "Diocese Academic Progress Report",
+    description: "Pupil progress and attainment against national benchmarks",
     sp: "SP_AcademicProgress",
     uploadedFile: "diocese_academic.docx",
     tagCount: 156,
@@ -159,6 +174,7 @@ const mockSavedDocuments = [
   {
     id: "doc7",
     name: "Trust Staffing Report",
+    description: "Staffing structure, vacancies and workforce cost analysis",
     sp: "SP_StaffingReport",
     uploadedFile: "trust_staffing.docx",
     tagCount: 88,
@@ -167,6 +183,7 @@ const mockSavedDocuments = [
   {
     id: "doc8",
     name: "Notre Dame SEND Report",
+    description: "School-level SEND provision and support plan tracking",
     sp: "SP_SENDProvisionReport",
     uploadedFile: "notre_dame_send.docx",
     tagCount: 64,
@@ -175,6 +192,7 @@ const mockSavedDocuments = [
   {
     id: "doc9",
     name: "Sacred Heart Behaviour Analysis",
+    description: "Behaviour incidents and intervention outcomes for the school",
     sp: "SP_BehaviourAnalysis",
     uploadedFile: "sacred_heart_behaviour.docx",
     tagCount: 48,
@@ -183,6 +201,7 @@ const mockSavedDocuments = [
   {
     id: "doc10",
     name: "Northern Trust Financial Overview",
+    description: "High-level financial position and forecast across academies",
     sp: "SP_FinancialSummary",
     uploadedFile: "northern_trust_financial.docx",
     tagCount: 132,
@@ -325,6 +344,8 @@ export function DocumentCreationContent() {
       isPublished: boolean // Added
       roles: string
       selectedRoles: string[]
+      reportArea: string
+      organizations: string[]
     }
   }>({})
 
@@ -337,6 +358,8 @@ export function DocumentCreationContent() {
         isPublished: doc.isPublished ?? false,
         roles: doc.roles ?? "All",
         selectedRoles: doc.roles === "Specific" ? ["Admin", "Teacher"] : [],
+        reportArea: doc.reportArea ?? "",
+        organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
       }
     })
     setDocumentConfigs(configs)
@@ -363,6 +386,20 @@ export function DocumentCreationContent() {
         ...prev[doc.id],
         isPublished: true,
       },
+    }))
+  }
+
+  const handleReportAreaChange = (docId: string, reportArea: string) => {
+    setDocumentConfigs((prev) => ({
+      ...prev,
+      [docId]: { ...prev[docId], reportArea },
+    }))
+  }
+
+  const handleOrganizationsChange = (docId: string, organizations: string[]) => {
+    setDocumentConfigs((prev) => ({
+      ...prev,
+      [docId]: { ...prev[docId], organizations },
     }))
   }
 
@@ -393,24 +430,17 @@ export function DocumentCreationContent() {
   }
 
   const filteredDocuments = useMemo(() => {
-    if (!selectedSchoolUrn) return []
-    const forOrg = documents.filter((doc) => doc.schoolUrn === selectedSchoolUrn)
     const q = docSearchQuery.trim().toLowerCase()
-    if (!q) return forOrg
-    return forOrg.filter(
+    if (!q) return documents
+    return documents.filter(
       (doc) =>
         doc.name?.toLowerCase().includes(q) ||
         doc.sp?.toLowerCase().includes(q) ||
         doc.uploadedFile?.toLowerCase().includes(q),
     )
-  }, [documents, selectedSchoolUrn, docSearchQuery])
+  }, [documents, docSearchQuery])
 
   const handleCreateNew = () => {
-    if (!selectedSchoolUrn) {
-      alert("Please select an organization first")
-      return
-    }
-
     setIsCreatingNew(true)
     setShowDocumentEditor(true)
     setSelectedDocument(null)
@@ -526,6 +556,34 @@ export function DocumentCreationContent() {
 
     // Show notification
     setNotificationMessage(`Downloading ${doc.uploadedFile}...`)
+    setShowNotification(true)
+  }
+
+  const handleCloneDocument = (doc: any) => {
+    const newId = `${doc.id}-clone-${Date.now()}`
+    const clonedDoc = { ...doc, id: newId, name: `${doc.name} (Copy)` }
+
+    setDocuments((prev) => [...prev, clonedDoc])
+
+    setDocumentConfigs((prev) => {
+      const sourceConfig = prev[doc.id]
+      return {
+        ...prev,
+        [newId]: sourceConfig
+          ? { ...sourceConfig, selectedRoles: [...(sourceConfig.selectedRoles ?? [])], organizations: [...(sourceConfig.organizations ?? [])] }
+          : {
+              isActive: doc.isActive ?? true,
+              isLive: doc.isLive ?? false,
+              isPublished: doc.isPublished ?? false,
+              roles: doc.roles ?? "All",
+              selectedRoles: [],
+              reportArea: doc.reportArea ?? "",
+              organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
+            },
+      }
+    })
+
+    setNotificationMessage(`Cloned "${doc.name}"`)
     setShowNotification(true)
   }
 
@@ -1126,12 +1184,6 @@ export function DocumentCreationContent() {
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
-                <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
-                  {selectedOrganization?.name || selectedSchoolUrn}
-                </div>
-              </div>
-              <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
                   Document Name: <span className="text-red-500">*</span>
                 </label>
@@ -1142,9 +1194,81 @@ export function DocumentCreationContent() {
                   onChange={(e) => setDocumentName(e.target.value)}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Report Area: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={sectionName}
+                  onChange={(e) => setSectionName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="">Select a report area</option>
+                  <option value="School Improvement">School Improvement</option>
+                  <option value="Governor Reporting">Governor Reporting</option>
+                  <option value="Attendance & Welfare">Attendance & Welfare</option>
+                  <option value="Statutory & Compliance">Statutory & Compliance</option>
+                  <option value="Performance Analytics">Performance Analytics</option>
+                </select>
+              </div>
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-6 items-start">
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Data:</label>
+                <div className="flex items-center gap-2 py-2">
+                  <span
+                    className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
+                  >
+                    School
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReportLevel((v) => (v === "school" ? "mat" : "school"))
+                      setSelectedSchoolUrn("")
+                    }}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                      reportLevel === "mat" ? "bg-[#33295e]" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                        reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span
+                    className={`text-sm ${reportLevel === "mat" ? "text-slate-900 font-medium" : "text-slate-400"}`}
+                  >
+                    MAT
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
+                <div className="relative">
+                  <select
+                    value={selectedSchoolUrn}
+                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
+                    className="w-full appearance-none px-3 py-2 pr-10 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                  >
+                    <option value="">{reportLevel === "mat" ? "Select a MAT..." : "Select a school..."}</option>
+                    {reportLevel === "mat"
+                      ? mats.map((mat) => (
+                          <option key={mat.urn} value={mat.urn}>
+                            {mat.name}
+                          </option>
+                        ))
+                      : schools.map((school) => (
+                          <option key={school.urn} value={school.urn}>
+                            {school.name}
+                          </option>
+                        ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Form List:</label>
                 <div className="relative">
@@ -1208,47 +1332,6 @@ export function DocumentCreationContent() {
                       </div>
                     </>
                   )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">
-                  Section Name: <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={sectionName}
-                  onChange={(e) => setSectionName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                >
-                  <option value="">Select a section name</option>
-                  <option value="School Improvement">School Improvement</option>
-                  <option value="Governor Reporting">Governor Reporting</option>
-                  <option value="Attendance & Welfare">Attendance & Welfare</option>
-                  <option value="Statutory & Compliance">Statutory & Compliance</option>
-                  <option value="Performance Analytics">Performance Analytics</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">Report Level:</label>
-                <div className="flex items-center gap-2 py-2">
-                  <span
-                    className={`text-sm ${reportLevel === "school" ? "text-slate-900 font-medium" : "text-slate-400"}`}
-                  >
-                    School
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setReportLevel((v) => (v === "school" ? "mat" : "school"))}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                      reportLevel === "mat" ? "bg-[#33295e]" : "bg-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                        reportLevel === "mat" ? "translate-x-4" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                  {reportLevel === "mat" && <span className="text-sm font-medium text-slate-900">MAT</span>}
                 </div>
               </div>
             </div>
@@ -2105,286 +2188,133 @@ export function DocumentCreationContent() {
 
         {!isCreatingNew && !selectedDocument && (
           <Card>
-            <CardContent className="pt-6">
-              {!selectedSchoolUrn ? (
-                <div className="relative max-w-md">
-                  <select
-                    value={selectedSchoolUrn}
-                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="">Please select an organization...</option>
-
-                    <optgroup label="MATs (Multi-Academy Trusts)">
-                      {mats.map((mat) => (
-                        <option key={mat.urn} value={mat.urn}>
-                          {mat.name}
-                        </option>
-                      ))}
-                    </optgroup>
-
-                    <optgroup label="Schools">
-                      {schools.map((school) => (
-                        <option key={school.urn} value={school.urn}>
-                          {school.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    {/* Selected organization chip dropdown */}
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setOrgDropdownOpen((v) => !v)}
-                        className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                      >
-                        <span className="font-medium">{selectedOrganization?.name}</span>
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
-                          {selectedOrganization?.type === "mat" ? "MAT" : "School"}
-                        </span>
-                        <ChevronDown className="h-4 w-4 text-slate-500" />
-                      </button>
-
-                      {orgDropdownOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setOrgDropdownOpen(false)}
-                            aria-hidden="true"
-                          />
-                          <div className="absolute left-0 z-50 mt-1 max-h-72 w-80 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
-                            <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              MATs (Multi-Academy Trusts)
-                            </p>
-                            {mats.map((mat) => (
-                              <button
-                                key={mat.urn}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSchoolUrn(mat.urn)
-                                  setOrgDropdownOpen(false)
-                                }}
-                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                                  mat.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
-                                }`}
-                              >
-                                {mat.name}
-                              </button>
-                            ))}
-                            <p className="mt-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              Schools
-                            </p>
-                            {schools.map((school) => (
-                              <button
-                                key={school.urn}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSchoolUrn(school.urn)
-                                  setOrgDropdownOpen(false)
-                                }}
-                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                                  school.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
-                                }`}
-                              >
-                                {school.name}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedSchoolUrn("")}
-                      className="text-sm font-medium text-slate-600 hover:text-primary"
-                    >
-                      Clear Selection
-                    </button>
-                  </div>
-
-                  <Button
-                    onClick={handleCreateNew}
-                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create New Document
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {selectedSchoolUrn && !isCreatingNew && !selectedDocument && (
-          <Card className="mt-6">
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-lg">Document Configurations</CardTitle>
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search by title, procedure, file name..."
-                    value={docSearchQuery}
-                    onChange={(e) => setDocSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
+                <CardTitle className="text-lg whitespace-nowrap">Document Configurations</CardTitle>
+                <div className="flex flex-1 justify-center">
+                  <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search by title, procedure, file name..."
+                      value={docSearchQuery}
+                      onChange={(e) => setDocSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
+                <Button
+                  onClick={handleCreateNew}
+                  className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors whitespace-nowrap"
+                >
+                  Create New Document
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {filteredDocuments.map((doc) => {
-                  const config = documentConfigs[doc.id] // Get config for this document
-                  return (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-l-4 hover:border-l-[#fd6d6d] transition-all"
-                    >
-                      <div className="flex items-center gap-4">
-                        <h3 className="font-semibold text-slate-900">{doc.name}</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {config?.isActive && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePublishDocument(doc)}
-                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                            >
-                              {config?.isPublished ? "Published" : "Publish"}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditDocument(doc)}
-                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                            >
-                              Edit
-                            </Button>
-                          </>
-                        )}
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadDocument(doc)}
-                          className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-
-                        {config?.isActive && (
-                          <div className="flex items-center gap-4 ml-4 pl-4 border-l border-slate-200">
-                            {/* Active/Inactive Toggle */}
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-600">{config?.isActive ? "Active" : "Inactive"}</span>
-                              <Switch
-                                checked={config?.isActive ?? false}
-                                onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
+              {filteredDocuments.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
+                          Document Description
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
+                        <th className="py-3 px-4"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredDocuments.map((doc) => {
+                        const config = documentConfigs[doc.id] // Get config for this document
+                        return (
+                          <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                            <td className="py-4 px-4">
+                              <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
+                            </td>
+                            <td className="py-4 px-4 max-w-xs">
+                              <span className="text-sm text-slate-600">{doc.description ?? "—"}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <select
+                                value={config?.reportArea ?? ""}
+                                onChange={(e) => handleReportAreaChange(doc.id, e.target.value)}
+                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                              >
+                                <option value="">Select Area...</option>
+                                {REPORT_AREA_OPTIONS.map((area) => (
+                                  <option key={area} value={area}>
+                                    {area}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="py-4 px-4">
+                              <OrganizationPicker
+                                mats={mats}
+                                schools={schools}
+                                selected={config?.organizations ?? []}
+                                onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
                               />
-                            </div>
-
-                            {/* Live Toggle - only show if published */}
-                            {config?.isPublished && (
+                            </td>
+                            <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-600">Live</span>
+                                <span className="text-sm text-slate-600">{config?.isActive ? "Yes" : "No"}</span>
                                 <Switch
-                                  checked={config?.isLive ?? false}
-                                  onCheckedChange={(checked) => handleToggleLive(doc.id, checked)}
+                                  checked={config?.isActive ?? false}
+                                  onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
+                                  className="data-[state=checked]:bg-[#33295e]"
                                 />
                               </div>
-                            )}
-
-                            {config?.isLive && (
-                              <div className="flex flex-col gap-2">
-                                {/* Roles Dropdown */}
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-slate-600">Roles:</span>
-                                  <select
-                                    value={
-                                      config?.selectedRoles && config.selectedRoles.length > 0
-                                        ? config.selectedRoles.join(", ")
-                                        : config?.roles || "All"
-                                    }
-                                    onChange={(e) => handleRolesChange(doc.id, e.target.value)}
-                                    className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d]"
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center gap-2 justify-end">
+                                {config?.isActive && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditDocument(doc)}
+                                    className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                                   >
-                                    <option value="All">All</option>
-                                    <option value="Specific">Specific</option>
-                                    {config?.selectedRoles && config.selectedRoles.length > 0 && (
-                                      <option value={config.selectedRoles.join(", ")}>
-                                        {config.selectedRoles.join(", ")}
-                                      </option>
-                                    )}
-                                  </select>
-                                </div>
-
-                                {config?.roles === "Specific" &&
-                                  (!config?.selectedRoles || config.selectedRoles.length === 0) && (
-                                    <div className="flex items-center gap-2">
-                                      <select
-                                        multiple
-                                        value={config?.selectedRoles || []}
-                                        onChange={(e) => {
-                                          const selectedOptions = Array.from(
-                                            e.target.selectedOptions,
-                                            (option) => option.value,
-                                          )
-                                          setDocumentConfigs((prev) => ({
-                                            ...prev,
-                                            [doc.id]: { ...prev[doc.id], selectedRoles: selectedOptions },
-                                          }))
-                                        }}
-                                        className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d] min-w-[120px]"
-                                        size={3}
-                                      >
-                                        <option value="Admin">Admin</option>
-                                        <option value="Teacher">Teacher</option>
-                                        <option value="Head Teacher">Head Teacher</option>
-                                        <option value="Finance">Finance</option>
-                                        <option value="SENCO">SENCO</option>
-                                      </select>
-                                    </div>
-                                  )}
+                                    Edit
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCloneDocument(doc)}
+                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                >
+                                  Clone
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDownloadDocument(doc)}
+                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </Button>
                               </div>
-                            )}
-                          </div>
-                        )}
-
-                        {!config?.isActive && (
-                          <div className="flex items-center gap-4 ml-4 pl-4 border-l border-slate-200">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-600">Inactive</span>
-                              <Switch
-                                checked={false}
-                                onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-
-                {filteredDocuments.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <FileText className="w-8 h-8 text-slate-400" />
-                    </div>
-                    <p className="text-slate-600">No document configurations yet for this organization</p>
-                    <p className="text-sm text-slate-500 mt-1">Create your first document to get started</p>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-slate-400" />
                   </div>
-                )}
-              </div>
+                  <p className="text-slate-600">No document configurations yet for this organization</p>
+                  <p className="text-sm text-slate-500 mt-1">Create your first document to get started</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
