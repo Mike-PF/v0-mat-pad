@@ -430,24 +430,17 @@ export function DocumentCreationContent() {
   }
 
   const filteredDocuments = useMemo(() => {
-    if (!selectedSchoolUrn) return []
-    const forOrg = documents.filter((doc) => doc.schoolUrn === selectedSchoolUrn)
     const q = docSearchQuery.trim().toLowerCase()
-    if (!q) return forOrg
-    return forOrg.filter(
+    if (!q) return documents
+    return documents.filter(
       (doc) =>
         doc.name?.toLowerCase().includes(q) ||
         doc.sp?.toLowerCase().includes(q) ||
         doc.uploadedFile?.toLowerCase().includes(q),
     )
-  }, [documents, selectedSchoolUrn, docSearchQuery])
+  }, [documents, docSearchQuery])
 
   const handleCreateNew = () => {
-    if (!selectedSchoolUrn) {
-      alert("Please select an organization first")
-      return
-    }
-
     setIsCreatingNew(true)
     setShowDocumentEditor(true)
     setSelectedDocument(null)
@@ -2140,40 +2133,7 @@ export function DocumentCreationContent() {
           </Card>
         )}
 
-        {!isCreatingNew && !selectedDocument && !selectedSchoolUrn && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="relative max-w-md">
-                <select
-                  value={selectedSchoolUrn}
-                  onChange={(e) => setSelectedSchoolUrn(e.target.value)}
-                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  <option value="">Please select an organization...</option>
-
-                  <optgroup label="MATs (Multi-Academy Trusts)">
-                    {mats.map((mat) => (
-                      <option key={mat.urn} value={mat.urn}>
-                        {mat.name}
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="Schools">
-                    {schools.map((school) => (
-                      <option key={school.urn} value={school.urn}>
-                        {school.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {selectedSchoolUrn && !isCreatingNew && !selectedDocument && (
+        {!isCreatingNew && !selectedDocument && (
           <Card className="mt-6">
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
