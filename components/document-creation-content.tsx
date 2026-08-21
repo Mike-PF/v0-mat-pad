@@ -87,6 +87,14 @@ const reportSPs = [
   "SP_SafeguardingOverview",
 ]
 
+const REPORT_AREA_OPTIONS = [
+  "School Improvement",
+  "Governor Reporting",
+  "Attendance & Welfare",
+  "Statutory & Compliance",
+  "Performance Analytics",
+]
+
 const mockSavedDocuments = [
   {
     id: "doc1",
@@ -325,6 +333,7 @@ export function DocumentCreationContent() {
       isPublished: boolean // Added
       roles: string
       selectedRoles: string[]
+      reportArea: string
     }
   }>({})
 
@@ -337,6 +346,7 @@ export function DocumentCreationContent() {
         isPublished: doc.isPublished ?? false,
         roles: doc.roles ?? "All",
         selectedRoles: doc.roles === "Specific" ? ["Admin", "Teacher"] : [],
+        reportArea: doc.reportArea ?? "",
       }
     })
     setDocumentConfigs(configs)
@@ -363,6 +373,13 @@ export function DocumentCreationContent() {
         ...prev[doc.id],
         isPublished: true,
       },
+    }))
+  }
+
+  const handleReportAreaChange = (docId: string, reportArea: string) => {
+    setDocumentConfigs((prev) => ({
+      ...prev,
+      [docId]: { ...prev[docId], reportArea },
     }))
   }
 
@@ -2247,6 +2264,7 @@ export function DocumentCreationContent() {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">File</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Tags</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Live</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Roles</th>
@@ -2267,6 +2285,20 @@ export function DocumentCreationContent() {
                             </td>
                             <td className="py-4 px-4">
                               <span className="text-sm text-slate-600">{doc.tagCount}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <select
+                                value={config?.reportArea ?? ""}
+                                onChange={(e) => handleReportAreaChange(doc.id, e.target.value)}
+                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                              >
+                                <option value="">Select Area...</option>
+                                {REPORT_AREA_OPTIONS.map((area) => (
+                                  <option key={area} value={area}>
+                                    {area}
+                                  </option>
+                                ))}
+                              </select>
                             </td>
                             <td className="py-4 px-4">
                               <span
