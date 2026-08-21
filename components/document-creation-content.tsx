@@ -2239,152 +2239,141 @@ export function DocumentCreationContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {filteredDocuments.map((doc) => {
-                  const config = documentConfigs[doc.id] // Get config for this document
-                  return (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-l-4 hover:border-l-[#fd6d6d] transition-all"
-                    >
-                      <div className="flex items-center gap-4">
-                        <h3 className="font-semibold text-slate-900">{doc.name}</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {config?.isActive && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePublishDocument(doc)}
-                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                            >
-                              {config?.isPublished ? "Published" : "Publish"}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditDocument(doc)}
-                              className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                            >
-                              Edit
-                            </Button>
-                          </>
-                        )}
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadDocument(doc)}
-                          className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-
-                        {config?.isActive && (
-                          <div className="flex items-center gap-4 ml-4 pl-4 border-l border-slate-200">
-                            {/* Active/Inactive Toggle */}
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-600">{config?.isActive ? "Active" : "Inactive"}</span>
-                              <Switch
-                                checked={config?.isActive ?? false}
-                                onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
-                              />
-                            </div>
-
-                            {/* Live Toggle - only show if published */}
-                            {config?.isPublished && (
+              {filteredDocuments.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">File</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Tags</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Live</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Roles</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
+                        <th className="py-3 px-4"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredDocuments.map((doc) => {
+                        const config = documentConfigs[doc.id] // Get config for this document
+                        return (
+                          <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                            <td className="py-4 px-4">
+                              <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <span className="text-sm text-slate-600">{doc.uploadedFile}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <span className="text-sm text-slate-600">{doc.tagCount}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <span
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                                style={
+                                  config?.isPublished
+                                    ? { backgroundColor: "#33295e", color: "#ffffff" }
+                                    : { backgroundColor: "#f1f5f9", color: "#64748b" }
+                                }
+                              >
+                                {config?.isPublished ? "Published" : "Draft"}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4">
+                              {config?.isActive && config?.isPublished ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-slate-600">{config?.isLive ? "Yes" : "No"}</span>
+                                  <Switch
+                                    checked={config?.isLive ?? false}
+                                    onCheckedChange={(checked) => handleToggleLive(doc.id, checked)}
+                                    className="data-[state=checked]:bg-[#33295e]"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-sm text-slate-400">—</span>
+                              )}
+                            </td>
+                            <td className="py-4 px-4">
+                              {config?.isActive && config?.isLive ? (
+                                <select
+                                  value={
+                                    config?.selectedRoles && config.selectedRoles.length > 0
+                                      ? config.selectedRoles.join(", ")
+                                      : config?.roles || "All"
+                                  }
+                                  onChange={(e) => handleRolesChange(doc.id, e.target.value)}
+                                  className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                                >
+                                  <option value="All">All</option>
+                                  <option value="Specific">Specific</option>
+                                  {config?.selectedRoles && config.selectedRoles.length > 0 && (
+                                    <option value={config.selectedRoles.join(", ")}>
+                                      {config.selectedRoles.join(", ")}
+                                    </option>
+                                  )}
+                                </select>
+                              ) : (
+                                <span className="text-sm text-slate-400">—</span>
+                              )}
+                            </td>
+                            <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-600">Live</span>
+                                <span className="text-sm text-slate-600">{config?.isActive ? "Yes" : "No"}</span>
                                 <Switch
-                                  checked={config?.isLive ?? false}
-                                  onCheckedChange={(checked) => handleToggleLive(doc.id, checked)}
+                                  checked={config?.isActive ?? false}
+                                  onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
+                                  className="data-[state=checked]:bg-[#33295e]"
                                 />
                               </div>
-                            )}
-
-                            {config?.isLive && (
-                              <div className="flex flex-col gap-2">
-                                {/* Roles Dropdown */}
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-slate-600">Roles:</span>
-                                  <select
-                                    value={
-                                      config?.selectedRoles && config.selectedRoles.length > 0
-                                        ? config.selectedRoles.join(", ")
-                                        : config?.roles || "All"
-                                    }
-                                    onChange={(e) => handleRolesChange(doc.id, e.target.value)}
-                                    className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d]"
-                                  >
-                                    <option value="All">All</option>
-                                    <option value="Specific">Specific</option>
-                                    {config?.selectedRoles && config.selectedRoles.length > 0 && (
-                                      <option value={config.selectedRoles.join(", ")}>
-                                        {config.selectedRoles.join(", ")}
-                                      </option>
-                                    )}
-                                  </select>
-                                </div>
-
-                                {config?.roles === "Specific" &&
-                                  (!config?.selectedRoles || config.selectedRoles.length === 0) && (
-                                    <div className="flex items-center gap-2">
-                                      <select
-                                        multiple
-                                        value={config?.selectedRoles || []}
-                                        onChange={(e) => {
-                                          const selectedOptions = Array.from(
-                                            e.target.selectedOptions,
-                                            (option) => option.value,
-                                          )
-                                          setDocumentConfigs((prev) => ({
-                                            ...prev,
-                                            [doc.id]: { ...prev[doc.id], selectedRoles: selectedOptions },
-                                          }))
-                                        }}
-                                        className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d] min-w-[120px]"
-                                        size={3}
-                                      >
-                                        <option value="Admin">Admin</option>
-                                        <option value="Teacher">Teacher</option>
-                                        <option value="Head Teacher">Head Teacher</option>
-                                        <option value="Finance">Finance</option>
-                                        <option value="SENCO">SENCO</option>
-                                      </select>
-                                    </div>
-                                  )}
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center gap-2 justify-end">
+                                {config?.isActive && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handlePublishDocument(doc)}
+                                      className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                    >
+                                      {config?.isPublished ? "Published" : "Publish"}
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditDocument(doc)}
+                                      className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                    >
+                                      Edit
+                                    </Button>
+                                  </>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDownloadDocument(doc)}
+                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </Button>
                               </div>
-                            )}
-                          </div>
-                        )}
-
-                        {!config?.isActive && (
-                          <div className="flex items-center gap-4 ml-4 pl-4 border-l border-slate-200">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-600">Inactive</span>
-                              <Switch
-                                checked={false}
-                                onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-
-                {filteredDocuments.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <FileText className="w-8 h-8 text-slate-400" />
-                    </div>
-                    <p className="text-slate-600">No document configurations yet for this organization</p>
-                    <p className="text-sm text-slate-500 mt-1">Create your first document to get started</p>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-slate-400" />
                   </div>
-                )}
-              </div>
+                  <p className="text-slate-600">No document configurations yet for this organization</p>
+                  <p className="text-sm text-slate-500 mt-1">Create your first document to get started</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
