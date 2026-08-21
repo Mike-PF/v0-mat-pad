@@ -2249,7 +2249,6 @@ export function DocumentCreationContent() {
                     onClick={handleCreateNew}
                     className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
                     Create New Document
                   </Button>
                 </div>
