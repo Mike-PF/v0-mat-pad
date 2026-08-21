@@ -559,6 +559,34 @@ export function DocumentCreationContent() {
     setShowNotification(true)
   }
 
+  const handleCloneDocument = (doc: any) => {
+    const newId = `${doc.id}-clone-${Date.now()}`
+    const clonedDoc = { ...doc, id: newId, name: `${doc.name} (Copy)` }
+
+    setDocuments((prev) => [...prev, clonedDoc])
+
+    setDocumentConfigs((prev) => {
+      const sourceConfig = prev[doc.id]
+      return {
+        ...prev,
+        [newId]: sourceConfig
+          ? { ...sourceConfig, selectedRoles: [...(sourceConfig.selectedRoles ?? [])], organizations: [...(sourceConfig.organizations ?? [])] }
+          : {
+              isActive: doc.isActive ?? true,
+              isLive: doc.isLive ?? false,
+              isPublished: doc.isPublished ?? false,
+              roles: doc.roles ?? "All",
+              selectedRoles: [],
+              reportArea: doc.reportArea ?? "",
+              organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
+            },
+      }
+    })
+
+    setNotificationMessage(`Cloned "${doc.name}"`)
+    setShowNotification(true)
+  }
+
   const handleSPChange = (sp: string) => {
     setSelectedSP(sp)
     if (sp) {
@@ -2229,6 +2257,14 @@ export function DocumentCreationContent() {
                                     Edit
                                   </Button>
                                 )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCloneDocument(doc)}
+                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                >
+                                  Clone
+                                </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
