@@ -2140,119 +2140,35 @@ export function DocumentCreationContent() {
           </Card>
         )}
 
-        {!isCreatingNew && !selectedDocument && (
+        {!isCreatingNew && !selectedDocument && !selectedSchoolUrn && (
           <Card>
             <CardContent className="pt-6">
-              {!selectedSchoolUrn ? (
-                <div className="relative max-w-md">
-                  <select
-                    value={selectedSchoolUrn}
-                    onChange={(e) => setSelectedSchoolUrn(e.target.value)}
-                    className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="">Please select an organization...</option>
+              <div className="relative max-w-md">
+                <select
+                  value={selectedSchoolUrn}
+                  onChange={(e) => setSelectedSchoolUrn(e.target.value)}
+                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                >
+                  <option value="">Please select an organization...</option>
 
-                    <optgroup label="MATs (Multi-Academy Trusts)">
-                      {mats.map((mat) => (
-                        <option key={mat.urn} value={mat.urn}>
-                          {mat.name}
-                        </option>
-                      ))}
-                    </optgroup>
+                  <optgroup label="MATs (Multi-Academy Trusts)">
+                    {mats.map((mat) => (
+                      <option key={mat.urn} value={mat.urn}>
+                        {mat.name}
+                      </option>
+                    ))}
+                  </optgroup>
 
-                    <optgroup label="Schools">
-                      {schools.map((school) => (
-                        <option key={school.urn} value={school.urn}>
-                          {school.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    {/* Selected organization chip dropdown */}
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setOrgDropdownOpen((v) => !v)}
-                        className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                      >
-                        <span className="font-medium">{selectedOrganization?.name}</span>
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
-                          {selectedOrganization?.type === "mat" ? "MAT" : "School"}
-                        </span>
-                        <ChevronDown className="h-4 w-4 text-slate-500" />
-                      </button>
-
-                      {orgDropdownOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setOrgDropdownOpen(false)}
-                            aria-hidden="true"
-                          />
-                          <div className="absolute left-0 z-50 mt-1 max-h-72 w-80 overflow-y-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
-                            <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              MATs (Multi-Academy Trusts)
-                            </p>
-                            {mats.map((mat) => (
-                              <button
-                                key={mat.urn}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSchoolUrn(mat.urn)
-                                  setOrgDropdownOpen(false)
-                                }}
-                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                                  mat.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
-                                }`}
-                              >
-                                {mat.name}
-                              </button>
-                            ))}
-                            <p className="mt-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              Schools
-                            </p>
-                            {schools.map((school) => (
-                              <button
-                                key={school.urn}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSchoolUrn(school.urn)
-                                  setOrgDropdownOpen(false)
-                                }}
-                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                                  school.urn === selectedSchoolUrn ? "font-medium text-primary" : "text-slate-700"
-                                }`}
-                              >
-                                {school.name}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedSchoolUrn("")}
-                      className="text-sm font-medium text-slate-600 hover:text-primary"
-                    >
-                      Clear Selection
-                    </button>
-                  </div>
-
-                  <Button
-                    onClick={handleCreateNew}
-                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
-                  >
-                    Create New Document
-                  </Button>
-                </div>
-              )}
+                  <optgroup label="Schools">
+                    {schools.map((school) => (
+                      <option key={school.urn} value={school.urn}>
+                        {school.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
             </CardContent>
           </Card>
         )}
@@ -2262,15 +2178,23 @@ export function DocumentCreationContent() {
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-lg">Document Configurations</CardTitle>
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search by title, procedure, file name..."
-                    value={docSearchQuery}
-                    onChange={(e) => setDocSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search by title, procedure, file name..."
+                      value={docSearchQuery}
+                      onChange={(e) => setDocSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleCreateNew}
+                    className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors whitespace-nowrap"
+                  >
+                    Create New Document
+                  </Button>
                 </div>
               </div>
             </CardHeader>
