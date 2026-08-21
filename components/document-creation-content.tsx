@@ -2170,9 +2170,6 @@ export function DocumentCreationContent() {
                         </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Live</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Roles</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
                         <th className="py-3 px-4"></th>
                       </tr>
@@ -2209,55 +2206,6 @@ export function DocumentCreationContent() {
                                 selected={config?.organizations ?? []}
                                 onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
                               />
-                            </td>
-                            <td className="py-4 px-4">
-                              <span
-                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
-                                style={
-                                  config?.isPublished
-                                    ? { backgroundColor: "#33295e", color: "#ffffff" }
-                                    : { backgroundColor: "#f1f5f9", color: "#64748b" }
-                                }
-                              >
-                                {config?.isPublished ? "Published" : "Draft"}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              {config?.isActive && config?.isPublished ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-slate-600">{config?.isLive ? "Yes" : "No"}</span>
-                                  <Switch
-                                    checked={config?.isLive ?? false}
-                                    onCheckedChange={(checked) => handleToggleLive(doc.id, checked)}
-                                    className="data-[state=checked]:bg-[#33295e]"
-                                  />
-                                </div>
-                              ) : (
-                                <span className="text-sm text-slate-400">—</span>
-                              )}
-                            </td>
-                            <td className="py-4 px-4">
-                              {config?.isActive && config?.isLive ? (
-                                <select
-                                  value={
-                                    config?.selectedRoles && config.selectedRoles.length > 0
-                                      ? config.selectedRoles.join(", ")
-                                      : config?.roles || "All"
-                                  }
-                                  onChange={(e) => handleRolesChange(doc.id, e.target.value)}
-                                  className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-                                >
-                                  <option value="All">All</option>
-                                  <option value="Specific">Specific</option>
-                                  {config?.selectedRoles && config.selectedRoles.length > 0 && (
-                                    <option value={config.selectedRoles.join(", ")}>
-                                      {config.selectedRoles.join(", ")}
-                                    </option>
-                                  )}
-                                </select>
-                              ) : (
-                                <span className="text-sm text-slate-400">—</span>
-                              )}
                             </td>
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
