@@ -2134,7 +2134,7 @@ export function DocumentCreationContent() {
         )}
 
         {!isCreatingNew && !selectedDocument && (
-          <Card className="mt-6">
+          <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-lg">Document Configurations</CardTitle>
