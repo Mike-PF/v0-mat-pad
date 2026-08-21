@@ -99,6 +99,7 @@ const mockSavedDocuments = [
   {
     id: "doc1",
     name: "Attendance Report Template",
+    description: "Termly attendance summary with absence and persistent-absence breakdowns",
     sp: "SP_AttendanceReport",
     uploadedFile: "attendance_template.docx",
     tagCount: 45,
@@ -111,6 +112,7 @@ const mockSavedDocuments = [
   {
     id: "doc2",
     name: "SEND Provision Report",
+    description: "Overview of SEND provision, EHCP status and intervention tracking",
     sp: "SP_SENDProvisionReport",
     uploadedFile: "send_report.docx",
     tagCount: 78,
@@ -123,6 +125,7 @@ const mockSavedDocuments = [
   {
     id: "doc3",
     name: "Behaviour Analysis Template",
+    description: "Behaviour incident trends, sanctions and rewards analysis",
     sp: "SP_BehaviourAnalysis",
     uploadedFile: "behaviour_template.docx",
     tagCount: 52,
@@ -135,6 +138,7 @@ const mockSavedDocuments = [
   {
     id: "doc4",
     name: "MAT-Wide Financial Summary",
+    description: "Consolidated trust-wide budget, spend and reserves summary",
     sp: "SP_FinancialSummary",
     uploadedFile: "mat_financial_summary.docx",
     tagCount: 120,
@@ -147,6 +151,7 @@ const mockSavedDocuments = [
   {
     id: "doc5",
     name: "Trust Safeguarding Overview",
+    description: "Safeguarding concerns, referrals and CPOMS activity across the trust",
     sp: "SP_SafeguardingOverview",
     uploadedFile: "trust_safeguarding.docx",
     tagCount: 95,
@@ -159,6 +164,7 @@ const mockSavedDocuments = [
   {
     id: "doc6",
     name: "Diocese Academic Progress Report",
+    description: "Pupil progress and attainment against national benchmarks",
     sp: "SP_AcademicProgress",
     uploadedFile: "diocese_academic.docx",
     tagCount: 156,
@@ -167,6 +173,7 @@ const mockSavedDocuments = [
   {
     id: "doc7",
     name: "Trust Staffing Report",
+    description: "Staffing structure, vacancies and workforce cost analysis",
     sp: "SP_StaffingReport",
     uploadedFile: "trust_staffing.docx",
     tagCount: 88,
@@ -175,6 +182,7 @@ const mockSavedDocuments = [
   {
     id: "doc8",
     name: "Notre Dame SEND Report",
+    description: "School-level SEND provision and support plan tracking",
     sp: "SP_SENDProvisionReport",
     uploadedFile: "notre_dame_send.docx",
     tagCount: 64,
@@ -183,6 +191,7 @@ const mockSavedDocuments = [
   {
     id: "doc9",
     name: "Sacred Heart Behaviour Analysis",
+    description: "Behaviour incidents and intervention outcomes for the school",
     sp: "SP_BehaviourAnalysis",
     uploadedFile: "sacred_heart_behaviour.docx",
     tagCount: 48,
@@ -191,6 +200,7 @@ const mockSavedDocuments = [
   {
     id: "doc10",
     name: "Northern Trust Financial Overview",
+    description: "High-level financial position and forecast across academies",
     sp: "SP_FinancialSummary",
     uploadedFile: "northern_trust_financial.docx",
     tagCount: 132,
@@ -2262,6 +2272,9 @@ export function DocumentCreationContent() {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
+                          Document Description
+                        </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Live</th>
@@ -2277,6 +2290,9 @@ export function DocumentCreationContent() {
                           <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
                             <td className="py-4 px-4">
                               <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
+                            </td>
+                            <td className="py-4 px-4 max-w-xs">
+                              <span className="text-sm text-slate-600">{doc.description ?? "—"}</span>
                             </td>
                             <td className="py-4 px-4">
                               <select
