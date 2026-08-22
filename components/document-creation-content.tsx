@@ -31,6 +31,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
 import { OrganizationPicker } from "@/components/organization-picker"
+import { RolePicker } from "@/components/role-picker"
 
 const FORM_LINK_OPTIONS = [
   "Head Report (24/25)",
@@ -76,6 +77,36 @@ const schools = [
 ]
 
 const allOrganizations = [...mats, ...schools]
+
+// Mock roles available per organization (keyed by URN)
+const rolesByOrg: Record<string, { id: string; name: string }[]> = {
+  MAT001: [
+    { id: "MAT001-r1", name: "Chris test" },
+    { id: "MAT001-r2", name: "Head Teacher Report Viewer" },
+    { id: "MAT001-r3", name: "Test role 6" },
+  ],
+  MAT002: [
+    { id: "MAT002-r1", name: "Trust Administrator" },
+    { id: "MAT002-r2", name: "Executive Head Viewer" },
+  ],
+  MAT003: [{ id: "MAT003-r1", name: "Regional Director" }],
+  "138337": [{ id: "138337-r1", name: "School Viewer" }],
+  "140826": [],
+  "138361": [
+    { id: "138361-r1", name: "Head Teacher Report Viewer" },
+    { id: "138361-r2", name: "Governor Viewer" },
+  ],
+  "140439": [{ id: "140439-r1", name: "School Viewer" }],
+  "138828": [{ id: "138828-r1", name: "School Viewer" }],
+  "138830": [],
+  "138848": [{ id: "138848-r1", name: "School Viewer" }],
+  "140025": [{ id: "140025-r1", name: "School Viewer" }],
+  "140440": [{ id: "140440-r1", name: "School Viewer" }],
+  "140441": [{ id: "140441-r1", name: "School Viewer" }],
+  "140588": [{ id: "140588-r1", name: "School Viewer" }],
+  "148974": [{ id: "148974-r1", name: "School Viewer" }],
+  "144606": [{ id: "144606-r1", name: "School Viewer" }],
+}
 
 // Mock data for report SPs
 const reportSPs = [
@@ -346,6 +377,7 @@ export function DocumentCreationContent() {
       selectedRoles: string[]
       reportArea: string
       organizations: string[]
+      roleIds: string[]
     }
   }>({})
 
@@ -360,6 +392,7 @@ export function DocumentCreationContent() {
         selectedRoles: doc.roles === "Specific" ? ["Admin", "Teacher"] : [],
         reportArea: doc.reportArea ?? "",
         organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
+        roleIds: [],
       }
     })
     setDocumentConfigs(configs)
@@ -397,9 +430,20 @@ export function DocumentCreationContent() {
   }
 
   const handleOrganizationsChange = (docId: string, organizations: string[]) => {
+    setDocumentConfigs((prev) => {
+      const validRoleIds = new Set(organizations.flatMap((urn) => (rolesByOrg[urn] ?? []).map((r) => r.id)))
+      const roleIds = (prev[docId]?.roleIds ?? []).filter((id) => validRoleIds.has(id))
+      return {
+        ...prev,
+        [docId]: { ...prev[docId], organizations, roleIds },
+      }
+    })
+  }
+
+  const handleRoleIdsChange = (docId: string, roleIds: string[]) => {
     setDocumentConfigs((prev) => ({
       ...prev,
-      [docId]: { ...prev[docId], organizations },
+      [docId]: { ...prev[docId], roleIds },
     }))
   }
 
@@ -570,7 +614,12 @@ export function DocumentCreationContent() {
       return {
         ...prev,
         [newId]: sourceConfig
-          ? { ...sourceConfig, selectedRoles: [...(sourceConfig.selectedRoles ?? [])], organizations: [...(sourceConfig.organizations ?? [])] }
+          ? {
+              ...sourceConfig,
+              selectedRoles: [...(sourceConfig.selectedRoles ?? [])],
+              organizations: [...(sourceConfig.organizations ?? [])],
+              roleIds: [...(sourceConfig.roleIds ?? [])],
+            }
           : {
               isActive: doc.isActive ?? true,
               isLive: doc.isLive ?? false,
@@ -579,6 +628,7 @@ export function DocumentCreationContent() {
               selectedRoles: [],
               reportArea: doc.reportArea ?? "",
               organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
+              roleIds: [],
             },
       }
     })
@@ -2224,6 +2274,7 @@ export function DocumentCreationContent() {
                         </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Role</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
                         <th className="py-3 px-4"></th>
                       </tr>
@@ -2264,6 +2315,16 @@ export function DocumentCreationContent() {
                                 schools={schools}
                                 selected={config?.organizations ?? []}
                                 onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
+                              />
+                            </td>
+                            <td className="py-4 px-4">
+                              <RolePicker
+                                groups={(config?.organizations ?? []).map((urn) => ({
+                                  orgName: allOrganizations.find((o) => o.urn === urn)?.name ?? urn,
+                                  roles: rolesByOrg[urn] ?? [],
+                                }))}
+                                selected={config?.roleIds ?? []}
+                                onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
                               />
                             </td>
                             <td className="py-4 px-4">
