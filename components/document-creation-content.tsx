@@ -1,6 +1,7 @@
 "use client"
 import { useState, useMemo, useEffect } from "react"
 import React from "react"
+import { useRouter } from "next/navigation"
 
 // Removed duplicate import: import React from "react"
 // Removed duplicate import: import type React from "react"
@@ -33,14 +34,6 @@ import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
 import { OrganizationPicker } from "@/components/organization-picker"
 import { RolePicker } from "@/components/role-picker"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
 
 const FORM_LINK_OPTIONS = [
   "Head Report (24/25)",
@@ -290,6 +283,7 @@ const generateDocumentTags = (count: number) => {
 export function DocumentCreationContent() {
   // Changed from default export to named export
   // Changed to default export
+  const router = useRouter()
   const [selectedSchoolUrn, setSelectedSchoolUrn] = useState("")
   const [documents, setDocuments] = useState(mockSavedDocuments)
   const [selectedDocument, setSelectedDocument] = useState<any>(null)
@@ -320,10 +314,6 @@ export function DocumentCreationContent() {
   const [docSearchQuery, setDocSearchQuery] = useState("")
   const [docCurrentPage, setDocCurrentPage] = useState(1)
   const [docPageSize, setDocPageSize] = useState(12)
-  const [permissionsDoc, setPermissionsDoc] = useState<any | null>(null)
-  const [docPermissions, setDocPermissions] = useState<
-    Record<string, { view: boolean; edit: boolean; delete: boolean; share: boolean }>
-  >({})
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
@@ -2143,78 +2133,6 @@ export function DocumentCreationContent() {
         </div>
       )}
 
-      <Dialog open={!!permissionsDoc} onOpenChange={(open) => !open && setPermissionsDoc(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Form Permissions</DialogTitle>
-            <DialogDescription>
-              {permissionsDoc ? `Choose what users can do with "${permissionsDoc.name}".` : ""}
-            </DialogDescription>
-          </DialogHeader>
-
-          {permissionsDoc &&
-            (() => {
-              const current = docPermissions[permissionsDoc.id] ?? {
-                view: true,
-                edit: false,
-                delete: false,
-                share: false,
-              }
-              const toggle = (key: "view" | "edit" | "delete" | "share") =>
-                setDocPermissions((prev) => {
-                  const base = prev[permissionsDoc.id] ?? { view: true, edit: false, delete: false, share: false }
-                  return { ...prev, [permissionsDoc.id]: { ...base, [key]: !base[key] } }
-                })
-              const permissionList: { key: "view" | "edit" | "delete" | "share"; label: string; hint: string }[] = [
-                { key: "view", label: "View", hint: "Can open and read the form" },
-                { key: "edit", label: "Edit", hint: "Can change form content and configuration" },
-                { key: "delete", label: "Delete", hint: "Can remove the form" },
-                { key: "share", label: "Share", hint: "Can share the form with others" },
-              ]
-              return (
-                <div className="space-y-1 py-2">
-                  {permissionList.map((perm) => (
-                    <label
-                      key={perm.key}
-                      className="flex cursor-pointer items-center justify-between gap-4 rounded-md px-3 py-2.5 hover:bg-slate-50"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">{perm.label}</p>
-                        <p className="text-xs text-slate-500">{perm.hint}</p>
-                      </div>
-                      <Switch
-                        checked={current[perm.key]}
-                        onCheckedChange={() => toggle(perm.key)}
-                        className="data-[state=checked]:bg-[#33295e]"
-                      />
-                    </label>
-                  ))}
-                </div>
-              )
-            })()}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setPermissionsDoc(null)}
-              className="border-slate-200 text-slate-600"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                setNotificationMessage(`Permissions saved for "${permissionsDoc?.name}"`)
-                setPermissionsDoc(null)
-                setShowNotification(true)
-              }}
-              className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
-            >
-              Save Permissions
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <div className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
         {(isCreatingNew || selectedDocument) && (
           <Card className="flex-shrink-0">
@@ -2470,7 +2388,7 @@ export function DocumentCreationContent() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setPermissionsDoc(doc)}
+                                  onClick={() => router.push("/forms?readonly=1")}
                                   title="Change permissions"
                                   aria-label="Change permissions"
                                   className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"

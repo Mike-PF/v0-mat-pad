@@ -21,6 +21,7 @@ interface QuestionSectionProps {
   onUpdateData: (questionId: string, value: any) => void
   sectionRefs: React.MutableRefObject<Record<string, HTMLElement | null>>
   onSectionChange: (sectionId: string) => void
+  readOnly?: boolean
 }
 
 export function QuestionSection({
@@ -29,6 +30,7 @@ export function QuestionSection({
   onUpdateData,
   sectionRefs,
   onSectionChange,
+  readOnly = false,
 }: QuestionSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -424,13 +426,13 @@ export function QuestionSection({
 
     switch (question.type) {
       case "single-line":
-        return <Input {...commonProps} className="w-full" />
+        return <Input {...commonProps} readOnly={readOnly} className="w-full" />
 
       case "multiline":
-        return <Textarea {...commonProps} className="min-h-[120px]" />
+        return <Textarea {...commonProps} readOnly={readOnly} className="min-h-[120px]" />
 
       case "rich-text":
-        return <RichTextEditor {...commonProps} className="w-full" />
+        return <RichTextEditor {...commonProps} readOnly={readOnly} className="w-full" />
 
       case "dropdown":
         return (
@@ -438,7 +440,8 @@ export function QuestionSection({
             <select
               value={formData[question.id] || ""}
               onChange={(e) => onUpdateData(question.id, e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={readOnly}
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-600"
             >
               <option value="">Select an option...</option>
               {question.options?.map((option: string) => (
@@ -452,10 +455,14 @@ export function QuestionSection({
         )
 
       case "rag":
-        return <RAGPicker value={formData[question.id] || ""} onChange={(value) => onUpdateData(question.id, value)} />
+        return (
+          <div className={readOnly ? "pointer-events-none opacity-80" : ""} aria-disabled={readOnly}>
+            <RAGPicker value={formData[question.id] || ""} onChange={(value) => onUpdateData(question.id, value)} />
+          </div>
+        )
 
       default:
-        return <Input {...commonProps} />
+        return <Input {...commonProps} readOnly={readOnly} />
     }
   }
 

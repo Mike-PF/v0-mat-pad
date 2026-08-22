@@ -22,6 +22,7 @@ interface FormsReportPanelProps {
   onSectionClick: (sectionId: string) => void
   onClearForm: () => void
   showSections: boolean
+  readOnly?: boolean
 }
 
 export function FormsReportPanel({
@@ -35,6 +36,7 @@ export function FormsReportPanel({
   onSectionClick,
   onClearForm,
   showSections,
+  readOnly = false,
 }: FormsReportPanelProps) {
   const forms = [
     "Headteacher's Report - Educational",
@@ -211,12 +213,20 @@ export function FormsReportPanel({
     <div className="bg-white border border-slate-200 rounded-lg h-full flex flex-col">
       {/* Forms Selection Section */}
       <div className="p-4 border-b border-slate-200 flex-shrink-0">
-        <div className="flex items-center justify-end mb-4">
+        <div className="flex items-center justify-between mb-4">
+          {readOnly ? (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+              View only
+            </span>
+          ) : (
+            <span />
+          )}
           <Button
             variant="outline"
             size="sm"
             onClick={onClearForm}
-            className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
+            disabled={readOnly}
+            className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent disabled:opacity-50"
           >
             Clear Form
           </Button>
@@ -228,7 +238,8 @@ export function FormsReportPanel({
             <select
               value={selectedForm}
               onChange={(e) => onFormChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+              disabled={readOnly}
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e] disabled:bg-slate-50 disabled:text-slate-600"
             >
               <option value="">Please select a form type...</option>
               {forms.map((form) => (
@@ -245,7 +256,8 @@ export function FormsReportPanel({
             <select
               value={selectedSchool}
               onChange={(e) => onSchoolChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+              disabled={readOnly}
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e] disabled:bg-slate-50 disabled:text-slate-600"
             >
               <option value="">Please select a school...</option>
               {schools.map((school) => (
@@ -262,7 +274,8 @@ export function FormsReportPanel({
             <select
               value={selectedTerm}
               onChange={(e) => onTermChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+              disabled={readOnly}
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e] disabled:bg-slate-50 disabled:text-slate-600"
             >
               <option value="">Please select a term...</option>
               {terms.map((term) => (

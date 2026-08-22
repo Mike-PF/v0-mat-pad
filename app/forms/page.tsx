@@ -1,15 +1,21 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { Suspense, useState, useRef } from "react"
+import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { FormsReportPanel } from "@/components/forms-report-panel"
 import { QuestionSection } from "@/components/question-section"
 
-export default function FormsPage() {
-  const [selectedForm, setSelectedForm] = useState("")
-  const [selectedSchool, setSelectedSchool] = useState("")
-  const [selectedTerm, setSelectedTerm] = useState("")
+function FormsPageInner() {
+  const searchParams = useSearchParams()
+  const readOnly = searchParams.get("readonly") === "1"
+
+  // In read-only (view permissions) mode we pre-populate the selectors so the
+  // full report renders immediately, exactly as it would when filled in.
+  const [selectedForm, setSelectedForm] = useState(readOnly ? "Headteacher's Report - Educational" : "")
+  const [selectedSchool, setSelectedSchool] = useState(readOnly ? "Holy Family Catholic Academy" : "")
+  const [selectedTerm, setSelectedTerm] = useState(readOnly ? "Summer 2024/25" : "")
   const [activeSection, setActiveSection] = useState("academy-vision")
   const [formData, setFormData] = useState<Record<string, any>>({})
 
@@ -24,6 +30,7 @@ export default function FormsPage() {
   }
 
   const updateFormData = (questionId: string, value: any) => {
+    if (readOnly) return
     setFormData((prev) => ({ ...prev, [questionId]: value }))
   }
 
@@ -32,6 +39,7 @@ export default function FormsPage() {
   const isReady = Boolean(selectedForm && selectedSchool && selectedTerm)
 
   const clearForm = () => {
+    if (readOnly) return
     if (window.confirm("Are you sure you want to clear all form data? This action cannot be undone.")) {
       // Reset dropdowns to "Please select" state
       setSelectedForm("")
@@ -68,6 +76,7 @@ export default function FormsPage() {
                 onSectionClick={scrollToSection}
                 onClearForm={clearForm}
                 showSections={isReady}
+                readOnly={readOnly}
               />
             </div>
 
@@ -80,6 +89,7 @@ export default function FormsPage() {
                   onUpdateData={updateFormData}
                   sectionRefs={sectionRefs}
                   onSectionChange={setActiveSection}
+                  readOnly={readOnly}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">
@@ -96,5 +106,13 @@ export default function FormsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function FormsPage() {
+  return (
+    <Suspense fallback={null}>
+      <FormsPageInner />
+    </Suspense>
   )
 }
