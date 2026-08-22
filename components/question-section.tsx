@@ -2,8 +2,9 @@
 
 import type React from "react"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PermissionAssigner, type Assignee } from "@/components/permission-assigner"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
@@ -33,6 +34,10 @@ export function QuestionSection({
   readOnly = false,
 }: QuestionSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [permissions, setPermissions] = useState<Record<string, Assignee[]>>({})
+
+  const setPermissionFor = (key: string, assignees: Assignee[]) =>
+    setPermissions((prev) => ({ ...prev, [key]: assignees }))
 
   // Intersection Observer to track active section
   useEffect(() => {
@@ -478,7 +483,16 @@ export function QuestionSection({
           className="scroll-mt-4"
         >
           <CardHeader>
-            <CardTitle className="text-2xl">{section.title}</CardTitle>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <CardTitle className="text-2xl">{section.title}</CardTitle>
+              {readOnly && (
+                <PermissionAssigner
+                  label={section.title}
+                  assignees={permissions[`section:${section.id}`] ?? []}
+                  onChange={(a) => setPermissionFor(`section:${section.id}`, a)}
+                />
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Data Visualization Component */}
@@ -487,12 +501,22 @@ export function QuestionSection({
             {/* Questions */}
             {section.questions?.map((question) => (
               <div key={question.id} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    {question.label}
-                    {question.required && <span className="text-red-500 ml-1">*</span>}
-                  </label>
-                  {question.info && <InfoTooltip content={question.info} />}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-slate-700">
+                      {question.label}
+                      {question.required && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                    {question.info && <InfoTooltip content={question.info} />}
+                  </div>
+                  {readOnly && (
+                    <PermissionAssigner
+                      label={question.label}
+                      size="sm"
+                      assignees={permissions[`question:${question.id}`] ?? []}
+                      onChange={(a) => setPermissionFor(`question:${question.id}`, a)}
+                    />
+                  )}
                 </div>
 
                 {renderQuestion(question)}
