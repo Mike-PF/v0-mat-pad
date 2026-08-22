@@ -1,15 +1,24 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { Suspense, useState, useRef } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { X } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { FormsReportPanel } from "@/components/forms-report-panel"
 import { QuestionSection } from "@/components/question-section"
+import { Button } from "@/components/ui/button"
 
-export default function FormsPage() {
-  const [selectedForm, setSelectedForm] = useState("")
-  const [selectedSchool, setSelectedSchool] = useState("")
-  const [selectedTerm, setSelectedTerm] = useState("")
+function FormsPageInner() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const readOnly = searchParams.get("readonly") === "1"
+
+  // In read-only (view permissions) mode we pre-populate the selectors so the
+  // full report renders immediately, exactly as it would when filled in.
+  const [selectedForm, setSelectedForm] = useState(readOnly ? "Headteacher's Report - Educational" : "")
+  const [selectedSchool, setSelectedSchool] = useState(readOnly ? "Holy Family Catholic Academy" : "")
+  const [selectedTerm, setSelectedTerm] = useState(readOnly ? "Summer 2024/25" : "")
   const [activeSection, setActiveSection] = useState("academy-vision")
   const [formData, setFormData] = useState<Record<string, any>>({})
 
@@ -24,6 +33,7 @@ export default function FormsPage() {
   }
 
   const updateFormData = (questionId: string, value: any) => {
+    if (readOnly) return
     setFormData((prev) => ({ ...prev, [questionId]: value }))
   }
 
@@ -32,6 +42,7 @@ export default function FormsPage() {
   const isReady = Boolean(selectedForm && selectedSchool && selectedTerm)
 
   const clearForm = () => {
+    if (readOnly) return
     if (window.confirm("Are you sure you want to clear all form data? This action cannot be undone.")) {
       // Reset dropdowns to "Please select" state
       setSelectedForm("")
@@ -50,7 +61,24 @@ export default function FormsPage() {
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
-          <TopNavigation showProgress={isReady} />
+          <TopNavigation showProgress={isReady && !readOnly} />
+          {readOnly && (
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Set up permissions</p>
+                <p className="text-xs text-slate-500">Assign roles or users to sections and questions.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/settings/document-creation")}
+                className="gap-1.5 border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white"
+              >
+                <X className="h-4 w-4" />
+                Close
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
@@ -68,6 +96,7 @@ export default function FormsPage() {
                 onSectionClick={scrollToSection}
                 onClearForm={clearForm}
                 showSections={isReady}
+                readOnly={readOnly}
               />
             </div>
 
@@ -80,6 +109,7 @@ export default function FormsPage() {
                   onUpdateData={updateFormData}
                   sectionRefs={sectionRefs}
                   onSectionChange={setActiveSection}
+                  readOnly={readOnly}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">
@@ -96,5 +126,13 @@ export default function FormsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function FormsPage() {
+  return (
+    <Suspense fallback={null}>
+      <FormsPageInner />
+    </Suspense>
   )
 }

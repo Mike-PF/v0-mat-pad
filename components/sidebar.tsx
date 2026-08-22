@@ -41,9 +41,11 @@ export function Sidebar({}: SidebarProps) {
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [activeSchool, setActiveSchool] = useState(schools[0])
   const [mounted, setMounted] = useState(false)
+  const [readOnlyForms, setReadOnlyForms] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    setReadOnlyForms(new URLSearchParams(window.location.search).get("readonly") === "1")
   }, [])
 
   const menuItems = [
@@ -56,7 +58,13 @@ export function Sidebar({}: SidebarProps) {
     { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   ]
 
-  const isActive = (href: string) => mounted && pathname.startsWith(href)
+  const isActive = (href: string) => {
+    if (!mounted) return false
+    // In view-only permissions mode we're launched from Settings, so keep
+    // Forms inactive and let the Settings icon reflect the active state.
+    if (readOnlyForms && href === "/forms") return false
+    return pathname.startsWith(href)
+  }
 
   return (
     <div
@@ -129,7 +137,7 @@ export function Sidebar({}: SidebarProps) {
           className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
           title="Settings"
         >
-          <IconCircle active={mounted && pathname.startsWith("/settings")}>
+          <IconCircle active={mounted && (pathname.startsWith("/settings") || readOnlyForms)}>
             <Settings className="w-5 h-5" />
           </IconCircle>
         </a>
