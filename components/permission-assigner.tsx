@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useRef, useState } from "react"
-import { Users, Shield, Search, X, Check } from "lucide-react"
+import { Search, X, Check } from "lucide-react"
 
 export type Assignee = { id: string; name: string; type: "role" | "user" }
 
@@ -64,11 +64,11 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex items-start gap-2">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className={`inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white font-medium text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white ${
+          className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-md border border-slate-200 bg-white font-medium text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white ${
             size === "sm" ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-sm"
           }`}
           aria-label={`Assign permissions for ${label}`}
@@ -81,23 +81,28 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
           )}
         </button>
 
-        {assignees.map((a) => (
-          <span
-            key={a.id}
-            className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-0.5 pl-2 pr-1 text-xs font-medium text-slate-700"
-          >
-            {a.type === "role" ? <Shield className="h-3 w-3 text-[#33295e]" /> : <Users className="h-3 w-3 text-[#33295e]" />}
-            {a.name}
-            <button
-              type="button"
-              onClick={() => remove(a.id)}
-              className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-              aria-label={`Remove ${a.name}`}
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </span>
-        ))}
+        {assignees.length > 0 && (
+          <div className="flex flex-1 flex-wrap items-center gap-1.5">
+            {assignees.map((a) => (
+              <span
+                key={a.id}
+                className={`inline-flex items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs font-medium text-white ${
+                  a.type === "role" ? "bg-[#33295e]" : "bg-[#fd6d6d]"
+                }`}
+              >
+                {a.name}
+                <button
+                  type="button"
+                  onClick={() => remove(a.id)}
+                  className="rounded-full p-0.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                  aria-label={`Remove ${a.name}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {open && (
