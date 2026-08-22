@@ -61,8 +61,9 @@ function FormsPageInner() {
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
+          <TopNavigation showProgress={isReady && !readOnly} />
           {readOnly && (
-            <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5">
               <div>
                 <p className="text-sm font-semibold text-slate-900">Set up permissions</p>
                 <p className="text-xs text-slate-500">Assign roles or users to sections and questions.</p>
@@ -78,7 +79,6 @@ function FormsPageInner() {
               </Button>
             </div>
           )}
-          <TopNavigation showProgress={isReady && !readOnly} />
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
