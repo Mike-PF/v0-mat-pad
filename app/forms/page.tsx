@@ -1,14 +1,17 @@
 "use client"
 
 import { Suspense, useState, useRef } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
+import { X } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { FormsReportPanel } from "@/components/forms-report-panel"
 import { QuestionSection } from "@/components/question-section"
+import { Button } from "@/components/ui/button"
 
 function FormsPageInner() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const readOnly = searchParams.get("readonly") === "1"
 
   // In read-only (view permissions) mode we pre-populate the selectors so the
@@ -58,6 +61,23 @@ function FormsPageInner() {
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
+          {readOnly && (
+            <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Set up permissions</p>
+                <p className="text-xs text-slate-500">Assign roles or users to sections and questions.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/settings/document-creation")}
+                className="gap-1.5 border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white"
+              >
+                <X className="h-4 w-4" />
+                Close
+              </Button>
+            </div>
+          )}
           <TopNavigation showProgress={isReady && !readOnly} />
         </div>
 
