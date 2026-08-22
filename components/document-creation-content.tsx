@@ -309,6 +309,8 @@ export function DocumentCreationContent() {
   const [tags, setTags] = useState<any[]>([]) // Renamed from systemTags for clarity
   const [searchQuery, setSearchQuery] = useState("")
   const [docSearchQuery, setDocSearchQuery] = useState("")
+  const [docCurrentPage, setDocCurrentPage] = useState(1)
+  const [docPageSize, setDocPageSize] = useState(12)
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(50)
@@ -483,6 +485,21 @@ export function DocumentCreationContent() {
         doc.uploadedFile?.toLowerCase().includes(q),
     )
   }, [documents, docSearchQuery])
+
+  const docTotalPages = Math.max(1, Math.ceil(filteredDocuments.length / docPageSize))
+
+  useEffect(() => {
+    setDocCurrentPage(1)
+  }, [docSearchQuery, docPageSize])
+
+  useEffect(() => {
+    if (docCurrentPage > docTotalPages) setDocCurrentPage(docTotalPages)
+  }, [docCurrentPage, docTotalPages])
+
+  const pagedDocuments = useMemo(() => {
+    const start = (docCurrentPage - 1) * docPageSize
+    return filteredDocuments.slice(start, start + docPageSize)
+  }, [filteredDocuments, docCurrentPage, docPageSize])
 
   const handleCreateNew = () => {
     setIsCreatingNew(true)
@@ -2280,22 +2297,25 @@ export function DocumentCreationContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredDocuments.map((doc) => {
+                      {pagedDocuments.map((doc) => {
                         const config = documentConfigs[doc.id] // Get config for this document
                         return (
-                          <tr key={doc.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
-                            <td className="py-4 px-4">
+                          <tr
+                            key={doc.id}
+                            className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors [&>td]:align-middle"
+                          >
+                            <td className="py-2 px-4">
                               <span className="inline-flex items-center rounded-md bg-[#33295e] px-2.5 py-1 text-xs font-medium text-white">
                                 System
                               </span>
                             </td>
-                            <td className="py-4 px-4">
-                              <span className="text-sm text-[#33295e] font-medium">{doc.name}</span>
+                            <td className="py-2 px-4 align-middle">
+                              <span className="text-sm text-[#33295e] font-medium line-clamp-2">{doc.name}</span>
                             </td>
-                            <td className="py-4 px-4 max-w-xs">
-                              <span className="text-sm text-slate-600">{doc.description ?? "—"}</span>
+                            <td className="py-2 px-4 align-middle max-w-[240px]">
+                              <span className="text-sm text-slate-600 line-clamp-2">{doc.description ?? "—"}</span>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-2 px-4">
                               <select
                                 value={config?.reportArea ?? ""}
                                 onChange={(e) => handleReportAreaChange(doc.id, e.target.value)}
@@ -2309,7 +2329,7 @@ export function DocumentCreationContent() {
                                 ))}
                               </select>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-2 px-4">
                               <OrganizationPicker
                                 mats={mats}
                                 schools={schools}
@@ -2317,7 +2337,7 @@ export function DocumentCreationContent() {
                                 onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
                               />
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-2 px-4">
                               <RolePicker
                                 groups={(config?.organizations ?? []).map((urn) => ({
                                   orgName: allOrganizations.find((o) => o.urn === urn)?.name ?? urn,
@@ -2327,7 +2347,7 @@ export function DocumentCreationContent() {
                                 onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
                               />
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-2 px-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm text-slate-600">{config?.isActive ? "Yes" : "No"}</span>
                                 <Switch
@@ -2337,7 +2357,7 @@ export function DocumentCreationContent() {
                                 />
                               </div>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-end">
                                 {config?.isActive && (
                                   <Button
@@ -2372,6 +2392,59 @@ export function DocumentCreationContent() {
                       })}
                     </tbody>
                   </table>
+
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-slate-500">
+                      Showing {(docCurrentPage - 1) * docPageSize + 1}–
+                      {Math.min(docCurrentPage * docPageSize, filteredDocuments.length)} of {filteredDocuments.length}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setDocCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={docCurrentPage === 1}
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white"
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: docTotalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          type="button"
+                          onClick={() => setDocCurrentPage(page)}
+                          className={`min-w-9 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
+                            page === docCurrentPage
+                              ? "border-[#33295e] bg-[#33295e] text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setDocCurrentPage((p) => Math.min(docTotalPages, p + 1))}
+                        disabled={docCurrentPage === docTotalPages}
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white"
+                      >
+                        Next
+                      </button>
+                      <div className="relative ml-1">
+                        <select
+                          value={docPageSize}
+                          onChange={(e) => setDocPageSize(Number(e.target.value))}
+                          className="appearance-none rounded-md border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                        >
+                          {[12, 24, 48, 96].map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-12">
