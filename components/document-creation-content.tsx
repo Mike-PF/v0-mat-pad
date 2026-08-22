@@ -2293,6 +2293,7 @@ export function DocumentCreationContent() {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Role</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Save</th>
                         <th className="py-3 px-4"></th>
                       </tr>
                     </thead>
@@ -2356,6 +2357,18 @@ export function DocumentCreationContent() {
                                   className="data-[state=checked]:bg-[#33295e]"
                                 />
                               </div>
+                            </td>
+                            <td className="py-2 px-4">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setNotificationMessage(`Saved "${doc.name}"`)
+                                  setShowNotification(true)
+                                }}
+                                className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
+                              >
+                                Save
+                              </Button>
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-end">
