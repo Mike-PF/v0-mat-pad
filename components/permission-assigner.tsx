@@ -73,7 +73,6 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
           }`}
           aria-label={`Assign permissions for ${label}`}
         >
-          <Shield className={size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"} />
           Permissions
           {assignees.length > 0 && (
             <span className="ml-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-[#33295e] px-1 text-[10px] font-semibold text-white">
@@ -114,7 +113,6 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
                   tab === "role" ? "bg-[#33295e] text-white" : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                <Shield className="h-4 w-4" />
                 Roles
               </button>
               <button
@@ -124,7 +122,6 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
                   tab === "user" ? "bg-[#33295e] text-white" : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                <Users className="h-4 w-4" />
                 Users
               </button>
             </div>
