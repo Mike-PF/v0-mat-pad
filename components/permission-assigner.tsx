@@ -108,7 +108,7 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+          <div className="absolute left-0 z-50 mt-2 w-80 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
             {/* Toggle */}
             <div className="flex gap-1 border-b border-slate-100 p-2">
               <button
