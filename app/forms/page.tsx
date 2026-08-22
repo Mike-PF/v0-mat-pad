@@ -58,7 +58,7 @@ function FormsPageInner() {
 
       <div className="flex-1 flex flex-col">
         <div className="p-4">
-          <TopNavigation showProgress={isReady} />
+          <TopNavigation showProgress={isReady && !readOnly} />
         </div>
 
         <div className="flex-1 px-4 pb-6 overflow-hidden">
