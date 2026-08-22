@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useRef, useState } from "react"
-import { Users, Shield, Search, X, Plus, Check } from "lucide-react"
+import { Users, Shield, Search, X, Check } from "lucide-react"
 
 export type Assignee = { id: string; name: string; type: "role" | "user" }
 
@@ -207,7 +207,6 @@ export function PermissionAssigner({ label, assignees, onChange, size = "md" }: 
                 onClick={() => setOpen(false)}
                 className="inline-flex items-center gap-1 rounded-md bg-[#33295e] px-2.5 py-1 text-xs font-medium text-white hover:bg-[#33295e]/90"
               >
-                <Plus className="h-3 w-3" />
                 Done
               </button>
             </div>
