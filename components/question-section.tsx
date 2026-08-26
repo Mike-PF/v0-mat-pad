@@ -16,6 +16,14 @@ import { BehaviourData } from "@/components/data/behaviour-data"
 import { ChevronDown } from "lucide-react"
 import { SuspensionExclusionData } from "@/components/data/suspension-exclusion-data"
 
+export interface PermissionTargets {
+  sections: {
+    id: string
+    title: string
+    questions: { id: string; label: string }[]
+  }[]
+}
+
 interface QuestionSectionProps {
   activeSection: string
   formData: Record<string, any>
@@ -25,7 +33,7 @@ interface QuestionSectionProps {
   readOnly?: boolean
   permissions?: Record<string, Assignee[]>
   onPermissionsChange?: React.Dispatch<React.SetStateAction<Record<string, Assignee[]>>>
-  onRegisterTargets?: (targets: { sectionIds: string[]; questionIds: string[] }) => void
+  onRegisterTargets?: (targets: PermissionTargets) => void
 }
 
 export function QuestionSection({
@@ -430,23 +438,26 @@ export function QuestionSection({
     },
   ]
 
-  // Report all section and question ids upward so a parent can drive bulk
-  // permission assignment ("all sections" / "all questions").
-  const { sectionIds, questionIds } = useMemo(() => {
-    const s: string[] = []
-    const q: string[] = []
-    sections.forEach((section) => {
-      s.push(section.id)
-      section.questions?.forEach((question) => q.push(question.id))
-    })
-    return { sectionIds: s, questionIds: q }
+  // Report the section/question tree upward so a parent can drive bulk
+  // permission assignment against a selected subset of items.
+  const targets = useMemo<PermissionTargets>(() => {
+    return {
+      sections: sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        questions: (section.questions ?? []).map((question) => ({
+          id: question.id,
+          label: question.label,
+        })),
+      })),
+    }
     // sections is a static, stable-content array defined in this component
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    onRegisterTargets?.({ sectionIds, questionIds })
-  }, [onRegisterTargets, sectionIds, questionIds])
+    onRegisterTargets?.(targets)
+  }, [onRegisterTargets, targets])
 
   const renderQuestion = (question: any) => {
     const commonProps = {
