@@ -101,6 +101,7 @@ export function BulkPermissionsPanel({ permissionTargets, onBulkApply }: BulkPer
           <PermissionAssigner
             label="selected items"
             size="sm"
+            align="right"
             assignees={applyAssignees}
             onChange={setApplyAssignees}
           />
