@@ -8,6 +8,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { FormsReportPanel } from "@/components/forms-report-panel"
 import { QuestionSection } from "@/components/question-section"
 import { Button } from "@/components/ui/button"
+import type { Assignee } from "@/components/permission-assigner"
 
 function FormsPageInner() {
   const searchParams = useSearchParams()
@@ -21,6 +22,39 @@ function FormsPageInner() {
   const [selectedTerm, setSelectedTerm] = useState(readOnly ? "Summer 2024/25" : "")
   const [activeSection, setActiveSection] = useState("academy-vision")
   const [formData, setFormData] = useState<Record<string, any>>({})
+
+  // Permission assignments, keyed by `section:<id>` / `question:<id>`.
+  // Lifted here so the bulk panel (left) and the per-item assigners (right)
+  // stay in sync.
+  const [permissions, setPermissions] = useState<Record<string, Assignee[]>>({})
+  const [permissionTargets, setPermissionTargets] = useState<{ sectionIds: string[]; questionIds: string[] }>({
+    sectionIds: [],
+    questionIds: [],
+  })
+  const [bulkSectionAssignees, setBulkSectionAssignees] = useState<Assignee[]>([])
+  const [bulkQuestionAssignees, setBulkQuestionAssignees] = useState<Assignee[]>([])
+
+  const applyBulkPermissions = (scope: "sections" | "questions", assignees: Assignee[]) => {
+    const ids = scope === "sections" ? permissionTargets.sectionIds : permissionTargets.questionIds
+    const prefix = scope === "sections" ? "section:" : "question:"
+    setPermissions((prev) => {
+      const next = { ...prev }
+      ids.forEach((id) => {
+        next[`${prefix}${id}`] = assignees
+      })
+      return next
+    })
+  }
+
+  const handleBulkSectionChange = (assignees: Assignee[]) => {
+    setBulkSectionAssignees(assignees)
+    applyBulkPermissions("sections", assignees)
+  }
+
+  const handleBulkQuestionChange = (assignees: Assignee[]) => {
+    setBulkQuestionAssignees(assignees)
+    applyBulkPermissions("questions", assignees)
+  }
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
@@ -97,6 +131,10 @@ function FormsPageInner() {
                 onClearForm={clearForm}
                 showSections={isReady}
                 readOnly={readOnly}
+                bulkSectionAssignees={bulkSectionAssignees}
+                bulkQuestionAssignees={bulkQuestionAssignees}
+                onBulkSectionChange={handleBulkSectionChange}
+                onBulkQuestionChange={handleBulkQuestionChange}
               />
             </div>
 
@@ -110,6 +148,9 @@ function FormsPageInner() {
                   sectionRefs={sectionRefs}
                   onSectionChange={setActiveSection}
                   readOnly={readOnly}
+                  permissions={permissions}
+                  onPermissionsChange={setPermissions}
+                  onRegisterTargets={setPermissionTargets}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">

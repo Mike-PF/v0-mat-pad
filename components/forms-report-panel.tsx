@@ -3,6 +3,7 @@
 import { ChevronDown, CheckCircle, Circle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { PermissionAssigner, type Assignee } from "@/components/permission-assigner"
 
 interface Section {
   id: string
@@ -23,6 +24,10 @@ interface FormsReportPanelProps {
   onClearForm: () => void
   showSections: boolean
   readOnly?: boolean
+  bulkSectionAssignees?: Assignee[]
+  bulkQuestionAssignees?: Assignee[]
+  onBulkSectionChange?: (assignees: Assignee[]) => void
+  onBulkQuestionChange?: (assignees: Assignee[]) => void
 }
 
 export function FormsReportPanel({
@@ -37,6 +42,10 @@ export function FormsReportPanel({
   onClearForm,
   showSections,
   readOnly = false,
+  bulkSectionAssignees = [],
+  bulkQuestionAssignees = [],
+  onBulkSectionChange,
+  onBulkQuestionChange,
 }: FormsReportPanelProps) {
   const forms = [
     "Headteacher's Report - Educational",
@@ -287,6 +296,35 @@ export function FormsReportPanel({
           </>
         )}
       </div>
+
+      {/* Bulk permission assignment — view-only mode only */}
+      {readOnly && showSections && (
+        <div className="p-4 border-b border-slate-200 flex-shrink-0">
+          <h3 className="font-semibold text-lg">Bulk permissions</h3>
+          <p className="text-sm text-slate-600 mt-1">Assign to every section or question at once.</p>
+
+          <div className="mt-3 space-y-3">
+            <div>
+              <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-slate-500">All sections</p>
+              <PermissionAssigner
+                label="all sections"
+                size="sm"
+                assignees={bulkSectionAssignees}
+                onChange={(a) => onBulkSectionChange?.(a)}
+              />
+            </div>
+            <div>
+              <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-slate-500">All questions</p>
+              <PermissionAssigner
+                label="all questions"
+                size="sm"
+                assignees={bulkQuestionAssignees}
+                onChange={(a) => onBulkQuestionChange?.(a)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Report Sections Navigation — only once a form, school and term are chosen */}
       {showSections && (

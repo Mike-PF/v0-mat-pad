@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PermissionAssigner, type Assignee } from "@/components/permission-assigner"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,9 @@ interface QuestionSectionProps {
   sectionRefs: React.MutableRefObject<Record<string, HTMLElement | null>>
   onSectionChange: (sectionId: string) => void
   readOnly?: boolean
+  permissions?: Record<string, Assignee[]>
+  onPermissionsChange?: React.Dispatch<React.SetStateAction<Record<string, Assignee[]>>>
+  onRegisterTargets?: (targets: { sectionIds: string[]; questionIds: string[] }) => void
 }
 
 export function QuestionSection({
@@ -32,9 +35,14 @@ export function QuestionSection({
   sectionRefs,
   onSectionChange,
   readOnly = false,
+  permissions: permissionsProp,
+  onPermissionsChange,
+  onRegisterTargets,
 }: QuestionSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [permissions, setPermissions] = useState<Record<string, Assignee[]>>({})
+  const [internalPermissions, setInternalPermissions] = useState<Record<string, Assignee[]>>({})
+  const permissions = permissionsProp ?? internalPermissions
+  const setPermissions = onPermissionsChange ?? setInternalPermissions
 
   const setPermissionFor = (key: string, assignees: Assignee[]) =>
     setPermissions((prev) => ({ ...prev, [key]: assignees }))
@@ -421,6 +429,24 @@ export function QuestionSection({
       ],
     },
   ]
+
+  // Report all section and question ids upward so a parent can drive bulk
+  // permission assignment ("all sections" / "all questions").
+  const { sectionIds, questionIds } = useMemo(() => {
+    const s: string[] = []
+    const q: string[] = []
+    sections.forEach((section) => {
+      s.push(section.id)
+      section.questions?.forEach((question) => q.push(question.id))
+    })
+    return { sectionIds: s, questionIds: q }
+    // sections is a static, stable-content array defined in this component
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    onRegisterTargets?.({ sectionIds, questionIds })
+  }, [onRegisterTargets, sectionIds, questionIds])
 
   const renderQuestion = (question: any) => {
     const commonProps = {
