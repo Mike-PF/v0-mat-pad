@@ -117,7 +117,7 @@ export function BulkPermissionsPanel({ permissionTargets, onBulkApply }: BulkPer
       </div>
 
       {/* Selectable checklist — multi-column grid so it breathes */}
-      <div className="grid gap-x-6 gap-y-1 p-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid items-start gap-x-6 gap-y-1 p-4 sm:grid-cols-2 xl:grid-cols-3">
         {permissionTargets.sections.map((section) => {
           const sectionKey = `section:${section.id}`
           const isExpanded = expandedSections.has(section.id)
