@@ -6,8 +6,10 @@ import { X } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { FormsReportPanel } from "@/components/forms-report-panel"
-import { QuestionSection } from "@/components/question-section"
+import { BulkPermissionsPanel } from "@/components/bulk-permissions-panel"
+import { QuestionSection, type PermissionTargets } from "@/components/question-section"
 import { Button } from "@/components/ui/button"
+import type { Assignee } from "@/components/permission-assigner"
 
 function FormsPageInner() {
   const searchParams = useSearchParams()
@@ -21,6 +23,23 @@ function FormsPageInner() {
   const [selectedTerm, setSelectedTerm] = useState(readOnly ? "Summer 2024/25" : "")
   const [activeSection, setActiveSection] = useState("academy-vision")
   const [formData, setFormData] = useState<Record<string, any>>({})
+
+  // Permission assignments, keyed by `section:<id>` / `question:<id>`.
+  // Lifted here so the bulk panel (left) and the per-item assigners (right)
+  // stay in sync.
+  const [permissions, setPermissions] = useState<Record<string, Assignee[]>>({})
+  const [permissionTargets, setPermissionTargets] = useState<PermissionTargets>({ sections: [] })
+
+  // Apply a set of assignees to a list of permission keys (bulk assignment).
+  const handleBulkApply = (keys: string[], assignees: Assignee[]) => {
+    setPermissions((prev) => {
+      const next = { ...prev }
+      keys.forEach((key) => {
+        next[key] = assignees
+      })
+      return next
+    })
+  }
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
@@ -101,7 +120,12 @@ function FormsPageInner() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="min-w-0 flex-1 overflow-y-auto">
+              {readOnly && isReady && (
+                <div className="mb-4">
+                  <BulkPermissionsPanel permissionTargets={permissionTargets} onBulkApply={handleBulkApply} />
+                </div>
+              )}
               {isReady ? (
                 <QuestionSection
                   activeSection={activeSection}
@@ -110,6 +134,9 @@ function FormsPageInner() {
                   sectionRefs={sectionRefs}
                   onSectionChange={setActiveSection}
                   readOnly={readOnly}
+                  permissions={permissions}
+                  onPermissionsChange={setPermissions}
+                  onRegisterTargets={setPermissionTargets}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">

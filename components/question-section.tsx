@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PermissionAssigner, type Assignee } from "@/components/permission-assigner"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,14 @@ import { BehaviourData } from "@/components/data/behaviour-data"
 import { ChevronDown } from "lucide-react"
 import { SuspensionExclusionData } from "@/components/data/suspension-exclusion-data"
 
+export interface PermissionTargets {
+  sections: {
+    id: string
+    title: string
+    questions: { id: string; label: string }[]
+  }[]
+}
+
 interface QuestionSectionProps {
   activeSection: string
   formData: Record<string, any>
@@ -23,6 +31,9 @@ interface QuestionSectionProps {
   sectionRefs: React.MutableRefObject<Record<string, HTMLElement | null>>
   onSectionChange: (sectionId: string) => void
   readOnly?: boolean
+  permissions?: Record<string, Assignee[]>
+  onPermissionsChange?: React.Dispatch<React.SetStateAction<Record<string, Assignee[]>>>
+  onRegisterTargets?: (targets: PermissionTargets) => void
 }
 
 export function QuestionSection({
@@ -32,9 +43,14 @@ export function QuestionSection({
   sectionRefs,
   onSectionChange,
   readOnly = false,
+  permissions: permissionsProp,
+  onPermissionsChange,
+  onRegisterTargets,
 }: QuestionSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [permissions, setPermissions] = useState<Record<string, Assignee[]>>({})
+  const [internalPermissions, setInternalPermissions] = useState<Record<string, Assignee[]>>({})
+  const permissions = permissionsProp ?? internalPermissions
+  const setPermissions = onPermissionsChange ?? setInternalPermissions
 
   const setPermissionFor = (key: string, assignees: Assignee[]) =>
     setPermissions((prev) => ({ ...prev, [key]: assignees }))
@@ -421,6 +437,27 @@ export function QuestionSection({
       ],
     },
   ]
+
+  // Report the section/question tree upward so a parent can drive bulk
+  // permission assignment against a selected subset of items.
+  const targets = useMemo<PermissionTargets>(() => {
+    return {
+      sections: sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        questions: (section.questions ?? []).map((question) => ({
+          id: question.id,
+          label: question.label,
+        })),
+      })),
+    }
+    // sections is a static, stable-content array defined in this component
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    onRegisterTargets?.(targets)
+  }, [onRegisterTargets, targets])
 
   const renderQuestion = (question: any) => {
     const commonProps = {
