@@ -120,7 +120,7 @@ function FormsPageInner() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="min-w-0 flex-1 overflow-y-auto">
               {readOnly && isReady && (
                 <div className="mb-4">
                   <BulkPermissionsPanel permissionTargets={permissionTargets} onBulkApply={handleBulkApply} />

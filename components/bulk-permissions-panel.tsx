@@ -82,6 +82,62 @@ export function BulkPermissionsPanel({ permissionTargets, onBulkApply }: BulkPer
     onBulkApply(Array.from(selectedKeys), applyAssignees)
   }
 
+  // Distribute sections across 3 fixed columns (round-robin) so each column
+  // sizes its own height independently — expanding one card only grows its
+  // column and never widens the panel or leaves gaps in a shared row.
+  const columnCount = 3
+  const columns = useMemo(() => {
+    const cols: PermissionTargets["sections"][] = Array.from({ length: columnCount }, () => [])
+    permissionTargets.sections.forEach((section, i) => {
+      cols[i % columnCount].push(section)
+    })
+    return cols
+  }, [permissionTargets])
+
+  const renderSectionCard = (section: PermissionTargets["sections"][number]) => {
+    const sectionKey = `section:${section.id}`
+    const isExpanded = expandedSections.has(section.id)
+    return (
+      <div key={section.id} className="rounded-md border border-slate-100">
+        <div className="flex items-center gap-2 px-2 py-2">
+          <Checkbox checked={selectedKeys.has(sectionKey)} onToggle={() => toggleKey(sectionKey)} />
+          <button
+            type="button"
+            onClick={() => toggleExpanded(section.id)}
+            className="flex min-w-0 flex-1 items-center gap-1 text-left text-sm font-medium text-slate-700"
+            aria-expanded={isExpanded}
+          >
+            <ChevronRight
+              className={cn("h-3.5 w-3.5 flex-shrink-0 text-slate-400 transition-transform", isExpanded && "rotate-90")}
+            />
+            <span className="truncate">{section.title}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleSectionGroup(section)}
+            className="flex-shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-slate-500 hover:bg-slate-100"
+          >
+            {section.questions.length} Q
+          </button>
+        </div>
+
+        {isExpanded && (
+          <div className="border-t border-slate-100 pb-1">
+            {section.questions.map((question) => {
+              const questionKey = `question:${question.id}`
+              return (
+                <div key={question.id} className="flex items-center gap-2 py-1.5 pl-8 pr-2">
+                  <Checkbox checked={selectedKeys.has(questionKey)} onToggle={() => toggleKey(questionKey)} />
+                  <span className="min-w-0 flex-1 truncate text-xs text-slate-600">{question.label}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white">
       {/* Header + apply controls */}
@@ -116,52 +172,15 @@ export function BulkPermissionsPanel({ permissionTargets, onBulkApply }: BulkPer
         </div>
       </div>
 
-      {/* Selectable checklist — masonry columns so an expanded card flows
-          without forcing empty gaps in its row */}
-      <div className="gap-x-6 p-4 sm:columns-2 xl:columns-3">
-        {permissionTargets.sections.map((section) => {
-          const sectionKey = `section:${section.id}`
-          const isExpanded = expandedSections.has(section.id)
-          return (
-            <div key={section.id} className="mb-1 break-inside-avoid rounded-md border border-slate-100">
-              <div className="flex items-center gap-2 px-2 py-2">
-                <Checkbox checked={selectedKeys.has(sectionKey)} onToggle={() => toggleKey(sectionKey)} />
-                <button
-                  type="button"
-                  onClick={() => toggleExpanded(section.id)}
-                  className="flex flex-1 items-center gap-1 text-left text-sm font-medium text-slate-700"
-                  aria-expanded={isExpanded}
-                >
-                  <ChevronRight
-                    className={cn("h-3.5 w-3.5 text-slate-400 transition-transform", isExpanded && "rotate-90")}
-                  />
-                  <span className="truncate">{section.title}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleSectionGroup(section)}
-                  className="flex-shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-slate-500 hover:bg-slate-100"
-                >
-                  {section.questions.length} Q
-                </button>
-              </div>
-
-              {isExpanded && (
-                <div className="border-t border-slate-100 pb-1">
-                  {section.questions.map((question) => {
-                    const questionKey = `question:${question.id}`
-                    return (
-                      <div key={question.id} className="flex items-center gap-2 py-1.5 pl-8 pr-2">
-                        <Checkbox checked={selectedKeys.has(questionKey)} onToggle={() => toggleKey(questionKey)} />
-                        <span className="flex-1 truncate text-xs text-slate-600">{question.label}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        })}
+      {/* Selectable checklist — three independent columns so an expanded card
+          only grows its own column, never widening the panel or coupling row
+          heights */}
+      <div className="flex flex-col gap-6 p-4 sm:flex-row">
+        {columns.map((columnSections, colIndex) => (
+          <div key={colIndex} className="flex min-w-0 flex-1 flex-col gap-1">
+            {columnSections.map((section) => renderSectionCard(section))}
+          </div>
+        ))}
       </div>
     </section>
   )
