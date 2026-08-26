@@ -6,6 +6,7 @@ import { X } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNavigation } from "@/components/top-navigation"
 import { FormsReportPanel } from "@/components/forms-report-panel"
+import { BulkPermissionsPanel } from "@/components/bulk-permissions-panel"
 import { QuestionSection, type PermissionTargets } from "@/components/question-section"
 import { Button } from "@/components/ui/button"
 import type { Assignee } from "@/components/permission-assigner"
@@ -115,14 +116,16 @@ function FormsPageInner() {
                 onClearForm={clearForm}
                 showSections={isReady}
                 readOnly={readOnly}
-                permissionTargets={permissionTargets}
-                permissions={permissions}
-                onBulkApply={handleBulkApply}
               />
             </div>
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto">
+              {readOnly && isReady && (
+                <div className="mb-4">
+                  <BulkPermissionsPanel permissionTargets={permissionTargets} onBulkApply={handleBulkApply} />
+                </div>
+              )}
               {isReady ? (
                 <QuestionSection
                   activeSection={activeSection}
