@@ -116,13 +116,14 @@ export function BulkPermissionsPanel({ permissionTargets, onBulkApply }: BulkPer
         </div>
       </div>
 
-      {/* Selectable checklist — multi-column grid so it breathes */}
-      <div className="grid items-start gap-x-6 gap-y-1 p-4 sm:grid-cols-2 xl:grid-cols-3">
+      {/* Selectable checklist — masonry columns so an expanded card flows
+          without forcing empty gaps in its row */}
+      <div className="gap-x-6 p-4 sm:columns-2 xl:columns-3">
         {permissionTargets.sections.map((section) => {
           const sectionKey = `section:${section.id}`
           const isExpanded = expandedSections.has(section.id)
           return (
-            <div key={section.id} className="rounded-md border border-slate-100">
+            <div key={section.id} className="mb-1 break-inside-avoid rounded-md border border-slate-100">
               <div className="flex items-center gap-2 px-2 py-2">
                 <Checkbox checked={selectedKeys.has(sectionKey)} onToggle={() => toggleKey(sectionKey)} />
                 <button
