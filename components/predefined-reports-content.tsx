@@ -461,7 +461,6 @@ export function PredefinedReportsContent() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <FileText className="w-4 h-4 text-slate-600" />
                               <h4 className="font-medium text-slate-900">{report.name}</h4>
                             </div>
                             <p className="text-sm text-slate-600 mb-3">{report.description}</p>
