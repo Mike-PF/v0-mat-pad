@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, Eye, Search, X } from "lucide-react"
+import { ChevronDown, Search, X } from "lucide-react"
 import { PDFReportModal } from "@/components/pdf-report-modal"
 import { ReportPreviewModal } from "@/components/report-preview-modal"
 import { ReportSignOffModal } from "@/components/report-sign-off-modal"
@@ -518,7 +518,6 @@ export function PredefinedReportsContent() {
                                 }}
                                 className="text-xs"
                               >
-                                <Eye className="w-3 h-3 mr-1" />
                                 Preview
                               </Button>
                               <Button
