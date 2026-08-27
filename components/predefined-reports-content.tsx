@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, FileText, Eye, Download, Search, X } from "lucide-react"
+import { ChevronDown, Eye, Search, X } from "lucide-react"
 import { PDFReportModal } from "@/components/pdf-report-modal"
 import { ReportPreviewModal } from "@/components/report-preview-modal"
 import { ReportSignOffModal } from "@/components/report-sign-off-modal"
@@ -572,15 +572,7 @@ export function PredefinedReportsContent() {
           <Card className="sticky top-6">
             <CardHeader>
               <CardTitle className="text-lg">Report Configuration</CardTitle>
-              {selectedReport ? (
-                <div className="p-3 bg-[#33295e]/5 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-[#33295e]" />
-                    <span className="font-medium text-[#33295e]">{selectedReport.name}</span>
-                  </div>
-                  <p className="text-sm text-slate-600">{selectedReport.description}</p>
-                </div>
-              ) : (
+              {!selectedReport && (
                 <p className="text-sm text-slate-600">Select a report to configure filters and generate</p>
               )}
             </CardHeader>
@@ -833,13 +825,11 @@ export function PredefinedReportsContent() {
                     disabled={!canViewReport()}
                     className="w-full bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
                   >
-                    <Eye className="w-4 h-4 mr-2" />
                     View Report
                   </Button>
 
                   {canViewReport() && (
                     <Button variant="outline" className="w-full bg-transparent">
-                      <Download className="w-4 h-4 mr-2" />
                       Download PDF
                     </Button>
                   )}
