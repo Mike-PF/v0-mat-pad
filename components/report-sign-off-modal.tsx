@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import {
   X,
   CheckCircle2,
-  ShieldCheck,
   Calendar,
   Clock,
   User,
@@ -403,7 +402,6 @@ export function ReportSignOffModal({
                   disabled={!acknowledged}
                   className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                  <ShieldCheck className="mr-2 h-4 w-4" />
                   Confirm sign off
                 </Button>
               </>
