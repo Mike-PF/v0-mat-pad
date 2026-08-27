@@ -4,9 +4,10 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, FileText, Eye, Download, Search, X } from "lucide-react"
+import { ChevronDown, FileText, Eye, Download, Search, X, ShieldCheck, CheckCircle2 } from "lucide-react"
 import { PDFReportModal } from "@/components/pdf-report-modal"
 import { ReportPreviewModal } from "@/components/report-preview-modal"
+import { ReportSignOffModal } from "@/components/report-sign-off-modal"
 
 interface Report {
   id: string
@@ -35,6 +36,29 @@ export function PredefinedReportsContent() {
   const [showPreviewModal, setShowPreviewModal] = useState(false)
   const [previewReport, setPreviewReport] = useState<Report | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // Report sign-off state
+  const currentUser = "Gareth Hutchings"
+  const [showSignOffModal, setShowSignOffModal] = useState(false)
+  const [signOffReport, setSignOffReport] = useState<Report | null>(null)
+  // Keyed by report id so each report tracks its own sign-off record.
+  const [signOffs, setSignOffs] = useState<
+    Record<string, { reportId: string; reportName: string; user: string; signedAt: string }>
+  >({})
+
+  const handleOpenSignOff = (report: Report) => {
+    setSignOffReport(report)
+    setShowSignOffModal(true)
+  }
+
+  const handleConfirmSignOff = (record: {
+    reportId: string
+    reportName: string
+    user: string
+    signedAt: string
+  }) => {
+    setSignOffs((prev) => ({ ...prev, [record.reportId]: record }))
+  }
 
   const [dateRangeType, setDateRangeType] = useState("")
   const [selectedTermDate, setSelectedTermDate] = useState("")
@@ -483,8 +507,8 @@ export function PredefinedReportsContent() {
                               )}
                             </div>
 
-                            {/* Preview Button */}
-                            <div className="mt-3">
+                            {/* Actions */}
+                            <div className="mt-3 flex items-center gap-2 flex-wrap">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -496,6 +520,26 @@ export function PredefinedReportsContent() {
                               >
                                 <Eye className="w-3 h-3 mr-1" />
                                 Preview
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenSignOff(report)
+                                }}
+                                className={`text-xs ${
+                                  signOffs[report.id]
+                                    ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                                    : ""
+                                }`}
+                              >
+                                {signOffs[report.id] ? (
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                ) : (
+                                  <ShieldCheck className="w-3 h-3 mr-1" />
+                                )}
+                                {signOffs[report.id] ? "Signed off" : "Sign off"}
                               </Button>
                             </div>
                           </div>
@@ -888,6 +932,16 @@ export function PredefinedReportsContent() {
           handleReportSelect(report)
           setShowPreviewModal(false)
         }}
+      />
+
+      {/* Report Sign Off Modal */}
+      <ReportSignOffModal
+        isOpen={showSignOffModal}
+        onClose={() => setShowSignOffModal(false)}
+        report={signOffReport}
+        currentUser={currentUser}
+        existingSignOff={signOffReport ? signOffs[signOffReport.id] : null}
+        onConfirm={handleConfirmSignOff}
       />
     </div>
   )
