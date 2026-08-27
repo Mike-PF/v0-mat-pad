@@ -1,7 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, CheckCircle2, ShieldCheck, Calendar, Clock, User, ChevronLeft, ChevronRight, ArrowRightLeft } from "lucide-react"
+import {
+  X,
+  CheckCircle2,
+  ShieldCheck,
+  Calendar,
+  Clock,
+  User,
+  ArrowRightLeft,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface Report {
@@ -40,6 +51,7 @@ export function ReportSignOffModal({
 }: ReportSignOffModalProps) {
   const [acknowledged, setAcknowledged] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
+  const [zoom, setZoom] = useState(100)
   // Snapshot the "now" moment when the modal opens so the displayed time is
   // stable and matches what gets recorded on confirm.
   const [now, setNow] = useState<Date>(new Date())
@@ -49,8 +61,12 @@ export function ReportSignOffModal({
       setNow(new Date())
       setAcknowledged(false)
       setCurrentPage(0)
+      setZoom(100)
     }
   }, [isOpen])
+
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 25, 200))
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 25, 50))
 
   if (!isOpen || !report) return null
 
@@ -224,35 +240,76 @@ export function ReportSignOffModal({
         <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
           {/* PDF preview */}
           <div className="flex min-w-0 flex-1 flex-col bg-slate-100">
-            <div className="flex-1 overflow-auto p-4">
-              <div className="mx-auto max-w-[210mm] bg-white shadow-lg">
-                <div className="p-8">{pages[currentPage]}</div>
+            {/* Viewer toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 p-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Page navigation */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                    disabled={currentPage === 0}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-slate-600">
+                    Page {currentPage + 1} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={currentPage === totalPages - 1}
+                  >
+                    Next
+                  </Button>
+                </div>
+
+                {/* Zoom controls */}
+                <div className="flex items-center gap-2 border-l border-slate-300 pl-3">
+                  <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={zoom <= 50}>
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <span className="min-w-[52px] text-center text-sm text-slate-600">{zoom}%</span>
+                  <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Reset */}
+                <div className="flex items-center gap-2 border-l border-slate-300 pl-3">
+                  <Button variant="outline" size="sm" onClick={() => setZoom(100)} aria-label="Reset zoom">
+                    <RotateCw className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Fit options */}
+              <div className="flex items-center gap-2">
+                <Button variant={zoom === 100 ? "default" : "outline"} size="sm" onClick={() => setZoom(100)}>
+                  Fit Width
+                </Button>
+                <Button variant={zoom === 75 ? "default" : "outline"} size="sm" onClick={() => setZoom(75)}>
+                  Fit Page
+                </Button>
               </div>
             </div>
 
-            {/* Page navigation */}
-            <div className="flex items-center justify-center gap-4 border-t border-slate-200 bg-white p-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                disabled={currentPage === 0}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Previous
-              </Button>
-              <span className="text-sm font-medium text-slate-600">
-                Page {currentPage + 1} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={currentPage === totalPages - 1}
-              >
-                Next
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
+            {/* Document */}
+            <div className="flex-1 overflow-auto p-4">
+              <div className="flex justify-center">
+                <div
+                  className="bg-white shadow-lg"
+                  style={{
+                    transform: `scale(${zoom / 100})`,
+                    transformOrigin: "top center",
+                    width: "210mm",
+                  }}
+                >
+                  <div className="p-8">{pages[currentPage]}</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -298,26 +355,26 @@ export function ReportSignOffModal({
             </div>
 
             {/* Data migration notice — informational only */}
-            <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <div className="mt-6 rounded-lg border border-[#fd6d6d]/30 bg-[#fd6d6d]/10 p-4">
               <div className="mb-2 flex items-center gap-2">
-                <ArrowRightLeft className="h-4 w-4 flex-shrink-0 text-amber-600" />
-                <h4 className="text-sm font-semibold text-amber-900">Data moves on sign off</h4>
+                <ArrowRightLeft className="h-4 w-4 flex-shrink-0 text-[#fd6d6d]" />
+                <h4 className="text-sm font-semibold text-slate-900">Data moves on sign off</h4>
               </div>
-              <p className="mb-3 text-xs leading-relaxed text-amber-800">
+              <p className="mb-3 text-xs leading-relaxed text-slate-600">
                 Signing off closes the current data window and moves the data embedded in this report into the next
                 window. The following will be carried forward:
               </p>
-              <ul className="space-y-1.5 text-xs text-amber-900">
+              <ul className="space-y-1.5 text-xs text-slate-700">
                 <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#fd6d6d]" />
                   Form data
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#fd6d6d]" />
                   Report data
                 </li>
               </ul>
-              <p className="mt-3 text-xs leading-relaxed text-amber-800">
+              <p className="mt-3 text-xs leading-relaxed text-slate-600">
                 Once signed off, the current window becomes read-only.
               </p>
             </div>
