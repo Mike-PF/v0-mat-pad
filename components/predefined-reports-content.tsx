@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, FileText, Eye, Download, Search, X, CheckCircle2 } from "lucide-react"
+import { ChevronDown, FileText, Eye, Download, Search, X } from "lucide-react"
 import { PDFReportModal } from "@/components/pdf-report-modal"
 import { ReportPreviewModal } from "@/components/report-preview-modal"
 import { ReportSignOffModal } from "@/components/report-sign-off-modal"
@@ -522,20 +522,15 @@ export function PredefinedReportsContent() {
                                 Preview
                               </Button>
                               <Button
-                                variant={signOffs[report.id] ? "outline" : "default"}
+                                variant="default"
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleOpenSignOff(report)
                                 }}
-                                className={`text-xs ${
-                                  signOffs[report.id]
-                                    ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
-                                    : "bg-[#33295e] text-white hover:bg-[#2a2150]"
-                                }`}
+                                className="text-xs bg-[#33295e] text-white hover:bg-[#2a2150]"
                               >
-                                {signOffs[report.id] && <CheckCircle2 className="w-3 h-3 mr-1" />}
-                                {signOffs[report.id] ? "Signed off" : "Sign off"}
+                                Sign off
                               </Button>
                             </div>
                           </div>
