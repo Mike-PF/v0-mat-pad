@@ -1,15 +1,38 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, ChevronDown, ChevronUp, Download, Eye, FileText, Filter, Search, X } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  FileText,
+  Search,
+  X,
+} from "lucide-react"
+import { PDFReportModal } from "@/components/pdf-report-modal"
 
 interface ArchivedReport {
   id: string
   name: string
+  area: string
   section: string
+  // "mat" = a trust-wide report; "school" = specific to one school (schoolUrn set).
+  level: "mat" | "school"
+  schoolUrn: string
   dateArchived: string
   dateCreated: string
   fileSize: string
@@ -19,11 +42,31 @@ interface ArchivedReport {
   downloadCount: number
 }
 
-interface GroupedReports {
-  [section: string]: ArchivedReport[]
-}
+// Report areas — matches the predefined reports categories.
+const AREAS = [
+  "School Improvement",
+  "Governor Reporting",
+  "Attendance & Welfare",
+  "Statutory & Compliance",
+  "Performance Analytics",
+] as const
 
-const mockArchivedReports: ArchivedReport[] = [
+// The schools within the account's trust. The trust itself is implicit from the
+// signed-in account, so reports are scoped either MAT-wide or to one school.
+const SCHOOLS = [
+  { urn: "138337", name: "All Saints' Catholic High School" },
+  { urn: "140826", name: "Emmaus Catholic and CofE Primary School" },
+  { urn: "138361", name: "Notre Dame High School" },
+  { urn: "140439", name: "Sacred Heart School, A Catholic Voluntary Academy" },
+  { urn: "138828", name: "St Thomas of Canterbury School, a Catholic Voluntary Academy" },
+  { urn: "138830", name: "St Wilfrid's Catholic Primary School" },
+  { urn: "138848", name: "St Marie's School, A Catholic Voluntary Academy" },
+  { urn: "140025", name: "St John Fisher Primary, A Catholic Voluntary Academy" },
+] as const
+
+const SCHOOL_NAME_BY_URN: Record<string, string> = Object.fromEntries(SCHOOLS.map((s) => [s.urn, s.name]))
+
+const baseArchivedReports: Omit<ArchivedReport, "area" | "schoolUrn" | "level">[] = [
   {
     id: "ar-1",
     name: "Attendance Summary Dashboard - Whole MAT - March 2024",
@@ -35,30 +78,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Comprehensive attendance analysis across all schools in the MAT",
     tags: ["attendance", "dashboard", "whole-mat"],
     downloadCount: 12,
-  },
-  {
-    id: "ar-1b",
-    name: "Attendance Summary Dashboard - Whole MAT - February 2024",
-    section: "Attendance Summary Dashboard",
-    dateArchived: "2024-02-18",
-    dateCreated: "2024-02-15",
-    fileSize: "2.3 MB",
-    creator: "Sarah Johnson",
-    description: "Monthly attendance analysis across all schools in the MAT",
-    tags: ["attendance", "dashboard", "whole-mat"],
-    downloadCount: 8,
-  },
-  {
-    id: "ar-1c",
-    name: "Attendance Summary Dashboard - Whole MAT - January 2024",
-    section: "Attendance Summary Dashboard",
-    dateArchived: "2024-01-20",
-    dateCreated: "2024-01-17",
-    fileSize: "2.1 MB",
-    creator: "Sarah Johnson",
-    description: "Monthly attendance analysis across all schools in the MAT",
-    tags: ["attendance", "dashboard", "whole-mat"],
-    downloadCount: 15,
   },
   {
     id: "ar-2",
@@ -73,30 +92,6 @@ const mockArchivedReports: ArchivedReport[] = [
     downloadCount: 5,
   },
   {
-    id: "ar-2b",
-    name: "Weekly Attendance Report - Week 11",
-    section: "Weekly Attendance Report",
-    dateArchived: "2024-03-10",
-    dateCreated: "2024-03-07",
-    fileSize: "0.7 MB",
-    creator: "Sarah Johnson",
-    description: "Weekly attendance summary with trend analysis",
-    tags: ["attendance", "weekly", "trends"],
-    downloadCount: 3,
-  },
-  {
-    id: "ar-2c",
-    name: "Weekly Attendance Report - Week 10",
-    section: "Weekly Attendance Report",
-    dateArchived: "2024-03-03",
-    dateCreated: "2024-02-28",
-    fileSize: "0.9 MB",
-    creator: "Sarah Johnson",
-    description: "Weekly attendance summary with trend analysis",
-    tags: ["attendance", "weekly", "trends"],
-    downloadCount: 7,
-  },
-  {
     id: "ar-3",
     name: "SEND Provision Report - Q3 2024",
     section: "SEND Provision Report",
@@ -107,30 +102,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Quarterly SEND provision analysis and outcomes report",
     tags: ["send", "statutory", "quarterly"],
     downloadCount: 8,
-  },
-  {
-    id: "ar-3b",
-    name: "SEND Provision Report - Q2 2024",
-    section: "SEND Provision Report",
-    dateArchived: "2024-01-15",
-    dateCreated: "2024-01-10",
-    fileSize: "1.7 MB",
-    creator: "Michael Brown",
-    description: "Quarterly SEND provision analysis and outcomes report",
-    tags: ["send", "statutory", "quarterly"],
-    downloadCount: 12,
-  },
-  {
-    id: "ar-3c",
-    name: "SEND Provision Report - Q1 2024",
-    section: "SEND Provision Report",
-    dateArchived: "2023-10-20",
-    dateCreated: "2023-10-15",
-    fileSize: "1.9 MB",
-    creator: "Michael Brown",
-    description: "Quarterly SEND provision analysis and outcomes report",
-    tags: ["send", "statutory", "quarterly"],
-    downloadCount: 18,
   },
   {
     id: "ar-4",
@@ -145,30 +116,6 @@ const mockArchivedReports: ArchivedReport[] = [
     downloadCount: 6,
   },
   {
-    id: "ar-4b",
-    name: "Behaviour Incidents Analysis - February 2024",
-    section: "Behaviour Incidents Analysis",
-    dateArchived: "2024-02-12",
-    dateCreated: "2024-02-01",
-    fileSize: "1.1 MB",
-    creator: "David Lee",
-    description: "Monthly behaviour incidents analysis with intervention recommendations",
-    tags: ["behaviour", "incidents", "monthly"],
-    downloadCount: 9,
-  },
-  {
-    id: "ar-4c",
-    name: "Behaviour Incidents Analysis - January 2024",
-    section: "Behaviour Incidents Analysis",
-    dateArchived: "2024-01-12",
-    dateCreated: "2024-01-01",
-    fileSize: "1.3 MB",
-    creator: "David Lee",
-    description: "Monthly behaviour incidents analysis with intervention recommendations",
-    tags: ["behaviour", "incidents", "monthly"],
-    downloadCount: 11,
-  },
-  {
     id: "ar-5",
     name: "Pupil Premium Impact Assessment - 2023-24",
     section: "Pupil Premium Impact Assessment",
@@ -179,30 +126,6 @@ const mockArchivedReports: ArchivedReport[] = [
     description: "Annual assessment of pupil premium spending and impact on outcomes",
     tags: ["pupil-premium", "impact", "annual"],
     downloadCount: 15,
-  },
-  {
-    id: "ar-5b",
-    name: "Pupil Premium Impact Assessment - 2022-23",
-    section: "Pupil Premium Impact Assessment",
-    dateArchived: "2023-07-20",
-    dateCreated: "2023-07-15",
-    fileSize: "2.9 MB",
-    creator: "Emma Wilson",
-    description: "Annual assessment of pupil premium spending and impact on outcomes",
-    tags: ["pupil-premium", "impact", "annual"],
-    downloadCount: 22,
-  },
-  {
-    id: "ar-5c",
-    name: "Pupil Premium Impact Assessment - 2021-22",
-    section: "Pupil Premium Impact Assessment",
-    dateArchived: "2022-07-18",
-    dateCreated: "2022-07-12",
-    fileSize: "2.7 MB",
-    creator: "Emma Wilson",
-    description: "Annual assessment of pupil premium spending and impact on outcomes",
-    tags: ["pupil-premium", "impact", "annual"],
-    downloadCount: 28,
   },
   {
     id: "ar-6",
@@ -217,30 +140,6 @@ const mockArchivedReports: ArchivedReport[] = [
     downloadCount: 18,
   },
   {
-    id: "ar-6b",
-    name: "Headteacher's Report to Governors - February 2024",
-    section: "Headteacher's Report to Governors",
-    dateArchived: "2024-02-08",
-    dateCreated: "2024-02-05",
-    fileSize: "2.5 MB",
-    creator: "James Taylor",
-    description: "Monthly headteacher report covering all aspects of school performance",
-    tags: ["governors", "headteacher", "monthly"],
-    downloadCount: 14,
-  },
-  {
-    id: "ar-6c",
-    name: "Headteacher's Report to Governors - January 2024",
-    section: "Headteacher's Report to Governors",
-    dateArchived: "2024-01-08",
-    dateCreated: "2024-01-05",
-    fileSize: "2.8 MB",
-    creator: "James Taylor",
-    description: "Monthly headteacher report covering all aspects of school performance",
-    tags: ["governors", "headteacher", "monthly"],
-    downloadCount: 21,
-  },
-  {
     id: "ar-7",
     name: "Safeguarding Annual Report - 2023-24",
     section: "Safeguarding Annual Report",
@@ -252,86 +151,86 @@ const mockArchivedReports: ArchivedReport[] = [
     tags: ["safeguarding", "annual", "compliance"],
     downloadCount: 25,
   },
-  {
-    id: "ar-7b",
-    name: "Safeguarding Annual Report - 2022-23",
-    section: "Safeguarding Annual Report",
-    dateArchived: "2023-07-15",
-    dateCreated: "2023-07-01",
-    fileSize: "3.6 MB",
-    creator: "Karen White",
-    description: "Annual safeguarding overview for governing body review",
-    tags: ["safeguarding", "annual", "compliance"],
-    downloadCount: 31,
-  },
-  {
-    id: "ar-7c",
-    name: "Safeguarding Annual Report - 2021-22",
-    section: "Safeguarding Annual Report",
-    dateArchived: "2022-07-20",
-    dateCreated: "2022-07-05",
-    fileSize: "3.4 MB",
-    creator: "Karen White",
-    description: "Annual safeguarding overview for governing body review",
-    tags: ["safeguarding", "annual", "compliance"],
-    downloadCount: 38,
-  },
 ]
 
+// Synthesize a large archive so the layout is exercised at realistic scale
+// (thousands of rows spread across the 9 areas). The master-detail layout
+// keeps only the selected area's current page mounted at a time.
+const creators = ["Sarah Johnson", "Michael Brown", "David Lee", "Emma Wilson", "James Taylor", "Karen White"]
+const mockArchivedReports: ArchivedReport[] = Array.from({ length: 3200 }, (_, i) => {
+  const base = baseArchivedReports[i % baseArchivedReports.length]
+  const area = AREAS[i % AREAS.length]
+  // Roughly one in four reports is a MAT-wide report; the rest belong to a school.
+  const isMatWide = i % 4 === 0
+  const level: "mat" | "school" = isMatWide ? "mat" : "school"
+  const schoolUrn = isMatWide ? "" : SCHOOLS[i % SCHOOLS.length].urn
+  const year = 2018 + (i % 7)
+  const month = (i % 12) + 1
+  const day = (i % 27) + 1
+  const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+  return {
+    ...base,
+    area,
+    level,
+    schoolUrn,
+    id: `${base.id}-${i}`,
+    name: `${base.section} - ${new Date(iso).toLocaleString("en-GB", { month: "long", year: "numeric" })}`,
+    dateArchived: iso,
+    dateCreated: iso,
+    fileSize: `${(0.5 + ((i * 37) % 40) / 10).toFixed(1)} MB`,
+    creator: creators[i % creators.length],
+    downloadCount: (i * 13) % 60,
+  }
+})
+
+type SortKey = "name" | "section" | "dateArchived" | "fileSize" | "downloadCount"
+const PAGE_SIZE_OPTIONS = [25, 50, 100]
+
 export function ArchiveContent() {
+  // Scope: "all" = every report, "mat" = MAT-wide only, otherwise a school URN.
+  const [scope, setScope] = useState<string>("all")
+  const [selectedArea, setSelectedArea] = useState<string>(AREAS[0])
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedScope, setSelectedScope] = useState("all")
   const [selectedDateRange, setSelectedDateRange] = useState("all")
-  const [sortBy, setSortBy] = useState("dateArchived")
+  const [sortBy, setSortBy] = useState<SortKey>("dateArchived")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [expandedSections, setExpandedSections] = useState<string[]>([])
-  const [viewingReport, setViewingReport] = useState<any>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
+  const [viewingReport, setViewingReport] = useState<ArchivedReport | null>(null)
 
-  const schools = [
-    "Greenfield Primary School",
-    "Oakwood Academy",
-    "Riverside Secondary School",
-    "Hillcrest Primary School",
-    "Valley View Academy",
-    "Meadowbrook School",
-    "Sunset Primary School",
-    "Northgate Secondary School",
-  ]
+  // Reports scoped to the current selection (all / MAT-wide / a single school).
+  const orgScopedReports = useMemo(() => {
+    if (scope === "all") return mockArchivedReports
+    if (scope === "mat") return mockArchivedReports.filter((r) => r.level === "mat")
+    return mockArchivedReports.filter((r) => r.schoolUrn === scope)
+  }, [scope])
 
-  const scopeOptions = ["all", "Whole MAT", "Primary Phase", "Secondary Phase", ...schools]
+  // Per-area totals for the sidebar counts, respecting the scope.
+  const areaCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const area of AREAS) counts[area] = 0
+    for (const report of orgScopedReports) counts[report.area]++
+    return counts
+  }, [orgScopedReports])
 
   const filteredReports = useMemo(() => {
-    let filtered = mockArchivedReports
+    let filtered = orgScopedReports.filter((report) => report.area === selectedArea)
 
-    // Filter by search term
     if (searchTerm) {
+      const q = searchTerm.toLowerCase()
       filtered = filtered.filter(
         (report) =>
-          report.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.creator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
+          report.name.toLowerCase().includes(q) ||
+          report.description.toLowerCase().includes(q) ||
+          report.creator.toLowerCase().includes(q) ||
+          report.section.toLowerCase().includes(q) ||
+          report.tags.some((tag) => tag.toLowerCase().includes(q)),
       )
     }
 
-    if (selectedScope !== "all") {
-      if (selectedScope === "Whole MAT") {
-        filtered = filtered.filter((report) => report.tags.includes("whole-mat"))
-      } else if (selectedScope === "Primary Phase") {
-        filtered = filtered.filter((report) => report.tags.includes("primary"))
-      } else if (selectedScope === "Secondary Phase") {
-        filtered = filtered.filter((report) => report.tags.includes("secondary"))
-      } else if (schools.includes(selectedScope)) {
-        // Filter by specific school
-        filtered = filtered.filter((report) => report.tags.includes(selectedScope.toLowerCase().replace(/\s+/g, "-")))
-      }
-    }
-
-    // Filter by date range
     if (selectedDateRange !== "all") {
       const now = new Date()
       const cutoffDate = new Date()
-
       switch (selectedDateRange) {
         case "last-7-days":
           cutoffDate.setDate(now.getDate() - 7)
@@ -346,247 +245,367 @@ export function ArchiveContent() {
           cutoffDate.setFullYear(now.getFullYear(), 0, 1)
           break
       }
-
       filtered = filtered.filter((report) => new Date(report.dateArchived) >= cutoffDate)
     }
 
-    // Sort reports
-    filtered.sort((a, b) => {
-      const dateA = new Date(a[sortBy]).getTime()
-      const dateB = new Date(b[sortBy]).getTime()
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA
-    })
-
-    return filtered
-  }, [searchTerm, selectedScope, selectedDateRange, sortBy, sortOrder])
-
-  const groupReportsBySection = (reports: ArchivedReport[]): GroupedReports => {
-    const grouped = reports.reduce((acc, report) => {
-      if (!acc[report.section]) {
-        acc[report.section] = []
+    const sorted = [...filtered].sort((a, b) => {
+      let cmp = 0
+      if (sortBy === "name" || sortBy === "section") {
+        cmp = a[sortBy].localeCompare(b[sortBy])
+      } else if (sortBy === "fileSize") {
+        cmp = Number.parseFloat(a.fileSize) - Number.parseFloat(b.fileSize)
+      } else if (sortBy === "downloadCount") {
+        cmp = a.downloadCount - b.downloadCount
+      } else {
+        cmp = new Date(a.dateArchived).getTime() - new Date(b.dateArchived).getTime()
       }
-      acc[report.section].push(report)
-      return acc
-    }, {} as GroupedReports)
-
-    // Sort reports within each section by date archived (newest first)
-    Object.keys(grouped).forEach((section) => {
-      grouped[section].sort((a, b) => new Date(b.dateArchived).getTime() - new Date(a.dateArchived).getTime())
+      return sortOrder === "asc" ? cmp : -cmp
     })
 
-    return grouped
-  }
+    return sorted
+  }, [orgScopedReports, selectedArea, searchTerm, selectedDateRange, sortBy, sortOrder])
 
-  const groupedReports = groupReportsBySection(filteredReports)
+  // Reset to first page whenever the scope, area, result set, or page size changes.
+  useEffect(() => {
+    setPage(1)
+  }, [scope, selectedArea, searchTerm, selectedDateRange, sortBy, sortOrder, pageSize])
 
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]))
-  }
+  const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * pageSize
+  const pageReports = filteredReports.slice(pageStart, pageStart + pageSize)
 
-  const getSectionColor = (section: string) => {
-    const colors = {
-      "Attendance Summary Dashboard": "bg-blue-100 text-blue-800",
-      "Weekly Attendance Report": "bg-green-100 text-green-800",
-      "SEND Provision Report": "bg-purple-100 text-purple-800",
-      "Behaviour Incidents Analysis": "bg-red-100 text-red-800",
-      "Pupil Premium Impact Assessment": "bg-orange-100 text-orange-800",
-      "Headteacher's Report to Governors": "bg-indigo-100 text-indigo-800",
-      "Safeguarding Annual Report": "bg-pink-100 text-pink-800",
-    }
-    return colors[section as keyof typeof colors] || "bg-gray-100 text-gray-800"
-  }
-
-  const handleViewReport = (reportId: string) => {
-    const report = mockArchivedReports.find((r) => r.id === reportId)
-    if (report) {
-      setViewingReport(report)
+  const handleSort = (key: SortKey) => {
+    if (sortBy === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"))
+    } else {
+      setSortBy(key)
+      setSortOrder(key === "name" || key === "section" ? "asc" : "desc")
     }
   }
 
-  const handleDownloadReport = (reportId: string) => {
-    // Simulate downloading report
-    console.log("Downloading report:", reportId)
+  const handleViewReport = (report: ArchivedReport) => setViewingReport(report)
+  const handleDownloadReport = (reportId: string) => console.log("Downloading report:", reportId)
+  const handleClosePDFViewer = () => setViewingReport(null)
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setSelectedDateRange("all")
   }
 
-  const handleClosePDFViewer = () => {
-    setViewingReport(null)
-  }
+  const hasActiveFilters = searchTerm !== "" || selectedDateRange !== "all"
+
+  const SortHeader = ({ label, sortKey, className }: { label: string; sortKey: SortKey; className?: string }) => (
+    <th className={className}>
+      <button
+        type="button"
+        onClick={() => handleSort(sortKey)}
+        className="flex items-center gap-1.5 text-left font-semibold text-slate-600 hover:text-slate-900"
+      >
+        {label}
+        {sortBy === sortKey ? (
+          sortOrder === "asc" ? (
+            <ArrowUp className="h-3.5 w-3.5" />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3.5 w-3.5 text-slate-300" />
+        )}
+      </button>
+    </th>
+  )
+
+  // Build a compact page-number window around the current page.
+  const pageNumbers = useMemo(() => {
+    const windowSize = 5
+    let start = Math.max(1, currentPage - Math.floor(windowSize / 2))
+    const end = Math.min(totalPages, start + windowSize - 1)
+    start = Math.max(1, end - windowSize + 1)
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  }, [currentPage, totalPages])
+
+  const totalInScope = orgScopedReports.length
+  const scopeLabel = scope === "all" ? "all schools" : scope === "mat" ? "MAT-wide reports" : SCHOOL_NAME_BY_URN[scope]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Report Archive</h1>
-        <p className="text-gray-600 mt-1">Access and manage archived PDF reports</p>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white p-6 rounded-lg border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search reports..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      {/* Scope selector — MAT-wide or a specific school */}
+      <div className="rounded-lg border bg-white p-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="w-full md:max-w-md">
+            <label className="mb-1.5 block text-xs font-medium text-slate-500">Show reports for</label>
+            <Select value={scope} onValueChange={setScope}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All reports</SelectItem>
+                <SelectItem value="mat">MAT-wide reports</SelectItem>
+                <SelectSeparator />
+                {SCHOOLS.map((school) => (
+                  <SelectItem key={school.urn} value={school.urn}>
+                    {school.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={selectedScope} onValueChange={setSelectedScope}>
-            <SelectTrigger>
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Report Scope" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Scopes</SelectItem>
-              {scopeOptions.slice(1).map((scope) => (
-                <SelectItem key={scope} value={scope}>
-                  {scope}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
-            <SelectTrigger>
-              <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Dates</SelectItem>
-              <SelectItem value="last-7-days">Last 7 days</SelectItem>
-              <SelectItem value="last-30-days">Last 30 days</SelectItem>
-              <SelectItem value="last-90-days">Last 90 days</SelectItem>
-              <SelectItem value="this-year">This year</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="mt-4 text-sm text-gray-600 flex items-center">
-          {filteredReports.length} report{filteredReports.length !== 1 ? "s" : ""} found
+          <div className="text-sm text-slate-500 md:text-right">
+            <span className="font-medium text-slate-900">{totalInScope.toLocaleString()}</span> reports for{" "}
+            <span className="font-medium text-slate-900">{scopeLabel}</span>
+          </div>
         </div>
       </div>
 
-      {/* Results */}
-      <div className="bg-white rounded-lg border">
-        {filteredReports.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No archived reports found</h3>
-            <p className="text-gray-600">Try adjusting your filters or search terms.</p>
-          </div>
-        ) : (
-          <div className="space-y-0">
-            {Object.entries(groupedReports).map(([section, reports]) => (
-              <div key={section} className="border-b last:border-b-0">
-                <div
-                  className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => toggleSection(section)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${getSectionColor(section)}`}>
-                      {section}
-                    </div>
-                    <span className="font-medium text-gray-900">
-                      {reports.length} report{reports.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">
-                      Last archived:{" "}
-                      {new Date(
-                        Math.max(...reports.map((r) => new Date(r.dateArchived).getTime())),
-                      ).toLocaleDateString()}
-                    </span>
-                    {expandedSections.includes(section) ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
-                    )}
-                  </div>
-                </div>
-
-                {expandedSections.includes(section) && (
-                  <div className="bg-white">
-                    <div className="space-y-0">
-                      {reports.map((report) => (
-                        <div key={report.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                          <FileText className="h-8 w-8 text-red-500 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-gray-900 truncate">{report.name}</h3>
-                            <p className="text-sm text-gray-600 truncate">{report.description}</p>
-                            <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-                              <span>Archived: {new Date(report.dateArchived).toLocaleDateString()}</span>
-                              <span>Size: {report.fileSize}</span>
-                              <span>Creator: {report.creator}</span>
-                              <span>Downloads: {report.downloadCount}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewReport(report.id)}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-3 w-3" />
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownloadReport(report.id)}
-                              className="flex items-center gap-1"
-                            >
-                              <Download className="h-3 w-3" />
-                              Download
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* PDF Viewer Modal */}
-      {viewingReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
-              <div>
-                <h2 className="text-lg font-semibold">{viewingReport.name}</h2>
-                <p className="text-sm text-gray-600">{viewingReport.description}</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleClosePDFViewer} className="flex items-center gap-1">
-                <X className="h-4 w-4" />
-                Close
-              </Button>
+      <div className="flex flex-col gap-6 lg:flex-row">
+        {/* Master: area list */}
+        <aside className="lg:w-72 lg:flex-shrink-0">
+          <div className="rounded-lg border bg-white">
+            <div className="flex items-center gap-2 border-b px-4 py-3">
+              <h2 className="text-sm font-semibold text-slate-900">Areas</h2>
             </div>
-            <div className="flex-1 p-4 bg-gray-100">
-              <div className="w-full h-full bg-white rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">PDF Preview</h3>
-                  <p className="text-gray-600 mb-4">{viewingReport.name}</p>
-                  <p className="text-sm text-gray-500">
-                    In a real implementation, this would display the actual PDF content
-                  </p>
-                  <Button
-                    onClick={() => handleDownloadReport(viewingReport.id)}
-                    className="mt-4 flex items-center gap-2"
+            <nav className="max-h-[70vh] overflow-y-auto p-2">
+              {AREAS.map((area) => {
+                const isActive = area === selectedArea
+                return (
+                  <button
+                    key={area}
+                    type="button"
+                    onClick={() => setSelectedArea(area)}
+                    aria-current={isActive ? "true" : undefined}
+                    className={`mb-1 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors ${
+                      isActive ? "bg-[#33295e]/10 text-[#33295e]" : "text-slate-700 hover:bg-slate-50"
+                    }`}
                   >
-                    <Download className="h-4 w-4" />
-                    Download PDF
-                  </Button>
-                </div>
+                    <span className={`min-w-0 flex-1 truncate text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
+                      {area}
+                    </span>
+                    <span
+                      className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                        isActive ? "bg-[#fd6d6d] text-white" : "bg-[#fd6d6d]/10 text-[#fd6d6d]"
+                      }`}
+                    >
+                      {areaCounts[area].toLocaleString()}
+                    </span>
+                  </button>
+                )
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Detail: reports within the selected area */}
+        <section className="min-w-0 flex-1 space-y-4">
+
+          {/* Filters (scoped to the selected area) */}
+          <div className="rounded-lg border bg-white p-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder={`Search ${selectedArea}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 focus-visible:ring-[#33295e]"
+                />
               </div>
+              <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
+                <SelectTrigger className="sm:w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Dates</SelectItem>
+                  <SelectItem value="last-7-days">Last 7 days</SelectItem>
+                  <SelectItem value="last-30-days">Last 30 days</SelectItem>
+                  <SelectItem value="last-90-days">Last 90 days</SelectItem>
+                  <SelectItem value="this-year">This year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-sm text-slate-600">
+                {filteredReports.length.toLocaleString()} report{filteredReports.length !== 1 ? "s" : ""} found
+              </span>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-slate-500">
+                  <X className="mr-1 h-3.5 w-3.5" />
+                  Clear filters
+                </Button>
+              )}
             </div>
           </div>
-        </div>
-      )}
+
+          {/* Results table */}
+          <div className="overflow-hidden rounded-lg border bg-white">
+            {filteredReports.length === 0 ? (
+              <div className="py-16 text-center">
+                <FileText className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+                <h3 className="mb-2 text-lg font-medium text-slate-900">No archived reports found</h3>
+                <p className="text-slate-600">Try adjusting your filters or search terms.</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-slate-50 [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-xs [&>th]:uppercase [&>th]:tracking-wide">
+                        <SortHeader label="Report" sortKey="name" />
+                        {scope === "all" && (
+                          <th className="hidden md:table-cell text-xs font-semibold text-slate-600">Organisation</th>
+                        )}
+                        <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Archived By</th>
+                        <SortHeader label="Archived" sortKey="dateArchived" className="hidden md:table-cell" />
+                        <th className="text-right text-xs font-semibold text-slate-600">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageReports.map((report) => (
+                        <tr key={report.id} className="border-b last:border-b-0 transition-colors hover:bg-slate-50">
+                          <td className="px-4 py-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div className="min-w-0">
+                                <div className="max-w-[280px] truncate font-medium text-slate-900 xl:max-w-[360px]">
+                                  {report.name}
+                                </div>
+                                <div className="max-w-[280px] truncate text-xs text-slate-500 xl:max-w-[360px]">
+                                  {report.description}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          {scope === "all" && (
+                            <td className="hidden px-4 py-3 md:table-cell">
+                              {report.level === "mat" ? (
+                                <span className="inline-flex items-center rounded-full bg-[#33295e]/10 px-2 py-0.5 text-xs font-medium text-[#33295e]">
+                                  MAT-wide
+                                </span>
+                              ) : (
+                                <span className="block max-w-[200px] truncate text-slate-600">
+                                  {SCHOOL_NAME_BY_URN[report.schoolUrn]}
+                                </span>
+                              )}
+                            </td>
+                          )}
+                          <td className="hidden whitespace-nowrap px-4 py-3 text-slate-600 xl:table-cell">
+                            {report.creator}
+                          </td>
+                          <td className="hidden whitespace-nowrap px-4 py-3 text-slate-600 md:table-cell">
+                            {new Date(report.dateArchived).toLocaleDateString("en-GB")}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="outline" size="sm" onClick={() => handleViewReport(report)}>
+                                View
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleDownloadReport(report.id)}>
+                                Download
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination footer */}
+                <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3 text-sm text-slate-600">
+                    <span>
+                      Showing {(pageStart + 1).toLocaleString()}–
+                      {Math.min(pageStart + pageSize, filteredReports.length).toLocaleString()} of{" "}
+                      {filteredReports.length.toLocaleString()}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="hidden sm:inline">Rows:</span>
+                      <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                        <SelectTrigger className="h-8 w-[72px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PAGE_SIZE_OPTIONS.map((size) => (
+                            <SelectItem key={size} value={String(size)}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 bg-transparent"
+                      onClick={() => setPage(1)}
+                      disabled={currentPage === 1}
+                      aria-label="First page"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 bg-transparent"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    {pageNumbers.map((num) => (
+                      <Button
+                        key={num}
+                        variant={num === currentPage ? "default" : "outline"}
+                        size="icon"
+                        className={`h-8 w-8 ${
+                          num === currentPage ? "bg-[#33295e] text-white hover:bg-[#2a2150]" : "bg-transparent"
+                        }`}
+                        onClick={() => setPage(num)}
+                      >
+                        {num}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 bg-transparent"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 bg-transparent"
+                      onClick={() => setPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Last page"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* Report Viewer Modal */}
+      <PDFReportModal
+        isOpen={viewingReport !== null}
+        onClose={handleClosePDFViewer}
+        reportName={viewingReport?.name ?? ""}
+        reportConfig={{
+          scope: viewingReport?.level === "mat" ? "MAT-wide" : "School",
+          school: viewingReport && viewingReport.level === "school" ? SCHOOL_NAME_BY_URN[viewingReport.schoolUrn] : undefined,
+        }}
+      />
     </div>
   )
 }

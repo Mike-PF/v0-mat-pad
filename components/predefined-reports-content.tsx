@@ -4,9 +4,10 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, FileText, Eye, Download, Search, X } from "lucide-react"
+import { ChevronDown, Search, X } from "lucide-react"
 import { PDFReportModal } from "@/components/pdf-report-modal"
 import { ReportPreviewModal } from "@/components/report-preview-modal"
+import { ReportSignOffModal } from "@/components/report-sign-off-modal"
 
 interface Report {
   id: string
@@ -35,6 +36,29 @@ export function PredefinedReportsContent() {
   const [showPreviewModal, setShowPreviewModal] = useState(false)
   const [previewReport, setPreviewReport] = useState<Report | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // Report sign-off state
+  const currentUser = "Gareth Hutchings"
+  const [showSignOffModal, setShowSignOffModal] = useState(false)
+  const [signOffReport, setSignOffReport] = useState<Report | null>(null)
+  // Keyed by report id so each report tracks its own sign-off record.
+  const [signOffs, setSignOffs] = useState<
+    Record<string, { reportId: string; reportName: string; user: string; signedAt: string }>
+  >({})
+
+  const handleOpenSignOff = (report: Report) => {
+    setSignOffReport(report)
+    setShowSignOffModal(true)
+  }
+
+  const handleConfirmSignOff = (record: {
+    reportId: string
+    reportName: string
+    user: string
+    signedAt: string
+  }) => {
+    setSignOffs((prev) => ({ ...prev, [record.reportId]: record }))
+  }
 
   const [dateRangeType, setDateRangeType] = useState("")
   const [selectedTermDate, setSelectedTermDate] = useState("")
@@ -405,7 +429,7 @@ export function PredefinedReportsContent() {
                   placeholder="Search reports by name, description, category, or frequency..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e] text-sm"
                 />
                 {searchQuery && (
                   <button
@@ -453,7 +477,7 @@ export function PredefinedReportsContent() {
                         key={report.id}
                         className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
                           selectedReport?.id === report.id
-                            ? "border-blue-500 bg-blue-50"
+                            ? "border-[#33295e] bg-[#33295e]/5"
                             : "border-slate-200 hover:border-slate-300"
                         }`}
                         onClick={() => handleReportSelect(report)}
@@ -461,7 +485,6 @@ export function PredefinedReportsContent() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <FileText className="w-4 h-4 text-slate-600" />
                               <h4 className="font-medium text-slate-900">{report.name}</h4>
                             </div>
                             <p className="text-sm text-slate-600 mb-3">{report.description}</p>
@@ -484,8 +507,8 @@ export function PredefinedReportsContent() {
                               )}
                             </div>
 
-                            {/* Preview Button */}
-                            <div className="mt-3">
+                            {/* Actions */}
+                            <div className="mt-3 flex items-center gap-2 flex-wrap">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -495,13 +518,23 @@ export function PredefinedReportsContent() {
                                 }}
                                 className="text-xs"
                               >
-                                <Eye className="w-3 h-3 mr-1" />
                                 Preview
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenSignOff(report)
+                                }}
+                                className="text-xs bg-[#33295e] text-white hover:bg-[#2a2150]"
+                              >
+                                Sign off
                               </Button>
                             </div>
                           </div>
                           {selectedReport?.id === report.id && (
-                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center ml-4">
+                            <div className="w-6 h-6 bg-[#33295e] rounded-full flex items-center justify-center ml-4">
                               <div className="w-2 h-2 bg-white rounded-full"></div>
                             </div>
                           )}
@@ -538,15 +571,7 @@ export function PredefinedReportsContent() {
           <Card className="sticky top-6">
             <CardHeader>
               <CardTitle className="text-lg">Report Configuration</CardTitle>
-              {selectedReport ? (
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    <span className="font-medium text-blue-900">{selectedReport.name}</span>
-                  </div>
-                  <p className="text-sm text-blue-700">{selectedReport.description}</p>
-                </div>
-              ) : (
+              {!selectedReport && (
                 <p className="text-sm text-slate-600">Select a report to configure filters and generate</p>
               )}
             </CardHeader>
@@ -562,7 +587,7 @@ export function PredefinedReportsContent() {
                     <select
                       value={selectedScope}
                       onChange={(e) => setSelectedScope(e.target.value)}
-                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                     >
                       <option value="">Select scope...</option>
                       {scopeOptions.map((scope) => (
@@ -585,7 +610,7 @@ export function PredefinedReportsContent() {
                       <select
                         value={selectedSchool}
                         onChange={(e) => setSelectedSchool(e.target.value)}
-                        className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                       >
                         <option value="">Select school...</option>
                         {schools.map((school) => (
@@ -609,7 +634,7 @@ export function PredefinedReportsContent() {
                       <select
                         value={attendanceCutoff}
                         onChange={(e) => setAttendanceCutoff(e.target.value)}
-                        className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                       >
                         <option value="">Select cutoff...</option>
                         {attendanceCutoffs.map((cutoff) => (
@@ -640,7 +665,7 @@ export function PredefinedReportsContent() {
                             setCustomStartDate("")
                             setCustomEndDate("")
                           }}
-                          className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                         >
                           <option value="">Select date range type...</option>
                           {dateRangeTypes.map((type) => (
@@ -663,7 +688,7 @@ export function PredefinedReportsContent() {
                           <select
                             value={selectedTermDate}
                             onChange={(e) => setSelectedTermDate(e.target.value)}
-                            className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                           >
                             <option value="">Select term...</option>
                             {termDates.map((term) => (
@@ -698,7 +723,7 @@ export function PredefinedReportsContent() {
                             type="date"
                             value={customStartDate}
                             onChange={(e) => setCustomStartDate(e.target.value)}
-                            className="w-full p-3 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                           />
                         </div>
                         <div>
@@ -709,7 +734,7 @@ export function PredefinedReportsContent() {
                             type="date"
                             value={customEndDate}
                             onChange={(e) => setCustomEndDate(e.target.value)}
-                            className="w-full p-3 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                           />
                         </div>
                         {customStartDate && customEndDate && (
@@ -736,7 +761,7 @@ export function PredefinedReportsContent() {
                           <select
                             value={selectedTermDate}
                             onChange={(e) => setSelectedTermDate(e.target.value)}
-                            className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                           >
                             <option value="">Select academic year...</option>
                             <option value="2024-25">2024/25 Academic Year</option>
@@ -758,7 +783,7 @@ export function PredefinedReportsContent() {
                           <select
                             value={selectedTermDate}
                             onChange={(e) => setSelectedTermDate(e.target.value)}
-                            className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                           >
                             <option value="">Select calendar year...</option>
                             <option value="2025">2025</option>
@@ -779,7 +804,7 @@ export function PredefinedReportsContent() {
                     <select
                       value={selectedCharacteristics}
                       onChange={(e) => setSelectedCharacteristics(e.target.value)}
-                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
                     >
                       <option value="">All pupils...</option>
                       {characteristicsOptions.map((characteristic) => (
@@ -797,15 +822,13 @@ export function PredefinedReportsContent() {
                   <Button
                     onClick={handleViewReport}
                     disabled={!canViewReport()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
                   >
-                    <Eye className="w-4 h-4 mr-2" />
                     View Report
                   </Button>
 
                   {canViewReport() && (
                     <Button variant="outline" className="w-full bg-transparent">
-                      <Download className="w-4 h-4 mr-2" />
                       Download PDF
                     </Button>
                   )}
@@ -889,6 +912,16 @@ export function PredefinedReportsContent() {
           handleReportSelect(report)
           setShowPreviewModal(false)
         }}
+      />
+
+      {/* Report Sign Off Modal */}
+      <ReportSignOffModal
+        isOpen={showSignOffModal}
+        onClose={() => setShowSignOffModal(false)}
+        report={signOffReport}
+        currentUser={currentUser}
+        existingSignOff={signOffReport ? signOffs[signOffReport.id] : null}
+        onConfirm={handleConfirmSignOff}
       />
     </div>
   )
