@@ -23,6 +23,7 @@ import {
   Search,
   X,
 } from "lucide-react"
+import { PDFReportModal } from "@/components/pdf-report-modal"
 
 interface ArchivedReport {
   id: string
@@ -595,41 +596,16 @@ export function ArchiveContent() {
         </section>
       </div>
 
-      {/* PDF Viewer Modal */}
-      {viewingReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="flex h-full max-h-[90vh] w-full max-w-4xl flex-col rounded-lg bg-white">
-            <div className="flex items-center justify-between border-b p-4">
-              <div>
-                <h2 className="text-lg font-semibold">{viewingReport.name}</h2>
-                <p className="text-sm text-slate-600">{viewingReport.description}</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleClosePDFViewer}>
-                <X className="mr-1 h-4 w-4" />
-                Close
-              </Button>
-            </div>
-            <div className="flex-1 bg-slate-100 p-4">
-              <div className="flex h-full w-full items-center justify-center rounded border-2 border-dashed border-slate-300 bg-white">
-                <div className="text-center">
-                  <FileText className="mx-auto mb-4 h-16 w-16 text-slate-300" />
-                  <h3 className="mb-2 text-lg font-medium text-slate-900">PDF Preview</h3>
-                  <p className="mb-4 text-slate-600">{viewingReport.name}</p>
-                  <p className="text-sm text-slate-500">
-                    In a real implementation, this would display the actual PDF content
-                  </p>
-                  <Button
-                    onClick={() => handleDownloadReport(viewingReport.id)}
-                    className="mt-4 bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]"
-                  >
-                    Download PDF
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Report Viewer Modal */}
+      <PDFReportModal
+        isOpen={viewingReport !== null}
+        onClose={handleClosePDFViewer}
+        reportName={viewingReport?.name ?? ""}
+        reportConfig={{
+          scope: viewingReport?.level === "mat" ? "MAT-wide" : "School",
+          school: viewingReport && viewingReport.level === "school" ? SCHOOL_NAME_BY_URN[viewingReport.schoolUrn] : undefined,
+        }}
+      />
     </div>
   )
 }
