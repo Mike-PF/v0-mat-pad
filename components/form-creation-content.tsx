@@ -2371,6 +2371,16 @@ const generateDocumentTags = (count: number) => {
                                 >
                                   Clone
                                 </Button>
+                                {!isDocumentLinked && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteDocument(doc.id)}
+                                    className="border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
+                                  >
+                                    Delete
+                                  </Button>
+                                )}
                               </div>
                             </td>
                           </tr>
