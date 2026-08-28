@@ -89,8 +89,24 @@ export function FormBuilder() {
             </Button>
           </div>
 
-          {/* Form Level */}
+          {/* Name */}
           <div className="border-t border-slate-200 pt-4">
+            <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter form name..." />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">Description</label>
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter description..."
+            />
+          </div>
+
+          {/* Form Level */}
+          <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Form Level</label>
             <div className="flex items-center gap-2">
               <span
@@ -114,22 +130,6 @@ export function FormBuilder() {
               </button>
               {formLevelMat && <span className="text-sm font-medium text-slate-900">MAT</span>}
             </div>
-          </div>
-
-          {/* Name */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter form name..." />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Description</label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter description..."
-            />
           </div>
 
           {/* Section Name */}
