@@ -27,7 +27,6 @@ import {
   GitBranch,
   MousePointer,
   ArrowLeft,
-  ShieldCheck,
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
@@ -2385,16 +2384,6 @@ const generateDocumentTags = (count: number) => {
                                     Edit
                                   </Button>
                                 )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => router.push("/forms?readonly=1")}
-                                  title="Change permissions"
-                                  aria-label="Change permissions"
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                >
-                                  <ShieldCheck className="w-4 h-4" />
-                                </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
