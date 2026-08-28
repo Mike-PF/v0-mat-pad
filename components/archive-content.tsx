@@ -1,10 +1,23 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, ChevronDown, ChevronUp, Download, Eye, FileText, Filter, Search, X } from "lucide-react"
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Filter,
+  FileText,
+  Search,
+  X,
+} from "lucide-react"
 
 interface ArchivedReport {
   id: string
@@ -19,11 +32,7 @@ interface ArchivedReport {
   downloadCount: number
 }
 
-interface GroupedReports {
-  [section: string]: ArchivedReport[]
-}
-
-const mockArchivedReports: ArchivedReport[] = [
+const baseArchivedReports: ArchivedReport[] = [
   {
     id: "ar-1",
     name: "Attendance Summary Dashboard - Whole MAT - March 2024",
@@ -278,14 +287,39 @@ const mockArchivedReports: ArchivedReport[] = [
   },
 ]
 
+// Synthesize a large archive so the layout is exercised at realistic scale
+// (thousands of rows). Pagination keeps only one page mounted at a time.
+const creators = ["Sarah Johnson", "Michael Brown", "David Lee", "Emma Wilson", "James Taylor", "Karen White"]
+const mockArchivedReports: ArchivedReport[] = Array.from({ length: 3200 }, (_, i) => {
+  const base = baseArchivedReports[i % baseArchivedReports.length]
+  const year = 2018 + (i % 7)
+  const month = (i % 12) + 1
+  const day = (i % 27) + 1
+  const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+  return {
+    ...base,
+    id: `${base.id}-${i}`,
+    name: `${base.section} - ${new Date(iso).toLocaleString("en-GB", { month: "long", year: "numeric" })}`,
+    dateArchived: iso,
+    dateCreated: iso,
+    fileSize: `${(0.5 + ((i * 37) % 40) / 10).toFixed(1)} MB`,
+    creator: creators[i % creators.length],
+    downloadCount: (i * 13) % 60,
+  }
+})
+
+type SortKey = "name" | "section" | "dateArchived" | "fileSize" | "downloadCount"
+const PAGE_SIZE_OPTIONS = [25, 50, 100]
+
 export function ArchiveContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedScope, setSelectedScope] = useState("all")
   const [selectedDateRange, setSelectedDateRange] = useState("all")
-  const [sortBy, setSortBy] = useState("dateArchived")
+  const [sortBy, setSortBy] = useState<SortKey>("dateArchived")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [expandedSections, setExpandedSections] = useState<string[]>([])
-  const [viewingReport, setViewingReport] = useState<any>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
+  const [viewingReport, setViewingReport] = useState<ArchivedReport | null>(null)
 
   const schools = [
     "Greenfield Primary School",
@@ -303,14 +337,14 @@ export function ArchiveContent() {
   const filteredReports = useMemo(() => {
     let filtered = mockArchivedReports
 
-    // Filter by search term
     if (searchTerm) {
+      const q = searchTerm.toLowerCase()
       filtered = filtered.filter(
         (report) =>
-          report.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.creator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
+          report.name.toLowerCase().includes(q) ||
+          report.description.toLowerCase().includes(q) ||
+          report.creator.toLowerCase().includes(q) ||
+          report.tags.some((tag) => tag.toLowerCase().includes(q)),
       )
     }
 
@@ -322,16 +356,13 @@ export function ArchiveContent() {
       } else if (selectedScope === "Secondary Phase") {
         filtered = filtered.filter((report) => report.tags.includes("secondary"))
       } else if (schools.includes(selectedScope)) {
-        // Filter by specific school
         filtered = filtered.filter((report) => report.tags.includes(selectedScope.toLowerCase().replace(/\s+/g, "-")))
       }
     }
 
-    // Filter by date range
     if (selectedDateRange !== "all") {
       const now = new Date()
       const cutoffDate = new Date()
-
       switch (selectedDateRange) {
         case "last-7-days":
           cutoffDate.setDate(now.getDate() - 7)
@@ -346,41 +377,43 @@ export function ArchiveContent() {
           cutoffDate.setFullYear(now.getFullYear(), 0, 1)
           break
       }
-
       filtered = filtered.filter((report) => new Date(report.dateArchived) >= cutoffDate)
     }
 
-    // Sort reports
-    filtered.sort((a, b) => {
-      const dateA = new Date(a[sortBy]).getTime()
-      const dateB = new Date(b[sortBy]).getTime()
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA
+    const sorted = [...filtered].sort((a, b) => {
+      let cmp = 0
+      if (sortBy === "name" || sortBy === "section") {
+        cmp = a[sortBy].localeCompare(b[sortBy])
+      } else if (sortBy === "fileSize") {
+        cmp = Number.parseFloat(a.fileSize) - Number.parseFloat(b.fileSize)
+      } else if (sortBy === "downloadCount") {
+        cmp = a.downloadCount - b.downloadCount
+      } else {
+        cmp = new Date(a.dateArchived).getTime() - new Date(b.dateArchived).getTime()
+      }
+      return sortOrder === "asc" ? cmp : -cmp
     })
 
-    return filtered
+    return sorted
   }, [searchTerm, selectedScope, selectedDateRange, sortBy, sortOrder])
 
-  const groupReportsBySection = (reports: ArchivedReport[]): GroupedReports => {
-    const grouped = reports.reduce((acc, report) => {
-      if (!acc[report.section]) {
-        acc[report.section] = []
-      }
-      acc[report.section].push(report)
-      return acc
-    }, {} as GroupedReports)
+  // Reset to first page whenever the result set or page size changes.
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, selectedScope, selectedDateRange, sortBy, sortOrder, pageSize])
 
-    // Sort reports within each section by date archived (newest first)
-    Object.keys(grouped).forEach((section) => {
-      grouped[section].sort((a, b) => new Date(b.dateArchived).getTime() - new Date(a.dateArchived).getTime())
-    })
+  const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * pageSize
+  const pageReports = filteredReports.slice(pageStart, pageStart + pageSize)
 
-    return grouped
-  }
-
-  const groupedReports = groupReportsBySection(filteredReports)
-
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]))
+  const handleSort = (key: SortKey) => {
+    if (sortBy === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"))
+    } else {
+      setSortBy(key)
+      setSortOrder(key === "name" || key === "section" ? "asc" : "desc")
+    }
   }
 
   const getSectionColor = (section: string) => {
@@ -396,40 +429,66 @@ export function ArchiveContent() {
     return colors[section as keyof typeof colors] || "bg-gray-100 text-gray-800"
   }
 
-  const handleViewReport = (reportId: string) => {
-    const report = mockArchivedReports.find((r) => r.id === reportId)
-    if (report) {
-      setViewingReport(report)
-    }
+  const handleViewReport = (report: ArchivedReport) => setViewingReport(report)
+  const handleDownloadReport = (reportId: string) => console.log("Downloading report:", reportId)
+  const handleClosePDFViewer = () => setViewingReport(null)
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setSelectedScope("all")
+    setSelectedDateRange("all")
   }
 
-  const handleDownloadReport = (reportId: string) => {
-    // Simulate downloading report
-    console.log("Downloading report:", reportId)
-  }
+  const hasActiveFilters = searchTerm !== "" || selectedScope !== "all" || selectedDateRange !== "all"
 
-  const handleClosePDFViewer = () => {
-    setViewingReport(null)
-  }
+  const SortHeader = ({ label, sortKey, className }: { label: string; sortKey: SortKey; className?: string }) => (
+    <th className={className}>
+      <button
+        type="button"
+        onClick={() => handleSort(sortKey)}
+        className="flex items-center gap-1.5 text-left font-semibold text-slate-600 hover:text-slate-900"
+      >
+        {label}
+        {sortBy === sortKey ? (
+          sortOrder === "asc" ? (
+            <ArrowUp className="h-3.5 w-3.5" />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3.5 w-3.5 text-slate-300" />
+        )}
+      </button>
+    </th>
+  )
+
+  // Build a compact page-number window around the current page.
+  const pageNumbers = useMemo(() => {
+    const windowSize = 5
+    let start = Math.max(1, currentPage - Math.floor(windowSize / 2))
+    const end = Math.min(totalPages, start + windowSize - 1)
+    start = Math.max(1, end - windowSize + 1)
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  }, [currentPage, totalPages])
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Report Archive</h1>
-        <p className="text-gray-600 mt-1">Access and manage archived PDF reports</p>
+        <h1 className="text-2xl font-bold text-slate-900">Report Archive</h1>
+        <p className="text-slate-600 mt-1">Access and manage archived PDF reports</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white p-4 rounded-lg border">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
-              placeholder="Search reports..."
+              placeholder="Search by name, creator, tag..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 focus-visible:ring-[#33295e]"
             />
           </div>
           <Select value={selectedScope} onValueChange={setSelectedScope}>
@@ -460,94 +519,175 @@ export function ArchiveContent() {
             </SelectContent>
           </Select>
         </div>
-        <div className="mt-4 text-sm text-gray-600 flex items-center">
-          {filteredReports.length} report{filteredReports.length !== 1 ? "s" : ""} found
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-sm text-slate-600">
+            {filteredReports.length.toLocaleString()} report{filteredReports.length !== 1 ? "s" : ""} found
+          </span>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-slate-500">
+              <X className="h-3.5 w-3.5 mr-1" />
+              Clear filters
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Results */}
-      <div className="bg-white rounded-lg border">
+      {/* Results table */}
+      <div className="bg-white rounded-lg border overflow-hidden">
         {filteredReports.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No archived reports found</h3>
-            <p className="text-gray-600">Try adjusting your filters or search terms.</p>
+          <div className="text-center py-16">
+            <FileText className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-2">No archived reports found</h3>
+            <p className="text-slate-600">Try adjusting your filters or search terms.</p>
           </div>
         ) : (
-          <div className="space-y-0">
-            {Object.entries(groupedReports).map(([section, reports]) => (
-              <div key={section} className="border-b last:border-b-0">
-                <div
-                  className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => toggleSection(section)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${getSectionColor(section)}`}>
-                      {section}
-                    </div>
-                    <span className="font-medium text-gray-900">
-                      {reports.length} report{reports.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">
-                      Last archived:{" "}
-                      {new Date(
-                        Math.max(...reports.map((r) => new Date(r.dateArchived).getTime())),
-                      ).toLocaleDateString()}
-                    </span>
-                    {expandedSections.includes(section) ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
-                    )}
-                  </div>
-                </div>
-
-                {expandedSections.includes(section) && (
-                  <div className="bg-white">
-                    <div className="space-y-0">
-                      {reports.map((report) => (
-                        <div key={report.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                          <FileText className="h-8 w-8 text-red-500 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-gray-900 truncate">{report.name}</h3>
-                            <p className="text-sm text-gray-600 truncate">{report.description}</p>
-                            <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-                              <span>Archived: {new Date(report.dateArchived).toLocaleDateString()}</span>
-                              <span>Size: {report.fileSize}</span>
-                              <span>Creator: {report.creator}</span>
-                              <span>Downloads: {report.downloadCount}</span>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-slate-50 [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-xs [&>th]:uppercase [&>th]:tracking-wide">
+                    <SortHeader label="Report" sortKey="name" />
+                    <SortHeader label="Section" sortKey="section" className="hidden lg:table-cell" />
+                    <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Creator</th>
+                    <SortHeader label="Archived" sortKey="dateArchived" className="hidden md:table-cell" />
+                    <SortHeader label="Size" sortKey="fileSize" className="hidden xl:table-cell" />
+                    <SortHeader label="Downloads" sortKey="downloadCount" className="hidden lg:table-cell" />
+                    <th className="text-right text-xs font-semibold text-slate-600">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageReports.map((report) => (
+                    <tr key={report.id} className="border-b last:border-b-0 hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText className="h-5 w-5 text-[#33295e] flex-shrink-0" />
+                          <div className="min-w-0">
+                            <div className="font-medium text-slate-900 truncate max-w-[280px] xl:max-w-[360px]">
+                              {report.name}
+                            </div>
+                            <div className="text-xs text-slate-500 truncate max-w-[280px] xl:max-w-[360px]">
+                              {report.description}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewReport(report.id)}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-3 w-3" />
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownloadReport(report.id)}
-                              className="flex items-center gap-1"
-                            >
-                              <Download className="h-3 w-3" />
-                              Download
-                            </Button>
-                          </div>
                         </div>
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getSectionColor(report.section)}`}
+                        >
+                          {report.section}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 hidden xl:table-cell text-slate-600 whitespace-nowrap">
+                        {report.creator}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-slate-600 whitespace-nowrap">
+                        {new Date(report.dateArchived).toLocaleDateString("en-GB")}
+                      </td>
+                      <td className="px-4 py-3 hidden xl:table-cell text-slate-600 whitespace-nowrap">
+                        {report.fileSize}
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-slate-600">{report.downloadCount}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleViewReport(report)}>
+                            View
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDownloadReport(report.id)}>
+                            Download
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination footer */}
+            <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3 text-sm text-slate-600">
+                <span>
+                  Showing {(pageStart + 1).toLocaleString()}–
+                  {Math.min(pageStart + pageSize, filteredReports.length).toLocaleString()} of{" "}
+                  {filteredReports.length.toLocaleString()}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="hidden sm:inline">Rows:</span>
+                  <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                    <SelectTrigger className="h-8 w-[72px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size} value={String(size)}>
+                          {size}
+                        </SelectItem>
                       ))}
-                    </div>
-                  </div>
-                )}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            ))}
-          </div>
+
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 bg-transparent"
+                  onClick={() => setPage(1)}
+                  disabled={currentPage === 1}
+                  aria-label="First page"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 bg-transparent"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {pageNumbers.map((num) => (
+                  <Button
+                    key={num}
+                    variant={num === currentPage ? "default" : "outline"}
+                    size="icon"
+                    className={`h-8 w-8 ${
+                      num === currentPage
+                        ? "bg-[#33295e] text-white hover:bg-[#2a2150]"
+                        : "bg-transparent"
+                    }`}
+                    onClick={() => setPage(num)}
+                  >
+                    {num}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 bg-transparent"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 bg-transparent"
+                  onClick={() => setPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Last page"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -558,27 +698,26 @@ export function ArchiveContent() {
             <div className="flex items-center justify-between p-4 border-b">
               <div>
                 <h2 className="text-lg font-semibold">{viewingReport.name}</h2>
-                <p className="text-sm text-gray-600">{viewingReport.description}</p>
+                <p className="text-sm text-slate-600">{viewingReport.description}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleClosePDFViewer} className="flex items-center gap-1">
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="sm" onClick={handleClosePDFViewer}>
+                <X className="h-4 w-4 mr-1" />
                 Close
               </Button>
             </div>
-            <div className="flex-1 p-4 bg-gray-100">
-              <div className="w-full h-full bg-white rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+            <div className="flex-1 p-4 bg-slate-100">
+              <div className="w-full h-full bg-white rounded border-2 border-dashed border-slate-300 flex items-center justify-center">
                 <div className="text-center">
-                  <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">PDF Preview</h3>
-                  <p className="text-gray-600 mb-4">{viewingReport.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <FileText className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">PDF Preview</h3>
+                  <p className="text-slate-600 mb-4">{viewingReport.name}</p>
+                  <p className="text-sm text-slate-500">
                     In a real implementation, this would display the actual PDF content
                   </p>
                   <Button
                     onClick={() => handleDownloadReport(viewingReport.id)}
-                    className="mt-4 flex items-center gap-2"
+                    className="mt-4 bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors"
                   >
-                    <Download className="h-4 w-4" />
                     Download PDF
                   </Button>
                 </div>
