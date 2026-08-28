@@ -294,6 +294,11 @@ const generateDocumentTags = (count: number) => {
   const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
+  // Per-row Form Level ("MAT" or "School") for the saved forms table.
+  const [formLevels, setFormLevels] = useState<Record<string, "MAT" | "School">>({})
+  const handleFormLevelChange = (docId: string, level: "MAT" | "School") => {
+    setFormLevels((prev) => ({ ...prev, [docId]: level }))
+  }
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -2290,7 +2295,7 @@ const generateDocumentTags = (count: number) => {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
                           Document Description
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Save</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Form Level</th>
                         <th className="py-3 px-4"></th>
                       </tr>
                     </thead>
@@ -2314,16 +2319,14 @@ const generateDocumentTags = (count: number) => {
                               <span className="text-sm text-slate-600 line-clamp-2">{doc.description ?? "—"}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setNotificationMessage(`Saved "${doc.name}"`)
-                                  setShowNotification(true)
-                                }}
-                                className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
+                              <select
+                                value={formLevels[doc.id] ?? "School"}
+                                onChange={(e) => handleFormLevelChange(doc.id, e.target.value as "MAT" | "School")}
+                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
                               >
-                                Save
-                              </Button>
+                                <option value="MAT">MAT</option>
+                                <option value="School">School</option>
+                              </select>
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-end">
@@ -2337,6 +2340,16 @@ const generateDocumentTags = (count: number) => {
                                     Edit
                                   </Button>
                                 )}
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setNotificationMessage(`Saved "${doc.name}"`)
+                                    setShowNotification(true)
+                                  }}
+                                  className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
+                                >
+                                  Save
+                                </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
