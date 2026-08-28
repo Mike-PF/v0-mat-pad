@@ -2330,13 +2330,17 @@ const generateDocumentTags = (count: number) => {
                                 >
                                   Save
                                 </Button>
-                                {config?.isActive && (
+                                {config?.isActive ? (
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleEditDocument(doc)}
                                     className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                                   >
+                                    Edit
+                                  </Button>
+                                ) : (
+                                  <Button size="sm" className="invisible" aria-hidden="true" tabIndex={-1}>
                                     Edit
                                   </Button>
                                 )}
