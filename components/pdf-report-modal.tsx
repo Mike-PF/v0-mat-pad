@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X, Download, Printer, Share2, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
+import { X, Download, Printer, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface PDFReportModalProps {
@@ -50,10 +50,6 @@ export function PDFReportModal({ isOpen, onClose, reportName, reportConfig }: PD
             <Button variant="outline" size="sm">
               <Printer className="w-4 h-4 mr-2" />
               Print
-            </Button>
-            <Button variant="outline" size="sm">
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
             </Button>
           </div>
 
