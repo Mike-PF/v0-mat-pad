@@ -397,13 +397,6 @@ export function ArchiveContent() {
 
         {/* Detail: reports within the selected area */}
         <section className="min-w-0 flex-1 space-y-4">
-          {/* Selected area header */}
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">{selectedArea}</h2>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-              {areaCounts[selectedArea].toLocaleString()} reports
-            </span>
-          </div>
 
           {/* Filters (scoped to the selected area) */}
           <div className="rounded-lg border bg-white p-4">
