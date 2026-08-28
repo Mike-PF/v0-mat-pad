@@ -55,7 +55,6 @@ export function FormBuilder() {
   const [description, setDescription] = useState("St. Joseph's Headteach report")
   const [sectionName, setSectionName] = useState("")
   const [period, setPeriod] = useState("")
-  const [requiresRole, setRequiresRole] = useState("Preview")
 
   const [sectionTitle, setSectionTitle] = useState("Academy Vision")
   const [editorValue, setEditorValue] = useState("")
@@ -149,16 +148,6 @@ export function FormBuilder() {
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             </div>
-          </div>
-
-          {/* Requires Role */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Requires Role</label>
-            <Input
-              value={requiresRole}
-              onChange={(e) => setRequiresRole(e.target.value)}
-              placeholder="Enter role..."
-            />
           </div>
 
           {/* Save */}
