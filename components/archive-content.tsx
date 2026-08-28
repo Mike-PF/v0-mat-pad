@@ -33,30 +33,14 @@ interface ArchivedReport {
   downloadCount: number
 }
 
-// The 9 report areas reports are grouped under.
+// Report areas — matches the predefined reports categories.
 const AREAS = [
-  "Academy Vision",
-  "Introduction to the Report",
-  "Self-Evaluation",
-  "Statutory Assessments",
-  "Key Priorities",
-  "Behaviour & Attitudes",
-  "Attendance & Punctuality",
-  "Suspensions & Exclusions",
-  "Safeguarding",
+  "School Improvement",
+  "Governor Reporting",
+  "Attendance & Welfare",
+  "Statutory & Compliance",
+  "Performance Analytics",
 ] as const
-
-const AREA_COLORS: Record<string, string> = {
-  "Academy Vision": "bg-[#33295e]",
-  "Introduction to the Report": "bg-sky-500",
-  "Self-Evaluation": "bg-emerald-500",
-  "Statutory Assessments": "bg-violet-500",
-  "Key Priorities": "bg-amber-500",
-  "Behaviour & Attitudes": "bg-rose-500",
-  "Attendance & Punctuality": "bg-teal-500",
-  "Suspensions & Exclusions": "bg-orange-500",
-  Safeguarding: "bg-[#fd6d6d]",
-}
 
 const baseArchivedReports: Omit<ArchivedReport, "area">[] = [
   {
@@ -325,7 +309,6 @@ export function ArchiveContent() {
                       isActive ? "bg-[#33295e]/10 text-[#33295e]" : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${AREA_COLORS[area]}`} />
                     <span className={`min-w-0 flex-1 truncate text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
                       {area}
                     </span>
@@ -346,9 +329,8 @@ export function ArchiveContent() {
         {/* Detail: reports within the selected area */}
         <section className="min-w-0 flex-1 space-y-4">
           {/* Selected area header */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className={`h-3 w-3 flex-shrink-0 rounded-full ${AREA_COLORS[selectedArea]}`} />
-            <h2 className="text-lg font-semibold text-slate-900">{selectedArea}</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-lg font-semibold text-slate-900">{selectedArea}</h2>
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
               {areaCounts[selectedArea].toLocaleString()} reports
             </span>
