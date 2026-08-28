@@ -2300,8 +2300,11 @@ const generateDocumentTags = (count: number) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {pagedDocuments.map((doc) => {
+                      {pagedDocuments.map((doc, rowIndex) => {
                         const config = documentConfigs[doc.id] // Get config for this document
+                        // Cycle period options so the table shows representative data.
+                        const periodOptions = ["Open", "Termly", "Half Termly", "Monthly"] as const
+                        const rowPeriod = periods[doc.id] ?? periodOptions[rowIndex % periodOptions.length]
                         return (
                           <tr
                             key={doc.id}
@@ -2322,7 +2325,7 @@ const generateDocumentTags = (count: number) => {
                               <span className="text-sm text-slate-600">{formLevels[doc.id] ?? "School"}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <span className="text-sm text-slate-600">{periods[doc.id] ?? "Open"}</span>
+                              <span className="text-sm text-slate-600">{rowPeriod}</span>
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-start">
