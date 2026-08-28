@@ -382,7 +382,7 @@ export function ArchiveContent() {
                     </span>
                     <span
                       className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                        isActive ? "bg-[#33295e] text-white" : "bg-slate-100 text-slate-600"
+                        isActive ? "bg-[#fd6d6d] text-white" : "bg-[#fd6d6d]/10 text-[#fd6d6d]"
                       }`}
                     >
                       {areaCounts[area].toLocaleString()}
