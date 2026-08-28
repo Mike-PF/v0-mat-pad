@@ -29,7 +29,6 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
-import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
 import { OrganizationPicker } from "@/components/organization-picker"
 import { RolePicker } from "@/components/role-picker"
@@ -2294,7 +2293,6 @@ const generateDocumentTags = (count: number) => {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Role</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Save</th>
                         <th className="py-3 px-4"></th>
                       </tr>
@@ -2349,16 +2347,6 @@ const generateDocumentTags = (count: number) => {
                                 selected={config?.roleIds ?? []}
                                 onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
                               />
-                            </td>
-                            <td className="py-2 px-4">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-600">{config?.isActive ? "Yes" : "No"}</span>
-                                <Switch
-                                  checked={config?.isActive ?? false}
-                                  onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
-                                  className="data-[state=checked]:bg-[#33295e]"
-                                />
-                              </div>
                             </td>
                             <td className="py-2 px-4">
                               <Button
