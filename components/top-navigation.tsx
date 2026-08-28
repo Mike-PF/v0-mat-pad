@@ -31,6 +31,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
         { id: "dashboard-settings", label: "Dashboard Settings", href: "/settings/dashboard-settings" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
+        { id: "form-creation", label: "Form Creation", href: "/settings/form-creation" },
       ]
     }
 
