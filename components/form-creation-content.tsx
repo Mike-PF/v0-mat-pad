@@ -2290,9 +2290,6 @@ const generateDocumentTags = (count: number) => {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
                           Document Description
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Role</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Save</th>
                         <th className="py-3 px-4"></th>
                       </tr>
@@ -2315,38 +2312,6 @@ const generateDocumentTags = (count: number) => {
                             </td>
                             <td className="py-2 px-4 align-middle max-w-[240px]">
                               <span className="text-sm text-slate-600 line-clamp-2">{doc.description ?? "—"}</span>
-                            </td>
-                            <td className="py-2 px-4">
-                              <select
-                                value={config?.reportArea ?? ""}
-                                onChange={(e) => handleReportAreaChange(doc.id, e.target.value)}
-                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-                              >
-                                <option value="">Select Area...</option>
-                                {REPORT_AREA_OPTIONS.map((area) => (
-                                  <option key={area} value={area}>
-                                    {area}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-2 px-4">
-                              <OrganizationPicker
-                                mats={mats}
-                                schools={schools}
-                                selected={config?.organizations ?? []}
-                                onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
-                              />
-                            </td>
-                            <td className="py-2 px-4">
-                              <RolePicker
-                                groups={(config?.organizations ?? []).map((urn) => ({
-                                  orgName: allOrganizations.find((o) => o.urn === urn)?.name ?? urn,
-                                  roles: rolesByOrg[urn] ?? [],
-                                }))}
-                                selected={config?.roleIds ?? []}
-                                onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
-                              />
                             </td>
                             <td className="py-2 px-4">
                               <Button
