@@ -296,6 +296,8 @@ const generateDocumentTags = (count: number) => {
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   // Per-row Form Level ("MAT" or "School") for the saved forms table.
   const [formLevels] = useState<Record<string, "MAT" | "School">>({})
+  // Per-row reporting Period ("Open" | "Termly" | "Half Termly" | "Monthly").
+  const [periods] = useState<Record<string, "Open" | "Termly" | "Half Termly" | "Monthly">>({})
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -2293,6 +2295,7 @@ const generateDocumentTags = (count: number) => {
                           Document Description
                         </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Form Level</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Period</th>
                         <th className="py-3 px-4"></th>
                       </tr>
                     </thead>
@@ -2317,6 +2320,9 @@ const generateDocumentTags = (count: number) => {
                             </td>
                             <td className="py-2 px-4">
                               <span className="text-sm text-slate-600">{formLevels[doc.id] ?? "School"}</span>
+                            </td>
+                            <td className="py-2 px-4">
+                              <span className="text-sm text-slate-600">{periods[doc.id] ?? "Open"}</span>
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-start">
