@@ -23,6 +23,7 @@ interface ArchivedReport {
   name: string
   area: string
   section: string
+  schoolUrn: string
   dateArchived: string
   dateCreated: string
   fileSize: string
@@ -41,7 +42,33 @@ const AREAS = [
   "Performance Analytics",
 ] as const
 
-const baseArchivedReports: Omit<ArchivedReport, "area">[] = [
+// Organisation model — trusts (MATs) and the schools within them. Mirrors the
+// data used across the app so the archive can be scoped at MAT or school level.
+const MATS = [
+  { urn: "MAT001", name: "Bright Futures Educational Trust" },
+  { urn: "MAT002", name: "Catholic Diocese of Hallam" },
+  { urn: "MAT003", name: "Northern Education Trust" },
+] as const
+
+const SCHOOLS = [
+  { urn: "138337", name: "All Saints' Catholic High School", matUrn: "MAT002" },
+  { urn: "140826", name: "Emmaus Catholic and CofE Primary School", matUrn: "MAT002" },
+  { urn: "138361", name: "Notre Dame High School", matUrn: "MAT001" },
+  { urn: "140439", name: "Sacred Heart School, A Catholic Voluntary Academy", matUrn: "MAT002" },
+  { urn: "138828", name: "St Thomas of Canterbury School, a Catholic Voluntary Academy", matUrn: "MAT002" },
+  { urn: "138830", name: "St Wilfrid's Catholic Primary School", matUrn: "MAT001" },
+  { urn: "138848", name: "St Marie's School, A Catholic Voluntary Academy", matUrn: "MAT003" },
+  { urn: "140025", name: "St John Fisher Primary, A Catholic Voluntary Academy", matUrn: "MAT002" },
+  { urn: "140440", name: "St Mary's Primary School, A Catholic Voluntary Academy", matUrn: "MAT001" },
+  { urn: "140441", name: "St Ann's Catholic Primary School, A Voluntary Academy", matUrn: "MAT003" },
+  { urn: "140588", name: "St Catherine's Catholic Primary School (Hallam)", matUrn: "MAT002" },
+  { urn: "148974", name: "St Alban's Catholic Primary and Nursery School", matUrn: "MAT001" },
+  { urn: "144606", name: "Holy Trinity Catholic and Church of England School", matUrn: "MAT003" },
+] as const
+
+const SCHOOL_NAME_BY_URN: Record<string, string> = Object.fromEntries(SCHOOLS.map((s) => [s.urn, s.name]))
+
+const baseArchivedReports: Omit<ArchivedReport, "area" | "schoolUrn">[] = [
   {
     id: "ar-1",
     name: "Attendance Summary Dashboard - Whole MAT - March 2024",
@@ -135,6 +162,7 @@ const creators = ["Sarah Johnson", "Michael Brown", "David Lee", "Emma Wilson", 
 const mockArchivedReports: ArchivedReport[] = Array.from({ length: 3200 }, (_, i) => {
   const base = baseArchivedReports[i % baseArchivedReports.length]
   const area = AREAS[i % AREAS.length]
+  const schoolUrn = SCHOOLS[i % SCHOOLS.length].urn
   const year = 2018 + (i % 7)
   const month = (i % 12) + 1
   const day = (i % 27) + 1
@@ -142,6 +170,7 @@ const mockArchivedReports: ArchivedReport[] = Array.from({ length: 3200 }, (_, i
   return {
     ...base,
     area,
+    schoolUrn,
     id: `${base.id}-${i}`,
     name: `${base.section} - ${new Date(iso).toLocaleString("en-GB", { month: "long", year: "numeric" })}`,
     dateArchived: iso,
@@ -156,6 +185,9 @@ type SortKey = "name" | "section" | "dateArchived" | "fileSize" | "downloadCount
 const PAGE_SIZE_OPTIONS = [25, 50, 100]
 
 export function ArchiveContent() {
+  const [selectedMat, setSelectedMat] = useState<string>(MATS[0].urn)
+  // "all" means every school in the selected trust; otherwise a specific URN.
+  const [selectedSchool, setSelectedSchool] = useState<string>("all")
   const [selectedArea, setSelectedArea] = useState<string>(AREAS[0])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDateRange, setSelectedDateRange] = useState("all")
@@ -165,16 +197,28 @@ export function ArchiveContent() {
   const [pageSize, setPageSize] = useState(25)
   const [viewingReport, setViewingReport] = useState<ArchivedReport | null>(null)
 
-  // Precompute per-area totals once for the sidebar counts.
+  // Schools available for the selected trust.
+  const schoolsInMat = useMemo(() => SCHOOLS.filter((s) => s.matUrn === selectedMat), [selectedMat])
+
+  // Reports scoped to the current organisation (whole trust or single school).
+  const orgScopedReports = useMemo(() => {
+    if (selectedSchool !== "all") {
+      return mockArchivedReports.filter((r) => r.schoolUrn === selectedSchool)
+    }
+    const matSchoolUrns = new Set(schoolsInMat.map((s) => s.urn))
+    return mockArchivedReports.filter((r) => matSchoolUrns.has(r.schoolUrn))
+  }, [selectedSchool, schoolsInMat])
+
+  // Per-area totals for the sidebar counts, respecting the org scope.
   const areaCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const area of AREAS) counts[area] = 0
-    for (const report of mockArchivedReports) counts[report.area]++
+    for (const report of orgScopedReports) counts[report.area]++
     return counts
-  }, [])
+  }, [orgScopedReports])
 
   const filteredReports = useMemo(() => {
-    let filtered = mockArchivedReports.filter((report) => report.area === selectedArea)
+    let filtered = orgScopedReports.filter((report) => report.area === selectedArea)
 
     if (searchTerm) {
       const q = searchTerm.toLowerCase()
@@ -223,12 +267,12 @@ export function ArchiveContent() {
     })
 
     return sorted
-  }, [selectedArea, searchTerm, selectedDateRange, sortBy, sortOrder])
+  }, [orgScopedReports, selectedArea, searchTerm, selectedDateRange, sortBy, sortOrder])
 
-  // Reset to first page whenever the area, result set, or page size changes.
+  // Reset to first page whenever the scope, area, result set, or page size changes.
   useEffect(() => {
     setPage(1)
-  }, [selectedArea, searchTerm, selectedDateRange, sortBy, sortOrder, pageSize])
+  }, [selectedMat, selectedSchool, selectedArea, searchTerm, selectedDateRange, sortBy, sortOrder, pageSize])
 
   const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -285,8 +329,68 @@ export function ArchiveContent() {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i)
   }, [currentPage, totalPages])
 
+  const totalInScope = orgScopedReports.length
+  const scopeLabel =
+    selectedSchool === "all"
+      ? MATS.find((m) => m.urn === selectedMat)?.name
+      : SCHOOL_NAME_BY_URN[selectedSchool]
+
   return (
     <div className="space-y-6">
+      {/* Organisation scope selector */}
+      <div className="rounded-lg border bg-white p-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 md:max-w-2xl">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-500">Trust</label>
+              <Select
+                value={selectedMat}
+                onValueChange={(v) => {
+                  setSelectedMat(v)
+                  setSelectedSchool("all")
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select trust" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MATS.map((mat) => (
+                    <SelectItem key={mat.urn} value={mat.urn}>
+                      {mat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-500">School</label>
+              <Select value={selectedSchool} onValueChange={setSelectedSchool}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select school" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All schools in trust</SelectItem>
+                  {schoolsInMat.map((school) => (
+                    <SelectItem key={school.urn} value={school.urn}>
+                      {school.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="text-sm text-slate-500 md:text-right">
+            <span className="font-medium text-slate-900">{totalInScope.toLocaleString()}</span> reports in{" "}
+            <span className="font-medium text-slate-900">{scopeLabel}</span>
+            {selectedSchool === "all" && (
+              <span className="block text-xs text-slate-400">
+                across {schoolsInMat.length} {schoolsInMat.length === 1 ? "school" : "schools"}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Master: area list */}
         <aside className="lg:w-72 lg:flex-shrink-0">
@@ -389,6 +493,9 @@ export function ArchiveContent() {
                       <tr className="border-b bg-slate-50 [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-xs [&>th]:uppercase [&>th]:tracking-wide">
                         <SortHeader label="Report" sortKey="name" />
                         <SortHeader label="Type" sortKey="section" className="hidden lg:table-cell" />
+                        {selectedSchool === "all" && (
+                          <th className="hidden md:table-cell text-xs font-semibold text-slate-600">School</th>
+                        )}
                         <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Creator</th>
                         <SortHeader label="Archived" sortKey="dateArchived" className="hidden md:table-cell" />
                         <SortHeader label="Size" sortKey="fileSize" className="hidden xl:table-cell" />
@@ -415,6 +522,13 @@ export function ArchiveContent() {
                           <td className="hidden px-4 py-3 lg:table-cell">
                             <span className="text-slate-600">{report.section}</span>
                           </td>
+                          {selectedSchool === "all" && (
+                            <td className="hidden px-4 py-3 md:table-cell">
+                              <span className="block max-w-[200px] truncate text-slate-600">
+                                {SCHOOL_NAME_BY_URN[report.schoolUrn]}
+                              </span>
+                            </td>
+                          )}
                           <td className="hidden whitespace-nowrap px-4 py-3 text-slate-600 xl:table-cell">
                             {report.creator}
                           </td>
