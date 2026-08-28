@@ -2319,7 +2319,7 @@ const generateDocumentTags = (count: number) => {
                               <span className="text-sm text-slate-600">{formLevels[doc.id] ?? "School"}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <div className="flex items-center gap-2 justify-end">
+                              <div className="flex items-center gap-2 justify-start">
                                 <Button
                                   size="sm"
                                   onClick={() => {
