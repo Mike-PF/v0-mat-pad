@@ -61,36 +61,14 @@ export function FormBuilder() {
   const [sectionTitle, setSectionTitle] = useState("Academy Vision")
   const [editorValue, setEditorValue] = useState("")
 
-  const clearForm = () => {
-    setFormLevelMat(false)
-    setName("")
-    setDescription("")
-    setSectionName("")
-    setPeriod("")
-    setRequiresRole("")
-    setStatusActive(false)
-    setEditorValue("")
-  }
 
   return (
     <div className="flex h-full gap-4">
       {/* Left builder panel */}
       <div className="w-80 flex-shrink-0 overflow-y-auto rounded-lg border border-slate-200 bg-white">
         <div className="space-y-5 p-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900">Forms</h2>
-            <Button
-              size="sm"
-              onClick={clearForm}
-              className="bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]"
-            >
-              Clear Form
-            </Button>
-          </div>
-
           {/* Name */}
-          <div className="border-t border-slate-200 pt-4">
+          <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter form name..." />
           </div>
