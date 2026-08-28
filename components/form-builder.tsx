@@ -56,7 +56,6 @@ export function FormBuilder() {
   const [sectionName, setSectionName] = useState("")
   const [period, setPeriod] = useState("")
   const [requiresRole, setRequiresRole] = useState("Preview")
-  const [statusActive, setStatusActive] = useState(true)
 
   const [sectionTitle, setSectionTitle] = useState("Academy Vision")
   const [editorValue, setEditorValue] = useState("")
@@ -162,32 +161,8 @@ export function FormBuilder() {
             />
           </div>
 
-          {/* Status + Save */}
-          <div className="flex items-end justify-between">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Status</label>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-sm ${statusActive ? "font-medium text-slate-900" : "text-slate-400"}`}
-                >
-                  Active
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setStatusActive((v) => !v)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                    statusActive ? "bg-[#33295e]" : "bg-slate-300"
-                  }`}
-                  aria-label="Toggle status"
-                >
-                  <span
-                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                      statusActive ? "translate-x-4" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
+          {/* Save */}
+          <div className="flex justify-end">
             <Button className="bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]">Save Form</Button>
           </div>
 
