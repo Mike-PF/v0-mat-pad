@@ -2296,6 +2296,7 @@ const generateDocumentTags = (count: number) => {
                         </th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Form Level</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Period</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document linked</th>
                         <th className="py-3 px-4"></th>
                       </tr>
                     </thead>
@@ -2305,6 +2306,8 @@ const generateDocumentTags = (count: number) => {
                         // Cycle period options so the table shows representative data.
                         const periodOptions = ["Open", "Termly", "Half Termly", "Monthly"] as const
                         const rowPeriod = periods[doc.id] ?? periodOptions[rowIndex % periodOptions.length]
+                        // Vary linkage so some forms are tied to a specific document and some are not.
+                        const isDocumentLinked = rowIndex % 3 !== 0
                         return (
                           <tr
                             key={doc.id}
@@ -2326,6 +2329,13 @@ const generateDocumentTags = (count: number) => {
                             </td>
                             <td className="py-2 px-4">
                               <span className="text-sm text-slate-600">{rowPeriod}</span>
+                            </td>
+                            <td className="py-2 px-4">
+                              {isDocumentLinked ? (
+                                <span className="text-sm text-slate-600 line-clamp-1">{doc.name}</span>
+                              ) : (
+                                <span className="text-sm text-slate-400">Not linked</span>
+                              )}
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-start">
