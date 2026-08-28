@@ -2339,16 +2339,6 @@ const generateDocumentTags = (count: number) => {
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-start">
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    setNotificationMessage(`Saved "${doc.name}"`)
-                                    setShowNotification(true)
-                                  }}
-                                  className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
-                                >
-                                  Save
-                                </Button>
                                 {!isDocumentLinked ? (
                                   <Button
                                     variant="outline"
