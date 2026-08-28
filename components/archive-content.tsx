@@ -466,7 +466,6 @@ export function ArchiveContent() {
                         <tr key={report.id} className="border-b last:border-b-0 transition-colors hover:bg-slate-50">
                           <td className="px-4 py-3">
                             <div className="flex min-w-0 items-center gap-3">
-                              <FileText className="h-5 w-5 flex-shrink-0 text-[#33295e]" />
                               <div className="min-w-0">
                                 <div className="max-w-[280px] truncate font-medium text-slate-900 xl:max-w-[360px]">
                                   {report.name}
