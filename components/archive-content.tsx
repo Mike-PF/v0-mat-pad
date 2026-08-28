@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  Calendar,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -412,7 +411,6 @@ export function ArchiveContent() {
               </div>
               <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
                 <SelectTrigger className="sm:w-[180px]">
-                  <Calendar className="mr-2 h-4 w-4" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
