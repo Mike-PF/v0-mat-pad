@@ -2392,14 +2392,6 @@ const generateDocumentTags = (count: number) => {
                                 >
                                   Clone
                                 </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDownloadDocument(doc)}
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </Button>
                               </div>
                             </td>
                           </tr>
