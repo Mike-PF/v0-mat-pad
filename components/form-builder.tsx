@@ -23,20 +23,6 @@ import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 
-const FORM_OPTIONS = [
-  "Headteacher's Report - Educational",
-  "Headteacher's Report - Financial",
-  "Annual Report",
-  "Self-Evaluation Form",
-]
-
-const ORGANISATION_OPTIONS = [
-  "St Joseph Catholic Multi Academy Trust",
-  "Bright Futures Educational Trust",
-  "Northern Education Trust",
-  "Catholic Diocese of Hallam",
-]
-
 const SECTION_OPTIONS = [
   "Academy Vision",
   "Introduction to the Report",
@@ -64,8 +50,6 @@ const QUESTION_TYPES = [
 ]
 
 export function FormBuilder() {
-  const [selectedForm, setSelectedForm] = useState("Headteacher's Report - Educational")
-  const [organisation, setOrganisation] = useState("St Joseph Catholic Multi Academy Trust")
   const [formLevelMat, setFormLevelMat] = useState(false)
   const [name, setName] = useState("Headteacher's Report - Educational")
   const [description, setDescription] = useState("St. Joseph's Headteach report")
@@ -78,8 +62,6 @@ export function FormBuilder() {
   const [editorValue, setEditorValue] = useState("")
 
   const clearForm = () => {
-    setSelectedForm("")
-    setOrganisation("")
     setFormLevelMat(false)
     setName("")
     setDescription("")
@@ -107,45 +89,8 @@ export function FormBuilder() {
             </Button>
           </div>
 
-          {/* Form selector */}
-          <div className="relative border-t border-slate-200 pt-4">
-            <select
-              value={selectedForm}
-              onChange={(e) => setSelectedForm(e.target.value)}
-              className="w-full appearance-none rounded-md border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-            >
-              <option value="">Please select a form type...</option>
-              {FORM_OPTIONS.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-[calc(50%+8px)] h-4 w-4 -translate-y-1/2 text-slate-500" />
-          </div>
-
-          {/* Organisation */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Organisation</label>
-            <div className="relative">
-              <select
-                value={organisation}
-                onChange={(e) => setOrganisation(e.target.value)}
-                className="w-full appearance-none rounded-md border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-              >
-                <option value="">Select organisation...</option>
-                {ORGANISATION_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            </div>
-          </div>
-
           {/* Form Level */}
-          <div>
+          <div className="border-t border-slate-200 pt-4">
             <label className="mb-2 block text-sm font-medium text-slate-700">Form Level</label>
             <div className="flex items-center gap-2">
               <span
