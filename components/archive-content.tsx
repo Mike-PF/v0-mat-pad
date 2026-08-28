@@ -450,9 +450,8 @@ export function ArchiveContent() {
                     <thead>
                       <tr className="border-b bg-slate-50 [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-xs [&>th]:uppercase [&>th]:tracking-wide">
                         <SortHeader label="Report" sortKey="name" />
-                        <SortHeader label="Type" sortKey="section" className="hidden lg:table-cell" />
                         {scope === "all" && (
-                          <th className="hidden md:table-cell text-xs font-semibold text-slate-600">Scope</th>
+                          <th className="hidden md:table-cell text-xs font-semibold text-slate-600">Organisation</th>
                         )}
                         <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Creator</th>
                         <SortHeader label="Archived" sortKey="dateArchived" className="hidden md:table-cell" />
@@ -473,9 +472,6 @@ export function ArchiveContent() {
                                 </div>
                               </div>
                             </div>
-                          </td>
-                          <td className="hidden px-4 py-3 lg:table-cell">
-                            <span className="text-slate-600">{report.section}</span>
                           </td>
                           {scope === "all" && (
                             <td className="hidden px-4 py-3 md:table-cell">
