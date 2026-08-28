@@ -302,18 +302,8 @@ export function ArchiveContent() {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i)
   }, [currentPage, totalPages])
 
-  const totalReports = mockArchivedReports.length
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Report Archive</h1>
-        <p className="text-slate-600 mt-1">
-          {totalReports.toLocaleString()} archived reports across {AREAS.length} areas
-        </p>
-      </div>
-
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Master: area list */}
         <aside className="lg:w-72 lg:flex-shrink-0">
