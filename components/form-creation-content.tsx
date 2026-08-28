@@ -2276,7 +2276,7 @@ const generateDocumentTags = (count: number) => {
                   </div>
                 </div>
                 <Button
-                  onClick={handleCreateNew}
+                  onClick={() => router.push("/settings/form-creation/builder")}
                   className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors whitespace-nowrap"
                 >
                   Create New Form
