@@ -456,8 +456,6 @@ export function ArchiveContent() {
                         )}
                         <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Creator</th>
                         <SortHeader label="Archived" sortKey="dateArchived" className="hidden md:table-cell" />
-                        <SortHeader label="Size" sortKey="fileSize" className="hidden xl:table-cell" />
-                        <SortHeader label="Downloads" sortKey="downloadCount" className="hidden lg:table-cell" />
                         <th className="text-right text-xs font-semibold text-slate-600">Actions</th>
                       </tr>
                     </thead>
@@ -498,10 +496,6 @@ export function ArchiveContent() {
                           <td className="hidden whitespace-nowrap px-4 py-3 text-slate-600 md:table-cell">
                             {new Date(report.dateArchived).toLocaleDateString("en-GB")}
                           </td>
-                          <td className="hidden whitespace-nowrap px-4 py-3 text-slate-600 xl:table-cell">
-                            {report.fileSize}
-                          </td>
-                          <td className="hidden px-4 py-3 text-slate-600 lg:table-cell">{report.downloadCount}</td>
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-2">
                               <Button variant="outline" size="sm" onClick={() => handleViewReport(report)}>
