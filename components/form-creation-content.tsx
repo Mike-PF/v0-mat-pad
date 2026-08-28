@@ -2349,7 +2349,7 @@ const generateDocumentTags = (count: number) => {
                                 >
                                   Save
                                 </Button>
-                                {config?.isActive ? (
+                                {!isDocumentLinked ? (
                                   <Button
                                     variant="outline"
                                     size="sm"
