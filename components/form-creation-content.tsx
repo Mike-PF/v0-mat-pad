@@ -295,10 +295,7 @@ const generateDocumentTags = (count: number) => {
   const [sectionName, setSectionName] = useState("")
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
   // Per-row Form Level ("MAT" or "School") for the saved forms table.
-  const [formLevels, setFormLevels] = useState<Record<string, "MAT" | "School">>({})
-  const handleFormLevelChange = (docId: string, level: "MAT" | "School") => {
-    setFormLevels((prev) => ({ ...prev, [docId]: level }))
-  }
+  const [formLevels] = useState<Record<string, "MAT" | "School">>({})
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -2319,27 +2316,10 @@ const generateDocumentTags = (count: number) => {
                               <span className="text-sm text-slate-600 line-clamp-2">{doc.description ?? "—"}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <select
-                                value={formLevels[doc.id] ?? "School"}
-                                onChange={(e) => handleFormLevelChange(doc.id, e.target.value as "MAT" | "School")}
-                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-                              >
-                                <option value="MAT">MAT</option>
-                                <option value="School">School</option>
-                              </select>
+                              <span className="text-sm text-slate-600">{formLevels[doc.id] ?? "School"}</span>
                             </td>
                             <td className="py-2 px-4">
                               <div className="flex items-center gap-2 justify-end">
-                                {config?.isActive && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditDocument(doc)}
-                                    className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                  >
-                                    Edit
-                                  </Button>
-                                )}
                                 <Button
                                   size="sm"
                                   onClick={() => {
@@ -2350,6 +2330,16 @@ const generateDocumentTags = (count: number) => {
                                 >
                                   Save
                                 </Button>
+                                {config?.isActive && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditDocument(doc)}
+                                    className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                  >
+                                    Edit
+                                  </Button>
+                                )}
                                 <Button
                                   variant="outline"
                                   size="sm"
