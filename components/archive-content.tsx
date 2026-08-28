@@ -453,7 +453,7 @@ export function ArchiveContent() {
                         {scope === "all" && (
                           <th className="hidden md:table-cell text-xs font-semibold text-slate-600">Organisation</th>
                         )}
-                        <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Creator</th>
+                        <th className="hidden xl:table-cell text-xs font-semibold text-slate-600">Archived By</th>
                         <SortHeader label="Archived" sortKey="dateArchived" className="hidden md:table-cell" />
                         <th className="text-right text-xs font-semibold text-slate-600">Actions</th>
                       </tr>
