@@ -16,7 +16,6 @@ import {
   FileText,
   Search,
   X,
-  Layers,
 } from "lucide-react"
 
 interface ArchivedReport {
@@ -293,7 +292,6 @@ export function ArchiveContent() {
         <aside className="lg:w-72 lg:flex-shrink-0">
           <div className="rounded-lg border bg-white">
             <div className="flex items-center gap-2 border-b px-4 py-3">
-              <Layers className="h-4 w-4 text-[#33295e]" />
               <h2 className="text-sm font-semibold text-slate-900">Areas</h2>
             </div>
             <nav className="max-h-[70vh] overflow-y-auto p-2">
