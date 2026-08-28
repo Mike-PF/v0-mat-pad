@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   Type,
   ImageIcon,
@@ -50,6 +51,7 @@ const QUESTION_TYPES = [
 ]
 
 export function FormBuilder() {
+  const router = useRouter()
   const [formLevelMat, setFormLevelMat] = useState(false)
   const [name, setName] = useState("Headteacher's Report - Educational")
   const [description, setDescription] = useState("St. Joseph's Headteach report")
@@ -151,7 +153,14 @@ export function FormBuilder() {
           </div>
 
           {/* Save */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/settings/form-creation")}
+              className="border-slate-200 text-slate-600 transition-colors hover:bg-[#33295e] hover:text-white hover:border-[#33295e]"
+            >
+              Back
+            </Button>
             <Button className="bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]">Save Form</Button>
           </div>
 
