@@ -74,7 +74,7 @@ export default function LoginPage() {
         <div className="mt-8 w-full rounded-2xl border border-white/70 bg-white p-8 shadow-[0_20px_60px_-20px_rgba(51,41,94,0.35)] sm:p-10">
           <h1 className="text-balance text-3xl font-bold tracking-tight text-slate-900">Welcome to Fuze.</h1>
           <p className="mt-3 text-pretty text-sm leading-relaxed text-slate-500">
-            In order to use the system, you must login using your business account.
+            In order to use the system, you must login using your organisation Google or Office 365 account.
           </p>
 
           <Button
