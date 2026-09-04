@@ -133,7 +133,6 @@ export default function LoginPage() {
             >
               <div className="flex flex-col items-center">
                 <img src="/fuze-logo.svg" alt="Fuze" className="h-14 w-auto" />
-                <span className="mt-6 text-xs font-semibold tracking-[0.2em] text-[#f4c95d]">FUZE</span>
               </div>
 
               <h2 className="mt-6 text-2xl font-semibold text-slate-700">Sign in</h2>
