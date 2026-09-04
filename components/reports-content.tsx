@@ -538,7 +538,7 @@ export function ReportsContent() {
             {/* Header */}
             <div className="bg-gradient-to-r from-[#fd6d6d] to-[#33295e] px-6 py-4 flex items-center justify-between rounded-t-lg md:rounded-t-lg">
               <div>
-                <h3 className="text-white font-semibold">MATpad AI</h3>
+                <h3 className="text-white font-semibold">Fuze AI</h3>
                 <p className="text-white/80 text-sm">Ask about your data</p>
               </div>
               <div className="flex items-center gap-2">

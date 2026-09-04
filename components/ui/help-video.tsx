@@ -94,8 +94,8 @@ export function HelpVideo({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <p className="text-sm text-slate-500">
                 Still need help? Contact support at{" "}
-                <a href="mailto:support@matpad.co.uk" className="text-[#fd6d6d] hover:underline">
-                  support@matpad.co.uk
+                <a href="mailto:support@fuze.co.uk" className="text-[#fd6d6d] hover:underline">
+                  support@fuze.co.uk
                 </a>
               </p>
               <Button
@@ -218,8 +218,8 @@ export function MultiVideoHelpBanner({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <p className="text-sm text-slate-500">
                 Still need help? Contact support at{" "}
-                <a href="mailto:support@matpad.co.uk" className="text-[#fd6d6d] hover:underline">
-                  support@matpad.co.uk
+                <a href="mailto:support@fuze.co.uk" className="text-[#fd6d6d] hover:underline">
+                  support@fuze.co.uk
                 </a>
               </p>
               <Button
@@ -311,8 +311,8 @@ export function PageHelpBanner({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <p className="text-sm text-slate-500">
                 Still need help? Contact support at{" "}
-                <a href="mailto:support@matpad.co.uk" className="text-[#fd6d6d] hover:underline">
-                  support@matpad.co.uk
+                <a href="mailto:support@fuze.co.uk" className="text-[#fd6d6d] hover:underline">
+                  support@fuze.co.uk
                 </a>
               </p>
               <Button
