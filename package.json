@@ -1,11 +1,11 @@
 {
-  "name": "matpad-forms",
+  "name": "fuze-forms",
   "version": "0.1.1",
   "private": true,
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
+    "lint": "eslint .",
     "start": "next start"
   },
   "dependencies": {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette, SlidersHorizontal } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { isPlatformAdmin } from "@/lib/current-org"
 
@@ -38,6 +38,7 @@ function IconCircle({
 
 export function Sidebar({}: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [activeSchool, setActiveSchool] = useState(schools[0])
   const [mounted, setMounted] = useState(false)
@@ -203,7 +204,7 @@ export function Sidebar({}: SidebarProps) {
 
         {/* Logout */}
         <button
-          onClick={() => {}}
+          onClick={() => router.push("/login")}
           className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
           title="Logout"
           aria-label="Logout"
