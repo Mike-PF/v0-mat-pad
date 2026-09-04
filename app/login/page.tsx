@@ -84,8 +84,6 @@ export default function LoginPage() {
             Login
           </Button>
         </div>
-
-        <p className="mt-8 text-xs font-medium tracking-wide text-slate-400">Fuze</p>
       </div>
 
       {/* Browser-style login popup */}
