@@ -135,9 +135,7 @@ export default function LoginPage() {
                 <img src="/fuze-logo.svg" alt="Fuze" className="h-14 w-auto" />
               </div>
 
-              <h2 className="mt-6 text-2xl font-semibold text-slate-700">Sign in</h2>
-
-              <div className="mt-5 flex flex-col gap-3">
+              <div className="mt-8 flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={() => router.push("/home")}
