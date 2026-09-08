@@ -18,23 +18,15 @@ import {
   Trash2,
   Settings,
   Plus,
+  CheckCircle2,
+  Circle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 
-const SECTION_OPTIONS = [
-  "Academy Vision",
-  "Introduction to the Report",
-  "Self-Evaluation",
-  "Statutory Assessments",
-  "Key Priorities",
-  "Targets",
-  "Safeguarding",
-]
-
-const PERIOD_OPTIONS = ["Open", "Termly", "Half Termly", "Monthly"]
+const PERIOD_OPTIONS = ["N/A", "Open", "Termly", "Half Termly", "Monthly"]
 
 // Question-type buttons rendered across the top of the editor pane.
 const QUESTION_TYPES = [
@@ -50,17 +42,50 @@ const QUESTION_TYPES = [
   { id: "chart", label: "Chart", icon: BarChart3 },
 ]
 
+type Question = { id: string; label: string }
+type Section = {
+  id: string
+  label: string
+  level: 0 | 1
+  badge?: string
+  questions: Question[]
+}
+
+// A representative filled-in form structure for the builder.
+const SECTIONS: Section[] = [
+  { id: "report-header", label: "Report Header", level: 0, questions: [] },
+  {
+    id: "exec-summary",
+    label: "1. Executive Summary from the Headteacher/Head of School",
+    level: 0,
+    questions: [
+      { id: "q-religion-life", label: "{setting:religion} Life" },
+      { id: "q-religious-education", label: "Religious Education" },
+    ],
+  },
+  {
+    id: "impact-support",
+    label: "2. Impact of Support from the Trust",
+    level: 0,
+    questions: [{ id: "q-impact-overview", label: "Overview of support received" }],
+  },
+  { id: "ht-forums", label: "Headteacher Forums", level: 1, badge: "T2", questions: [] },
+  { id: "school-improvement", label: "School Improvement Visits", level: 1, badge: "T2", questions: [] },
+  { id: "dsl-meetings", label: "DSL network meetings", level: 1, badge: "T2", questions: [] },
+  { id: "chairs-forum", label: "Chairs Forum", level: 1, badge: "T2", questions: [] },
+]
+
 export function FormBuilder() {
   const router = useRouter()
   const [formLevelMat, setFormLevelMat] = useState(false)
-  const [name, setName] = useState("Headteacher's Report - Educational")
-  const [description, setDescription] = useState("St. Joseph's Headteach report")
-  const [sectionName, setSectionName] = useState("")
-  const [period, setPeriod] = useState("")
+  const [name, setName] = useState("Head Report (24/25) - Gaz")
+  const [description, setDescription] = useState("Head teacher report")
+  const [period, setPeriod] = useState("N/A")
 
-  const [sectionTitle, setSectionTitle] = useState("Academy Vision")
-  const [editorValue, setEditorValue] = useState("")
+  const [activeSectionId, setActiveSectionId] = useState("exec-summary")
+  const [editorValues, setEditorValues] = useState<Record<string, string>>({})
 
+  const activeSection = SECTIONS.find((s) => s.id === activeSectionId) ?? SECTIONS[0]
 
   return (
     <div className="flex h-full gap-4">
@@ -87,9 +112,7 @@ export function FormBuilder() {
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Form Level</label>
             <div className="flex items-center gap-2">
-              <span
-                className={`text-sm ${!formLevelMat ? "font-medium text-slate-900" : "text-slate-400"}`}
-              >
+              <span className={`text-sm ${!formLevelMat ? "font-medium text-slate-900" : "text-slate-400"}`}>
                 School
               </span>
               <button
@@ -110,28 +133,6 @@ export function FormBuilder() {
             </div>
           </div>
 
-          {/* Section Name */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Section Name <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <select
-                value={sectionName}
-                onChange={(e) => setSectionName(e.target.value)}
-                className="w-full appearance-none rounded-md border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-              >
-                <option value="">Select Section</option>
-                {SECTION_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            </div>
-          </div>
-
           {/* Period */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Period</label>
@@ -139,9 +140,8 @@ export function FormBuilder() {
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
-                className="w-full appearance-none rounded-md border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                className="w-full appearance-none rounded-md border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
               >
-                <option value="">Select Period</option>
                 {PERIOD_OPTIONS.map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -172,6 +172,60 @@ export function FormBuilder() {
               New Section
             </Button>
           </div>
+
+          {/* Section list */}
+          <ul className="space-y-1">
+            {SECTIONS.map((section) => {
+              const isActive = section.id === activeSectionId
+              return (
+                <li key={section.id}>
+                  <div
+                    className={`flex items-center gap-2 rounded-md py-2 pr-2 transition-colors ${
+                      section.level === 1 ? "pl-8" : "pl-2"
+                    } ${isActive ? "bg-[#33295e]/5 ring-1 ring-[#33295e]/15" : "hover:bg-slate-50"}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveSectionId(section.id)}
+                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                    >
+                      {isActive ? (
+                        <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+                      ) : (
+                        <Circle className="h-4 w-4 flex-shrink-0 text-slate-300" />
+                      )}
+                      <span
+                        className={`truncate text-sm ${
+                          isActive ? "font-semibold text-[#33295e]" : "text-slate-700"
+                        }`}
+                      >
+                        {section.label}
+                      </span>
+                    </button>
+                    {section.badge && (
+                      <span className="flex-shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">
+                        {section.badge}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      aria-label={`Settings for ${section.label}`}
+                      className="flex-shrink-0 text-slate-400 transition-colors hover:text-slate-700"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${section.label}`}
+                      className="flex-shrink-0 text-slate-400 transition-colors hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       </div>
 
@@ -192,42 +246,59 @@ export function FormBuilder() {
           ))}
         </div>
 
-        {/* Section editor */}
-        <div className="rounded-lg border border-slate-200 p-5">
-          <h2 className="mb-5 text-xl font-bold text-slate-900">{sectionTitle || "Untitled Section"}</h2>
+        {/* Active section heading */}
+        <h2 className="mb-5 text-2xl font-bold text-slate-900">{activeSection.label}</h2>
 
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-700">{sectionTitle || "Untitled"}</span>
-              <InfoTooltip content="Provide guidance for how this question should be answered." variant="monochrome" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                aria-label="Drag to reorder"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50"
-              >
-                <GripVertical className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Delete question"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:border-red-300 hover:text-red-600"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Question settings"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50"
-              >
-                <Settings className="h-4 w-4" />
-              </button>
-            </div>
+        {/* Question blocks */}
+        {activeSection.questions.length > 0 ? (
+          <div className="space-y-8">
+            {activeSection.questions.map((question) => (
+              <div key={question.id}>
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-slate-700">{question.label}</span>
+                    <InfoTooltip
+                      content="Provide guidance for how this question should be answered."
+                      variant="monochrome"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      aria-label="Drag to reorder"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50"
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Delete question"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:border-red-300 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Question settings"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <RichTextEditor
+                  value={editorValues[question.id] ?? ""}
+                  onChange={(val) => setEditorValues((prev) => ({ ...prev, [question.id]: val }))}
+                  placeholder=""
+                />
+              </div>
+            ))}
           </div>
-
-          <RichTextEditor value={editorValue} onChange={setEditorValue} placeholder="" />
-        </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-200 py-16 text-center text-sm text-slate-400">
+            No questions yet. Add one using the toolbar above.
+          </div>
+        )}
       </div>
     </div>
   )
