@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 
-const PERIOD_OPTIONS = ["N/A", "Open", "Termly", "Half Termly", "Monthly"]
+const PERIOD_OPTIONS = ["Open", "Termly", "Half Termly", "Monthly"]
 
 // Question-type buttons rendered across the top of the editor pane.
 const QUESTION_TYPES = [
@@ -80,7 +80,7 @@ export function FormBuilder() {
   const [formLevelMat, setFormLevelMat] = useState(false)
   const [name, setName] = useState("Head Report (24/25) - Gaz")
   const [description, setDescription] = useState("Head teacher report")
-  const [period, setPeriod] = useState("N/A")
+  const [period, setPeriod] = useState("Open")
   const [settingsOpen, setSettingsOpen] = useState(true)
 
   const [activeSectionId, setActiveSectionId] = useState("exec-summary")
