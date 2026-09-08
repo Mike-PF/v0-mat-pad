@@ -186,7 +186,7 @@ export function FormBuilder() {
                 onClick={() => router.push("/settings/form-creation")}
                 className="flex-1 border-slate-200 text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white"
               >
-                Back
+                Return to List
               </Button>
               <Button className="flex-1 bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]">
                 Save Form
@@ -197,7 +197,11 @@ export function FormBuilder() {
           {/* Report Sections */}
           <div className="flex items-center justify-between border-t border-slate-200 pt-4">
             <h3 className="text-lg font-bold text-slate-900">Report Sections</h3>
-            <Button size="sm" className="gap-1.5 bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-slate-200 text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white"
+            >
               <Plus className="h-4 w-4" />
               New Section
             </Button>
