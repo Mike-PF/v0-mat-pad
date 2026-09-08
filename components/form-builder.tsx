@@ -17,7 +17,6 @@ import {
   GripVertical,
   Trash2,
   Settings,
-  Plus,
   CheckCircle2,
   Circle,
 } from "lucide-react"
@@ -200,9 +199,8 @@ export function FormBuilder() {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-slate-200 text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white"
+              className="border-slate-200 text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white"
             >
-              <Plus className="h-4 w-4" />
               New Section
             </Button>
           </div>
