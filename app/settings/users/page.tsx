@@ -6,7 +6,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, ChevronDown, Trash2, Pencil, X, Users as UsersIcon, Building2, School } from "lucide-react"
+import { Plus, ChevronDown, Trash2, Pencil, X, Users as UsersIcon } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { PageHelpBanner } from "@/components/ui/help-video"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -15,7 +15,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 // Sample MATs data
 const matsData = [
   { id: "mat-1", name: "St Joseph Catholic Multi Academy Trust", schools: ["school-1", "school-2", "school-3", "school-4"] },
-  { id: "mat-2", name: "Bishop Wilson Multi Academy Trust", schools: ["school-7", "school-8", "school-9"] },
 ]
 
 // Sample Schools data  
@@ -24,16 +23,16 @@ const schoolsListData = [
   { id: "school-2", name: "St Ambrose Catholic Academy", urn: "149133", matId: "mat-1" },
   { id: "school-3", name: "St Nicholas Catholic Academy", urn: "149132", matId: "mat-1" },
   { id: "school-4", name: "Holy Family Catholic Academy", urn: "149190", matId: "mat-1" },
-  { id: "school-7", name: "St Bede Catholic Academy", urn: "150001", matId: "mat-2" },
-  { id: "school-8", name: "St Cuthbert Catholic Academy", urn: "150002", matId: "mat-2" },
-  { id: "school-9", name: "St Aidan Catholic Academy", urn: "150003", matId: "mat-2" },
   { id: "school-6", name: "Sacred Heart School", urn: "149210", matId: null }, // Standalone school
-  { id: "school-10", name: "Oakwood Independent School", urn: "150010", matId: null }, // Standalone school
 ]
 
-// Flat school list (urn/name) used by the edit dropdown — derived so it always
-// stays in sync with schoolsListData, including standalone schools.
-const schoolsData = schoolsListData.map((s) => ({ urn: s.urn, name: s.name }))
+// Sample schools data
+const schoolsData = [
+  { urn: "149029", name: "Holy Spirit Catholic Academy" },
+  { urn: "149133", name: "St Ambrose Catholic Academy" },
+  { urn: "149132", name: "St Nicholas Catholic Academy" },
+  { urn: "149190", name: "Holy Family Catholic Academy" },
+]
 
 // Available roles with their permissions
 const availableRoles = [
@@ -74,13 +73,10 @@ const initialUsers: User[] = [
     lastLoggedIn: null, 
     name: "fred ed", 
     roles: ["CPOMS Data", "User"],
-    // Access spanning two separate trusts plus a standalone school.
     schools: [
       { urn: "149029", name: "Holy Spirit Catholic Academy" },
       { urn: "149133", name: "St Ambrose Catholic Academy" },
-      { urn: "150001", name: "St Bede Catholic Academy" },
-      { urn: "150003", name: "St Aidan Catholic Academy" },
-      { urn: "150010", name: "Oakwood Independent School" },
+      { urn: "149132", name: "St Nicholas Catholic Academy" },
     ]
   },
   { 
@@ -89,13 +85,11 @@ const initialUsers: User[] = [
     lastLoggedIn: "2024-03-01 14:32", 
     name: "Fred Smith", 
     roles: ["CPOMS Data", "Finance", "User"],
-    // One trust plus a standalone school.
     schools: [
       { urn: "149190", name: "Holy Family Catholic Academy" },
       { urn: "149029", name: "Holy Spirit Catholic Academy" },
       { urn: "149133", name: "St Ambrose Catholic Academy" },
       { urn: "149132", name: "St Nicholas Catholic Academy" },
-      { urn: "149210", name: "Sacred Heart School" },
     ]
   },
   { 
@@ -183,30 +177,6 @@ export default function UsersPage() {
   const getParentMAT = (school: typeof schoolsListData[0]) => {
     if (!school.matId) return null
     return matsData.find(mat => mat.id === school.matId)
-  }
-
-  // Group a user's schools by the organisation (trust) they belong to, so the
-  // list can show every organisation a user can reach — including schools that
-  // sit in separate trusts and standalone schools that belong to no trust.
-  const groupUserSchoolsByOrg = (userSchools: { urn: string; name: string }[]) => {
-    const trusts = new Map<string, { orgName: string; schools: { urn: string; name: string }[] }>()
-    const standalone: { urn: string; name: string }[] = []
-
-    userSchools.forEach((us) => {
-      const listSchool = schoolsListData.find((s) => s.urn === us.urn)
-      const matId = listSchool?.matId ?? null
-      if (matId) {
-        const mat = matsData.find((m) => m.id === matId)
-        if (!trusts.has(matId)) {
-          trusts.set(matId, { orgName: mat?.name ?? "Unknown Trust", schools: [] })
-        }
-        trusts.get(matId)!.schools.push(us)
-      } else {
-        standalone.push(us)
-      }
-    })
-
-    return { trusts: Array.from(trusts.values()), standalone }
   }
 
   const handleSelect = (type: "mat" | "school", id: string) => {
@@ -596,7 +566,7 @@ export default function UsersPage() {
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Last logged in</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Name</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Role</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Organisations &amp; schools</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Schools</th>
                         <th className="py-3 px-4 w-[100px]"></th>
                       </tr>
                     </thead>
@@ -626,55 +596,37 @@ export default function UsersPage() {
                               </Tooltip>
                             </TooltipProvider>
                           </td>
-                          <td className="py-4 px-4 text-sm text-slate-600 align-top">
+                          <td className="py-4 px-4 text-sm text-slate-600">
                             {user.schools === "all" ? (
-                              <span className="inline-flex items-center rounded-md bg-[#121051]/10 px-2 py-0.5 text-xs font-medium text-[#121051]">
-                                All schools (all trusts)
-                              </span>
+                              <span>All Schools</span>
+                            ) : user.schools.length <= 2 ? (
+                              <div className="flex flex-col gap-0.5">
+                                {user.schools.map((school, idx) => (
+                                  <span key={idx}>{school.urn} {school.name}</span>
+                                ))}
+                              </div>
                             ) : (
-                              (() => {
-                                const { trusts, standalone } = groupUserSchoolsByOrg(user.schools)
-                                return (
-                                  <div className="flex flex-col gap-2.5 min-w-[240px]">
-                                    {trusts.map((group, gIdx) => (
-                                      <div key={`trust-${gIdx}`} className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-1.5">
-                                          <Building2 className="w-3.5 h-3.5 text-[#B30089] shrink-0" />
-                                          <span className="text-xs font-semibold text-slate-900">{group.orgName}</span>
-                                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">
-                                            {group.schools.length}
-                                          </span>
-                                        </div>
-                                        <div className="flex flex-col gap-0.5 pl-5">
-                                          {group.schools.map((school, idx) => (
-                                            <span key={idx} className="text-xs text-slate-600">
-                                              {school.urn} {school.name}
-                                            </span>
-                                          ))}
-                                        </div>
+                              <TooltipProvider delayDuration={300}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button type="button" className="text-left">
+                                      <div className="flex flex-col gap-0.5">
+                                        <span>{user.schools[0].urn} {user.schools[0].name}</span>
+                                        <span className="text-[#B30089] hover:underline cursor-pointer">
+                                          +{user.schools.length - 1} more schools
+                                        </span>
                                       </div>
-                                    ))}
-                                    {standalone.length > 0 && (
-                                      <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-1.5">
-                                          <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                          <span className="text-xs font-semibold text-slate-900">Standalone schools</span>
-                                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">
-                                            {standalone.length}
-                                          </span>
-                                        </div>
-                                        <div className="flex flex-col gap-0.5 pl-5">
-                                          {standalone.map((school, idx) => (
-                                            <span key={idx} className="text-xs text-slate-600">
-                                              {school.urn} {school.name}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                )
-                              })()
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom" align="start" className="max-w-md">
+                                    <div className="flex flex-col gap-1 max-h-[200px] overflow-auto">
+                                      {user.schools.map((school, idx) => (
+                                        <span key={idx} className="text-sm">{school.urn} {school.name}</span>
+                                      ))}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </td>
                           <td className="py-4 px-4">
