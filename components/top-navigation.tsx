@@ -43,6 +43,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
         { id: "system-notifications", label: "System Notifications", href: "/pixel-fusion/system-notifications" },
         { id: "ai-management", label: "AI Management", href: "/pixel-fusion/ai-management" },
         { id: "connection-management", label: "Connection Management", href: "/pixel-fusion/connection-management" },
+        { id: "users", label: "Users", href: "/pixel-fusion/users" },
       ]
     }
 
