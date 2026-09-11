@@ -53,84 +53,106 @@ for (const org of ORG_DIRECTORY) {
   }
 }
 
+// A user's roles are assigned per school, so the same person can be (for example)
+// a Trust Data Lead at one school and only a Reports user at another.
+type SchoolAccess = { schoolId: string; roles: string[] }
+
 type SystemUser = {
   id: number
   name: string
   email: string
-  roles: string[]
   lastActive: string | null
-  // "all" grants system-wide access; otherwise a list of school / standalone ids.
-  access: "all" | string[]
+  // "all" grants system-wide access with systemRoles applied everywhere;
+  // otherwise access is a per-school list, each carrying its own roles.
+  access: "all" | SchoolAccess[]
+  // Only used when access === "all".
+  systemRoles: string[]
 }
 
 // Sample system-wide users. Several deliberately span more than one organisation
-// (separate trusts and standalone schools) to show the full picture.
+// (separate trusts and standalone schools) and hold different roles per school.
 const SYSTEM_USERS: SystemUser[] = [
   {
     id: 1,
     name: "Gareth Hutchings",
     email: "gareth@fuze.com",
-    roles: ["Platform Admin"],
     lastActive: "2026-07-02 15:44",
     access: "all",
+    systemRoles: ["Platform Admin"],
   },
   {
     id: 2,
     name: "Sarah Thompson",
     email: "sarah.thompson@stclare.sch.uk",
-    roles: ["Trust Data Lead", "Reports"],
     lastActive: "2026-07-02 14:44",
-    access: ["school-1", "school-2", "school-3"],
+    systemRoles: [],
+    access: [
+      { schoolId: "school-1", roles: ["Trust Data Lead", "Reports"] },
+      { schoolId: "school-2", roles: ["Trust Data Lead"] },
+      { schoolId: "school-3", roles: ["Reports"] },
+    ],
   },
   {
     id: 3,
     name: "Daniel Foster",
     email: "daniel.foster@consult.co.uk",
-    roles: ["Data Consultant"],
     lastActive: "2026-07-01 22:44",
-    // Cross-trust plus a standalone school.
-    access: ["school-1", "school-3", "school-4", "standalone-1"],
+    systemRoles: [],
+    // Cross-trust plus a standalone school, with different roles at each.
+    access: [
+      { schoolId: "school-1", roles: ["Data Consultant"] },
+      { schoolId: "school-3", roles: ["Data Consultant", "Reports"] },
+      { schoolId: "school-4", roles: ["Data Consultant"] },
+      { schoolId: "standalone-1", roles: ["Data Consultant", "Assessment Lead"] },
+    ],
   },
   {
     id: 4,
     name: "Emily Carter",
     email: "emily.carter@sacredheart.sch.uk",
-    roles: ["Attendance Lead", "User"],
     lastActive: "2026-07-02 09:44",
-    access: ["school-4"],
+    systemRoles: [],
+    access: [{ schoolId: "school-4", roles: ["Attendance Lead", "User"] }],
   },
   {
     id: 5,
     name: "David Owusu",
     email: "david.owusu@stalbans.sch.uk",
-    roles: ["SENDCo"],
     lastActive: "2026-06-28 08:12",
-    access: ["standalone-1"],
+    systemRoles: [],
+    access: [{ schoolId: "standalone-1", roles: ["SENDCo"] }],
   },
   {
     id: 6,
     name: "Priya Sharma",
     email: "priya.sharma@region.gov.uk",
-    roles: ["Regional Advisor"],
     lastActive: "2026-07-01 17:44",
-    // Access to both standalone schools and one trust.
-    access: ["standalone-1", "standalone-2", "school-2"],
+    systemRoles: [],
+    // Access to both standalone schools and one trust, with a lighter role on the trust school.
+    access: [
+      { schoolId: "standalone-1", roles: ["Regional Advisor"] },
+      { schoolId: "standalone-2", roles: ["Regional Advisor"] },
+      { schoolId: "school-2", roles: ["Reports"] },
+    ],
   },
   {
     id: 7,
     name: "Mark Robinson",
     email: "mark.robinson@holytrinity.sch.uk",
-    roles: ["Business Manager", "Finance"],
     lastActive: "2026-06-30 11:20",
-    access: ["standalone-2"],
+    systemRoles: [],
+    access: [{ schoolId: "standalone-2", roles: ["Business Manager", "Finance"] }],
   },
   {
     id: 8,
     name: "Rachel Green",
     email: "rachel.green@holyfamily.org.uk",
-    roles: ["Assessment Lead"],
     lastActive: "2026-07-02 07:44",
-    access: ["school-4", "school-1"],
+    systemRoles: [],
+    access: [
+      { schoolId: "school-4", roles: ["Assessment Lead"] },
+      { schoolId: "school-1", roles: ["Assessment Lead", "User"] },
+    ],
   },
 ]
 
@@ -149,24 +171,26 @@ const ALL_ROLES = [
   "User",
 ]
 
-type AccessGroup = { orgId: string; orgName: string; schools: { id: string; name: string }[] }
+type AccessGroupSchool = { id: string; name: string; roles: string[] }
+type AccessGroup = { orgId: string; orgName: string; schools: AccessGroupSchool[] }
 
 // Group a user's accessible schools by the organisation (trust) they belong to,
-// keeping standalone schools separate.
-function groupAccess(access: string[]) {
+// keeping standalone schools separate. Each school keeps its own role list.
+function groupAccess(access: SchoolAccess[]) {
   const trusts = new Map<string, AccessGroup>()
-  const standalone: { id: string; name: string }[] = []
+  const standalone: AccessGroupSchool[] = []
 
-  for (const id of access) {
-    const info = ACCESS_LOOKUP[id]
+  for (const a of access) {
+    const info = ACCESS_LOOKUP[a.schoolId]
     if (!info) continue
+    const entry = { id: info.schoolId, name: info.schoolName, roles: a.roles }
     if (info.orgKind === "mat") {
       if (!trusts.has(info.orgId)) {
         trusts.set(info.orgId, { orgId: info.orgId, orgName: info.orgName, schools: [] })
       }
-      trusts.get(info.orgId)!.schools.push({ id: info.schoolId, name: info.schoolName })
+      trusts.get(info.orgId)!.schools.push(entry)
     } else {
-      standalone.push({ id: info.schoolId, name: info.schoolName })
+      standalone.push(entry)
     }
   }
 
@@ -175,10 +199,18 @@ function groupAccess(access: string[]) {
 
 // Count of distinct organisations a user can reach (each trust and each
 // standalone school counts as one organisation).
-function organisationCount(access: "all" | string[]): number {
+function organisationCount(access: "all" | SchoolAccess[]): number {
   if (access === "all") return ORG_DIRECTORY.length
   const { trusts, standalone } = groupAccess(access)
   return trusts.length + standalone.length
+}
+
+// Distinct set of roles a user holds anywhere, for the summary column and filter.
+function distinctRoles(user: SystemUser): string[] {
+  if (user.access === "all") return user.systemRoles
+  const set = new Set<string>()
+  user.access.forEach((a) => a.roles.forEach((r) => set.add(r)))
+  return Array.from(set)
 }
 
 function initials(name: string) {
@@ -190,25 +222,61 @@ function initials(name: string) {
     .toUpperCase()
 }
 
-// Renders a user's organisation/school access as grouped trusts + standalone schools.
-function AccessBreakdown({ access }: { access: "all" | string[] }) {
+// Small pink-tinted chip used to show a role assigned at a specific school.
+function RoleChip({ role }: { role: string }) {
+  return (
+    <span
+      className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+      style={{ backgroundColor: "rgba(179,0,137,0.08)", color: ACCENT }}
+    >
+      {role}
+    </span>
+  )
+}
+
+// Renders one school row with its per-school roles beneath the name.
+function SchoolWithRoles({ name, roles }: { name: string; roles: string[] }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs text-slate-700">{name}</span>
+      <div className="flex flex-wrap gap-1">
+        {roles.length > 0 ? (
+          roles.map((r) => <RoleChip key={r} role={r} />)
+        ) : (
+          <span className="text-[10px] italic text-slate-400">No roles</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Renders a user's organisation/school access grouped by trust + standalone
+// schools, with the roles held at each individual school.
+function AccessBreakdown({ access, systemRoles }: { access: "all" | SchoolAccess[]; systemRoles: string[] }) {
   if (access === "all") {
     return (
-      <span
-        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-white"
-        style={{ backgroundColor: NAVY }}
-      >
-        <ShieldCheck className="w-3.5 h-3.5" />
-        All organisations &amp; schools
-      </span>
+      <div className="flex flex-col gap-2 min-w-[240px]">
+        <span
+          className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-white"
+          style={{ backgroundColor: NAVY }}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          All organisations &amp; schools
+        </span>
+        <div className="flex flex-wrap gap-1 pl-0.5">
+          {systemRoles.map((r) => (
+            <RoleChip key={r} role={r} />
+          ))}
+        </div>
+      </div>
     )
   }
 
   const { trusts, standalone } = groupAccess(access)
   return (
-    <div className="flex flex-col gap-2.5 min-w-[240px]">
+    <div className="flex flex-col gap-3 min-w-[260px]">
       {trusts.map((group) => (
-        <div key={group.orgId} className="flex flex-col gap-1">
+        <div key={group.orgId} className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5 text-[#B30089] shrink-0" />
             <span className="text-xs font-semibold text-slate-900">{group.orgName}</span>
@@ -216,17 +284,15 @@ function AccessBreakdown({ access }: { access: "all" | string[] }) {
               {group.schools.length}
             </span>
           </div>
-          <div className="flex flex-col gap-0.5 pl-5">
+          <div className="flex flex-col gap-1.5 pl-5">
             {group.schools.map((s) => (
-              <span key={s.id} className="text-xs text-slate-600">
-                {s.name}
-              </span>
+              <SchoolWithRoles key={s.id} name={s.name} roles={s.roles} />
             ))}
           </div>
         </div>
       ))}
       {standalone.length > 0 && (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
             <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="text-xs font-semibold text-slate-900">Standalone schools</span>
@@ -234,11 +300,9 @@ function AccessBreakdown({ access }: { access: "all" | string[] }) {
               {standalone.length}
             </span>
           </div>
-          <div className="flex flex-col gap-0.5 pl-5">
+          <div className="flex flex-col gap-1.5 pl-5">
             {standalone.map((s) => (
-              <span key={s.id} className="text-xs text-slate-600">
-                {s.name}
-              </span>
+              <SchoolWithRoles key={s.id} name={s.name} roles={s.roles} />
             ))}
           </div>
         </div>
@@ -261,12 +325,13 @@ export default function SystemUsersPage() {
   const [editingUser, setEditingUser] = useState<SystemUser | null>(null)
   const [editName, setEditName] = useState("")
   const [editEmail, setEditEmail] = useState("")
-  const [editRoles, setEditRoles] = useState<string[]>([])
+  const [editAccess, setEditAccess] = useState<SchoolAccess[]>([])
+  const [editSystemRoles, setEditSystemRoles] = useState<string[]>([])
 
   // All roles across the system, for the role filter.
   const allRoles = useMemo(() => {
     const set = new Set<string>()
-    users.forEach((u) => u.roles.forEach((r) => set.add(r)))
+    users.forEach((u) => distinctRoles(u).forEach((r) => set.add(r)))
     return Array.from(set).sort()
   }, [users])
 
@@ -279,9 +344,9 @@ export default function SystemUsersPage() {
       const matchesOrg =
         orgFilter === "all" ||
         user.access === "all" ||
-        user.access.some((id) => ACCESS_LOOKUP[id]?.orgId === orgFilter)
+        user.access.some((a) => ACCESS_LOOKUP[a.schoolId]?.orgId === orgFilter)
 
-      const matchesRole = roleFilter === "all" || user.roles.includes(roleFilter)
+      const matchesRole = roleFilter === "all" || distinctRoles(user).includes(roleFilter)
 
       return matchesSearch && matchesOrg && matchesRole
     })
@@ -291,13 +356,25 @@ export default function SystemUsersPage() {
     setEditingUser(user)
     setEditName(user.name)
     setEditEmail(user.email)
-    setEditRoles([...user.roles])
+    setEditSystemRoles([...user.systemRoles])
+    // Deep copy so role toggles don't mutate the stored user until saved.
+    setEditAccess(user.access === "all" ? [] : user.access.map((a) => ({ schoolId: a.schoolId, roles: [...a.roles] })))
     // Close the detail modal so the edit dialog takes focus.
     setSelectedUser(null)
   }
 
-  const toggleEditRole = (role: string) => {
-    setEditRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]))
+  const toggleSchoolRole = (schoolId: string, role: string) => {
+    setEditAccess((prev) =>
+      prev.map((a) =>
+        a.schoolId === schoolId
+          ? { ...a, roles: a.roles.includes(role) ? a.roles.filter((r) => r !== role) : [...a.roles, role] }
+          : a,
+      ),
+    )
+  }
+
+  const toggleSystemRole = (role: string) => {
+    setEditSystemRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]))
   }
 
   const saveEdit = () => {
@@ -305,7 +382,13 @@ export default function SystemUsersPage() {
     setUsers((prev) =>
       prev.map((u) =>
         u.id === editingUser.id
-          ? { ...u, name: editName.trim() || u.name, email: editEmail.trim() || u.email, roles: editRoles }
+          ? {
+              ...u,
+              name: editName.trim() || u.name,
+              email: editEmail.trim() || u.email,
+              access: u.access === "all" ? "all" : editAccess,
+              systemRoles: u.access === "all" ? editSystemRoles : u.systemRoles,
+            }
           : u,
       ),
     )
@@ -318,6 +401,9 @@ export default function SystemUsersPage() {
     setUserToDelete(null)
     setSelectedUser(null)
   }
+
+  // Grouped view of the access currently being edited, for the edit form.
+  const editGroups = useMemo(() => groupAccess(editAccess), [editAccess])
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -336,9 +422,9 @@ export default function SystemUsersPage() {
                 <div>
                   <h1 className="text-xl font-bold text-slate-900">System Users</h1>
                   <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-                    Every user across the whole system, with each organisation and school they can access —
-                    including users who span more than one trust or standalone school. Select a user to view
-                    their roles and manage their account.
+                    Every user across the whole system, with the roles they hold at each organisation and school —
+                    including users who span more than one trust or standalone school. Select a user to view their
+                    per-school roles and manage their account.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
@@ -403,9 +489,9 @@ export default function SystemUsersPage() {
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
                       <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">User</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Roles</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Roles held</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">
-                        Organisations &amp; schools
+                        Roles per organisation &amp; school
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-slate-700 whitespace-nowrap">
                         Last active
@@ -425,6 +511,7 @@ export default function SystemUsersPage() {
                     ) : (
                       filtered.map((user) => {
                         const orgCount = organisationCount(user.access)
+                        const roles = distinctRoles(user)
                         return (
                           <tr
                             key={user.id}
@@ -450,10 +537,10 @@ export default function SystemUsersPage() {
                               </div>
                             </td>
 
-                            {/* Roles */}
+                            {/* Roles held (aggregated) */}
                             <td className="py-4 px-4 align-top">
                               <div className="flex flex-wrap gap-1 max-w-[180px]">
-                                {user.roles.map((role) => (
+                                {roles.map((role) => (
                                   <span
                                     key={role}
                                     className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
@@ -464,9 +551,9 @@ export default function SystemUsersPage() {
                               </div>
                             </td>
 
-                            {/* Organisations & schools */}
+                            {/* Roles per organisation & school */}
                             <td className="py-4 px-4 text-sm text-slate-600 align-top">
-                              <AccessBreakdown access={user.access} />
+                              <AccessBreakdown access={user.access} systemRoles={user.systemRoles} />
                             </td>
 
                             {/* Last active */}
@@ -557,11 +644,11 @@ export default function SystemUsersPage() {
                 </div>
               </div>
 
-              {/* Roles */}
+              {/* Roles held (aggregated) */}
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-2">Roles</h3>
+                <h3 className="text-sm font-semibold text-slate-900 mb-2">Roles held</h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedUser.roles.map((role) => (
+                  {distinctRoles(selectedUser).map((role) => (
                     <span
                       key={role}
                       className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-white"
@@ -573,13 +660,13 @@ export default function SystemUsersPage() {
                 </div>
               </div>
 
-              {/* Access */}
+              {/* Roles per organisation & school */}
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-slate-900 mb-2">
-                  Organisations &amp; schools ({organisationCount(selectedUser.access)})
+                  Roles per organisation &amp; school ({organisationCount(selectedUser.access)})
                 </h3>
                 <div className="rounded-lg border border-slate-200 p-4">
-                  <AccessBreakdown access={selectedUser.access} />
+                  <AccessBreakdown access={selectedUser.access} systemRoles={selectedUser.systemRoles} />
                 </div>
               </div>
 
@@ -611,7 +698,7 @@ export default function SystemUsersPage() {
 
       {/* Edit modal */}
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-        <DialogContent className="max-w-md !block max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg !block max-h-[85vh] overflow-y-auto">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Edit User</h2>
 
           <div className="mb-4">
@@ -624,29 +711,101 @@ export default function SystemUsersPage() {
             <Input value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="h-11" />
           </div>
 
-          <div className="mb-4">
-            <label className="text-sm font-medium text-slate-700 mb-2 block">Roles</label>
-            <div className="flex flex-wrap gap-2">
-              {ALL_ROLES.map((role) => {
-                const active = editRoles.includes(role)
-                return (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => toggleEditRole(role)}
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                      active
-                        ? "text-white border-transparent"
-                        : "text-slate-600 border-slate-200 hover:border-slate-300"
-                    }`}
-                    style={active ? { backgroundColor: NAVY } : undefined}
-                  >
-                    {role}
-                  </button>
-                )
-              })}
+          {editingUser?.access === "all" ? (
+            <div className="mb-4">
+              <label className="text-sm font-medium text-slate-700 mb-2 block">System roles (apply everywhere)</label>
+              <div className="flex flex-wrap gap-2">
+                {ALL_ROLES.map((role) => {
+                  const active = editSystemRoles.includes(role)
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => toggleSystemRole(role)}
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                        active ? "text-white border-transparent" : "text-slate-600 border-slate-200 hover:border-slate-300"
+                      }`}
+                      style={active ? { backgroundColor: NAVY } : undefined}
+                    >
+                      {role}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mb-4">
+              <label className="text-sm font-medium text-slate-700 mb-2 block">Roles per organisation &amp; school</label>
+              <div className="flex flex-col gap-4">
+                {editGroups.trusts.map((group) => (
+                  <div key={group.orgId} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-[#B30089] shrink-0" />
+                      <span className="text-xs font-semibold text-slate-900">{group.orgName}</span>
+                    </div>
+                    {group.schools.map((s) => (
+                      <div key={s.id} className="pl-5">
+                        <p className="text-xs text-slate-700 mb-1.5">{s.name}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {ALL_ROLES.map((role) => {
+                            const active = s.roles.includes(role)
+                            return (
+                              <button
+                                key={role}
+                                type="button"
+                                onClick={() => toggleSchoolRole(s.id, role)}
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium border transition-colors ${
+                                  active
+                                    ? "text-white border-transparent"
+                                    : "text-slate-600 border-slate-200 hover:border-slate-300"
+                                }`}
+                                style={active ? { backgroundColor: NAVY } : undefined}
+                              >
+                                {role}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                {editGroups.standalone.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <School className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold text-slate-900">Standalone schools</span>
+                    </div>
+                    {editGroups.standalone.map((s) => (
+                      <div key={s.id} className="pl-5">
+                        <p className="text-xs text-slate-700 mb-1.5">{s.name}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {ALL_ROLES.map((role) => {
+                            const active = s.roles.includes(role)
+                            return (
+                              <button
+                                key={role}
+                                type="button"
+                                onClick={() => toggleSchoolRole(s.id, role)}
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium border transition-colors ${
+                                  active
+                                    ? "text-white border-transparent"
+                                    : "text-slate-600 border-slate-200 hover:border-slate-300"
+                                }`}
+                                style={active ? { backgroundColor: NAVY } : undefined}
+                              >
+                                {role}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
             <Button variant="outline" onClick={() => setEditingUser(null)} className="px-4">
