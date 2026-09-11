@@ -156,20 +156,27 @@ const SYSTEM_USERS: SystemUser[] = [
   },
 ]
 
-// Full catalogue of assignable roles, used by the edit form.
-const ALL_ROLES = [
-  "Platform Admin",
-  "Trust Data Lead",
-  "Data Consultant",
-  "Attendance Lead",
-  "SENDCo",
-  "Regional Advisor",
-  "Business Manager",
-  "Finance",
-  "Assessment Lead",
-  "Reports",
-  "User",
-]
+// Roles are NOT global — each organisation defines and owns its own roles, so
+// the roles assignable at a school come from that school's organisation. There
+// is no system-wide role catalogue. This map is keyed by organisation id (a MAT
+// id, or a standalone school id which is its own organisation).
+const ORG_ROLES: Record<string, string[]> = {
+  "mat-1": ["Trust Data Lead", "Reports", "Data Consultant", "Assessment Lead", "Attendance Lead", "User"],
+  "mat-2": ["Data Consultant", "Attendance Lead", "Assessment Lead", "Safeguarding Lead", "User"],
+  "standalone-1": ["SENDCo", "Regional Advisor", "Data Consultant", "Assessment Lead", "Headteacher"],
+  "standalone-2": ["Business Manager", "Finance", "Regional Advisor", "Governor", "User"],
+}
+
+// The roles a given organisation offers. Falls back to an empty list rather than
+// inventing roles the organisation has not created.
+function rolesForOrg(orgId: string): string[] {
+  return ORG_ROLES[orgId] ?? []
+}
+
+// Platform-level access for Pixel Fusion staff. This is deliberately separate
+// from organisation roles: it grants cross-system access rather than being a
+// role any organisation created.
+const PLATFORM_ROLES = ["Platform Admin", "Platform Support"]
 
 type AccessGroupSchool = { id: string; name: string; roles: string[] }
 type AccessGroup = { orgId: string; orgName: string; schools: AccessGroupSchool[] }
@@ -713,9 +720,14 @@ export default function SystemUsersPage() {
 
           {editingUser?.access === "all" ? (
             <div className="mb-4">
-              <label className="text-sm font-medium text-slate-700 mb-2 block">System roles (apply everywhere)</label>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Platform access (Pixel Fusion staff)
+              </label>
+              <p className="text-xs text-slate-500 mb-2">
+                Platform access is granted by Pixel Fusion and is separate from the roles each organisation defines.
+              </p>
               <div className="flex flex-wrap gap-2">
-                {ALL_ROLES.map((role) => {
+                {PLATFORM_ROLES.map((role) => {
                   const active = editSystemRoles.includes(role)
                   return (
                     <button
@@ -747,7 +759,7 @@ export default function SystemUsersPage() {
                       <div key={s.id} className="pl-5">
                         <p className="text-xs text-slate-700 mb-1.5">{s.name}</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {ALL_ROLES.map((role) => {
+                          {rolesForOrg(group.orgId).map((role) => {
                             const active = s.roles.includes(role)
                             return (
                               <button
@@ -780,7 +792,7 @@ export default function SystemUsersPage() {
                       <div key={s.id} className="pl-5">
                         <p className="text-xs text-slate-700 mb-1.5">{s.name}</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {ALL_ROLES.map((role) => {
+                          {rolesForOrg(s.id).map((role) => {
                             const active = s.roles.includes(role)
                             return (
                               <button
