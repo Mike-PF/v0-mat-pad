@@ -1,11 +1,11 @@
 {
-  "name": "matpad-forms",
+  "name": "fuze-forms",
   "version": "0.1.1",
   "private": true,
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
+    "lint": "eslint .",
     "start": "next start"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.454.0",
+    "mammoth": "^1.12.0",
     "next": "14.0.0",
     "postcss": "^8",
     "react": "^18",

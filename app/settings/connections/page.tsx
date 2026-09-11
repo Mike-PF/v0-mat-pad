@@ -225,15 +225,15 @@ const systemConfig: Record<string, {
   idPlaceholder: string
   brandColor: string
 }> = {
-  arbor: { columns: "standard", idFieldName: "Arbor Domain", idPlaceholder: "https://...", brandColor: "#121051" },
-  bromcom: { columns: "simple", idFieldName: "Bromcom School ID", idPlaceholder: "e.g. 11504", brandColor: "#121051" },
-  cpoms: { columns: "cpoms", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  evolve: { columns: "simple", idFieldName: "API Key", idPlaceholder: "", brandColor: "#121051" },
-  safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  sisra: { columns: "sisra", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  weareevery: { columns: "weareevery", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
-  wonde: { columns: "wonde", idFieldName: "", idPlaceholder: "", brandColor: "#121051" },
+  arbor: { columns: "standard", idFieldName: "Arbor Domain", idPlaceholder: "https://...", brandColor: "#33295e" },
+  bromcom: { columns: "simple", idFieldName: "Bromcom School ID", idPlaceholder: "e.g. 11504", brandColor: "#33295e" },
+  cpoms: { columns: "cpoms", idFieldName: "", idPlaceholder: "", brandColor: "#33295e" },
+  evolve: { columns: "simple", idFieldName: "API Key", idPlaceholder: "", brandColor: "#33295e" },
+  safesmart: { columns: "credentials", idFieldName: "", idPlaceholder: "", brandColor: "#33295e" },
+  sampeople: { columns: "sampeople", idFieldName: "", idPlaceholder: "", brandColor: "#33295e" },
+  sisra: { columns: "sisra", idFieldName: "", idPlaceholder: "", brandColor: "#33295e" },
+  weareevery: { columns: "weareevery", idFieldName: "", idPlaceholder: "", brandColor: "#33295e" },
+  wonde: { columns: "wonde", idFieldName: "", idPlaceholder: "", brandColor: "#33295e" },
 }
 
 const systems = [
@@ -816,7 +816,7 @@ export default function ConnectionsPage() {
                               ? "text-white"
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
-                          style={canSaveCpomsStorage() ? { backgroundColor: "#121051" } : undefined}
+                          style={canSaveCpomsStorage() ? { backgroundColor: "#33295e" } : undefined}
                         >
                           Save
                         </Button>
@@ -868,7 +868,7 @@ export default function ConnectionsPage() {
                                   ? "text-white"
                                   : "bg-slate-300 text-slate-500 cursor-not-allowed"
                               }`}
-                              style={canSaveCpomsLink(link.slug) ? { backgroundColor: "#121051" } : undefined}
+                              style={canSaveCpomsLink(link.slug) ? { backgroundColor: "#33295e" } : undefined}
                             >
                               Save
                             </Button>
@@ -946,7 +946,7 @@ export default function ConnectionsPage() {
                               ? "text-white"
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
-                          style={canSaveCredential(selectedSystem.id, cred.id) ? { backgroundColor: "#121051" } : undefined}
+                          style={canSaveCredential(selectedSystem.id, cred.id) ? { backgroundColor: "#33295e" } : undefined}
                         >
                           Save
                         </Button>
@@ -1017,7 +1017,7 @@ export default function ConnectionsPage() {
                               ? "text-white"
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
-                          style={canSaveSampeople(item.id) ? { backgroundColor: "#121051" } : undefined}
+                          style={canSaveSampeople(item.id) ? { backgroundColor: "#33295e" } : undefined}
                         >
                           Save
                         </Button>
@@ -1072,7 +1072,7 @@ export default function ConnectionsPage() {
                               ? "text-white"
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
-                          style={canSaveWeareevery(item.id) ? { backgroundColor: "#121051" } : undefined}
+                          style={canSaveWeareevery(item.id) ? { backgroundColor: "#33295e" } : undefined}
                         >
                           Save
                         </Button>
@@ -1146,7 +1146,7 @@ export default function ConnectionsPage() {
                               ? "text-white"
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
-                          style={canSaveSisra(item.urn) ? { backgroundColor: "#121051" } : undefined}
+                          style={canSaveSisra(item.urn) ? { backgroundColor: "#33295e" } : undefined}
                         >
                           Save
                         </Button>
@@ -1200,7 +1200,7 @@ export default function ConnectionsPage() {
                             size="sm" 
                             onClick={() => handleWondeConnect(item.urn)}
                             className="px-6 text-white"
-                            style={{ backgroundColor: "#121051" }}
+                            style={{ backgroundColor: "#33295e" }}
                           >
                             Connect
                           </Button>
@@ -1274,7 +1274,7 @@ export default function ConnectionsPage() {
                               ? "text-white"
                               : "bg-slate-300 text-slate-500 cursor-not-allowed"
                           }`}
-                          style={canSave(selectedSystem.id, school.urn) ? { backgroundColor: "#121051" } : undefined}
+                          style={canSave(selectedSystem.id, school.urn) ? { backgroundColor: "#33295e" } : undefined}
                         >
                           Save
                         </Button>
@@ -1308,7 +1308,7 @@ export default function ConnectionsPage() {
             <Button
               onClick={handleConfirmUnlink}
               className="px-4 text-white"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Unlink
             </Button>
@@ -1334,7 +1334,7 @@ export default function ConnectionsPage() {
                   onClick={() => setSisraActiveTab(tab)}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     sisraActiveTab === tab
-                      ? "border-[#121051] text-[#121051]"
+                      ? "border-[#33295e] text-[#33295e]"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >
@@ -1370,7 +1370,7 @@ export default function ConnectionsPage() {
                         type="checkbox"
                         checked={dataset.getDatasets}
                         onChange={(e) => handleToggleSisraDataset(sisraDatasetsModal.urn, dataset.id, e.target.checked)}
-                        className="h-4 w-4 rounded border-slate-300 accent-[#121051] focus:ring-[#121051]"
+                        className="h-4 w-4 rounded border-slate-300 accent-[#33295e] focus:ring-[#33295e]"
                       />
                     </td>
                     <td className="py-3 px-2 text-center">
@@ -1379,7 +1379,7 @@ export default function ConnectionsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleDeleteSisraDataset(sisraDatasetsModal.urn, dataset.id)}
-                          className="px-6 border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                          className="px-6 border-slate-300 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                         >
                           Delete
                         </Button>
@@ -1405,7 +1405,7 @@ export default function ConnectionsPage() {
             <Button
               onClick={handleCloseSisraDatasets}
               className="px-6 text-white"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Save
             </Button>

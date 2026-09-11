@@ -1069,7 +1069,7 @@ This would generate an Excel file with ${selectedFields.length * selectedPupils.
 
                       {/* Apply Filters Button */}
                       <div className="pt-4 border-t border-slate-200">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button className="w-full bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors">
                           Apply Filters & Load Pupils
                         </Button>
                         <p className="text-xs text-slate-500 mt-2 text-center">
@@ -1558,7 +1558,7 @@ This would generate an Excel file with ${selectedFields.length * selectedPupils.
                   onClick={handleExport}
                   disabled={!canExport()}
                   className="w-full text-white"
-                  style={{ backgroundColor: canExport() ? "#121051" : undefined }}
+                  style={{ backgroundColor: canExport() ? "#33295e" : undefined }}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export Data

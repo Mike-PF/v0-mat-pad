@@ -2,8 +2,9 @@
 
 import type React from "react"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PermissionAssigner, type Assignee } from "@/components/permission-assigner"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
@@ -15,12 +16,24 @@ import { BehaviourData } from "@/components/data/behaviour-data"
 import { ChevronDown } from "lucide-react"
 import { SuspensionExclusionData } from "@/components/data/suspension-exclusion-data"
 
+export interface PermissionTargets {
+  sections: {
+    id: string
+    title: string
+    questions: { id: string; label: string }[]
+  }[]
+}
+
 interface QuestionSectionProps {
   activeSection: string
   formData: Record<string, any>
   onUpdateData: (questionId: string, value: any) => void
   sectionRefs: React.MutableRefObject<Record<string, HTMLElement | null>>
   onSectionChange: (sectionId: string) => void
+  readOnly?: boolean
+  permissions?: Record<string, Assignee[]>
+  onPermissionsChange?: React.Dispatch<React.SetStateAction<Record<string, Assignee[]>>>
+  onRegisterTargets?: (targets: PermissionTargets) => void
 }
 
 export function QuestionSection({
@@ -29,8 +42,18 @@ export function QuestionSection({
   onUpdateData,
   sectionRefs,
   onSectionChange,
+  readOnly = false,
+  permissions: permissionsProp,
+  onPermissionsChange,
+  onRegisterTargets,
 }: QuestionSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [internalPermissions, setInternalPermissions] = useState<Record<string, Assignee[]>>({})
+  const permissions = permissionsProp ?? internalPermissions
+  const setPermissions = onPermissionsChange ?? setInternalPermissions
+
+  const setPermissionFor = (key: string, assignees: Assignee[]) =>
+    setPermissions((prev) => ({ ...prev, [key]: assignees }))
 
   // Intersection Observer to track active section
   useEffect(() => {
@@ -415,6 +438,27 @@ export function QuestionSection({
     },
   ]
 
+  // Report the section/question tree upward so a parent can drive bulk
+  // permission assignment against a selected subset of items.
+  const targets = useMemo<PermissionTargets>(() => {
+    return {
+      sections: sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        questions: (section.questions ?? []).map((question) => ({
+          id: question.id,
+          label: question.label,
+        })),
+      })),
+    }
+    // sections is a static, stable-content array defined in this component
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    onRegisterTargets?.(targets)
+  }, [onRegisterTargets, targets])
+
   const renderQuestion = (question: any) => {
     const commonProps = {
       value: formData[question.id] || "",
@@ -424,13 +468,13 @@ export function QuestionSection({
 
     switch (question.type) {
       case "single-line":
-        return <Input {...commonProps} className="w-full" />
+        return <Input {...commonProps} readOnly={readOnly} className="w-full" />
 
       case "multiline":
-        return <Textarea {...commonProps} className="min-h-[120px]" />
+        return <Textarea {...commonProps} readOnly={readOnly} className="min-h-[120px]" />
 
       case "rich-text":
-        return <RichTextEditor {...commonProps} className="w-full" />
+        return <RichTextEditor {...commonProps} readOnly={readOnly} className="w-full" />
 
       case "dropdown":
         return (
@@ -438,7 +482,8 @@ export function QuestionSection({
             <select
               value={formData[question.id] || ""}
               onChange={(e) => onUpdateData(question.id, e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={readOnly}
+              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-600"
             >
               <option value="">Select an option...</option>
               {question.options?.map((option: string) => (
@@ -452,10 +497,14 @@ export function QuestionSection({
         )
 
       case "rag":
-        return <RAGPicker value={formData[question.id] || ""} onChange={(value) => onUpdateData(question.id, value)} />
+        return (
+          <div className={readOnly ? "pointer-events-none opacity-80" : ""} aria-disabled={readOnly}>
+            <RAGPicker value={formData[question.id] || ""} onChange={(value) => onUpdateData(question.id, value)} />
+          </div>
+        )
 
       default:
-        return <Input {...commonProps} />
+        return <Input {...commonProps} readOnly={readOnly} />
     }
   }
 
@@ -472,6 +521,15 @@ export function QuestionSection({
         >
           <CardHeader>
             <CardTitle className="text-2xl">{section.title}</CardTitle>
+            {readOnly && (
+              <div className="mt-3">
+                <PermissionAssigner
+                  label={section.title}
+                  assignees={permissions[`section:${section.id}`] ?? []}
+                  onChange={(a) => setPermissionFor(`section:${section.id}`, a)}
+                />
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Data Visualization Component */}
@@ -487,6 +545,14 @@ export function QuestionSection({
                   </label>
                   {question.info && <InfoTooltip content={question.info} />}
                 </div>
+                {readOnly && (
+                  <PermissionAssigner
+                    label={question.label}
+                    size="sm"
+                    assignees={permissions[`question:${question.id}`] ?? []}
+                    onChange={(a) => setPermissionFor(`question:${question.id}`, a)}
+                  />
+                )}
 
                 {renderQuestion(question)}
               </div>

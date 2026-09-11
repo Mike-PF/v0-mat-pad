@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { ScrollingDatePicker } from "@/components/ui/scrolling-date-picker"
 
 import {
   Dialog,
@@ -97,7 +98,7 @@ const initialMATs: MATData[] = [
     phone: "0151 123 4567",
     email: "admin@stclaremat.org",
     logo: "/placeholder.svg",
-    primaryColor: "#121051",
+    primaryColor: "#33295e",
     secondaryColor: "#4A90D9",
     powerBiLoginEmail: "reports@stclaremat.org",
     createdDate: "2021-03-15",
@@ -114,7 +115,7 @@ const initialMATs: MATData[] = [
         phone: "0151 234 5678",
         email: "office@allsaints.org",
         logo: "/placeholder.svg",
-        primaryColor: "#121051",
+        primaryColor: "#33295e",
         secondaryColor: "#4A90D9",
         powerBiLoginEmail: "reports@allsaints.org",
         matId: "mat-1",
@@ -132,7 +133,7 @@ const initialMATs: MATData[] = [
         phone: "0151 345 6789",
         email: "office@emmaus.org",
         logo: "/placeholder.svg",
-        primaryColor: "#121051",
+        primaryColor: "#33295e",
         secondaryColor: "#4A90D9",
         matId: "mat-1",
         createdDate: "2021-06-20",
@@ -558,7 +559,7 @@ export default function OrganisationPage() {
                               key={mat.id}
                               onClick={() => handleSelect("mat", mat.id)}
                               className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                selectedType === "mat" && selectedId === mat.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                selectedType === "mat" && selectedId === mat.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                               }`}
                             >
                               <span className={`text-sm flex-1 text-left truncate ${selectedType === "mat" && selectedId === mat.id ? "text-white font-medium" : "text-slate-900"}`}>
@@ -587,7 +588,7 @@ export default function OrganisationPage() {
                                 key={school.id}
                                 onClick={() => handleSelect("school", school.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                                  selectedType === "school" && selectedId === school.id ? "bg-[#B30089]" : "hover:bg-slate-50"
+                                  selectedType === "school" && selectedId === school.id ? "bg-[#fd6d6d]" : "hover:bg-slate-50"
                                 }`}
                               >
                                 <div className="flex-1 text-left min-w-0">
@@ -622,7 +623,7 @@ export default function OrganisationPage() {
                     setSelectedType(null)
                     setSelectedId(null)
                   }}
-                  className="text-sm text-[#121051] hover:underline"
+                  className="text-sm text-[#33295e] hover:underline"
                 >
                   Clear Selection
                 </button>
@@ -645,7 +646,7 @@ export default function OrganisationPage() {
                         size="sm"
                         onClick={handleSaveEdit}
                         className="text-white"
-                        style={{ backgroundColor: "#121051" }}
+                        style={{ backgroundColor: "#33295e" }}
                       >
                         Save
                       </Button>
@@ -660,7 +661,7 @@ export default function OrganisationPage() {
                             setManageSchoolsOpen(true)
                           }}
                           className="text-white"
-                          style={{ backgroundColor: "#121051" }}
+                          style={{ backgroundColor: "#33295e" }}
                         >
                           Manage Schools
                         </Button>
@@ -673,7 +674,7 @@ export default function OrganisationPage() {
                             setManageSchoolsOpen(true)
                           }}
                           className="text-white"
-                          style={{ backgroundColor: "#121051" }}
+                          style={{ backgroundColor: "#33295e" }}
                         >
                           Manage Schools
                         </Button>
@@ -682,7 +683,7 @@ export default function OrganisationPage() {
                         variant="outline"
                         size="sm"
                         onClick={handleEditClick}
-                        className="border-slate-300 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                        className="border-slate-300 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                       >
                         <Pencil className="w-4 h-4 mr-1" />
                         Edit
@@ -694,7 +695,7 @@ export default function OrganisationPage() {
                     size="sm"
                     onClick={handleOpenAddModal}
                     className="text-white"
-                    style={{ backgroundColor: "#121051" }}
+                    style={{ backgroundColor: "#33295e" }}
                   >
                     Add Organisation
                   </Button>
@@ -761,7 +762,7 @@ export default function OrganisationPage() {
                             setSchoolsDropdownOpen(!schoolsDropdownOpen)
                             setSchoolsSearch("")
                           }}
-                          className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-md hover:border-[#121051] transition-colors text-sm text-slate-700 min-w-[250px]"
+                          className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-md hover:border-[#33295e] transition-colors text-sm text-slate-700 min-w-[250px]"
                         >
                           <School className="w-4 h-4 text-slate-400" />
                           <span className="flex-1 text-left">Select a school...</span>
@@ -812,11 +813,11 @@ export default function OrganisationPage() {
                           <button
                             key={school.id}
                             onClick={() => handleDrillDownToSchool(school.id)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-md hover:border-[#121051] hover:bg-slate-50 transition-colors text-sm text-slate-700 group"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-md hover:border-[#33295e] hover:bg-slate-50 transition-colors text-sm text-slate-700 group"
                           >
-                            <School className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#121051]" />
+                            <School className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#33295e]" />
                             <span className="truncate max-w-[200px]">{school.name}</span>
-                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#121051]" />
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#33295e]" />
                           </button>
                         ))}
                       </div>
@@ -833,7 +834,7 @@ export default function OrganisationPage() {
                   onClick={() => setSettingsTab("subscription")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     settingsTab === "subscription"
-                      ? "border-[#121051] text-[#121051]"
+                      ? "border-[#33295e] text-[#33295e]"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >
@@ -843,7 +844,7 @@ export default function OrganisationPage() {
                   onClick={() => setSettingsTab("basic")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     settingsTab === "basic"
-                      ? "border-[#121051] text-[#121051]"
+                      ? "border-[#33295e] text-[#33295e]"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >
@@ -853,7 +854,7 @@ export default function OrganisationPage() {
                   onClick={() => setSettingsTab("branding")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     settingsTab === "branding"
-                      ? "border-[#121051] text-[#121051]"
+                      ? "border-[#33295e] text-[#33295e]"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >
@@ -863,7 +864,7 @@ export default function OrganisationPage() {
                   onClick={() => setSettingsTab("powerbi")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                     settingsTab === "powerbi"
-                      ? "border-[#121051] text-[#121051]"
+                      ? "border-[#33295e] text-[#33295e]"
                       : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                   }`}
                 >
@@ -890,19 +891,19 @@ export default function OrganisationPage() {
                           onClick={() => setActiveSubscription("essentials")}
                           className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
                             activeSubscription === "essentials"
-                              ? "border-[#121051] bg-[#121051]/5"
+                              ? "border-[#33295e] bg-[#33295e]/5"
                               : "border-slate-200 bg-white hover:border-slate-300"
                           }`}
                         >
                           {activeSubscription === "essentials" && (
-                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#33295e] text-white">Active</span>
                           )}
                           <span className="text-base font-semibold text-slate-900 mb-1">Essentials</span>
                           <span className="text-xs text-slate-500 leading-relaxed">Core data management and reporting tools for smaller organisations.</span>
                           <ul className="mt-4 space-y-1.5">
                             {["Core dashboards", "Attendance & behaviour", "Key stage performance", "Standard reporting", "Baseline benchmarking"].map(f => (
                               <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#33295e] shrink-0" />
                                 {f}
                               </li>
                             ))}
@@ -915,19 +916,19 @@ export default function OrganisationPage() {
                           onClick={() => setActiveSubscription("insight")}
                           className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
                             activeSubscription === "insight"
-                              ? "border-[#121051] bg-[#121051]/5"
+                              ? "border-[#33295e] bg-[#33295e]/5"
                               : "border-slate-200 bg-white hover:border-slate-300"
                           }`}
                         >
                           {activeSubscription === "insight" && (
-                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#33295e] text-white">Active</span>
                           )}
                           <span className="text-base font-semibold text-slate-900 mb-1">Insight</span>
                           <span className="text-xs text-slate-500 leading-relaxed">Advanced analytics and Power BI integration for growing trusts.</span>
                           <ul className="mt-4 space-y-1.5">
                             {["Everything in Essentials", "Full reporting suite", "Cross-school benchmarking", "MAT-level visibility"].map(f => (
                               <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#33295e] shrink-0" />
                                 {f}
                               </li>
                             ))}
@@ -940,19 +941,19 @@ export default function OrganisationPage() {
                           onClick={() => setActiveSubscription("enterprise")}
                           className={`relative flex flex-col p-6 rounded-xl border-2 text-left transition-all ${
                             activeSubscription === "enterprise"
-                              ? "border-[#121051] bg-[#121051]/5"
+                              ? "border-[#33295e] bg-[#33295e]/5"
                               : "border-slate-200 bg-white hover:border-slate-300"
                           }`}
                         >
                           {activeSubscription === "enterprise" && (
-                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Active</span>
+                            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-0.5 rounded-full bg-[#33295e] text-white">Active</span>
                           )}
                           <span className="text-base font-semibold text-slate-900 mb-1">Enterprise</span>
                           <span className="text-xs text-slate-500 leading-relaxed">Full platform access with dedicated support for large MATs.</span>
                           <ul className="mt-4 space-y-1.5">
                             {["Everything in Insight", "MAT-wide dashboards", "Advanced analytics", "Enhanced integrations"].map(f => (
                               <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#121051] shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#33295e] shrink-0" />
                                 {f}
                               </li>
                             ))}
@@ -969,7 +970,7 @@ export default function OrganisationPage() {
                           <div
                             className={`rounded-lg border-2 transition-all ${
                               addons.reportBuilder
-                                ? "border-[#121051] bg-[#121051]/5"
+                                ? "border-[#33295e] bg-[#33295e]/5"
                                 : "border-slate-200 bg-white hover:border-slate-300"
                             }`}
                           >
@@ -981,12 +982,12 @@ export default function OrganisationPage() {
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-semibold text-slate-900">Report Builder</span>
                                   {addons.reportBuilder && (
-                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#121051] text-white">Enabled</span>
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#33295e] text-white">Enabled</span>
                                   )}
                                 </div>
                                 <p className="text-xs text-slate-500 mt-0.5">Enables the Power BI tab for custom report building and advanced visualisations.</p>
                               </div>
-                              <div className={`w-10 h-6 rounded-full p-0.5 transition-colors ${addons.reportBuilder ? "bg-[#121051]" : "bg-slate-300"}`}>
+                              <div className={`w-10 h-6 rounded-full p-0.5 transition-colors ${addons.reportBuilder ? "bg-[#33295e]" : "bg-slate-300"}`}>
                                 <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${addons.reportBuilder ? "translate-x-4" : "translate-x-0"}`} />
                               </div>
                             </div>
@@ -1033,7 +1034,7 @@ export default function OrganisationPage() {
                           )}
                           <Button
                             className="text-white"
-                            style={{ backgroundColor: "#121051" }}
+                            style={{ backgroundColor: "#33295e" }}
                             onClick={() => {
                               if (activeSubscription) {
                                 localStorage.setItem("organisationSubscription", activeSubscription)
@@ -1358,7 +1359,7 @@ export default function OrganisationPage() {
                                 <span className="text-xs text-slate-500">Website</span>
                                 <p className="text-sm text-slate-900">
                                   {(selectedData as SchoolData).website ? (
-                                    <a href={(selectedData as SchoolData).website} target="_blank" rel="noopener noreferrer" className="text-[#121051] hover:underline">
+                                    <a href={(selectedData as SchoolData).website} target="_blank" rel="noopener noreferrer" className="text-[#33295e] hover:underline">
                                       {(selectedData as SchoolData).website}
                                     </a>
                                   ) : (
@@ -1594,7 +1595,7 @@ export default function OrganisationPage() {
                           <Button 
                             onClick={() => setSettingsTab("subscription")}
                             className="text-white"
-                            style={{ backgroundColor: "#121051" }}
+                            style={{ backgroundColor: "#33295e" }}
                           >
                             View Subscription Options
                           </Button>
@@ -1614,7 +1615,7 @@ export default function OrganisationPage() {
                               setPowerBiPassword("Sc@M4T2024!pbi")
                             }}
                             className="text-white"
-                            style={{ backgroundColor: "#121051" }}
+                            style={{ backgroundColor: "#33295e" }}
                           >
                             Activate
                           </Button>
@@ -1629,7 +1630,7 @@ export default function OrganisationPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => setDeactivateDialogOpen(true)}
-                              className="border-slate-200 text-slate-600 hover:bg-[#121051] hover:text-white hover:border-[#121051] transition-colors"
+                              className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                             >
                               Deactivate
                             </Button>
@@ -1699,7 +1700,7 @@ export default function OrganisationPage() {
                                     disabled={addingPowerBiUser || !newPowerBiUserEmail}
                                     size="sm"
                                     className="text-white h-9 min-w-[100px]"
-                                    style={{ backgroundColor: "#121051" }}
+                                    style={{ backgroundColor: "#33295e" }}
                                   >
                                     {addingPowerBiUser ? (
                                       <Spinner size="sm" className="border-white/40 border-t-white" />
@@ -1830,7 +1831,7 @@ export default function OrganisationPage() {
                           <span className="text-sm font-medium text-slate-900">{school.name}</span>
                           <span className="text-xs text-slate-500 ml-2">URN: {school.urn}</span>
                         </div>
-                        <span className="text-xs text-[#121051] font-medium">Add</span>
+                        <span className="text-xs text-[#33295e] font-medium">Add</span>
                       </button>
                     ))}
                   {standaloneSchools.filter(school => 
@@ -1906,7 +1907,7 @@ export default function OrganisationPage() {
             <Button
               onClick={() => setManageSchoolsOpen(false)}
               className="px-4 text-white"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Done
             </Button>
@@ -1940,7 +1941,7 @@ export default function OrganisationPage() {
                 setDeactivateDialogOpen(false)
               }}
               className="px-4 text-white"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Deactivate
             </Button>
@@ -1980,7 +1981,7 @@ export default function OrganisationPage() {
                 setSchoolToDelete(null)
               }}
               className="px-4 text-white"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Remove
             </Button>
@@ -2020,7 +2021,7 @@ export default function OrganisationPage() {
                 setSchoolToUnlink(null)
               }}
               className="px-4 text-white"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Unlink
             </Button>
@@ -2075,11 +2076,16 @@ export default function OrganisationPage() {
 
             <div>
               <label className="text-xs text-slate-500 block mb-1">Expiry Date</label>
-              <Input
-                type="date"
-                value={newOrgExpiry}
-                onChange={(e) => setNewOrgExpiry(e.target.value)}
-                className="h-9"
+              <ScrollingDatePicker
+                value={newOrgExpiry ? new Date(`${newOrgExpiry}T00:00:00`) : null}
+                onChange={(date) => {
+                  const y = date.getFullYear()
+                  const m = String(date.getMonth() + 1).padStart(2, "0")
+                  const d = String(date.getDate()).padStart(2, "0")
+                  setNewOrgExpiry(`${y}-${m}-${d}`)
+                }}
+                placeholder="Select a date"
+                className="w-full"
               />
             </div>
           </div>
@@ -2096,7 +2102,7 @@ export default function OrganisationPage() {
               onClick={handleAddOrganisation}
               disabled={!newOrgName || !newOrgExpiry}
               className="px-4 text-white disabled:opacity-50"
-              style={{ backgroundColor: "#121051" }}
+              style={{ backgroundColor: "#33295e" }}
             >
               Add
             </Button>

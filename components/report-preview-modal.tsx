@@ -1,6 +1,6 @@
 "use client"
 
-import { X, FileText, Calendar } from "lucide-react"
+import { X, FileText, Calendar, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -19,10 +19,26 @@ interface ReportPreviewModalProps {
   onClose: () => void
   report: Report | null
   onSelectReport: (report: Report) => void
+  schools?: string[]
+  scopeLabel?: string
 }
 
-export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: ReportPreviewModalProps) {
+export function ReportPreviewModal({
+  isOpen,
+  onClose,
+  report,
+  onSelectReport,
+  schools = ["St Clare Catholic Multi Academy Trust"],
+  scopeLabel = "Whole MAT",
+}: ReportPreviewModalProps) {
   if (!isOpen || !report) return null
+
+  const schoolCount = schools.length
+  const isSingleSchool = schoolCount === 1
+  // On the mock front page we show the scope: the school name when there is
+  // exactly one, otherwise the scope label with a school count.
+  const scopeSummary = isSingleSchool ? schools[0] : `${scopeLabel} · ${schoolCount} schools`
+  const feedCoverage = isSingleSchool ? schools[0] : `${schoolCount} schools`
 
   const getFrequencyColor = (frequency: string) => {
     switch (frequency.toLowerCase()) {
@@ -211,13 +227,13 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
   const previewContent = getPreviewContent()
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+      <div className="bg-card rounded-lg shadow-xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <FileText className="w-6 h-6 text-blue-600" />
+              <FileText className="w-6 h-6 text-primary" />
               <h2 className="text-xl font-semibold text-slate-900">{report.name}</h2>
             </div>
             <p className="text-slate-600 mb-3">{report.description}</p>
@@ -256,7 +272,7 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
               <div className="space-y-2">
                 {previewContent.sections.map((section, index) => (
                   <div key={index} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-medium text-blue-600">
+                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs font-medium text-primary">
                       {index + 1}
                     </div>
                     <span className="text-slate-700">{section}</span>
@@ -269,24 +285,24 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Report Front Page</h3>
               <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
-                <div className="aspect-[3/4] bg-gradient-to-br from-blue-50 to-white p-6 flex flex-col">
+                <div className="aspect-[3/4] bg-gradient-to-br from-slate-50 to-white p-6 flex flex-col">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                      <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">MAT</span>
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                        <span className="text-primary-foreground text-xs font-bold">MAT</span>
                       </div>
                     </div>
                     <div className="text-right text-xs text-slate-600">
                       <div>Generated: {new Date().toLocaleDateString()}</div>
-                      <div className="mt-1 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">{report.category}</div>
+                      <div className="mt-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs">{report.category}</div>
                     </div>
                   </div>
 
                   {/* Title */}
                   <div className="flex-1 flex flex-col justify-center">
                     <h1 className="text-lg font-bold text-slate-900 mb-2 leading-tight">{report.name}</h1>
-                    <p className="text-sm text-slate-600 mb-4">St Clare Catholic Multi Academy Trust</p>
+                    <p className="text-sm text-slate-600 mb-4">{scopeSummary}</p>
 
                     {/* Key Info */}
                     <div className="space-y-2 text-xs">
@@ -321,7 +337,39 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
 
           {/* Live Data Feeds */}
           <div className="mt-8">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Live Data Feeds</h3>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h3 className="text-lg font-semibold text-slate-900">Live Data Feeds</h3>
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <Building2 className="w-4 h-4 text-primary" />
+                <span>
+                  Feeding data for{" "}
+                  <span className="font-medium text-slate-900">
+                    {isSingleSchool ? schools[0] : `${schoolCount} schools`}
+                  </span>
+                  {!isSingleSchool && <span className="text-slate-500"> ({scopeLabel})</span>}
+                </span>
+              </div>
+            </div>
+
+            {/* Schools contributing to the feeds */}
+            {!isSingleSchool && (
+              <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Schools included ({schoolCount})
+                </p>
+                <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+                  {schools.map((school) => (
+                    <span
+                      key={school}
+                      className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700"
+                    >
+                      {school}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {previewContent.dataFeeds.map((feed, index) => (
                 <div key={index} className="p-4 border border-slate-200 rounded-lg bg-slate-50">
@@ -332,6 +380,7 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
                       <span className="text-xs text-green-600">Live</span>
                     </div>
                   </div>
+                  <p className="text-xs font-medium text-primary mb-2">{feedCoverage}</p>
                   <p className="text-sm text-slate-600 mb-3">{feed.description}</p>
                   <div className="text-xs text-slate-500">
                     Last refreshed: {new Date(feed.lastRefresh).toLocaleString()}
@@ -342,24 +391,24 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
           </div>
 
           {/* Report Features */}
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-3">Report Features</h4>
+          <div className="mt-8 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+            <h4 className="font-semibold text-slate-900 mb-3">Report Features</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <span className="text-blue-800">Interactive charts and visualizations</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-700">Interactive charts and visualizations</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <span className="text-blue-800">Customizable filtering options</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-700">Customizable filtering options</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <span className="text-blue-800">Export to PDF and Excel</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-700">Export to PDF and Excel</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <span className="text-blue-800">Historical trend analysis</span>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-slate-700">Historical trend analysis</span>
               </div>
               {report.qnaActive && (
                 <>
@@ -386,7 +435,10 @@ export function ReportPreviewModal({ isOpen, onClose, report, onSelectReport }: 
             <Button variant="outline" onClick={onClose}>
               Close Preview
             </Button>
-            <Button onClick={() => onSelectReport(report)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button
+              onClick={() => onSelectReport(report)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
               Select This Report
             </Button>
           </div>

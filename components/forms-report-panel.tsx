@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, CheckCircle, Circle, RotateCcw } from "lucide-react"
+import { ChevronDown, CheckCircle, Circle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -21,6 +21,8 @@ interface FormsReportPanelProps {
   activeSection: string
   onSectionClick: (sectionId: string) => void
   onClearForm: () => void
+  showSections: boolean
+  readOnly?: boolean
 }
 
 export function FormsReportPanel({
@@ -33,6 +35,8 @@ export function FormsReportPanel({
   activeSection,
   onSectionClick,
   onClearForm,
+  showSections,
+  readOnly = false,
 }: FormsReportPanelProps) {
   const forms = [
     "Headteacher's Report - Educational",
@@ -209,74 +213,83 @@ export function FormsReportPanel({
     <div className="bg-white border border-slate-200 rounded-lg h-full flex flex-col">
       {/* Forms Selection Section */}
       <div className="p-4 border-b border-slate-200 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-2xl">Forms</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClearForm}
-            className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Clear Form
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {/* Form Type Selector */}
-          <div className="relative">
-            <select
-              value={selectedForm}
-              onChange={(e) => onFormChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Please select a form type...</option>
-              {forms.map((form) => (
-                <option key={form} value={form}>
-                  {form}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+        {readOnly ? (
+          <div className="flex items-center">
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+              View only
+            </span>
           </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-end mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearForm}
+                className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
+              >
+                Clear Form
+              </Button>
+            </div>
 
-          {/* School Selector */}
-          <div className="relative">
-            <select
-              value={selectedSchool}
-              onChange={(e) => onSchoolChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Please select a school...</option>
-              {schools.map((school) => (
-                <option key={school} value={school}>
-                  {school}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-          </div>
+            <div className="space-y-4">
+              {/* Form Type Selector */}
+              <div className="relative">
+                <select
+                  value={selectedForm}
+                  onChange={(e) => onFormChange(e.target.value)}
+                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+                >
+                  <option value="">Please select a form type...</option>
+                  {forms.map((form) => (
+                    <option key={form} value={form}>
+                      {form}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
 
-          {/* Term Selector */}
-          <div className="relative">
-            <select
-              value={selectedTerm}
-              onChange={(e) => onTermChange(e.target.value)}
-              className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Please select a term...</option>
-              {terms.map((term) => (
-                <option key={term} value={term}>
-                  {term}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-          </div>
-        </div>
+              {/* School Selector */}
+              <div className="relative">
+                <select
+                  value={selectedSchool}
+                  onChange={(e) => onSchoolChange(e.target.value)}
+                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+                >
+                  <option value="">Please select a school...</option>
+                  {schools.map((school) => (
+                    <option key={school} value={school}>
+                      {school}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
+
+              {/* Term Selector */}
+              <div className="relative">
+                <select
+                  value={selectedTerm}
+                  onChange={(e) => onTermChange(e.target.value)}
+                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+                >
+                  <option value="">Please select a term...</option>
+                  {terms.map((term) => (
+                    <option key={term} value={term}>
+                      {term}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Report Sections Navigation */}
+      {/* Report Sections Navigation — only once a form, school and term are chosen */}
+      {showSections && (
       <div className="flex-1 flex flex-col min-h-0">
         <div className="p-4 border-b border-slate-200 flex-shrink-0">
           <h3 className="font-semibold text-lg">Report Sections</h3>
@@ -337,6 +350,7 @@ export function FormsReportPanel({
           </nav>
         </div>
       </div>
+      )}
     </div>
   )
 }

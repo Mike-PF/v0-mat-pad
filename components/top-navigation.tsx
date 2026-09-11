@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
-export function TopNavigation() {
+export function TopNavigation({ showProgress = true }: { showProgress?: boolean }) {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
 
@@ -31,6 +31,7 @@ export function TopNavigation() {
         { id: "dashboard-settings", label: "Dashboard Settings", href: "/settings/dashboard-settings" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
         { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
+        { id: "form-creation", label: "Form Creation", href: "/settings/form-creation" },
       ]
     }
 
@@ -41,6 +42,7 @@ export function TopNavigation() {
         { id: "system-help", label: "System Help", href: "/pixel-fusion/system-help" },
         { id: "system-notifications", label: "System Notifications", href: "/pixel-fusion/system-notifications" },
         { id: "ai-management", label: "AI Management", href: "/pixel-fusion/ai-management" },
+        { id: "connection-management", label: "Connection Management", href: "/pixel-fusion/connection-management" },
         { id: "users", label: "Users", href: "/pixel-fusion/users" },
       ]
     }
@@ -67,8 +69,7 @@ export function TopNavigation() {
 
     // Default tabs for forms and other pages
     return [
-      { id: "dashboard", label: "Dashboard", href: "/forms" },
-      { id: "maintenance", label: "Maintenance", href: "/forms/maintenance" },
+      { id: "dashboard", label: "Forms", href: "/forms" },
     ]
   }
 
@@ -114,7 +115,7 @@ export function TopNavigation() {
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {mounted && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
+        {mounted && showProgress && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">

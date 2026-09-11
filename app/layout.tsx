@@ -18,8 +18,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "Fuze",
+  description: "Fuze — reporting and forms for multi-academy trusts",
   generator: "v0.dev",
 }
 

@@ -23,9 +23,10 @@ interface RichTextEditorProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  readOnly?: boolean
 }
 
-export function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, className, readOnly = false }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [selectedFont, setSelectedFont] = useState("Arial")
   const [textColor, setTextColor] = useState("#000000")
@@ -90,7 +91,12 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
   return (
     <div className={`border border-slate-300 rounded-lg ${className}`}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 bg-slate-50">
+      <div
+        className={`flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 bg-slate-50 ${
+          readOnly ? "pointer-events-none opacity-50" : ""
+        }`}
+        aria-hidden={readOnly}
+      >
         {/* Basic Formatting */}
         <Button variant="ghost" size="sm" onClick={() => execCommand("bold")} className="h-8 w-8 p-0">
           <Bold className="h-4 w-4" />
@@ -195,9 +201,9 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
       {isMounted ? (
         <div
           ref={editorRef}
-          contentEditable
+          contentEditable={!readOnly}
           onInput={handleInput}
-          className="min-h-[120px] p-4 focus:outline-none"
+          className={`min-h-[120px] p-4 focus:outline-none ${readOnly ? "bg-slate-50 text-slate-600" : ""}`}
           style={{ minHeight: "120px" }}
           suppressContentEditableWarning={true}
           data-placeholder={placeholder}

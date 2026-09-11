@@ -39,7 +39,7 @@ export function SettingsContent() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Organisations</CardTitle>
-              <Button className="bg-[#121051] hover:bg-[#0f0d42] text-white" style={{ backgroundColor: "#121051" }}>
+              <Button className="bg-[#33295e] hover:bg-[#0f0d42] text-white" style={{ backgroundColor: "#33295e" }}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add organisation
               </Button>
@@ -83,7 +83,7 @@ export function SettingsContent() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Schools</CardTitle>
-              <Button className="bg-[#121051] hover:bg-[#0f0d42] text-white" style={{ backgroundColor: "#121051" }}>
+              <Button className="bg-[#33295e] hover:bg-[#0f0d42] text-white" style={{ backgroundColor: "#33295e" }}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add schools
               </Button>

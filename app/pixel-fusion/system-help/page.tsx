@@ -296,7 +296,7 @@ export default function SystemHelpPage() {
                 </div>
                 <Button
                   onClick={handleAddVideo}
-                  className="bg-[#121051] hover:bg-[#0a0838] text-white"
+                  className="bg-[#33295e] hover:bg-[#0a0838] text-white"
                 >
                   Add Video
                 </Button>
@@ -316,7 +316,7 @@ export default function SystemHelpPage() {
                 <select
                   value={filterPage}
                   onChange={(e) => setFilterPage(e.target.value)}
-                  className="h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#B30089]/20"
+                  className="h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d]/20"
                 >
                   <option value="all">All Pages</option>
                   {availablePages.map((page) => (
@@ -397,7 +397,7 @@ export default function SystemHelpPage() {
                                 e.stopPropagation()
                                 setPreviewVideo(video)
                               }}
-                              className="w-24 h-14 rounded-md overflow-hidden bg-gradient-to-br from-[#121051] to-[#B30089] flex items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity"
+                              className="w-24 h-14 rounded-md overflow-hidden bg-gradient-to-br from-[#33295e] to-[#fd6d6d] flex items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity"
                             >
                               <PlayCircle className="w-6 h-6 text-white" />
                             </button>
@@ -423,7 +423,7 @@ export default function SystemHelpPage() {
                               <button
                                 onClick={() => handleToggleActive(video.id)}
                                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                  video.isActive ? "bg-[#121051]" : "bg-slate-300"
+                                  video.isActive ? "bg-[#33295e]" : "bg-slate-300"
                                 }`}
                                 role="switch"
                                 aria-checked={video.isActive}
@@ -439,7 +439,7 @@ export default function SystemHelpPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setPreviewVideo(video)}
-                                className="text-slate-500 hover:text-[#B30089]"
+                                className="text-slate-500 hover:text-[#fd6d6d]"
                               >
                                 <PlayCircle className="w-4 h-4" />
                               </Button>
@@ -467,7 +467,7 @@ export default function SystemHelpPage() {
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-          <div className="bg-[#B30089] px-6 py-4">
+          <div className="bg-[#fd6d6d] px-6 py-4">
             <h2 className="text-lg font-semibold text-white">
               {editingVideo ? "Edit Help Video" : "Add Help Video"}
             </h2>
@@ -486,7 +486,7 @@ export default function SystemHelpPage() {
                 id="page"
                 value={formPageId}
                 onChange={(e) => setFormPageId(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#B30089]/20"
+                className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#fd6d6d]/20"
               >
                 <option value="">Select a page...</option>
                 {availablePages.map((page) => (
@@ -575,7 +575,7 @@ export default function SystemHelpPage() {
             </Button>
             <Button
               onClick={handleSaveVideo}
-              className="!bg-[#121051] !hover:bg-[#0a0838] !text-white"
+              className="!bg-[#33295e] !hover:bg-[#0a0838] !text-white"
             >
               {editingVideo ? "Update Video" : "Add Video"}
             </Button>
@@ -593,7 +593,7 @@ export default function SystemHelpPage() {
             className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#121051] to-[#B30089]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-[#33295e] to-[#fd6d6d]">
               <div>
                 <h3 className="text-lg font-semibold text-white">{previewVideo.title}</h3>
                 <p className="text-sm text-white/80">{previewVideo.description}</p>

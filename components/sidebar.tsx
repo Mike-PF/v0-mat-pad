@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette, SlidersHorizontal } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { isPlatformAdmin } from "@/lib/current-org"
 
-const ACCENT = "hsl(314 100% 35%)"
+const ACCENT = "#fd6d6d"
 
 const schools = [
   { id: "1", name: "All Saints' Catholic High School", abbr: "ASHS" },
@@ -38,12 +38,15 @@ function IconCircle({
 
 export function Sidebar({}: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [activeSchool, setActiveSchool] = useState(schools[0])
   const [mounted, setMounted] = useState(false)
+  const [readOnlyForms, setReadOnlyForms] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    setReadOnlyForms(new URLSearchParams(window.location.search).get("readonly") === "1")
   }, [])
 
   const menuItems = [
@@ -56,12 +59,18 @@ export function Sidebar({}: SidebarProps) {
     { icon: MessageSquare, label: "AI Chat", href: "/ai-chat" },
   ]
 
-  const isActive = (href: string) => mounted && pathname.startsWith(href)
+  const isActive = (href: string) => {
+    if (!mounted) return false
+    // In view-only permissions mode we're launched from Settings, so keep
+    // Forms inactive and let the Settings icon reflect the active state.
+    if (readOnlyForms && href === "/forms") return false
+    return pathname.startsWith(href)
+  }
 
   return (
     <div
       className="flex flex-col relative w-[60px]"
-      style={{ backgroundColor: "#121051" }}
+      style={{ backgroundColor: "#33295e" }}
     >
       {/* Nav Items */}
       <nav className="flex-1 pt-4 px-2 space-y-1">
@@ -129,7 +138,7 @@ export function Sidebar({}: SidebarProps) {
           className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
           title="Settings"
         >
-          <IconCircle active={mounted && pathname.startsWith("/settings")}>
+          <IconCircle active={mounted && (pathname.startsWith("/settings") || readOnlyForms)}>
             <Settings className="w-5 h-5" />
           </IconCircle>
         </a>
@@ -195,7 +204,7 @@ export function Sidebar({}: SidebarProps) {
 
         {/* Logout */}
         <button
-          onClick={() => {}}
+          onClick={() => router.push("/login")}
           className="w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
           title="Logout"
           aria-label="Logout"

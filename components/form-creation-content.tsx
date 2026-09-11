@@ -27,10 +27,8 @@ import {
   GitBranch,
   MousePointer,
   ArrowLeft,
-  ShieldCheck,
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
-import { Switch } from "@/components/ui/switch" // Added
 import { DocumentEditor } from "@/components/document-editor"
 import { OrganizationPicker } from "@/components/organization-picker"
 import { RolePicker } from "@/components/role-picker"
@@ -280,7 +278,7 @@ const generateDocumentTags = (count: number) => {
   return tags
 }
 
-export function DocumentCreationContent() {
+  export function FormCreationContent() {
   // Changed from default export to named export
   // Changed to default export
   const router = useRouter()
@@ -296,6 +294,10 @@ export function DocumentCreationContent() {
   const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
   const [reportLevel, setReportLevel] = useState<"school" | "mat">("school")
+  // Per-row Form Level ("MAT" or "School") for the saved forms table.
+  const [formLevels] = useState<Record<string, "MAT" | "School">>({})
+  // Per-row reporting Period ("Open" | "Termly" | "Half Termly" | "Monthly").
+  const [periods] = useState<Record<string, "Open" | "Termly" | "Half Termly" | "Monthly">>({})
   const [activeTab, setActiveTab] = useState<"datapoint">("datapoint")
   const [selectedSP, setSelectedSP] = useState("")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -1259,7 +1261,7 @@ export function DocumentCreationContent() {
                 </label>
                 <Input
                   type="text"
-                  placeholder="Enter document name..."
+                  placeholder="Enter form name..."
                   value={documentName}
                   onChange={(e) => setDocumentName(e.target.value)}
                 />
@@ -2214,10 +2216,10 @@ export function DocumentCreationContent() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Document Name</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Form Name</label>
                     <Input
                       type="text"
-                      placeholder="Enter document name..."
+                      placeholder="Enter form name..."
                       value={documentName}
                       onChange={(e) => setDocumentName(e.target.value)}
                     />
@@ -2260,7 +2262,7 @@ export function DocumentCreationContent() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-lg whitespace-nowrap">Document Configurations</CardTitle>
+                <CardTitle className="text-lg whitespace-nowrap">Form Configurations</CardTitle>
                 <div className="flex flex-1 justify-center">
                   <div className="relative w-full max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -2274,10 +2276,10 @@ export function DocumentCreationContent() {
                   </div>
                 </div>
                 <Button
-                  onClick={handleCreateNew}
+                  onClick={() => router.push("/settings/form-creation/builder")}
                   className="bg-[#33295e] hover:bg-[#fd6d6d] text-white transition-colors whitespace-nowrap"
                 >
-                  Create New Document
+                  Create New Form
                 </Button>
               </div>
             </CardHeader>
@@ -2288,21 +2290,24 @@ export function DocumentCreationContent() {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Form Name</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
                           Document Description
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Role</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Save</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Form Level</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Period</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document linked</th>
                         <th className="py-3 px-4"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {pagedDocuments.map((doc) => {
+                      {pagedDocuments.map((doc, rowIndex) => {
                         const config = documentConfigs[doc.id] // Get config for this document
+                        // Cycle period options so the table shows representative data.
+                        const periodOptions = ["Open", "Termly", "Half Termly", "Monthly"] as const
+                        const rowPeriod = periods[doc.id] ?? periodOptions[rowIndex % periodOptions.length]
+                        // Vary linkage so some forms are tied to a specific document and some are not.
+                        const isDocumentLinked = rowIndex % 3 !== 0
                         return (
                           <tr
                             key={doc.id}
@@ -2320,62 +2325,21 @@ export function DocumentCreationContent() {
                               <span className="text-sm text-slate-600 line-clamp-2">{doc.description ?? "—"}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <select
-                                value={config?.reportArea ?? ""}
-                                onChange={(e) => handleReportAreaChange(doc.id, e.target.value)}
-                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
-                              >
-                                <option value="">Select Area...</option>
-                                {REPORT_AREA_OPTIONS.map((area) => (
-                                  <option key={area} value={area}>
-                                    {area}
-                                  </option>
-                                ))}
-                              </select>
+                              <span className="text-sm text-slate-600">{formLevels[doc.id] ?? "School"}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <OrganizationPicker
-                                mats={mats}
-                                schools={schools}
-                                selected={config?.organizations ?? []}
-                                onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
-                              />
+                              <span className="text-sm text-slate-600">{rowPeriod}</span>
                             </td>
                             <td className="py-2 px-4">
-                              <RolePicker
-                                groups={(config?.organizations ?? []).map((urn) => ({
-                                  orgName: allOrganizations.find((o) => o.urn === urn)?.name ?? urn,
-                                  roles: rolesByOrg[urn] ?? [],
-                                }))}
-                                selected={config?.roleIds ?? []}
-                                onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
-                              />
+                              {isDocumentLinked ? (
+                                <span className="text-sm text-slate-600 line-clamp-1">{doc.name}</span>
+                              ) : (
+                                <span className="text-sm text-slate-400">Not linked</span>
+                              )}
                             </td>
                             <td className="py-2 px-4">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-600">{config?.isActive ? "Yes" : "No"}</span>
-                                <Switch
-                                  checked={config?.isActive ?? false}
-                                  onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
-                                  className="data-[state=checked]:bg-[#33295e]"
-                                />
-                              </div>
-                            </td>
-                            <td className="py-2 px-4">
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setNotificationMessage(`Saved "${doc.name}"`)
-                                  setShowNotification(true)
-                                }}
-                                className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
-                              >
-                                Save
-                              </Button>
-                            </td>
-                            <td className="py-2 px-4">
-                              <div className="flex items-center gap-2 justify-end">
-                                {config?.isActive && (
+                              <div className="flex items-center gap-2 justify-start">
+                                {!isDocumentLinked ? (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -2384,17 +2348,11 @@ export function DocumentCreationContent() {
                                   >
                                     Edit
                                   </Button>
+                                ) : (
+                                  <Button size="sm" className="invisible" aria-hidden="true" tabIndex={-1}>
+                                    Edit
+                                  </Button>
                                 )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => router.push("/forms?readonly=1")}
-                                  title="Change permissions"
-                                  aria-label="Change permissions"
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                >
-                                  <ShieldCheck className="w-4 h-4" />
-                                </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -2403,14 +2361,16 @@ export function DocumentCreationContent() {
                                 >
                                   Clone
                                 </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDownloadDocument(doc)}
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </Button>
+                                {!isDocumentLinked && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteDocument(doc.id)}
+                                    className="border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
+                                  >
+                                    Delete
+                                  </Button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -2477,8 +2437,8 @@ export function DocumentCreationContent() {
                   <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                     <FileText className="w-8 h-8 text-slate-400" />
                   </div>
-                  <p className="text-slate-600">No document configurations yet for this organization</p>
-                  <p className="text-sm text-slate-500 mt-1">Create your first document to get started</p>
+ <p className="text-slate-600">No form configurations yet for this organization</p>
+ <p className="text-sm text-slate-500 mt-1">Create your first form to get started</p>
                 </div>
               )}
             </CardContent>

@@ -19,17 +19,17 @@ import {
 import { isPlatformAdmin } from "@/lib/current-org"
 import { Palette, Type, MousePointerClick, Tag, FormInput, Layers, Check, Copy, Lock, Square, Ban } from "lucide-react"
 
-const NAVY = "#121051"
-const MAGENTA = "#B30089"
+const NAVY = "#33295e"
+const MAGENTA = "#fd6d6d"
 
 type Swatch = { name: string; value: string; note?: string; textLight?: boolean }
 
 const brandColors: Swatch[] = [
-  { name: "Brand Navy", value: "#121051", note: "Primary actions, headings, active states", textLight: true },
+  { name: "Brand Navy", value: "#33295e", note: "Primary actions, headings, active states", textLight: true },
   { name: "Navy Hover", value: "#0F0D42", note: "Primary button hover", textLight: true },
   { name: "Navy Deep", value: "#0E0C3E", note: "Sidebar accents", textLight: true },
-  { name: "Brand Magenta", value: "#B30089", note: "Secondary brand, AI/help, toggles", textLight: true },
-  { name: "Magenta Hover", value: "#8A006A", note: "Magenta hover state", textLight: true },
+  { name: "Brand Pink", value: "#fd6d6d", note: "Secondary brand, AI/help, toggles", textLight: true },
+  { name: "Pink Hover", value: "#e85555", note: "Pink hover state", textLight: true },
 ]
 
 const neutralColors: Swatch[] = [
@@ -53,12 +53,12 @@ const statusColors: Swatch[] = [
 const categoryColors: Swatch[] = [
   { name: "Blue", value: "#5B9BF5", textLight: true },
   { name: "Purple", value: "#715DBF", textLight: true },
-  { name: "Magenta", value: "#B3008B", textLight: true },
+  { name: "Pink", value: "#fd6d6d", textLight: true },
   { name: "Orange", value: "#F79400", textLight: true },
   { name: "Green", value: "#5BBE80", textLight: true },
   { name: "Teal", value: "#2395A4", textLight: true },
   { name: "Light Teal", value: "#6AD0D5" },
-  { name: "Red", value: "#F7555A", textLight: true },
+  { name: "Red", value: "#fd6d6d", textLight: true },
 ]
 
 const semanticTokens = [
@@ -244,7 +244,7 @@ export default function StyleGuidePage() {
                 <div className="rounded-lg border border-slate-200 p-4 mb-6">
                   <p className="text-sm font-medium text-slate-900 mb-1">Brand gradient</p>
                   <p className="text-xs text-slate-500 mb-3 font-mono">
-                    linear-gradient(90deg, #121051, #B30089)
+                    linear-gradient(90deg, #33295e, #fd6d6d)
                   </p>
                   <div className="h-14 rounded-md" style={{ background: `linear-gradient(90deg, ${NAVY}, ${MAGENTA})` }} />
                   <p className="text-xs text-slate-400 mt-2">Used for hero headers, modal banners and the AI assistant.</p>
@@ -335,7 +335,7 @@ export default function StyleGuidePage() {
                   <div className="rounded-lg border border-slate-200 p-4">
                     <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">Mono — font-mono</p>
                     <p className="text-2xl text-slate-900 font-mono">JetBrains Mono</p>
-                    <p className="text-xs text-slate-500 mt-2 font-mono">#121051 · const value = 42;</p>
+                    <p className="text-xs text-slate-500 mt-2 font-mono">#33295e · const value = 42;</p>
                   </div>
                 </div>
 
@@ -414,7 +414,7 @@ export default function StyleGuidePage() {
                       <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-500 text-white rounded">NEW</span>
                       <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded">URGENT</span>
                       <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-500 text-white rounded">ACTIVE</span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-[#121051]/10 text-[#121051]">System</span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-[#33295e]/10 text-[#33295e]">System</span>
                     </div>
                   </div>
                 </div>
