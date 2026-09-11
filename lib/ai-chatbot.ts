@@ -42,6 +42,28 @@ export interface AskRecord {
   lastAsked: string
 }
 
+/**
+ * Token + cost usage returned by the LLM provider for a single question. Prompt
+ * tokens are split into fresh vs cached because cached input is billed at a much
+ * lower rate (see {@link AI_PRICING_PER_1M}).
+ */
+export interface AskUsage {
+  /** Number of model calls made to answer this question. */
+  llmCalls: number
+  /** Total prompt (input) tokens across all calls. */
+  promptTokens: number
+  /** Portion of prompt tokens served from the provider's cache (cheaper). */
+  cachedPromptTokens: number
+  /** Completion (output) tokens generated. */
+  completionTokens: number
+  /** promptTokens + completionTokens. */
+  totalTokens: number
+  /** Estimated cost of this question, in `currency`. */
+  estimatedCost: number
+  /** ISO 4217 currency code the cost is expressed in (e.g. "GBP"). */
+  currency: string
+}
+
 /** A single question event — one row in the exportable Reports log. */
 export interface AskLogEntry {
   id: string
@@ -64,6 +86,48 @@ export interface AskLogEntry {
   answered: boolean
   /** The response the chatbot gave back to the user. */
   answer: string
+  /** Token + cost usage the model reported for this question. */
+  usage: AskUsage
+}
+
+/**
+ * Provider pricing per 1,000,000 tokens, in GBP. Cached input is billed far
+ * cheaper than fresh input, so the two are tracked separately.
+ */
+export const AI_PRICING_PER_1M = {
+  input: 1.4725,
+  cachedInput: 0.1472,
+  output: 8.8349,
+} as const
+
+/** Currency all AI costs are expressed in. */
+export const AI_CURRENCY = "GBP"
+
+/** Compute the estimated GBP cost of a question from its token split. */
+export function computeCost(u: {
+  promptTokens: number
+  cachedPromptTokens: number
+  completionTokens: number
+}): number {
+  const fresh = Math.max(0, u.promptTokens - u.cachedPromptTokens)
+  return (
+    (fresh / 1_000_000) * AI_PRICING_PER_1M.input +
+    (u.cachedPromptTokens / 1_000_000) * AI_PRICING_PER_1M.cachedInput +
+    (u.completionTokens / 1_000_000) * AI_PRICING_PER_1M.output
+  )
+}
+
+/** Format a GBP cost — 4 dp for sub-£1 amounts, 2 dp above. */
+export function formatCost(gbp: number): string {
+  const dp = gbp < 1 ? 4 : 2
+  return "£" + gbp.toLocaleString("en-GB", { minimumFractionDigits: dp, maximumFractionDigits: dp })
+}
+
+/** Compact token count, e.g. 71507 -> "71.5k", 1_240_000 -> "1.2M". */
+export function formatTokens(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M"
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "k"
+  return String(Math.round(n))
 }
 
 /**
@@ -299,6 +363,36 @@ function answerFor(question: string, answered: boolean): string {
   )
 }
 
+/**
+ * Build deterministic token + cost usage for a seeded log entry. Values mirror a
+ * real provider response: the prompt is large (report context) and mostly cached,
+ * the completion is small, and the cost is derived from the token split so it is
+ * always consistent with {@link AI_PRICING_PER_1M}.
+ */
+function makeUsage(seed: number, answered: boolean): AskUsage {
+  const rand = (n: number) => {
+    const x = Math.sin(seed * 977.13 + n * 41.7) * 10000
+    return x - Math.floor(x)
+  }
+  const llmCalls = 1 + Math.floor(rand(1) * 3) // 1–3 calls
+  const perCallPrompt = 9000 + Math.floor(rand(2) * 22000) // 9k–31k input tokens per call
+  const promptTokens = perCallPrompt * llmCalls
+  const cacheRatio = 0.86 + rand(3) * 0.12 // 86%–98% of the prompt served from cache
+  const cachedPromptTokens = Math.round(promptTokens * cacheRatio)
+  const completionTokens = answered ? 250 + Math.floor(rand(4) * 750) : 40 + Math.floor(rand(4) * 160)
+  const totalTokens = promptTokens + completionTokens
+  const estimatedCost = computeCost({ promptTokens, cachedPromptTokens, completionTokens })
+  return {
+    llmCalls,
+    promptTokens,
+    cachedPromptTokens,
+    completionTokens,
+    totalTokens,
+    estimatedCost,
+    currency: AI_CURRENCY,
+  }
+}
+
 function buildSeedLog(): AskLogEntry[] {
   const log: AskLogEntry[] = []
   let counter = 0
@@ -324,6 +418,7 @@ function buildSeedLog(): AskLogEntry[] {
         targetId: ask.targetId,
         answered,
         answer: answerFor(ask.question, answered),
+        usage: makeUsage(counter, answered),
       })
     }
   }
@@ -351,6 +446,7 @@ function buildSeedLog(): AskLogEntry[] {
         targetId: "",
         answered: false,
         answer: answerFor(u.q, false),
+        usage: makeUsage(counter + 500, false),
       })
   }
 
@@ -940,7 +1036,48 @@ export function logToExportRows(log: AskLogEntry[]) {
     Question: e.question,
     Answered: e.answered ? "Yes" : "No",
     Response: e.answer,
+    "LLM calls": e.usage.llmCalls,
+    "Prompt tokens": e.usage.promptTokens,
+    "Cached tokens": e.usage.cachedPromptTokens,
+    "Completion tokens": e.usage.completionTokens,
+    "Total tokens": e.usage.totalTokens,
+    [`Cost (${e.usage.currency})`]: Number(e.usage.estimatedCost.toFixed(4)),
   }))
+}
+
+/** Aggregate token + cost totals across a set of log entries. */
+export interface UsageTotals {
+  cost: number
+  totalTokens: number
+  promptTokens: number
+  cachedPromptTokens: number
+  completionTokens: number
+  llmCalls: number
+  questions: number
+}
+
+export function sumUsage(log: AskLogEntry[]): UsageTotals {
+  return log.reduce<UsageTotals>(
+    (acc, e) => {
+      acc.cost += e.usage.estimatedCost
+      acc.totalTokens += e.usage.totalTokens
+      acc.promptTokens += e.usage.promptTokens
+      acc.cachedPromptTokens += e.usage.cachedPromptTokens
+      acc.completionTokens += e.usage.completionTokens
+      acc.llmCalls += e.usage.llmCalls
+      acc.questions += 1
+      return acc
+    },
+    {
+      cost: 0,
+      totalTokens: 0,
+      promptTokens: 0,
+      cachedPromptTokens: 0,
+      completionTokens: 0,
+      llmCalls: 0,
+      questions: 0,
+    },
+  )
 }
 
 export function uniqueValues<K extends keyof AskLogEntry>(log: AskLogEntry[], key: K): string[] {

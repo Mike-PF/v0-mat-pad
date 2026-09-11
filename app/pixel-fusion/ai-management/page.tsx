@@ -44,6 +44,11 @@ import {
   formatLogDate,
   uniqueValues,
   activeCount,
+  formatCost,
+  formatTokens,
+  sumUsage,
+  AI_PRICING_PER_1M,
+  AI_CURRENCY,
   MAX_ACTIVE_QUESTIONS,
   type ChatTarget,
   type AreaPinned,
@@ -58,7 +63,7 @@ const NAVY = "#33295e"
 // Sentinel for the "All reports in this area" option (Radix Select forbids "" values).
 const ALL_REPORTS = "__all_reports__"
 
-type Tab = "prompts" | "trends" | "reports"
+type Tab = "prompts" | "trends" | "reports" | "usage"
 
 /**
  * System reports listed on the Dashboards page, grouped by the area heading they
@@ -219,6 +224,7 @@ export default function AiManagementPage() {
     { id: "prompts", label: "Report Prompts" },
     { id: "trends", label: "Question Trends" },
     { id: "reports", label: "Reports" },
+    { id: "usage", label: "AI Usage" },
   ]
 
   return (
@@ -266,8 +272,10 @@ export default function AiManagementPage() {
               />
             ) : tab === "trends" ? (
               <TrendsTab topicGroups={topicGroups} grandTotal={grandTotal} targets={targets} asks={asks} log={log} />
-            ) : (
+            ) : tab === "reports" ? (
               <ReportsTab log={log} />
+            ) : (
+              <UsageTab log={log} />
             )}
           </div>
         </main>
@@ -1382,7 +1390,7 @@ function OrgPicker({
 }
 
 /** Columns the question log can be sorted by. */
-type SortKey = "askedAt" | "user" | "role" | "school" | "page" | "topic" | "question" | "answered"
+type SortKey = "askedAt" | "user" | "role" | "school" | "page" | "topic" | "question" | "answered" | "cost"
 
 /** Return a new array of log entries sorted by the given column and direction. */
 function sortLog(entries: AskLogEntry[], key: SortKey, dir: "asc" | "desc"): AskLogEntry[] {
@@ -1393,6 +1401,8 @@ function sortLog(entries: AskLogEntry[], key: SortKey, dir: "asc" | "desc"): Ask
       cmp = new Date(a.askedAt).getTime() - new Date(b.askedAt).getTime()
     } else if (key === "answered") {
       cmp = Number(a.answered) - Number(b.answered)
+    } else if (key === "cost") {
+      cmp = a.usage.estimatedCost - b.usage.estimatedCost
     } else {
       cmp = String(a[key] ?? "").localeCompare(String(b[key] ?? ""), undefined, { sensitivity: "base" })
     }
@@ -1468,6 +1478,12 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
       { wch: 52 }, // Question
       { wch: 10 }, // Answered
       { wch: 70 }, // Response
+      { wch: 10 }, // LLM calls
+      { wch: 14 }, // Prompt tokens
+      { wch: 14 }, // Cached tokens
+      { wch: 16 }, // Completion tokens
+      { wch: 13 }, // Total tokens
+      { wch: 12 }, // Cost
     ]
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "AI Questions")
@@ -1585,13 +1601,14 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   <SortHeader label="Page / Report" sortKey="page" />
                   <SortHeader label="Topic" sortKey="topic" />
                   <SortHeader label="Question" sortKey="question" />
+                  <SortHeader label="Cost" sortKey="cost" align="center" />
                   <SortHeader label="Answered" sortKey="answered" align="center" />
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-sm text-slate-400">
+                    <td colSpan={9} className="px-4 py-12 text-center text-sm text-slate-400">
                       No questions match your filters.
                     </td>
                   </tr>
@@ -1628,6 +1645,9 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                         </td>
                         <td className="px-4 py-3 min-w-[280px]">
                           <span className="text-slate-700 hover:text-slate-900 hover:underline">{e.question}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center whitespace-nowrap font-medium text-slate-700 tabular-nums">
+                          {formatCost(e.usage.estimatedCost)}
                         </td>
                         <td className="px-4 py-3 text-center">
                           {e.answered ? (
@@ -1722,6 +1742,41 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                 </div>
               </dl>
 
+              {/* AI usage & cost for this question */}
+              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-400">AI usage &amp; cost</p>
+                  <span className="text-sm font-semibold text-slate-900 tabular-nums">
+                    {formatCost(selectedEntry.usage.estimatedCost)}
+                  </span>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">LLM calls</dt>
+                    <dd className="font-medium text-slate-700 tabular-nums">{selectedEntry.usage.llmCalls}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">Total tokens</dt>
+                    <dd className="font-medium text-slate-700 tabular-nums">
+                      {selectedEntry.usage.totalTokens.toLocaleString()}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">Prompt (cached)</dt>
+                    <dd className="font-medium text-slate-700 tabular-nums">
+                      {selectedEntry.usage.promptTokens.toLocaleString()} (
+                      {selectedEntry.usage.cachedPromptTokens.toLocaleString()})
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500">Completion</dt>
+                    <dd className="font-medium text-slate-700 tabular-nums">
+                      {selectedEntry.usage.completionTokens.toLocaleString()}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
               <div className="mt-6 flex justify-end">
                 <Button variant="outline" onClick={() => setSelectedEntry(null)}>
                   Close
@@ -1731,6 +1786,321 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+// ===========================================================================
+// Tab 4 — AI Usage (token + cost analytics)
+// ===========================================================================
+
+// Token-type colours for the usage breakdown (brand palette).
+const USAGE_COLORS = {
+  cached: "#33295e", // navy — cheapest, biggest share
+  fresh: "#2395A4", // teal — fresh input
+  completion: "#fd6d6d", // coral — output
+}
+
+/** A labelled horizontal bar row used in the spend-by breakdown panels. */
+function SpendBar({ label, cost, max, color }: { label: string; cost: number; max: number; color: string }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1 gap-3">
+        <span className="text-sm text-slate-700 truncate">{label}</span>
+        <span className="text-xs font-medium text-slate-500 tabular-nums shrink-0">{formatCost(cost)}</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${max > 0 ? (cost / max) * 100 : 0}%`, backgroundColor: color }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function UsageTab({ log }: { log: AskLogEntry[] }) {
+  const [orgSel, setOrgSel] = useState<OrgSelection>({ type: "all" })
+  const [windowDays, setWindowDays] = useState<string>("30") // "7" | "30" | "90" | "all"
+
+  const schools = useMemo(() => uniqueValues(log, "school"), [log])
+
+  // Scope by organisation + time window.
+  const filtered = useMemo(() => {
+    let scoped = log
+    if (orgSel.type === "school") scoped = scoped.filter((e) => e.school === orgSel.name)
+    else if (orgSel.type === "mat") {
+      const mat = ORG_TREE.find((m) => m.id === orgSel.id)
+      const matSchools = new Set(mat?.schools ?? [])
+      scoped = scoped.filter((e) => matSchools.has(e.school))
+    }
+    if (windowDays !== "all") {
+      const cutoff = Date.now() - Number(windowDays) * 24 * 60 * 60 * 1000
+      scoped = scoped.filter((e) => new Date(e.askedAt).getTime() >= cutoff)
+    }
+    return scoped
+  }, [log, orgSel, windowDays])
+
+  const totals = useMemo(() => sumUsage(filtered), [filtered])
+  const cacheRate = totals.promptTokens > 0 ? totals.cachedPromptTokens / totals.promptTokens : 0
+  const avgCost = totals.questions > 0 ? totals.cost / totals.questions : 0
+  const freshPromptTokens = Math.max(0, totals.promptTokens - totals.cachedPromptTokens)
+
+  // Daily spend for the trend chart.
+  const byDay = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const e of filtered) {
+      const key = new Date(e.askedAt).toISOString().slice(0, 10)
+      map.set(key, (map.get(key) ?? 0) + e.usage.estimatedCost)
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([day, cost]) => ({ day, cost }))
+  }, [filtered])
+  const dayMax = Math.max(0, ...byDay.map((d) => d.cost))
+
+  // Spend grouped by topic and by organisation.
+  const byTopic = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const e of filtered) map.set(e.topic, (map.get(e.topic) ?? 0) + e.usage.estimatedCost)
+    return Array.from(map.entries())
+      .map(([topic, cost]) => ({ topic, cost }))
+      .sort((a, b) => b.cost - a.cost)
+  }, [filtered])
+  const topicMax = byTopic[0]?.cost ?? 0
+
+  const bySchool = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const e of filtered) map.set(e.school, (map.get(e.school) ?? 0) + e.usage.estimatedCost)
+    return Array.from(map.entries())
+      .map(([school, cost]) => ({ school, cost }))
+      .sort((a, b) => b.cost - a.cost)
+  }, [filtered])
+  const schoolMax = bySchool[0]?.cost ?? 0
+
+  // Most expensive individual questions.
+  const topCost = useMemo(
+    () => [...filtered].sort((a, b) => b.usage.estimatedCost - a.usage.estimatedCost).slice(0, 8),
+    [filtered],
+  )
+
+  // Token-mix segments for the breakdown bar.
+  const tokenSegments = [
+    { key: "cached", label: "Cached input", tokens: totals.cachedPromptTokens, color: USAGE_COLORS.cached },
+    { key: "fresh", label: "Fresh input", tokens: freshPromptTokens, color: USAGE_COLORS.fresh },
+    { key: "completion", label: "Completion", tokens: totals.completionTokens, color: USAGE_COLORS.completion },
+  ]
+  const segTotal = tokenSegments.reduce((s, seg) => s + seg.tokens, 0)
+
+  const dayLabel = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+
+  return (
+    <div className="space-y-6">
+      {/* Scope controls */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <OrgPicker value={orgSel} onChange={setOrgSel} schools={schools} />
+        <Select value={windowDays} onValueChange={setWindowDays}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">Last 7 days</SelectItem>
+            <SelectItem value="30">Last 30 days</SelectItem>
+            <SelectItem value="90">Last 90 days</SelectItem>
+            <SelectItem value="all">All time</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label={`Total spend (${AI_CURRENCY})`} value={formatCost(totals.cost)} />
+        <StatCard label="Questions answered" value={totals.questions.toLocaleString()} />
+        <StatCard label="Avg. cost / question" value={formatCost(avgCost)} />
+        <StatCard label="LLM calls" value={totals.llmCalls.toLocaleString()} />
+      </div>
+
+      {totals.questions === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center text-sm text-slate-400">
+            No AI usage recorded for this scope.
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Daily spend trend */}
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h3 className="text-sm font-semibold text-slate-900">Daily spend</h3>
+                <span className="text-xs text-slate-400">{AI_CURRENCY} per day</span>
+              </div>
+              <p className="text-xs text-slate-500 mb-4">
+                What the AI assistant is costing over time. Hover a bar to see the exact spend for that day.
+              </p>
+              <div className="flex items-end gap-2 h-40 border-b border-slate-100">
+                {byDay.map((d) => (
+                  <div key={d.day} className="group relative flex-1 h-full flex items-end">
+                    <div
+                      className="w-full rounded-t transition-all"
+                      style={{
+                        height: `${dayMax > 0 ? Math.max(2, (d.cost / dayMax) * 100) : 2}%`,
+                        backgroundColor: NAVY,
+                      }}
+                    />
+                    <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 tabular-nums">
+                      {formatCost(d.cost)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-1.5">
+                {byDay.map((d) => (
+                  <span key={d.day} className="flex-1 text-center text-[10px] text-slate-400">
+                    {dayLabel(d.day)}
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Token mix + cache savings */}
+          <Card>
+            <CardContent className="p-5">
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">Token usage &amp; caching</h3>
+              <p className="text-xs text-slate-500 mb-4">
+                {formatTokens(totals.totalTokens)} tokens used in total.{" "}
+                <span className="font-medium text-slate-700">{Math.round(cacheRate * 100)}%</span> of input tokens were
+                served from cache, billed at a fraction of the fresh-input rate.
+              </p>
+              <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                {tokenSegments.map((seg) => (
+                  <div
+                    key={seg.key}
+                    style={{
+                      width: `${segTotal > 0 ? (seg.tokens / segTotal) * 100 : 0}%`,
+                      backgroundColor: seg.color,
+                    }}
+                    title={`${seg.label}: ${seg.tokens.toLocaleString()} tokens`}
+                  />
+                ))}
+              </div>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {tokenSegments.map((seg) => (
+                  <div key={seg.key} className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                    <div className="min-w-0">
+                      <p className="text-xs text-slate-500">{seg.label}</p>
+                      <p className="text-sm font-semibold text-slate-800 tabular-nums">
+                        {seg.tokens.toLocaleString()}
+                        <span className="ml-1 text-xs font-normal text-slate-400">
+                          {segTotal > 0 ? Math.round((seg.tokens / segTotal) * 100) : 0}%
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Spend by topic + organisation */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card>
+              <CardContent className="p-5">
+                <h3 className="text-sm font-semibold text-slate-900 mb-4">Spend by topic</h3>
+                <div className="space-y-3">
+                  {byTopic.map((t) => (
+                    <SpendBar
+                      key={t.topic}
+                      label={t.topic}
+                      cost={t.cost}
+                      max={topicMax}
+                      color={getAreaColor(t.topic)}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-5">
+                <h3 className="text-sm font-semibold text-slate-900 mb-4">Spend by organisation</h3>
+                <div className="space-y-3">
+                  {bySchool.map((s) => (
+                    <SpendBar key={s.school} label={s.school} cost={s.cost} max={schoolMax} color={NAVY} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Most expensive questions + pricing reference */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card>
+              <CardContent className="p-5">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">Most expensive questions</h3>
+                <div className="space-y-1">
+                  {topCost.map((e, i) => (
+                    <div key={e.id} className="flex items-center gap-3 py-1.5">
+                      <span className="text-xs font-semibold text-slate-300 w-6">{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-slate-700 truncate">{e.question}</p>
+                        <p className="text-xs text-slate-400 truncate">
+                          {e.school} · {formatTokens(e.usage.totalTokens)} tokens
+                        </p>
+                      </div>
+                      <span className="text-sm font-medium text-slate-700 tabular-nums shrink-0">
+                        {formatCost(e.usage.estimatedCost)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-5">
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">Pricing</h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Model rates per 1,000,000 tokens ({AI_CURRENCY}). Cached input is far cheaper than fresh input, so a
+                  high cache rate keeps costs down.
+                </p>
+                <dl className="space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <dt className="flex items-center gap-2 text-sm text-slate-700">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: USAGE_COLORS.fresh }} />
+                      Fresh input
+                    </dt>
+                    <dd className="text-sm font-medium text-slate-800 tabular-nums">
+                      {formatCost(AI_PRICING_PER_1M.input)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <dt className="flex items-center gap-2 text-sm text-slate-700">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: USAGE_COLORS.cached }} />
+                      Cached input
+                    </dt>
+                    <dd className="text-sm font-medium text-slate-800 tabular-nums">
+                      {formatCost(AI_PRICING_PER_1M.cachedInput)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="flex items-center gap-2 text-sm text-slate-700">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: USAGE_COLORS.completion }} />
+                      Completion (output)
+                    </dt>
+                    <dd className="text-sm font-medium text-slate-800 tabular-nums">
+                      {formatCost(AI_PRICING_PER_1M.output)}
+                    </dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   )
 }
