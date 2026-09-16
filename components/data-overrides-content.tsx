@@ -310,7 +310,7 @@ export function DataOverridesContent() {
         {isReady ? (
           <div className="space-y-6 pb-20">
             {/* Context banner */}
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-1">
+            <div className="sticky top-0 z-10 rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-1 shadow-sm">
               <div>
                 <p className="text-xs text-slate-500">Form</p>
                 <p className="text-sm font-semibold text-slate-900">{selectedForm}</p>
