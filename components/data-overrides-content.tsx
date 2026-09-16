@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronDown, Circle, CheckCircle, RotateCcw } from "lucide-react"
+import { ChevronDown, Circle, CheckCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { RAGPicker } from "@/components/ui/rag-picker"
@@ -257,23 +257,11 @@ export function DataOverridesContent() {
           {/* Section navigation — only once a form and school are chosen */}
           {isReady && (
             <div className="flex-1 flex flex-col min-h-0">
-              <div className="p-4 border-b border-slate-200 flex-shrink-0 flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg text-slate-900">Data Blocks</h3>
-                  <p className="text-sm text-slate-600 mt-1">
-                    {overriddenCount} of {ALL_BLOCKS.length} overridden
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={overriddenCount === 0}
-                  onClick={() => setOverrides({})}
-                  className="gap-1.5 border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Reset
-                </Button>
+              <div className="p-4 border-b border-slate-200 flex-shrink-0">
+                <h3 className="font-semibold text-lg text-slate-900">Data Blocks</h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  {overriddenCount} of {ALL_BLOCKS.length} overridden
+                </p>
               </div>
 
               <div className="flex-1 overflow-y-auto">
