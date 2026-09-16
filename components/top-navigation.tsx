@@ -30,9 +30,9 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
         { id: "system-dates", label: "System Dates", href: "/settings/term-dates" },
         { id: "dashboard-settings", label: "Dashboard Settings", href: "/settings/dashboard-settings" },
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
-        { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
-        { id: "form-creation", label: "Form Creation", href: "/settings/form-creation" },
-      ]
+      { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
+      { id: "form-creation", label: "Form Creation", href: "/settings/form-creation" },
+    ]
     }
 
     // Pixel Fusion: internal, admin-only settings (System Help, System
@@ -70,6 +70,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
     // Default tabs for forms and other pages
     return [
       { id: "dashboard", label: "Forms", href: "/forms" },
+      { id: "data-overrides", label: "Data Overrides", href: "/forms/data-overrides" },
     ]
   }
 
