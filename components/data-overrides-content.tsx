@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronDown, Circle, CheckCircle } from "lucide-react"
+import { ChevronDown, Circle, CheckCircle, RotateCcw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { RAGPicker } from "@/components/ui/rag-picker"
@@ -321,7 +321,16 @@ export function DataOverridesContent() {
                 <p className="text-xs text-slate-500">School</p>
                 <p className="text-sm font-semibold text-slate-900">{selectedSchool}</p>
               </div>
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  disabled={overriddenCount === 0}
+                  onClick={() => setOverrides({})}
+                  className="gap-1.5 border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset
+                </Button>
                 <Button className="bg-[#33295e] text-white hover:bg-[#fd6d6d]" disabled={overriddenCount === 0}>
                   Save overrides
                 </Button>
