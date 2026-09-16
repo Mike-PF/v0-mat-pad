@@ -32,7 +32,6 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
       { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
       { id: "form-creation", label: "Form Creation", href: "/settings/form-creation" },
-      { id: "data-overrides", label: "Data Overrides", href: "/settings/data-overrides" },
     ]
     }
 
@@ -71,6 +70,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
     // Default tabs for forms and other pages
     return [
       { id: "dashboard", label: "Forms", href: "/forms" },
+      { id: "data-overrides", label: "Data Overrides", href: "/forms/data-overrides" },
     ]
   }
 

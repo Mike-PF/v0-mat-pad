@@ -1,479 +1,440 @@
 "use client"
 
-import { useState } from "react"
-import {
-  Type,
-  Baseline,
-  Hash,
-  Calendar,
-  Palette,
-  RotateCcw,
-  FileText,
-  School as SchoolIcon,
-  Save,
-  Layers,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { ChevronDown, Circle, CheckCircle, RotateCcw } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { RichTextEditor } from "@/components/ui/rich-text-editor"
+import { RAGPicker } from "@/components/ui/rag-picker"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
-const NAVY = "#33295e"
+// -------------------------------------------------------------------------
+// Mock data — the "document" of data blocks that a form is built from. Each
+// block carries the shared (central) value that every school inherits by
+// default; overriding a block replaces that value for the selected school
+// only. Wire this to real form/data-block sources when available.
+// -------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Mock data — forms, schools, and the document (sections → data blocks) that a
-// form is made up of. Each block has a shared default value; a school can turn
-// a block off to replace that default with its own value.
-// ---------------------------------------------------------------------------
-
-type Form = { id: string; name: string; level: "School" | "MAT" }
-
-const FORMS: Form[] = [
-  { id: "head-report", name: "Head Report (24/25) - Gaz", level: "School" },
-  { id: "attendance", name: "Attendance Report Template", level: "School" },
-  { id: "send", name: "SEND Provision Report", level: "School" },
-  { id: "governor", name: "Governor Termly Report", level: "MAT" },
+const FORMS = [
+  "Headteacher's Report - Educational",
+  "Headteacher's Report - Financial",
+  "Annual Report",
+  "Self-Evaluation Form",
 ]
 
 const SCHOOLS = [
-  { urn: "138337", name: "All Saints' Catholic High School" },
-  { urn: "138361", name: "Notre Dame High School" },
-  { urn: "140439", name: "Sacred Heart School, A Catholic Voluntary Academy" },
-  { urn: "138830", name: "St Wilfrid's Catholic Primary School" },
-  { urn: "140826", name: "Emmaus Catholic and CofE Primary School" },
+  "Holy Family Catholic Academy",
+  "St. Mary's Primary School",
+  "Sacred Heart Academy",
+  "St. Joseph's School",
 ]
 
-type BlockType = "richtext" | "short-text" | "number" | "date" | "rag"
+type BlockType = "text" | "number" | "percent" | "date" | "rag"
 
-type DataBlock = {
+interface DataBlock {
   id: string
   label: string
   type: BlockType
-  /** The shared default value used unless a school overrides it. */
-  defaultValue: string
-  /** Short explanation shown in the info tooltip. */
-  hint: string
+  /** Shared value inherited from central data. */
+  shared: string
+  info?: string
 }
 
-type DocSection = {
+interface DocSection {
   id: string
-  label: string
+  title: string
   blocks: DataBlock[]
 }
 
-const BLOCK_META: Record<BlockType, { label: string; icon: typeof Type }> = {
-  richtext: { label: "Rich text", icon: Type },
-  "short-text": { label: "Short text", icon: Baseline },
-  number: { label: "Number", icon: Hash },
-  date: { label: "Date", icon: Calendar },
-  rag: { label: "RAG rating", icon: Palette },
-}
-
-const RAG_OPTIONS: { value: string; label: string; color: string; bg: string }[] = [
-  { value: "red", label: "Red", color: "#b91c1c", bg: "#fee2e2" },
-  { value: "amber", label: "Amber", color: "#b45309", bg: "#fef3c7" },
-  { value: "green", label: "Green", color: "#15803d", bg: "#dcfce7" },
-]
-
-// The document shape shared by every form in this demo.
 const DOCUMENT: DocSection[] = [
   {
-    id: "report-header",
-    label: "Report Header",
+    id: "school-details",
+    title: "School Details",
     blocks: [
       {
-        id: "b-school-name",
+        id: "school-name",
         label: "School name",
-        type: "short-text",
-        defaultValue: "{setting:name}",
-        hint: "Pulled from the school's settings. Override to display a different name on this form.",
+        type: "text",
+        shared: "{setting:name}",
+        info: "The registered name of the school as it appears on the report cover.",
+      },
+      { id: "headteacher", label: "Headteacher", type: "text", shared: "{setting:headteacher}" },
+      { id: "dfe-number", label: "DfE establishment number", type: "text", shared: "{setting:dfe}" },
+      {
+        id: "last-ofsted",
+        label: "Last Ofsted inspection",
+        type: "date",
+        shared: "2023-11-14",
+        info: "Date of the most recent Ofsted inspection.",
       },
       {
-        id: "b-period",
-        label: "Reporting period",
-        type: "short-text",
-        defaultValue: "Autumn Term 2024/25",
-        hint: "The period this report covers.",
-      },
-      {
-        id: "b-head-name",
-        label: "Headteacher name",
-        type: "short-text",
-        defaultValue: "{setting:head}",
-        hint: "Pulled from the school's settings.",
+        id: "overall-effectiveness",
+        label: "Overall effectiveness",
+        type: "rag",
+        shared: "green",
+        info: "RAG rating summarising the trust's view of overall effectiveness.",
       },
     ],
   },
   {
-    id: "exec-summary",
-    label: "1. Executive Summary from the Headteacher/Head of School",
+    id: "demographics",
+    title: "Roll & Demographics",
     blocks: [
-      {
-        id: "b-religion-life",
-        label: "{setting:religion} Life",
-        type: "richtext",
-        defaultValue:
-          "<p>Our school's religious life continues to flourish, with strong participation in collective worship and a shared commitment to our values across the whole community.</p>",
-        hint: "Shared narrative used across all schools unless overridden.",
-      },
-      {
-        id: "b-religious-education",
-        label: "Religious Education",
-        type: "richtext",
-        defaultValue:
-          "<p>RE outcomes remain strong across all key stages, with pupils demonstrating secure knowledge and thoughtful engagement with big questions.</p>",
-        hint: "Default RE summary. Override for school-specific commentary.",
-      },
+      { id: "number-on-roll", label: "Number on roll", type: "number", shared: "412" },
+      { id: "pupil-premium", label: "Pupil premium", type: "percent", shared: "28" },
+      { id: "eal", label: "English as an additional language", type: "percent", shared: "19" },
+      { id: "send", label: "SEND support", type: "percent", shared: "14" },
     ],
   },
   {
     id: "attendance",
-    label: "2. Attendance & Welfare",
+    title: "Attendance",
     blocks: [
       {
-        id: "b-overall-attendance",
-        label: "Overall attendance (%)",
-        type: "number",
-        defaultValue: "95.4",
-        hint: "Trust-wide default figure. Override with the school's actual attendance.",
+        id: "overall-attendance",
+        label: "Overall attendance",
+        type: "percent",
+        shared: "96.2",
+        info: "Whole-school attendance for the reporting period.",
       },
-      {
-        id: "b-persistent-absence",
-        label: "Persistent absence (%)",
-        type: "number",
-        defaultValue: "8.2",
-        hint: "Percentage of pupils persistently absent.",
-      },
-      {
-        id: "b-attendance-rag",
-        label: "Attendance RAG",
-        type: "rag",
-        defaultValue: "green",
-        hint: "Overall attendance status indicator.",
-      },
+      { id: "persistent-absence", label: "Persistent absence", type: "percent", shared: "8.4" },
+      { id: "authorised-absence", label: "Authorised absence", type: "percent", shared: "3.1" },
     ],
   },
   {
-    id: "safeguarding",
-    label: "3. Safeguarding",
+    id: "assessment",
+    title: "Key Stage 2 Assessment",
     blocks: [
-      {
-        id: "b-safeguarding-statement",
-        label: "Safeguarding statement",
-        type: "richtext",
-        defaultValue:
-          "<p>All staff have completed annual safeguarding training and understand their responsibilities under Keeping Children Safe in Education.</p>",
-        hint: "Standard statement. Override where the school needs bespoke wording.",
-      },
-      {
-        id: "b-dsl-review-date",
-        label: "Last DSL policy review",
-        type: "date",
-        defaultValue: "2024-09-01",
-        hint: "Date the safeguarding policy was last reviewed.",
-      },
+      { id: "ks2-reading", label: "Reading at expected standard", type: "percent", shared: "74" },
+      { id: "ks2-writing", label: "Writing at expected standard", type: "percent", shared: "69" },
+      { id: "ks2-maths", label: "Maths at expected standard", type: "percent", shared: "77" },
     ],
   },
 ]
 
-const ALL_BLOCK_IDS = DOCUMENT.flatMap((s) => s.blocks.map((b) => b.id))
+const TYPE_LABEL: Record<BlockType, string> = {
+  text: "Text",
+  number: "Number",
+  percent: "Percentage",
+  date: "Date",
+  rag: "RAG rating",
+}
 
-// ---------------------------------------------------------------------------
-
-type OverrideState = { value: string }
+const ALL_BLOCKS = DOCUMENT.flatMap((s) => s.blocks)
 
 export function DataOverridesContent() {
-  const [formId, setFormId] = useState<string>("")
-  const [schoolUrn, setSchoolUrn] = useState<string>("")
+  const [selectedForm, setSelectedForm] = useState("")
+  const [selectedSchool, setSelectedSchool] = useState("")
+  const [activeSection, setActiveSection] = useState(DOCUMENT[0].id)
 
-  // Which blocks are overridden for the selected school, and their values.
-  const [overrides, setOverrides] = useState<Record<string, OverrideState>>({})
+  // Override values keyed by block id. A key being present means the block is
+  // overridden for this school; its value replaces the shared value.
+  const [overrides, setOverrides] = useState<Record<string, string>>({})
 
-  const selectedForm = FORMS.find((f) => f.id === formId)
-  const selectedSchool = SCHOOLS.find((s) => s.urn === schoolUrn)
-  const loaded = Boolean(selectedForm && selectedSchool)
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  const scrollRef = useRef<HTMLDivElement>(null)
 
-  const overriddenCount = Object.keys(overrides).length
+  const isReady = Boolean(selectedForm && selectedSchool)
 
-  // Reset overrides whenever the form or school changes — overrides are scoped
-  // to a single form/school pairing.
-  const resetForSelection = () => setOverrides({})
+  // Reset overrides whenever the form or school selection changes.
+  useEffect(() => {
+    setOverrides({})
+    setActiveSection(DOCUMENT[0].id)
+  }, [selectedForm, selectedSchool])
 
-  const isOverridden = (id: string) => id in overrides
+  // Track the section currently in view for the left-hand navigation.
+  useEffect(() => {
+    if (!isReady) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id)
+        })
+      },
+      { threshold: 0.4, rootMargin: "-80px 0px -60% 0px" },
+    )
+    Object.values(sectionRefs.current).forEach((ref) => ref && observer.observe(ref))
+    return () => observer.disconnect()
+  }, [isReady])
 
-  const toggleBlock = (block: DataBlock) => {
+  const overriddenCount = useMemo(
+    () => ALL_BLOCKS.filter((b) => overrides[b.id] !== undefined).length,
+    [overrides],
+  )
+
+  const scrollToSection = (id: string) => {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" })
+    setActiveSection(id)
+  }
+
+  const isOverridden = (id: string) => overrides[id] !== undefined
+
+  const toggleOverride = (block: DataBlock) => {
     setOverrides((prev) => {
       const next = { ...prev }
       if (block.id in next) {
         delete next[block.id]
       } else {
-        // Seed the override with the current default so the editor starts from
-        // the shared value rather than a blank field.
-        next[block.id] = { value: block.defaultValue }
+        // Seed the override with the shared value so editing starts from it.
+        next[block.id] = block.shared
       }
       return next
     })
   }
 
-  const setValue = (id: string, value: string) => {
-    setOverrides((prev) => ({ ...prev, [id]: { value } }))
+  const setOverrideValue = (id: string, value: string) => {
+    setOverrides((prev) => ({ ...prev, [id]: value }))
   }
 
-  const schoolLabel = selectedSchool?.name ?? "this school"
+  const sectionOverrideCount = (section: DocSection) =>
+    section.blocks.filter((b) => isOverridden(b.id)).length
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="mx-auto max-w-4xl pb-16">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-900">Data Overrides</h1>
-          <p className="mt-1 text-sm text-slate-500 leading-relaxed">
-            Pick a form and a school to load its data blocks. Each block uses a shared default value — turn a block off
-            to replace that value with a school-specific override.
-          </p>
-        </div>
-
-        {/* Selectors */}
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                <FileText className="h-3.5 w-3.5" />
-                Form
-              </label>
-              <Select
-                value={formId}
-                onValueChange={(v) => {
-                  setFormId(v)
-                  resetForSelection()
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a form..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {FORMS.map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                <SchoolIcon className="h-3.5 w-3.5" />
-                School
-              </label>
-              <Select
-                value={schoolUrn}
-                onValueChange={(v) => {
-                  setSchoolUrn(v)
-                  resetForSelection()
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a school..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {SCHOOLS.map((s) => (
-                    <SelectItem key={s.urn} value={s.urn}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        {/* Empty state */}
-        {!loaded && (
-          <div className="mt-6 flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white py-16 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
-              <Layers className="h-6 w-6 text-slate-400" />
-            </div>
-            <p className="text-sm font-medium text-slate-700">No document loaded</p>
-            <p className="mt-1 max-w-sm text-xs text-slate-500">
-              Choose a form and a school above to load its data blocks and manage overrides.
+    <div className="flex h-full gap-4">
+      {/* Left panel: form + school pickers and section navigation */}
+      <div className="w-80 flex-shrink-0">
+        <div className="bg-white border border-slate-200 rounded-lg h-full flex flex-col">
+          <div className="p-4 border-b border-slate-200 flex-shrink-0">
+            <h3 className="font-semibold text-lg text-slate-900">Data Overrides</h3>
+            <p className="text-sm text-slate-600 mt-1">
+              Choose a form and school, then override individual data blocks for that school.
             </p>
-          </div>
-        )}
 
-        {/* Loaded document */}
-        {loaded && (
-          <>
-            {/* Summary bar */}
-            <div className="sticky top-0 z-10 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-900">{selectedForm!.name}</p>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Overrides for <span className="font-medium text-slate-700">{selectedSchool!.name}</span> ·{" "}
-                  <span className="font-medium" style={{ color: overriddenCount > 0 ? NAVY : undefined }}>
-                    {overriddenCount}
-                  </span>{" "}
-                  of {ALL_BLOCK_IDS.length} blocks overridden
-                </p>
+            <div className="space-y-4 mt-4">
+              {/* Form selector */}
+              <div className="relative">
+                <select
+                  value={selectedForm}
+                  onChange={(e) => setSelectedForm(e.target.value)}
+                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+                >
+                  <option value="">Please select a form...</option>
+                  {FORMS.map((form) => (
+                    <option key={form} value={form}>
+                      {form}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* School selector */}
+              <div className="relative">
+                <select
+                  value={selectedSchool}
+                  onChange={(e) => setSelectedSchool(e.target.value)}
+                  className="w-full p-3 pr-10 border border-slate-300 rounded-md bg-white text-sm appearance-none accent-[#33295e] focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:border-[#33295e]"
+                >
+                  <option value="">Please select a school...</option>
+                  {SCHOOLS.map((school) => (
+                    <option key={school} value={school}>
+                      {school}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section navigation — only once a form and school are chosen */}
+          {isReady && (
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="p-4 border-b border-slate-200 flex-shrink-0 flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg text-slate-900">Data Blocks</h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {overriddenCount} of {ALL_BLOCKS.length} overridden
+                  </p>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setOverrides({})}
                   disabled={overriddenCount === 0}
-                  className="gap-1.5 border-slate-200 text-slate-600 transition-colors hover:border-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-40"
+                  onClick={() => setOverrides({})}
+                  className="gap-1.5 border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50"
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Reset all
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset
                 </Button>
-                <Button size="sm" className="gap-1.5 bg-[#33295e] text-white transition-colors hover:bg-[#fd6d6d]">
-                  <Save className="h-3.5 w-3.5" />
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                <nav className="p-2">
+                  {DOCUMENT.map((section) => {
+                    const count = sectionOverrideCount(section)
+                    return (
+                      <button
+                        key={section.id}
+                        onClick={() => scrollToSection(section.id)}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 hover:bg-slate-50 mb-1",
+                          activeSection === section.id && "bg-blue-50 border border-blue-200",
+                        )}
+                      >
+                        {count > 0 ? (
+                          <CheckCircle className="w-4 h-4 text-[#33295e] flex-shrink-0" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className={cn(
+                              "font-medium text-sm truncate",
+                              activeSection === section.id ? "text-blue-900" : "text-slate-900",
+                            )}
+                          >
+                            {section.title}
+                          </div>
+                        </div>
+                        {count > 0 && (
+                          <span className="flex-shrink-0 inline-flex items-center rounded-full bg-[#33295e] px-2 py-0.5 text-xs font-medium text-white">
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </nav>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
+        {isReady ? (
+          <div className="space-y-6 pb-20">
+            {/* Context banner */}
+            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-1">
+              <div>
+                <p className="text-xs text-slate-500">Form</p>
+                <p className="text-sm font-semibold text-slate-900">{selectedForm}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">School</p>
+                <p className="text-sm font-semibold text-slate-900">{selectedSchool}</p>
+              </div>
+              <div className="ml-auto">
+                <Button className="bg-[#33295e] text-white hover:bg-[#fd6d6d]" disabled={overriddenCount === 0}>
                   Save overrides
                 </Button>
               </div>
             </div>
 
-            {/* Sections */}
-            <div className="mt-4 space-y-4">
-              {DOCUMENT.map((section) => (
-                <div key={section.id} className="rounded-lg border border-slate-200 bg-white">
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <h2 className="text-sm font-semibold text-slate-900">{section.label}</h2>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {section.blocks.map((block) => (
-                      <DataBlockRow
+            {DOCUMENT.map((section) => (
+              <Card
+                key={section.id}
+                id={section.id}
+                ref={(el) => {
+                  sectionRefs.current[section.id] = el
+                }}
+                className="scroll-mt-4"
+              >
+                <CardHeader>
+                  <CardTitle className="text-2xl">{section.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {section.blocks.map((block) => {
+                    const overridden = isOverridden(block.id)
+                    return (
+                      <div
                         key={block.id}
-                        block={block}
-                        overridden={isOverridden(block.id)}
-                        overrideValue={overrides[block.id]?.value ?? block.defaultValue}
-                        schoolLabel={schoolLabel}
-                        onToggle={() => toggleBlock(block)}
-                        onChange={(v) => setValue(block.id, v)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+                        className={cn(
+                          "rounded-lg border p-4 transition-colors",
+                          overridden ? "border-[#33295e]/40 bg-[#33295e]/5" : "border-slate-200 bg-white",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium text-slate-900">{block.label}</span>
+                              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                                {TYPE_LABEL[block.type]}
+                              </span>
+                              {overridden && (
+                                <span className="inline-flex items-center rounded-full bg-[#33295e] px-2 py-0.5 text-xs font-medium text-white">
+                                  Overridden
+                                </span>
+                              )}
+                              {block.info && <InfoTooltip content={block.info} />}
+                            </div>
+                          </div>
+
+                          {/* Use-shared toggle: on = shared, off = override */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-xs text-slate-500 whitespace-nowrap">Use shared value</span>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={!overridden}
+                              aria-label={`Use shared value for ${block.label}`}
+                              onClick={() => toggleOverride(block)}
+                              className={cn(
+                                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:ring-offset-1",
+                                !overridden ? "bg-[#33295e]" : "bg-slate-300",
+                              )}
+                            >
+                              <span
+                                className={cn(
+                                  "inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform",
+                                  !overridden ? "translate-x-4" : "translate-x-1",
+                                )}
+                              />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          {overridden ? (
+                            <BlockEditor
+                              block={block}
+                              value={overrides[block.id] ?? ""}
+                              onChange={(v) => setOverrideValue(block.id, v)}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-400">Shared:</span>
+                              <span className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 font-mono">
+                                {formatShared(block)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">
+            <div className="max-w-sm px-6 text-center">
+              <p className="text-base font-medium text-slate-900">Select a form and school</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Choose a form type and a school to load its data blocks, then turn off any block to override its value
+                for that school.
+              </p>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
   )
 }
 
-// ---------------------------------------------------------------------------
-
-function DataBlockRow({
-  block,
-  overridden,
-  overrideValue,
-  schoolLabel,
-  onToggle,
-  onChange,
-}: {
-  block: DataBlock
-  overridden: boolean
-  overrideValue: string
-  schoolLabel: string
-  onToggle: () => void
-  onChange: (value: string) => void
-}) {
-  const meta = BLOCK_META[block.type]
-  const Icon = meta.icon
-
-  return (
-    <div className={overridden ? "bg-slate-50/60 px-4 py-4" : "px-4 py-4"}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
-              <Icon className="h-3 w-3" />
-              {meta.label}
-            </span>
-            <span className="truncate text-sm font-medium text-slate-800">{block.label}</span>
-            <InfoTooltip content={block.hint} variant="monochrome" />
-            {overridden && (
-              <span className="rounded-full bg-[#33295e] px-2 py-0.5 text-[10px] font-medium text-white">
-                Overridden
-              </span>
-            )}
-          </div>
-
-          {/* Default value preview when using the shared value */}
-          {!overridden && (
-            <div className="mt-2">
-              <p className="mb-0.5 text-[11px] uppercase tracking-wide text-slate-400">Default value</p>
-              <DefaultPreview block={block} />
-            </div>
-          )}
-        </div>
-
-        {/* Toggle: on = use default, off = overridden */}
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={!overridden}
-            onClick={onToggle}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#33295e] focus:ring-offset-1 ${
-              overridden ? "bg-slate-300" : "bg-[#33295e]"
-            }`}
-            aria-label={overridden ? "Enable default value" : "Override for this school"}
-          >
-            <span
-              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                overridden ? "translate-x-1" : "translate-x-4"
-              }`}
-            />
-          </button>
-          <span className="text-[10px] text-slate-400">{overridden ? "Override" : "Default"}</span>
-        </div>
-      </div>
-
-      {/* Override editor */}
-      {overridden && (
-        <div className="mt-3">
-          <p className="mb-1.5 text-[11px] font-medium text-slate-500">
-            Override value for <span className="text-slate-700">{schoolLabel}</span>
-          </p>
-          <OverrideField block={block} value={overrideValue} onChange={onChange} />
-        </div>
-      )}
-    </div>
-  )
+/** Read-only display of the shared value, formatted by block type. */
+function formatShared(block: DataBlock): string {
+  if (block.type === "percent") return `${block.shared}%`
+  if (block.type === "rag") return block.shared.toUpperCase()
+  return block.shared
 }
 
-// A compact, read-only preview of the shared default value.
-function DefaultPreview({ block }: { block: DataBlock }) {
-  if (block.type === "rag") {
-    const opt = RAG_OPTIONS.find((o) => o.value === block.defaultValue) ?? RAG_OPTIONS[2]
-    return (
-      <span
-        className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-medium"
-        style={{ color: opt.color, backgroundColor: opt.bg }}
-      >
-        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: opt.color }} />
-        {opt.label}
-      </span>
-    )
-  }
-  if (block.type === "richtext") {
-    return (
-      <div
-        className="line-clamp-2 text-xs text-slate-500 [&_p]:m-0"
-        dangerouslySetInnerHTML={{ __html: block.defaultValue }}
-      />
-    )
-  }
-  return <p className="text-xs text-slate-500">{block.defaultValue}</p>
-}
-
-// The editable override input, matching the block type.
-function OverrideField({
+/** The editable control used when a block is overridden for a school. */
+function BlockEditor({
   block,
   value,
   onChange,
@@ -482,54 +443,31 @@ function OverrideField({
   value: string
   onChange: (value: string) => void
 }) {
-  if (block.type === "richtext") {
-    return <RichTextEditor value={value} onChange={onChange} placeholder="Enter override content..." />
-  }
   if (block.type === "rag") {
+    return <RAGPicker value={value as "red" | "amber" | "green" | ""} onChange={(v) => onChange(v)} />
+  }
+
+  if (block.type === "date") {
     return (
-      <div className="flex gap-2">
-        {RAG_OPTIONS.map((opt) => {
-          const active = value === opt.value
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onChange(opt.value)}
-              className="rounded px-3 py-1.5 text-xs font-medium transition-all"
-              style={
-                active
-                  ? { color: opt.color, backgroundColor: opt.bg, boxShadow: `inset 0 0 0 1.5px ${opt.color}` }
-                  : { color: "#64748b", backgroundColor: "#f1f5f9" }
-              }
-            >
-              {opt.label}
-            </button>
-          )
-        })}
+      <Input type="date" value={value} onChange={(e) => onChange(e.target.value)} className="max-w-xs" />
+    )
+  }
+
+  if (block.type === "number" || block.type === "percent") {
+    return (
+      <div className="relative max-w-xs">
+        <Input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={block.type === "percent" ? "pr-8" : ""}
+        />
+        {block.type === "percent" && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">%</span>
+        )}
       </div>
     )
   }
-  if (block.type === "number") {
-    return (
-      <Input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="max-w-[200px]"
-        placeholder="Enter value..."
-      />
-    )
-  }
-  if (block.type === "date") {
-    return (
-      <Input
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="max-w-[220px]"
-      />
-    )
-  }
-  // short-text
-  return <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Enter value..." />
+
+  return <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={`Override for this school...`} />
 }
