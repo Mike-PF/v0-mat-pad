@@ -187,6 +187,13 @@ export function DataOverridesContent() {
     setOverrides((prev) => ({ ...prev, [id]: value }))
   }
 
+  const clearForm = () => {
+    setSelectedForm("")
+    setSelectedSchool("")
+    setOverrides({})
+    setActiveSection(DOCUMENT[0].id)
+  }
+
   const sectionOverrideCount = (section: DocSection) =>
     section.blocks.filter((b) => isOverridden(b.id)).length
 
@@ -196,10 +203,19 @@ export function DataOverridesContent() {
       <div className="w-80 flex-shrink-0">
         <div className="bg-white border border-slate-200 rounded-lg h-full flex flex-col">
           <div className="p-4 border-b border-slate-200 flex-shrink-0">
-            <h3 className="font-semibold text-lg text-slate-900">Data Overrides</h3>
-            <p className="text-sm text-slate-600 mt-1">
-              Choose a form and school, then override individual data blocks for that school.
-            </p>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg text-slate-900">Data Overrides</h3>
+              {(selectedForm || selectedSchool) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearForm}
+                  className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
+                >
+                  Clear Form
+                </Button>
+              )}
+            </div>
 
             <div className="space-y-4 mt-4">
               {/* Form selector */}
