@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronDown, Circle, CheckCircle, RotateCcw } from "lucide-react"
+import { ChevronDown, Circle, CheckCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { RAGPicker } from "@/components/ui/rag-picker"
@@ -205,16 +205,14 @@ export function DataOverridesContent() {
           <div className="p-4 border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg text-slate-900">Data Overrides</h3>
-              {(selectedForm || selectedSchool) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearForm}
-                  className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
-                >
-                  Clear Form
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearForm}
+                className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
+              >
+                Clear Form
+              </Button>
             </div>
 
             <div className="space-y-4 mt-4">
@@ -326,9 +324,8 @@ export function DataOverridesContent() {
                   variant="outline"
                   disabled={overriddenCount === 0}
                   onClick={() => setOverrides({})}
-                  className="gap-1.5 border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50"
+                  className="border-slate-200 text-slate-600 hover:border-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50"
                 >
-                  <RotateCcw className="w-4 h-4" />
                   Reset
                 </Button>
                 <Button className="bg-[#33295e] text-white hover:bg-[#fd6d6d]" disabled={overriddenCount === 0}>
