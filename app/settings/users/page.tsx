@@ -6,7 +6,7 @@ import { TopNavigation } from "@/components/top-navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, ChevronDown, Trash2, Pencil, X, Users as UsersIcon } from "lucide-react"
+import { Plus, ChevronDown, Trash2, Pencil, X, Users as UsersIcon, Mail } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { PageHelpBanner } from "@/components/ui/help-video"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -71,6 +71,7 @@ const initialUsers: User[] = [
     id: 1, 
     email: "ed@pixel-fusion.com", 
     lastLoggedIn: null, 
+    invitedAt: "2024-02-26 10:12",
     name: "fred ed", 
     roles: ["CPOMS Data", "User"],
     schools: [
@@ -106,9 +107,18 @@ interface User {
   id: number
   email: string
   lastLoggedIn: string | null
+  // When the invitation email was last sent. A user who has an invitedAt but
+  // has never logged in is treated as "Invite pending".
+  invitedAt?: string | null
   name: string
   roles: string[]
   schools: { urn: string; name: string }[] | "all"
+}
+
+// Format a Date the same way the sample lastLoggedIn values are stored.
+function formatTimestamp(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 export default function UsersPage() {
@@ -277,6 +287,17 @@ export default function UsersPage() {
     setPermissionsModalOpen(true)
   }
 
+  // Re-send the invitation email for a user who hasn't logged in yet.
+  const handleResendInvite = (user: User) => {
+    setUsers(users.map(u => u.id === user.id ? { ...u, invitedAt: formatTimestamp(new Date()) } : u))
+    showToast({
+      variant: "success",
+      title: "Invitation re-sent.",
+      message: `A new invitation email has been sent to ${user.email}.`,
+      primaryAction: { label: "Dismiss" },
+    })
+  }
+
   const handleSaveUser = () => {
     // Validate required fields
     const errors: { firstName?: boolean; lastName?: boolean; email?: boolean } = {}
@@ -319,6 +340,7 @@ export default function UsersPage() {
         id: Math.max(...users.map(u => u.id)) + 1,
         email: editEmail,
         lastLoggedIn: null,
+        invitedAt: formatTimestamp(new Date()),
         name: `${editFirstName} ${editLastName}`.trim(),
         schools: editAllSchools ? "all" : editSelectedSchools,
         roles: editSelectedRoles,
@@ -326,8 +348,8 @@ export default function UsersPage() {
       setUsers([...users, newUser])
       showToast({
         variant: "success",
-        title: "User added.",
-        message: `${newUser.name || newUser.email} has been created successfully.`,
+        title: "Invitation sent.",
+        message: `An invitation email has been sent to ${newUser.email}. They can sign in with their Microsoft or Google account.`,
         primaryAction: { label: "Dismiss" },
       })
     } else if (editingUser) {
@@ -575,7 +597,19 @@ export default function UsersPage() {
                         <tr key={user.id} className="border-b border-slate-100 last:border-0">
                           <td className="py-4 px-4 text-sm text-slate-900">{user.email}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
-                            {user.lastLoggedIn || "Never"}
+                            {user.lastLoggedIn ? (
+                              user.lastLoggedIn
+                            ) : (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="inline-flex w-fit items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">
+                                  <Mail className="w-3 h-3" />
+                                  Invite pending
+                                </span>
+                                {user.invitedAt && (
+                                  <span className="text-xs text-slate-400">Invited {user.invitedAt}</span>
+                                )}
+                              </div>
+                            )}
                           </td>
                           <td className="py-4 px-4 text-sm text-slate-900">{user.name}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">
@@ -631,6 +665,29 @@ export default function UsersPage() {
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center justify-end gap-1">
+                              {!user.lastLoggedIn && (
+                                <TooltipProvider delayDuration={300}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          handleResendInvite(user)
+                                        }}
+                                        className="p-2 text-slate-400 hover:text-[#33295e] hover:bg-slate-50 rounded transition-colors"
+                                        aria-label={`Resend invitation to ${user.email}`}
+                                      >
+                                        <Mail className="w-4 h-4" />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Resend invitation email</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                               <TooltipProvider delayDuration={300}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -760,6 +817,14 @@ export default function UsersPage() {
                   className={`h-11 ${!isAddMode ? "bg-slate-100 text-slate-600" : ""} ${formErrors.email ? "border-red-500 focus-visible:ring-red-300" : ""}`}
                 />
                 {formErrors.email && <p className="text-xs text-red-500 mt-1">A valid email address is required.</p>}
+                {isAddMode && (
+                  <div className="mt-2 flex items-start gap-2 rounded-lg bg-slate-50 p-2.5 ring-1 ring-inset ring-slate-200">
+                    <Mail className="w-4 h-4 mt-0.5 shrink-0 text-slate-500" />
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      An invitation email will be sent to this address. The user signs in with their Microsoft or Google account, so no password is needed. You can resend the invitation later from the user list.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Select Schools */}
