@@ -703,7 +703,7 @@ export function ReportsContent() {
               variant="ghost"
               size="sm"
               onClick={() => setShowPrintModal(true)}
-              className="ml-auto text-white hover:bg-white/20 h-8"
+              className="ml-auto text-white border border-white hover:bg-white/20 h-8"
               aria-label="Print report"
             >
               <Printer className="w-4 h-4 mr-2" />

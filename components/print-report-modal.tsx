@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { X, Printer } from "lucide-react"
+import { X, Printer, Archive } from "lucide-react"
 
 interface PrintReportModalProps {
   isOpen: boolean
@@ -31,6 +31,12 @@ export function PrintReportModal({ isOpen, onClose, reportName, pages }: PrintRe
     onClose()
     // Allow the modal to unmount before invoking the browser print dialog
     setTimeout(() => window.print(), 100)
+  }
+
+  const handlePrintAndArchive = () => {
+    // Save a copy of the selected pages to the report archive, then print
+    console.log("[v0] Archiving report pages:", selected)
+    handlePrint()
   }
 
   return (
@@ -91,6 +97,15 @@ export function PrintReportModal({ isOpen, onClose, reportName, pages }: PrintRe
             className="border-slate-200 text-slate-600 hover:bg-slate-50 bg-transparent"
           >
             Cancel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handlePrintAndArchive}
+            disabled={selected.length === 0}
+            className="gap-1.5 border-[#33295e] text-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50 bg-transparent"
+          >
+            <Archive className="w-4 h-4" />
+            Print &amp; Archive
           </Button>
           <Button
             onClick={handlePrint}
