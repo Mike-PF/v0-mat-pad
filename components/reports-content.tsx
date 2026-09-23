@@ -17,7 +17,8 @@ import {
   Star,
   Sparkles,
   Send,
-  ExternalLink
+  ExternalLink,
+  Printer
 } from "lucide-react"
 import Link from "next/link"
 import { LoadingModal } from "@/components/ui/loading-modal"
@@ -27,6 +28,7 @@ import { EyfsHeadlinesReport } from "@/components/eyfs-headlines-report"
 import { EyfsPopilGroupReport } from "@/components/eyfs-pupil-group-report"
 import { EyfsGoalsBySchoolReport } from "@/components/eyfs-goals-by-school-report"
 import { EyfsGoalsByPupilGroupReport } from "@/components/eyfs-goals-by-pupilgroup-report"
+import { PrintReportModal } from "@/components/print-report-modal"
 
 // Report categories with reports and descriptions
 // isSystem: true = MATpad system report, false/undefined = custom user-built report
@@ -368,6 +370,20 @@ export function ReportsContent() {
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([])
   const [chatInput, setChatInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [showPrintModal, setShowPrintModal] = useState(false)
+
+  const printPagesByReport: Record<string, string[]> = {
+    "attendance-headlines": [
+      "Summary metrics",
+      "Attendance trends",
+      "Pupils by attendance band",
+      "Persistent & severe absence",
+      "Attendance by year group (NCY)",
+      "Absence breakdowns",
+    ],
+  }
+  const printPages =
+    (selectedReport && printPagesByReport[selectedReport]) || ["Full report"]
 
   const handleReportSelect = (reportId: string) => {
     setIsLoadingReport(true)
@@ -657,6 +673,12 @@ export function ReportsContent() {
     return (
       <>
         <LoadingModal isOpen={isLoadingReport} message="Loading report..." />
+        <PrintReportModal
+          isOpen={showPrintModal}
+          onClose={() => setShowPrintModal(false)}
+          reportName={selectedReportData?.name}
+          pages={printPages}
+        />
         <div className="h-full flex flex-col bg-slate-50">
           {/* Header with report info */}
           <div 
@@ -674,9 +696,19 @@ export function ReportsContent() {
             </Button>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-white">{selectedReportData?.name}</h2>
-              <span className="text-white/50">���</span>
+              <span className="text-white/50">›</span>
               <p className="text-sm text-white/70">{selectedCategory?.name}</p>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPrintModal(true)}
+              className="ml-auto text-white hover:bg-white/20 h-8"
+              aria-label="Print report"
+            >
+              <Printer className="w-4 h-4 mr-2" />
+              Print
+            </Button>
           </div>
 
           {/* Report content */}
