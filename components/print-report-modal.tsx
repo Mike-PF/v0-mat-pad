@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { X, Printer, Archive } from "lucide-react"
+import { X, Printer } from "lucide-react"
 
 interface PrintReportModalProps {
   isOpen: boolean
@@ -102,9 +102,8 @@ export function PrintReportModal({ isOpen, onClose, reportName, pages }: PrintRe
             variant="outline"
             onClick={handlePrintAndArchive}
             disabled={selected.length === 0}
-            className="gap-1.5 border-[#33295e] text-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50 bg-transparent"
+            className="border-slate-200 text-[#33295e] hover:bg-[#33295e] hover:text-white disabled:opacity-50 bg-transparent"
           >
-            <Archive className="w-4 h-4" />
             Print &amp; Archive
           </Button>
           <Button
