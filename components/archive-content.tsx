@@ -49,6 +49,7 @@ const AREAS = [
   "Attendance & Welfare",
   "Statutory & Compliance",
   "Performance Analytics",
+  "Saved Dashboards",
 ] as const
 
 // The schools within the account's trust. The trust itself is implicit from the
