@@ -33,8 +33,15 @@ import {
   Trash2,
   Search,
   Unlink,
-  AlertTriangle
+  AlertTriangle,
+  FileText
 } from "lucide-react"
+
+function formatFileSize(bytes?: number) {
+  if (!bytes) return ""
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
 
 // MAT and School data structure
 interface SchoolData {
@@ -48,6 +55,8 @@ interface SchoolData {
   phone: string
   email: string
   logo: string
+  reportTemplateName?: string
+  reportTemplateSize?: number
   primaryColor: string
   secondaryColor: string
   powerBiLoginEmail?: string
@@ -79,6 +88,8 @@ interface MATData {
   phone: string
   email: string
   logo: string
+  reportTemplateName?: string
+  reportTemplateSize?: number
   primaryColor: string
   secondaryColor: string
   powerBiLoginEmail?: string
@@ -1498,6 +1509,55 @@ export default function OrganisationPage() {
                                 <p className="text-xs text-slate-500">PNG, JPG, SVG up to 5MB</p>
                               </div>
                             </div>
+                            <div>
+                              <label className="text-xs text-slate-500 block mb-4 font-semibold uppercase tracking-wider">AI Report Template</label>
+                              <div className="flex flex-col items-start gap-4">
+                                <div className="flex w-full max-w-md items-center gap-3 rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 p-4 shadow-sm">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200">
+                                    <FileText className="h-5 w-5 text-[#2B579A]" aria-hidden="true" />
+                                  </div>
+                                  {editingItem.reportTemplateName ? (
+                                    <div className="min-w-0">
+                                      <p className="truncate text-sm font-medium text-slate-700">{editingItem.reportTemplateName}</p>
+                                      <p className="text-xs text-slate-500">{formatFileSize(editingItem.reportTemplateSize)}</p>
+                                    </div>
+                                  ) : (
+                                    <span className="text-sm text-slate-400">No template uploaded</span>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <label
+                                    htmlFor="report-template-upload"
+                                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium bg-white border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                                  >
+                                    {editingItem.reportTemplateName ? "Change Template" : "Upload Template"}
+                                  </label>
+                                  <input
+                                    id="report-template-upload"
+                                    type="file"
+                                    accept=".docx,.dotx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) {
+                                        setEditingItem({ ...editingItem, reportTemplateName: file.name, reportTemplateSize: file.size })
+                                      }
+                                      e.target.value = ""
+                                    }}
+                                  />
+                                  {editingItem.reportTemplateName && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingItem({ ...editingItem, reportTemplateName: undefined, reportTemplateSize: undefined })}
+                                      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500">Word document (.docx or .dotx) up to 10MB. Used as the layout for AI-generated reports.</p>
+                              </div>
+                            </div>
                             <div className="grid grid-cols-2 gap-6">
                               <label className="text-xs text-slate-500 block mb-1">Primary Color</label>
                               <div className="flex gap-2">
@@ -1547,6 +1607,22 @@ export default function OrganisationPage() {
                                 />
                               ) : (
                                 <span className="text-sm text-slate-400 text-center px-2">No logo uploaded</span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-500 block mb-4 font-semibold uppercase tracking-wider">AI Report Template</span>
+                            <div className="flex w-full max-w-md items-center gap-3 rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 p-4 shadow-sm">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200">
+                                <FileText className="h-5 w-5 text-[#2B579A]" aria-hidden="true" />
+                              </div>
+                              {selectedData.reportTemplateName ? (
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-medium text-slate-700">{selectedData.reportTemplateName}</p>
+                                  <p className="text-xs text-slate-500">{formatFileSize(selectedData.reportTemplateSize)}</p>
+                                </div>
+                              ) : (
+                                <span className="text-sm text-slate-400">No template uploaded</span>
                               )}
                             </div>
                           </div>
