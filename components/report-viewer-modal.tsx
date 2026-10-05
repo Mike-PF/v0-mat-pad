@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Check, Download, Loader2, X } from "lucide-react"
+import { Check, Loader2, X } from "lucide-react"
 
 const NAVY = "#33295e"
 
@@ -131,19 +131,21 @@ export function ReportViewerModal({ report, file, error, isArchived, onArchive, 
           <button
             onClick={handleDownload}
             disabled={!file}
-            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Download className="h-4 w-4" />
             Download
           </button>
           <button
-            onClick={onArchive}
+            onClick={() => {
+              handleDownload()
+              onArchive()
+            }}
             disabled={!file || isArchived}
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#fd6d6d] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-[#33295e]"
             style={{ backgroundColor: isArchived ? undefined : NAVY }}
           >
             {isArchived && <Check className="h-4 w-4" />}
-            {isArchived ? "Saved to Archive" : "Save to Archive"}
+            {isArchived ? "Downloaded & Archived" : "Download & Archive"}
           </button>
         </div>
       </div>
