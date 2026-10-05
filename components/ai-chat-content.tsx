@@ -1,17 +1,24 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Plus, Send, Star, MoreHorizontal, Trash2, Edit2 } from "lucide-react"
+import { Plus, Send, Star, MoreHorizontal, Trash2, Edit2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ReportViewerModal, type ReportAttachment } from "@/components/report-viewer-modal"
 
 const NAVY = "#33295e"
 const ACCENT = "#fd6d6d"
+
+const SAMPLE_REPORT: ReportAttachment = {
+  name: "Sixth Form Destinations Report.docx",
+  url: "/reports/sixth-form-destinations-report.docx",
+}
 
 interface ChatMessage {
   id: string
   role: "user" | "assistant"
   content: string
   timestamp: string
+  attachment?: ReportAttachment
 }
 
 interface ChatSession {
@@ -24,7 +31,20 @@ interface ChatSession {
 }
 
 // Sample chat history - using ISO string dates to avoid hydration issues
+const TEST_SESSION_ID = "test-report"
+
 const sampleChatSessions: ChatSession[] = [
+  {
+    id: TEST_SESSION_ID,
+    title: "Test: Word Report Viewer",
+    messages: [
+      { id: "t1", role: "user", content: "Can you produce a Word report on last year's sixth form destinations?", timestamp: "2024-01-16T09:00:00" },
+      { id: "t2", role: "assistant", content: "Here's your report. Click View to open it, then you can download it or save it to the archive.", timestamp: "2024-01-16T09:01:00", attachment: SAMPLE_REPORT },
+    ],
+    isPinned: true,
+    createdAt: "2024-01-16",
+    updatedAt: "2024-01-16",
+  },
   {
     id: "1",
     title: "Ofsted Inspection Preparation",
@@ -129,7 +149,7 @@ const sampleChatSessions: ChatSession[] = [
     title: "Sixth Form Destinations Report",
     messages: [
       { id: "10a", role: "user", content: "What were the post-16 destinations for last year's Year 13 cohort?", timestamp: "2024-01-06T11:00:00" },
-      { id: "10b", role: "assistant", content: "Of last year's Year 13 cohort, 62% progressed to higher education, with 8% attending Russell Group universities. 21% entered employment or apprenticeships, 11% took a gap year, and 6% enrolled in further education or retraining. Overall destination data is above national average for this school type.", timestamp: "2024-01-06T11:02:00" },
+      { id: "10b", role: "assistant", content: "Of last year's Year 13 cohort, 62% progressed to higher education, with 8% attending Russell Group universities. 21% entered employment or apprenticeships, 11% took a gap year, and 6% enrolled in further education or retraining. Overall destination data is above national average for this school type. I've put the full breakdown into a Word report for you.", timestamp: "2024-01-06T11:02:00", attachment: SAMPLE_REPORT },
     ],
     isPinned: false,
     createdAt: "2024-01-06",
@@ -160,6 +180,10 @@ export function AIChatContent() {
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [hoveredSessionId, setHoveredSessionId] = useState<string | null>(null)
+  const [viewingReport, setViewingReport] = useState<ReportAttachment | null>(null)
+  const [reportFile, setReportFile] = useState<Blob | null>(null)
+  const [reportError, setReportError] = useState<string | null>(null)
+  const [archivedReports, setArchivedReports] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -167,6 +191,7 @@ export function AIChatContent() {
   useEffect(() => {
     setMounted(true)
     setSessions(getInitialSessions())
+    setActiveSessionId(TEST_SESSION_ID)
   }, [])
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
@@ -198,6 +223,30 @@ export function AIChatContent() {
   const handleSelectSession = (sessionId: string) => {
     setActiveSessionId(sessionId)
     setInputValue("")
+  }
+
+  const handleOpenReport = async (report: ReportAttachment) => {
+    setViewingReport(report)
+    setReportFile(null)
+    setReportError(null)
+    try {
+      const res = await fetch(report.url)
+      if (!res.ok) throw new Error(`Failed to load report (${res.status})`)
+      setReportFile(await res.blob())
+    } catch {
+      setReportError("This report couldn't be loaded. Please try again.")
+    }
+  }
+
+  const handleCloseReport = () => {
+    setViewingReport(null)
+    setReportFile(null)
+    setReportError(null)
+  }
+
+  const handleArchiveReport = () => {
+    if (!viewingReport) return
+    setArchivedReports((prev) => new Set(prev).add(viewingReport.url))
   }
 
   const handleTogglePin = (sessionId: string, e: React.MouseEvent) => {
@@ -249,6 +298,7 @@ export function AIChatContent() {
       setActiveSessionId(newSession.id)
     }
 
+    const wantsReport = /report/i.test(inputValue)
     setInputValue("")
     setIsTyping(true)
 
@@ -258,8 +308,11 @@ export function AIChatContent() {
       const assistantMessage: ChatMessage = {
         id: `msg-${Date.now()}-response`,
         role: "assistant",
-        content: "Thank you for your message. I'm here to help you with any questions about your school data, reports, or any other information you need. How can I assist you today?",
+        content: wantsReport
+          ? "I've generated a Word report using your organisation's report template. Open it below to review, download or save it to the archive."
+          : "Thank you for your message. I'm here to help you with any questions about your school data, reports, or any other information you need. How can I assist you today?",
         timestamp: responseTime,
+        attachment: wantsReport ? SAMPLE_REPORT : undefined,
       }
 
       setSessions((prev) =>
@@ -461,6 +514,34 @@ export function AIChatContent() {
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{message.content}</p>
+                      {message.attachment && (
+                        <button
+                          onClick={() => handleOpenReport(message.attachment!)}
+                          className="mt-3 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50"
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[10px] font-semibold uppercase text-blue-600">
+                            docx
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium text-slate-800">
+                              {message.attachment.name}
+                            </span>
+                            <span className="flex items-center gap-1 text-xs text-slate-500">
+                              {archivedReports.has(message.attachment.url) ? (
+                                <>
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                  Saved to archive
+                                </>
+                              ) : (
+                                "Word document"
+                              )}
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-sm font-medium" style={{ color: NAVY }}>
+                            View
+                          </span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -508,6 +589,17 @@ export function AIChatContent() {
           </>
         )}
       </div>
+
+      {viewingReport && (
+        <ReportViewerModal
+          report={viewingReport}
+          file={reportFile}
+          error={reportError}
+          isArchived={archivedReports.has(viewingReport.url)}
+          onArchive={handleArchiveReport}
+          onClose={handleCloseReport}
+        />
+      )}
     </div>
   )
 }
