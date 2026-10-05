@@ -31,7 +31,20 @@ interface ChatSession {
 }
 
 // Sample chat history - using ISO string dates to avoid hydration issues
+const TEST_SESSION_ID = "test-report"
+
 const sampleChatSessions: ChatSession[] = [
+  {
+    id: TEST_SESSION_ID,
+    title: "Test: Word Report Viewer",
+    messages: [
+      { id: "t1", role: "user", content: "Can you produce a Word report on last year's sixth form destinations?", timestamp: "2024-01-16T09:00:00" },
+      { id: "t2", role: "assistant", content: "Here's your report. Click View to open it, then you can download it or save it to the archive.", timestamp: "2024-01-16T09:01:00", attachment: SAMPLE_REPORT },
+    ],
+    isPinned: true,
+    createdAt: "2024-01-16",
+    updatedAt: "2024-01-16",
+  },
   {
     id: "1",
     title: "Ofsted Inspection Preparation",
@@ -178,6 +191,7 @@ export function AIChatContent() {
   useEffect(() => {
     setMounted(true)
     setSessions(getInitialSessions())
+    setActiveSessionId(TEST_SESSION_ID)
   }, [])
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
