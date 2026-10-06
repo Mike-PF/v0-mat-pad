@@ -27,8 +27,8 @@ interface PrintQueueContextValue {
 
 // Jobs live in sessionStorage so generation keeps running across full-page navigations.
 const STORAGE_KEY = "fuze:print-queue"
-const MIN_GENERATION_MS = 60_000
-const MAX_GENERATION_MS = 180_000
+const MIN_GENERATION_MS = 5_000
+const MAX_GENERATION_MS = 10_000
 
 const PrintQueueContext = createContext<PrintQueueContextValue | null>(null)
 
@@ -86,9 +86,9 @@ export function PrintQueueProvider({ children }: { children: React.ReactNode }) 
       finished.forEach((job) => {
         showToast({
           variant: "success",
-          title: "Report ready to print",
+          title: "Report ready to view",
           message: `${job.reportName} has finished generating${job.archive ? " and was saved to the archive" : ""}.`,
-          primaryAction: { label: "Print now", onClick: () => printJob(job.id) },
+          primaryAction: { label: "View", onClick: () => printJob(job.id) },
           duration: 0,
         })
       })

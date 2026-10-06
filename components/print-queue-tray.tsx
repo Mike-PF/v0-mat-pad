@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { CheckCircle2, ChevronDown, Loader2, Printer, X } from "lucide-react"
+import { CheckCircle2, ChevronDown, Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePrintQueue, type PrintJob } from "@/lib/print-queue"
 
@@ -38,7 +38,7 @@ function PrintJobRow({ job, now }: { job: PrintJob; now: number }) {
             {job.pages.length} {job.pages.length === 1 ? "page" : "pages"}
             {job.archive ? " · Archiving" : ""}
             {" · "}
-            {isReady ? "Ready to print" : `Generating · ${formatRemaining(job.durationMs - elapsed)}`}
+            {isReady ? "Ready to view" : `Generating · ${formatRemaining(job.durationMs - elapsed)}`}
           </span>
         </div>
         <button
@@ -57,7 +57,7 @@ function PrintJobRow({ job, now }: { job: PrintJob; now: number }) {
           onClick={() => printJob(job.id)}
           className="ml-11 h-8 w-fit bg-[#33295e] text-white hover:bg-[#fd6d6d]"
         >
-          Print
+          View
         </Button>
       ) : (
         <div
@@ -100,14 +100,11 @@ export function PrintQueueTray() {
       {isOpen && (
         <section
           id="print-queue-panel"
-          aria-label="Print queue"
+          aria-label="Download queue"
           className="w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
         >
           <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <Printer className="h-4 w-4 text-[#33295e]" aria-hidden="true" />
-              <h2 className="text-sm font-semibold text-slate-900">Print queue</h2>
-            </div>
+            <h2 className="text-sm font-semibold text-slate-900">Download queue</h2>
             <div className="flex items-center gap-1">
               {readyCount > 0 && (
                 <button
@@ -122,7 +119,7 @@ export function PrintQueueTray() {
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Minimise print queue"
+                aria-label="Minimise download queue"
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
