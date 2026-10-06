@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { X, Printer } from "lucide-react"
+import { usePrintQueue } from "@/lib/print-queue"
 
 interface PrintReportModalProps {
   isOpen: boolean
@@ -14,6 +15,7 @@ interface PrintReportModalProps {
 
 export function PrintReportModal({ isOpen, onClose, reportName, pages }: PrintReportModalProps) {
   const [selected, setSelected] = useState<string[]>(pages)
+  const { addJob } = usePrintQueue()
 
   // Reset selection to all pages whenever the modal is opened or the page list changes
   useEffect(() => {
@@ -27,17 +29,13 @@ export function PrintReportModal({ isOpen, onClose, reportName, pages }: PrintRe
     setSelected((prev) => (prev.includes(page) ? prev.filter((p) => p !== page) : [...prev, page]))
   const toggleAll = () => setSelected(allSelected ? [] : pages)
 
-  const handlePrint = () => {
+  const queuePrint = (archive: boolean) => {
+    addJob({ reportName: reportName ?? "Report", pages: selected, archive })
     onClose()
-    // Allow the modal to unmount before invoking the browser print dialog
-    setTimeout(() => window.print(), 100)
   }
 
-  const handlePrintAndArchive = () => {
-    // Save a copy of the selected pages to the report archive, then print
-    console.log("[v0] Archiving report pages:", selected)
-    handlePrint()
-  }
+  const handlePrint = () => queuePrint(false)
+  const handlePrintAndArchive = () => queuePrint(true)
 
   return (
     <>
