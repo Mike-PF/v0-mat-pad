@@ -23,7 +23,7 @@ function PrintJobRow({ job, now }: { job: PrintJob; now: number }) {
       <div className="flex items-start gap-3">
         <div
           className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-            isReady ? "bg-emerald-50 text-emerald-600" : "bg-[#33295e]/10 text-[#33295e]"
+            isReady ? "bg-[#5BBE80]/15 text-[#3f9a62]" : "bg-[#fd6d6d]/15 text-[#fd6d6d]"
           }`}
         >
           {isReady ? (
@@ -55,20 +55,20 @@ function PrintJobRow({ job, now }: { job: PrintJob; now: number }) {
         <Button
           size="sm"
           onClick={() => printJob(job.id)}
-          className="ml-11 h-8 w-fit bg-[#33295e] text-white hover:bg-[#fd6d6d]"
+          className="ml-11 h-8 w-fit bg-[#fd6d6d] text-white hover:bg-[#33295e]"
         >
           View
         </Button>
       ) : (
         <div
-          className="ml-11 h-1.5 overflow-hidden rounded-full bg-slate-100"
+          className="ml-11 h-1.5 overflow-hidden rounded-full bg-[#fd6d6d]/15"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={progress}
           aria-label={`${job.reportName} generation progress`}
         >
-          <div className="h-full rounded-full bg-[#33295e] transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-gradient-to-r from-[#fd6d6d] to-[#33295e] transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
         </div>
       )}
     </li>
@@ -103,14 +103,14 @@ export function PrintQueueTray() {
           aria-label="Download queue"
           className="w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
         >
-          <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-            <h2 className="text-sm font-semibold text-slate-900">Download queue</h2>
+          <header className="flex items-center justify-between bg-gradient-to-r from-[#fd6d6d] to-[#33295e] px-4 py-3">
+            <h2 className="text-sm font-semibold text-white">Download queue</h2>
             <div className="flex items-center gap-1">
               {readyCount > 0 && (
                 <button
                   type="button"
                   onClick={clearFinished}
-                  className="rounded px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded px-2 py-1 text-xs text-white/85 transition-colors hover:bg-white/15 hover:text-white"
                 >
                   Clear ready
                 </button>
@@ -118,7 +118,7 @@ export function PrintQueueTray() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                className="rounded p-1 text-white/85 transition-colors hover:bg-white/15 hover:text-white"
                 aria-label="Minimise download queue"
               >
                 <ChevronDown className="h-4 w-4" />
@@ -130,7 +130,7 @@ export function PrintQueueTray() {
               <PrintJobRow key={job.id} job={job} now={now} />
             ))}
           </ul>
-          <p className="border-t border-slate-100 px-4 py-2 text-xs leading-relaxed text-slate-500">
+          <p className="border-t border-[#33295e]/10 bg-[#33295e]/5 px-4 py-2 text-xs leading-relaxed text-[#33295e]/80">
             {"You can keep working — we'll alert you when each report is ready."}
           </p>
         </section>
@@ -141,7 +141,7 @@ export function PrintQueueTray() {
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
         aria-controls="print-queue-panel"
-        className="flex items-center gap-2 rounded-full bg-[#33295e] py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg transition-colors hover:bg-[#2a2150]"
+        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#fd6d6d] to-[#33295e] py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg transition-opacity hover:opacity-90"
       >
         {generatingCount > 0 ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
