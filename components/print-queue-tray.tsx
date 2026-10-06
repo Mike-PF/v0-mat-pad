@@ -68,7 +68,7 @@ function PrintJobRow({ job, now }: { job: PrintJob; now: number }) {
           aria-valuenow={progress}
           aria-label={`${job.reportName} generation progress`}
         >
-          <div className="h-full rounded-full bg-gradient-to-r from-[#fd6d6d] to-[#33295e] transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-[#fd6d6d] transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
         </div>
       )}
     </li>
@@ -103,7 +103,7 @@ export function PrintQueueTray() {
           aria-label="Download queue"
           className="w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
         >
-          <header className="flex items-center justify-between bg-gradient-to-r from-[#fd6d6d] to-[#33295e] px-4 py-3">
+          <header className="flex items-center justify-between bg-[#33295e] px-4 py-3">
             <h2 className="text-sm font-semibold text-white">Download queue</h2>
             <div className="flex items-center gap-1">
               {readyCount > 0 && (
@@ -141,7 +141,7 @@ export function PrintQueueTray() {
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
         aria-controls="print-queue-panel"
-        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#fd6d6d] to-[#33295e] py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg transition-opacity hover:opacity-90"
+        className="flex items-center gap-2 rounded-full bg-[#33295e] py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg transition-opacity hover:opacity-90"
       >
         {generatingCount > 0 ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
