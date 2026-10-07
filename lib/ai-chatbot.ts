@@ -88,7 +88,9 @@ export interface AskLogEntry {
   answer: string
   /** Token + cost usage the model reported for this question. */
   usage: AskUsage
-}
+  /** Word report the AI generated in response, when it produced one. */
+  report?: { name: string; url: string }
+  }
 
 /**
  * Provider pricing per 1,000,000 tokens, in GBP. Cached input is billed far
@@ -418,9 +420,13 @@ function buildSeedLog(): AskLogEntry[] {
         targetId: ask.targetId,
         answered,
         answer: answerFor(ask.question, answered),
-        usage: makeUsage(counter, answered),
-      })
-    }
+  usage: makeUsage(counter, answered),
+  report:
+  answered && counter % 3 === 0
+  ? { name: `${targetName(ask.targetId)} Report.docx`, url: "/reports/sixth-form-destinations-report.docx" }
+  : undefined,
+  })
+  }
   }
 
   // A few "unanswered" requests for things we don't have a report for yet —

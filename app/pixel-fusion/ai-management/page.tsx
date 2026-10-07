@@ -57,6 +57,8 @@ import {
   type LogFilters,
 } from "@/lib/ai-chatbot"
 import { reportCategories } from "@/components/reports-content"
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
+import { ReportDocPreview, downloadReport } from "@/components/report-doc-preview"
 
 const NAVY = "#33295e"
 
@@ -1412,6 +1414,61 @@ function sortLog(entries: AskLogEntry[], key: SortKey, dir: "asc" | "desc"): Ask
   })
 }
 
+/** Download button for an AI-generated report that previews the document on hover. */
+function ReportCell({ report }: { report: { name: string; url: string } }) {
+  const [open, setOpen] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const show = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    setOpen(true)
+  }
+  const hide = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 120)
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverAnchor asChild>
+        <button
+          type="button"
+          onMouseEnter={show}
+          onMouseLeave={hide}
+          onFocus={show}
+          onBlur={hide}
+          onClick={(ev) => {
+            ev.stopPropagation()
+            downloadReport(report)
+          }}
+          onKeyDown={(ev) => ev.stopPropagation()}
+          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-[#33295e] hover:text-[#33295e]"
+          aria-label={`Download ${report.name}`}
+        >
+          <Download className="w-3.5 h-3.5" />
+          .docx
+        </button>
+      </PopoverAnchor>
+      <PopoverContent
+        side="left"
+        align="center"
+        className="w-[360px] p-0 overflow-hidden"
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onOpenAutoFocus={(ev) => ev.preventDefault()}
+        onClick={(ev) => ev.stopPropagation()}
+      >
+        <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2">
+          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-blue-600">
+            docx
+          </span>
+          <span className="truncate text-sm font-medium text-slate-700">{report.name}</span>
+        </div>
+        <ReportDocPreview url={report.url} scale={0.42} className="h-80" />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 function ReportsTab({ log }: { log: AskLogEntry[] }) {
   const [filters, setFilters] = useState<LogFilters>({
     search: "",
@@ -1603,12 +1660,15 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   <SortHeader label="Question" sortKey="question" />
                   <SortHeader label="Cost" sortKey="cost" align="center" />
                   <SortHeader label="Answered" sortKey="answered" align="center" />
+                  <th className="px-4 py-3 whitespace-nowrap text-center font-semibold uppercase tracking-wide text-slate-500">
+                    Report
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-12 text-center text-sm text-slate-400">
+                    <td colSpan={10} className="px-4 py-12 text-center text-sm text-slate-400">
                       No questions match your filters.
                     </td>
                   </tr>
@@ -1654,6 +1714,15 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" aria-label="Answered" />
                           ) : (
                             <XCircle className="w-4 h-4 text-amber-500 inline" aria-label="Unanswered" />
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {e.report ? (
+                            <ReportCell report={e.report} />
+                          ) : (
+                            <span className="text-slate-300" aria-label="No report">
+                              {"\u2014"}
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -1717,6 +1786,31 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   <p className="text-sm leading-relaxed text-slate-700">{selectedEntry.answer}</p>
                 </div>
               </div>
+
+              {selectedEntry.report && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Generated report</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => selectedEntry.report && downloadReport(selectedEntry.report)}
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1.5" />
+                      Download
+                    </Button>
+                  </div>
+                  <div className="overflow-hidden rounded-lg border border-slate-200">
+                    <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
+                      <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-blue-600">
+                        docx
+                      </span>
+                      <span className="truncate text-sm font-medium text-slate-700">{selectedEntry.report.name}</span>
+                    </div>
+                    <ReportDocPreview url={selectedEntry.report.url} scale={0.55} className="h-72" />
+                  </div>
+                </div>
+              )}
 
               {/* Meta */}
               <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 text-sm">
