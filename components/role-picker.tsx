@@ -76,7 +76,7 @@ export function RolePicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="h-9 w-full min-w-[190px] flex items-center justify-between gap-2 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+          className="h-9 w-full min-w-[150px] flex items-center justify-between gap-2 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
         >
           <span className={cn("truncate", selected.length === 0 ? "text-slate-400" : "text-slate-700")}>{label}</span>
           <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />

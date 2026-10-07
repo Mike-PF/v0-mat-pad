@@ -28,6 +28,7 @@ import {
   MousePointer,
   ArrowLeft,
   ShieldCheck,
+  Copy,
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { Switch } from "@/components/ui/switch" // Added
@@ -2257,12 +2258,12 @@ export function DocumentCreationContent() {
         )}
 
         {!isCreatingNew && !selectedDocument && (
-          <Card>
-            <CardHeader>
+          <Card className="flex min-h-0 flex-1 flex-col">
+            <CardHeader className="flex-shrink-0 pb-4">
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-lg whitespace-nowrap">Document Configurations</CardTitle>
-                <div className="flex flex-1 justify-center">
-                  <div className="relative w-full max-w-sm">
+                <div className="flex flex-1 justify-end">
+                  <div className="relative w-full max-w-xs">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <Input
                       type="text"
@@ -2281,23 +2282,21 @@ export function DocumentCreationContent() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex min-h-0 flex-1 flex-col">
               {filteredDocuments.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="flex min-h-0 flex-1 flex-col gap-3">
+                  <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-slate-200">
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Type</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Document Name</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">
-                          Document Description
+                    <thead className="sticky top-0 z-10 bg-slate-50">
+                      <tr className="border-b border-slate-200 [&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-2.5 [&>th]:text-left [&>th]:text-xs [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-wide [&>th]:text-slate-500">
+                        <th className="w-full min-w-[220px]">Document</th>
+                        <th>Report Area</th>
+                        <th>Organisation</th>
+                        <th>Role</th>
+                        <th>Active</th>
+                        <th className="text-right">
+                          <span className="sr-only">Actions</span>
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Report Area</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Organisation</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Role</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Active</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Save</th>
-                        <th className="py-3 px-4"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2306,24 +2305,29 @@ export function DocumentCreationContent() {
                         return (
                           <tr
                             key={doc.id}
-                            className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors [&>td]:align-middle"
+                            className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/60 transition-colors [&>td]:align-middle [&>td]:px-3 [&>td]:py-2.5"
                           >
-                            <td className="py-2 px-4">
-                              <span className="inline-flex items-center rounded-md bg-[#33295e] px-2.5 py-1 text-xs font-medium text-white">
-                                System
-                              </span>
+                            <td className="max-w-0">
+                              <div className="flex min-w-0 flex-col gap-0.5">
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <span className="inline-flex flex-shrink-0 items-center rounded bg-[#33295e] px-1.5 py-0.5 text-[11px] font-medium text-white">
+                                    System
+                                  </span>
+                                  <span className="truncate text-sm font-medium text-[#33295e]" title={doc.name}>
+                                    {doc.name}
+                                  </span>
+                                </div>
+                                <span className="truncate text-sm text-slate-500" title={doc.description ?? undefined}>
+                                  {doc.description ?? "—"}
+                                </span>
+                              </div>
                             </td>
-                            <td className="py-2 px-4 align-middle">
-                              <span className="text-sm text-[#33295e] font-medium line-clamp-2">{doc.name}</span>
-                            </td>
-                            <td className="py-2 px-4 align-middle max-w-[240px]">
-                              <span className="text-sm text-slate-600 line-clamp-2">{doc.description ?? "—"}</span>
-                            </td>
-                            <td className="py-2 px-4">
+                            <td>
                               <select
                                 value={config?.reportArea ?? ""}
                                 onChange={(e) => handleReportAreaChange(doc.id, e.target.value)}
-                                className="h-9 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
+                                aria-label={`Report area for ${doc.name}`}
+                                className="h-9 w-40 text-sm border border-slate-200 bg-slate-50 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#33295e]"
                               >
                                 <option value="">Select Area...</option>
                                 {REPORT_AREA_OPTIONS.map((area) => (
@@ -2333,15 +2337,18 @@ export function DocumentCreationContent() {
                                 ))}
                               </select>
                             </td>
-                            <td className="py-2 px-4">
-                              <OrganizationPicker
-                                mats={mats}
-                                schools={schools}
-                                selected={config?.organizations ?? []}
-                                onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
-                              />
+                            <td>
+                              <div className="w-44">
+                                <OrganizationPicker
+                                  mats={mats}
+                                  schools={schools}
+                                  selected={config?.organizations ?? []}
+                                  onChange={(urns) => handleOrganizationsChange(doc.id, urns)}
+                                />
+                              </div>
                             </td>
-                            <td className="py-2 px-4">
+                            <td>
+                              <div className="w-40">
                               <RolePicker
                                 groups={(config?.organizations ?? []).map((urn) => ({
                                   orgName: allOrganizations.find((o) => o.urn === urn)?.name ?? urn,
@@ -2350,31 +2357,28 @@ export function DocumentCreationContent() {
                                 selected={config?.roleIds ?? []}
                                 onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
                               />
-                            </td>
-                            <td className="py-2 px-4">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-600">{config?.isActive ? "Yes" : "No"}</span>
-                                <Switch
-                                  checked={config?.isActive ?? false}
-                                  onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
-                                  className="data-[state=checked]:bg-[#33295e]"
-                                />
                               </div>
                             </td>
-                            <td className="py-2 px-4">
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setNotificationMessage(`Saved "${doc.name}"`)
-                                  setShowNotification(true)
-                                }}
-                                className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
-                              >
-                                Save
-                              </Button>
+                            <td>
+                              <Switch
+                                checked={config?.isActive ?? false}
+                                onCheckedChange={(checked) => handleToggleActive(doc.id, checked)}
+                                aria-label={`${doc.name} active`}
+                                className="data-[state=checked]:bg-[#33295e]"
+                              />
                             </td>
-                            <td className="py-2 px-4">
-                              <div className="flex items-center gap-2 justify-end">
+                            <td>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setNotificationMessage(`Saved "${doc.name}"`)
+                                    setShowNotification(true)
+                                  }}
+                                  className="bg-[#33295e] text-white hover:bg-[#33295e]/90 transition-colors"
+                                >
+                                  Save
+                                </Button>
                                 {config?.isActive && (
                                   <Button
                                     variant="outline"
@@ -2387,27 +2391,31 @@ export function DocumentCreationContent() {
                                 )}
                                 <Button
                                   variant="outline"
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => router.push("/forms?readonly=1")}
                                   title="Change permissions"
-                                  aria-label="Change permissions"
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                  aria-label={`Change permissions for ${doc.name}`}
+                                  className="h-9 w-9 border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                                 >
                                   <ShieldCheck className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="outline"
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => handleCloneDocument(doc)}
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                  title="Clone"
+                                  aria-label={`Clone ${doc.name}`}
+                                  className="h-9 w-9 border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                                 >
-                                  Clone
+                                  <Copy className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="outline"
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => handleDownloadDocument(doc)}
-                                  className="border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
+                                  title="Download"
+                                  aria-label={`Download ${doc.name}`}
+                                  className="h-9 w-9 border-slate-200 text-slate-600 hover:bg-[#33295e] hover:text-white hover:border-[#33295e] transition-colors"
                                 >
                                   <Download className="w-4 h-4" />
                                 </Button>
@@ -2418,8 +2426,9 @@ export function DocumentCreationContent() {
                       })}
                     </tbody>
                   </table>
+                  </div>
 
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-slate-500">
                       Showing {(docCurrentPage - 1) * docPageSize + 1}–
                       {Math.min(docCurrentPage * docPageSize, filteredDocuments.length)} of {filteredDocuments.length}
