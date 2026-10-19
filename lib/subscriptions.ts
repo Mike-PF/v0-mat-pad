@@ -62,6 +62,19 @@ const insightTemplates = [...essentialsTemplates, "headteacher-report", "ofsted-
 const essentialsFeeds = ["arbor", "sims", "wonde"]
 const insightFeeds = [...essentialsFeeds, "sisra", "cpoms"]
 
+export interface TierSettings {
+  /** `null` means unlimited. */
+  customTemplateLimit: number | null
+}
+
+export function buildDefaultTierSettings(): Record<TierId, TierSettings> {
+  return {
+    essentials: { customTemplateLimit: 3 },
+    insight: { customTemplateLimit: 10 },
+    enterprise: { customTemplateLimit: null },
+  }
+}
+
 export function buildDefaultEntitlements(): Record<TierId, string[]> {
   const pick = (reportGroups: string[], templates: string[], feeds: string[]) => [
     ...reportItems.filter((r) => reportGroups.includes(r.group)).map((r) => r.key),
