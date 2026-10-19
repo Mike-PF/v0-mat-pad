@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import type { FeedbackCategory, MessageFeedbackValue } from "@/components/message-feedback"
 
 /**
  * AI Management data model.
@@ -90,7 +91,37 @@ export interface AskLogEntry {
   usage: AskUsage
   /** Word report the AI generated in response, when it produced one. */
   report?: { name: string; url: string }
+  /** Thumbs up / down feedback the user left on the answer in the AI chat. */
+  feedback?: MessageFeedbackValue
+}
+
+const SEED_POSITIVE_NOTES = [
+  "Exactly what I needed for the governors meeting.",
+  "",
+  "Quick and clear, thanks.",
+  "",
+]
+
+const SEED_NEGATIVE_FEEDBACK: { category: FeedbackCategory; notes: string }[] = [
+  { category: "Inaccurate data", notes: "Figures don't match what we see in the attendance register." },
+  { category: "Didn't answer the question", notes: "I asked for Year 10 only but it gave the whole school." },
+  { category: "Incomplete answer", notes: "Missing the comparison to last year." },
+  { category: "Report formatting", notes: "Tables in the Word report overflow the page." },
+  { category: "Too slow", notes: "" },
+]
+
+function makeSeedFeedback(seed: number, answered: boolean, askedAt: string): MessageFeedbackValue | undefined {
+  const submittedAt = new Date(new Date(askedAt).getTime() + 5 * 60 * 1000).toISOString()
+  if (answered && seed % 4 === 1) {
+    const notes = SEED_POSITIVE_NOTES[seed % SEED_POSITIVE_NOTES.length]
+    return { rating: "up", notes: notes || undefined, submittedAt }
   }
+  if (seed % 5 === 2 || (!answered && seed % 2 === 0)) {
+    const f = SEED_NEGATIVE_FEEDBACK[seed % SEED_NEGATIVE_FEEDBACK.length]
+    return { rating: "down", category: f.category, notes: f.notes || undefined, submittedAt }
+  }
+  return undefined
+}
 
 /**
  * Provider pricing per 1,000,000 tokens, in GBP. Cached input is billed far
@@ -408,9 +439,11 @@ function buildSeedLog(): AskLogEntry[] {
       const person = LOG_PEOPLE[(counter + i) % LOG_PEOPLE.length]
       const hoursAgo = (counter * 7 + i * 13) % 96 // within last 4 days
       const answered = ask.trend >= 0 ? true : i % 3 !== 0
+      const askedAt = new Date(now - hoursAgo * 60 * 60 * 1000).toISOString()
       log.push({
         id: `log-${++counter}`,
-        askedAt: new Date(now - hoursAgo * 60 * 60 * 1000).toISOString(),
+        askedAt,
+        feedback: makeSeedFeedback(counter, answered, askedAt),
         question: ask.question,
         topic: ask.topic,
         user: person.user,
@@ -440,9 +473,11 @@ function buildSeedLog(): AskLogEntry[] {
   for (const u of unmet) {
     const person = LOG_PEOPLE[counter % LOG_PEOPLE.length]
     const hoursAgo = (counter * 5) % 96
+    const askedAt = new Date(now - hoursAgo * 60 * 60 * 1000).toISOString()
     log.push({
       id: `log-${++counter}`,
-      askedAt: new Date(now - hoursAgo * 60 * 60 * 1000).toISOString(),
+      askedAt,
+      feedback: makeSeedFeedback(counter, false, askedAt),
       question: u.q,
       topic: u.topic,
       user: person.user,
@@ -998,6 +1033,7 @@ export interface LogFilters {
   school: string // "all" or a school name
   topic: string // "all" or a topic name
   answered: "all" | "answered" | "unanswered"
+  feedback?: "all" | "up" | "down" | "none"
 }
 
 export function formatLogDate(iso: string): string {
@@ -1018,6 +1054,10 @@ export function filterLog(log: AskLogEntry[], filters: LogFilters): AskLogEntry[
     if (filters.topic !== "all" && e.topic !== filters.topic) return false
     if (filters.answered === "answered" && !e.answered) return false
     if (filters.answered === "unanswered" && e.answered) return false
+    if (filters.feedback === "none" && e.feedback) return false
+    if ((filters.feedback === "up" || filters.feedback === "down") && e.feedback?.rating !== filters.feedback) {
+      return false
+    }
     if (q) {
       return (
         e.question.toLowerCase().includes(q) ||
@@ -1048,6 +1088,9 @@ export function logToExportRows(log: AskLogEntry[]) {
     "Completion tokens": e.usage.completionTokens,
     "Total tokens": e.usage.totalTokens,
     [`Cost (${e.usage.currency})`]: Number(e.usage.estimatedCost.toFixed(4)),
+    Feedback: e.feedback ? (e.feedback.rating === "up" ? "Thumbs up" : "Thumbs down") : "",
+    "Feedback category": e.feedback?.category ?? "",
+    "Feedback notes": e.feedback?.notes ?? "",
   }))
 }
 
