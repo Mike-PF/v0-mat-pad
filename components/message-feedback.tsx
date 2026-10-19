@@ -1,8 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { ThumbsUp, ThumbsDown, Check, X } from "lucide-react"
+import { ThumbsUp, ThumbsDown, Check } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const NAVY = "#33295e"
 const ACCENT = "#fd6d6d"
@@ -105,21 +113,27 @@ export function MessageFeedback({ messageId, value, onSubmit }: MessageFeedbackP
         )}
       </div>
 
-      {isOpen && (
-        <div className="mt-2 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold" style={{ color: NAVY }}>
-              {draftRating === "up" ? "What was good about this answer?" : "What went wrong?"}
-            </p>
-            <button
-              type="button"
-              onClick={handleCancel}
-              aria-label="Close feedback"
-              className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+      <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+        <DialogContent className="flex flex-col gap-5 sm:max-w-lg">
+          <DialogHeader className="flex flex-row items-center gap-3 text-left">
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: draftRating === "up" ? NAVY : ACCENT, color: "#ffffff" }}
+              aria-hidden="true"
             >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+              {draftRating === "up" ? <ThumbsUp className="h-5 w-5" /> : <ThumbsDown className="h-5 w-5" />}
+            </span>
+            <div className="flex flex-col gap-1">
+              <DialogTitle style={{ color: NAVY }}>
+                {draftRating === "up" ? "What was good about this answer?" : "What went wrong?"}
+              </DialogTitle>
+              <DialogDescription>
+                {draftRating === "up"
+                  ? "Your feedback helps us improve the AI assistant."
+                  : "Pick a category and add any details to help us fix it."}
+              </DialogDescription>
+            </div>
+          </DialogHeader>
 
           {draftRating === "down" && (
             <fieldset className="flex flex-col gap-2">
@@ -175,7 +189,7 @@ export function MessageFeedback({ messageId, value, onSubmit }: MessageFeedbackP
             />
           </div>
 
-          <div className="flex justify-end gap-2">
+          <DialogFooter className="gap-2">
             <button
               type="button"
               onClick={handleCancel}
@@ -191,9 +205,9 @@ export function MessageFeedback({ messageId, value, onSubmit }: MessageFeedbackP
             >
               Submit feedback
             </button>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
