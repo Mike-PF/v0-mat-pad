@@ -26,6 +26,8 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Eye,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -1469,12 +1471,38 @@ function ReportCell({ report }: { report: { name: string; url: string } }) {
   )
 }
 
+const FEEDBACK_UP = "#33295e"
+const FEEDBACK_DOWN = "#fd6d6d"
+
+function FeedbackCell({ feedback }: { feedback: NonNullable<AskLogEntry["feedback"]> }) {
+  const isUp = feedback.rating === "up"
+  const color = isUp ? FEEDBACK_UP : FEEDBACK_DOWN
+  return (
+    <span className="inline-flex min-w-32 items-center gap-1.5">
+      <span
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+        style={{ backgroundColor: `${color}18`, color }}
+        aria-label={isUp ? "Thumbs up" : "Thumbs down"}
+        title={feedback.notes}
+      >
+        {isUp ? <ThumbsUp className="h-3.5 w-3.5" /> : <ThumbsDown className="h-3.5 w-3.5" />}
+      </span>
+      {!isUp && feedback.category && (
+        <span className="text-xs font-medium" style={{ color }}>
+          {feedback.category}
+        </span>
+      )}
+    </span>
+  )
+}
+
 function ReportsTab({ log }: { log: AskLogEntry[] }) {
   const [filters, setFilters] = useState<LogFilters>({
     search: "",
     school: "all",
     topic: "all",
     answered: "all",
+    feedback: "all",
   })
 
   // Organisation scope (platform admins can see every organisation). Kept separate
@@ -1541,6 +1569,9 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
       { wch: 16 }, // Completion tokens
       { wch: 13 }, // Total tokens
       { wch: 12 }, // Cost
+      { wch: 12 }, // Feedback
+      { wch: 26 }, // Feedback category
+      { wch: 52 }, // Feedback notes
     ]
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "AI Questions")
@@ -1588,7 +1619,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div>
           <Input
             value={filters.search}
@@ -1623,6 +1654,20 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
             <SelectItem value="unanswered">Unanswered only</SelectItem>
           </SelectContent>
         </Select>
+        <Select
+          value={filters.feedback ?? "all"}
+          onValueChange={(v) => setFilters((f) => ({ ...f, feedback: v as LogFilters["feedback"] }))}
+        >
+          <SelectTrigger aria-label="Filter by feedback">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All feedback</SelectItem>
+            <SelectItem value="up">Thumbs up</SelectItem>
+            <SelectItem value="down">Thumbs down</SelectItem>
+            <SelectItem value="none">No feedback</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Summary line + export */}
@@ -1653,7 +1698,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   <SortHeader label="Date & time" sortKey="askedAt" />
                   <SortHeader label="User" sortKey="user" />
-                  <SortHeader label="Role" sortKey="role" />
                   <SortHeader label="School / Org" sortKey="school" />
                   <SortHeader label="Page / Report" sortKey="page" />
                   <SortHeader label="Topic" sortKey="topic" />
@@ -1662,6 +1706,9 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   <SortHeader label="Answered" sortKey="answered" align="center" />
                   <th className="px-4 py-3 whitespace-nowrap text-center font-semibold uppercase tracking-wide text-slate-500">
                     Report
+                  </th>
+                  <th className="px-4 py-3 whitespace-nowrap font-semibold uppercase tracking-wide text-slate-500">
+                    Feedback
                   </th>
                 </tr>
               </thead>
@@ -1692,7 +1739,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                       >
                         <td className="px-4 py-3 whitespace-nowrap text-slate-500">{formatLogDate(e.askedAt)}</td>
                         <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800">{e.user}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.role}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.school}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.page}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -1721,6 +1767,15 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                             <ReportCell report={e.report} />
                           ) : (
                             <span className="text-slate-300" aria-label="No report">
+                              {"\u2014"}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {e.feedback ? (
+                            <FeedbackCell feedback={e.feedback} />
+                          ) : (
+                            <span className="text-slate-300" aria-label="No feedback">
                               {"\u2014"}
                             </span>
                           )}
@@ -1811,6 +1866,37 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                   </div>
                 </div>
               )}
+
+              <div className="mt-4 flex flex-col gap-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">User feedback</p>
+                {selectedEntry.feedback ? (
+                  <div
+                    className="flex flex-col gap-2 rounded-lg border p-3"
+                    style={{
+                      borderColor: `${selectedEntry.feedback.rating === "up" ? FEEDBACK_UP : FEEDBACK_DOWN}40`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <FeedbackCell feedback={selectedEntry.feedback} />
+                        {selectedEntry.feedback.rating === "up" && (
+                          <span className="text-xs font-medium" style={{ color: FEEDBACK_UP }}>
+                            Good answer
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-slate-400">{formatLogDate(selectedEntry.feedback.submittedAt)}</span>
+                    </div>
+                    {selectedEntry.feedback.notes ? (
+                      <p className="text-sm leading-relaxed text-slate-700">{selectedEntry.feedback.notes}</p>
+                    ) : (
+                      <p className="text-xs italic text-slate-400">No notes added.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400">No feedback left on this answer.</p>
+                )}
+              </div>
 
               {/* Meta */}
               <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 text-sm">
