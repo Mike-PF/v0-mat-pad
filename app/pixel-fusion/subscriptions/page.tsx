@@ -22,7 +22,7 @@ import {
 } from "@/lib/subscriptions"
 
 const sections: { id: EntitlementKind; label: string; icon: typeof FileBarChart; items: EntitlementItem[] }[] = [
-  { id: "report", label: "Reports", icon: FileBarChart, items: reportItems },
+  { id: "report", label: "Dashboards", icon: FileBarChart, items: reportItems },
   { id: "template", label: "Templates", icon: FileText, items: templateItems },
   { id: "feed", label: "Data Feeds", icon: Database, items: feedItems },
 ]
@@ -129,7 +129,7 @@ export default function SubscriptionsPage() {
                 <div className="flex flex-col gap-1">
                   <h1 className="text-xl font-bold text-[#33295e]">Subscriptions</h1>
                   <p className="text-sm text-slate-500 text-pretty">
-                    Choose which reports, templates and data feeds are included at each subscription level.
+                    Choose which dashboards, templates and data feeds are included at each subscription level.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
