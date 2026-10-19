@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/toast"
-import { FileBarChart, FileText, Database, Lock, Search } from "lucide-react"
+import { Lock, Search } from "lucide-react"
 import { isPlatformAdmin } from "@/lib/current-org"
 import {
   subscriptionTiers,
@@ -21,10 +21,10 @@ import {
   type TierId,
 } from "@/lib/subscriptions"
 
-const sections: { id: EntitlementKind; label: string; icon: typeof FileBarChart; items: EntitlementItem[] }[] = [
-  { id: "report", label: "Dashboards", icon: FileBarChart, items: reportItems },
-  { id: "template", label: "Templates", icon: FileText, items: templateItems },
-  { id: "feed", label: "Data Feeds", icon: Database, items: feedItems },
+const sections: { id: EntitlementKind; label: string; items: EntitlementItem[] }[] = [
+  { id: "report", label: "Dashboards", items: reportItems },
+  { id: "template", label: "Templates", items: templateItems },
+  { id: "feed", label: "Data Feeds", items: feedItems },
 ]
 
 const checkboxClass =
@@ -172,7 +172,6 @@ export default function SubscriptionsPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div role="tablist" aria-label="Entitlement type" className="flex gap-1 rounded-lg bg-slate-100 p-1">
                   {sections.map((s) => {
-                    const Icon = s.icon
                     const active = s.id === sectionId
                     return (
                       <button
@@ -184,7 +183,6 @@ export default function SubscriptionsPage() {
                           active ? "bg-white text-[#33295e] shadow-sm" : "text-slate-500 hover:text-slate-700"
                         }`}
                       >
-                        <Icon className="w-4 h-4" />
                         {s.label}
                         <span className="text-xs text-slate-400">{s.items.length}</span>
                       </button>
