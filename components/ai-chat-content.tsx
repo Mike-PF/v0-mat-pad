@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Plus, Send, Star, MoreHorizontal, Trash2, Edit2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ReportViewerModal, type ReportAttachment } from "@/components/report-viewer-modal"
+import { MessageFeedback, type MessageFeedbackValue } from "@/components/message-feedback"
 
 const NAVY = "#33295e"
 const ACCENT = "#fd6d6d"
@@ -184,6 +185,7 @@ export function AIChatContent() {
   const [reportFile, setReportFile] = useState<Blob | null>(null)
   const [reportError, setReportError] = useState<string | null>(null)
   const [archivedReports, setArchivedReports] = useState<Set<string>>(new Set())
+  const [feedback, setFeedback] = useState<Record<string, MessageFeedbackValue>>({})
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -522,8 +524,9 @@ export function AIChatContent() {
                     key={message.id}
                     className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >
+                    <div className={`flex max-w-[80%] flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
                     <div
-                      className={`max-w-[80%] px-4 py-3 rounded-2xl ${
+                      className={`px-4 py-3 rounded-2xl ${
                         message.role === "user"
                           ? "bg-slate-100 text-slate-800"
                           : "bg-white border border-slate-200 text-slate-700"
@@ -558,6 +561,16 @@ export function AIChatContent() {
                           </span>
                         </button>
                       )}
+                    </div>
+                    {message.role === "assistant" && (
+                      <div className="w-full">
+                        <MessageFeedback
+                          messageId={message.id}
+                          value={feedback[message.id]}
+                          onSubmit={(value) => setFeedback((prev) => ({ ...prev, [message.id]: value }))}
+                        />
+                      </div>
+                    )}
                     </div>
                   </div>
                 ))}
