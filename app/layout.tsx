@@ -10,6 +10,7 @@ const poppins = Poppins({
   display: "swap",
   variable: "--font-poppins",
   weight: ["300", "400", "500", "600", "700"],
+  fallback: ["system-ui", "sans-serif"],
 })
 
 const jetbrainsMono = JetBrains_Mono({
