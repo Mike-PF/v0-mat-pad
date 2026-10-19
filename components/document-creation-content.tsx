@@ -2288,7 +2288,7 @@ export function DocumentCreationContent() {
                   <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-slate-200">
                   <table className="w-full">
                     <thead className="sticky top-0 z-10 bg-slate-50">
-                      <tr className="border-b border-slate-200 [&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-2.5 [&>th]:text-left [&>th]:text-xs [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-wide [&>th]:text-slate-500">
+                      <tr className="border-b border-slate-200 [&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-2.5 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-slate-900">
                         <th className="w-full min-w-[220px]">Document</th>
                         <th>Report Area</th>
                         <th>Organisation</th>
@@ -2310,14 +2310,14 @@ export function DocumentCreationContent() {
                             <td className="max-w-0">
                               <div className="flex min-w-0 flex-col gap-0.5">
                                 <div className="flex min-w-0 items-center gap-2">
-                                  <span className="inline-flex flex-shrink-0 items-center rounded bg-[#33295e] px-1.5 py-0.5 text-[11px] font-medium text-white">
+                                  <span className="inline-flex flex-shrink-0 items-center rounded-md bg-[#33295e] px-2.5 py-1 text-xs font-medium text-white">
                                     System
                                   </span>
                                   <span className="truncate text-sm font-medium text-[#33295e]" title={doc.name}>
                                     {doc.name}
                                   </span>
                                 </div>
-                                <span className="truncate text-sm text-slate-500" title={doc.description ?? undefined}>
+                                <span className="truncate text-sm text-slate-600" title={doc.description ?? undefined}>
                                   {doc.description ?? "—"}
                                 </span>
                               </div>
