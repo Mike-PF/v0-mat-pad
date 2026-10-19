@@ -1698,7 +1698,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   <SortHeader label="Date & time" sortKey="askedAt" />
                   <SortHeader label="User" sortKey="user" />
-                  <SortHeader label="Role" sortKey="role" />
                   <SortHeader label="School / Org" sortKey="school" />
                   <SortHeader label="Page / Report" sortKey="page" />
                   <SortHeader label="Topic" sortKey="topic" />
@@ -1716,7 +1715,7 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-4 py-12 text-center text-sm text-slate-400">
+                    <td colSpan={10} className="px-4 py-12 text-center text-sm text-slate-400">
                       No questions match your filters.
                     </td>
                   </tr>
@@ -1740,7 +1739,6 @@ function ReportsTab({ log }: { log: AskLogEntry[] }) {
                       >
                         <td className="px-4 py-3 whitespace-nowrap text-slate-500">{formatLogDate(e.askedAt)}</td>
                         <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800">{e.user}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.role}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.school}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-slate-600">{e.page}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
