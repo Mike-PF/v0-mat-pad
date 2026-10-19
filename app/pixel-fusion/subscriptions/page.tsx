@@ -127,7 +127,7 @@ export default function SubscriptionsPage() {
             <CardContent className="p-6 flex flex-col gap-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                  <h1 className="text-xl font-bold text-[#33295e]">Subscriptions</h1>
+                  <h1 className="text-xl font-bold text-[#33295e]">Subscription Management</h1>
                   <p className="text-sm text-slate-500 text-pretty">
                     Choose which dashboards, templates and data feeds are included at each subscription level.
                   </p>
