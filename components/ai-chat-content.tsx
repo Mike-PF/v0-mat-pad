@@ -362,9 +362,17 @@ export function AIChatContent() {
                 Pinned
               </div>
               {pinnedSessions.map((session) => (
-                <button
+                <div
                   key={session.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectSession(session.id)}
+                  onKeyDown={(e) => {
+                    if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                      e.preventDefault()
+                      handleSelectSession(session.id)
+                    }
+                  }}
                   onMouseEnter={() => setHoveredSessionId(session.id)}
                   onMouseLeave={() => setHoveredSessionId(null)}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
@@ -394,7 +402,7 @@ export function AIChatContent() {
                   ) : (
                     <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
                   )}
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -405,9 +413,17 @@ export function AIChatContent() {
               Recents
             </div>
             {recentSessions.map((session) => (
-              <button
+              <div
                 key={session.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSelectSession(session.id)}
+                onKeyDown={(e) => {
+                  if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault()
+                    handleSelectSession(session.id)
+                  }
+                }}
                 onMouseEnter={() => setHoveredSessionId(session.id)}
                 onMouseLeave={() => setHoveredSessionId(null)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
@@ -435,7 +451,7 @@ export function AIChatContent() {
                     </button>
                   </div>
                 )}
-              </button>
+              </div>
             ))}
           </div>
         </div>
