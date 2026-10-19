@@ -16,10 +16,15 @@ import {
   templateItems,
   feedItems,
   buildDefaultEntitlements,
+  buildDefaultTierSettings,
   type EntitlementItem,
   type EntitlementKind,
   type TierId,
+  type TierSettings,
 } from "@/lib/subscriptions"
+
+type TabId = EntitlementKind | "settings"
+type SettingsByTier = Record<TierId, TierSettings>
 
 const sections: { id: EntitlementKind; label: string; items: EntitlementItem[] }[] = [
   { id: "report", label: "Dashboards", items: reportItems },
@@ -42,10 +47,16 @@ export default function SubscriptionsPage() {
 
   const [saved, setSaved] = useState<Entitlements>(() => buildDefaultEntitlements())
   const [draft, setDraft] = useState<Entitlements>(saved)
-  const [sectionId, setSectionId] = useState<EntitlementKind>("report")
+  const [savedSettings, setSavedSettings] = useState<SettingsByTier>(() => buildDefaultTierSettings())
+  const [draftSettings, setDraftSettings] = useState<SettingsByTier>(savedSettings)
+  const [sectionId, setSectionId] = useState<TabId>("report")
   const [search, setSearch] = useState("")
 
-  const section = sections.find((s) => s.id === sectionId)!
+  const section = sections.find((s) => s.id === sectionId) ?? sections[0]
+  const showSettings = sectionId === "settings"
+
+  const updateSetting = (tier: TierId, patch: Partial<TierSettings>) =>
+    setDraftSettings((prev) => ({ ...prev, [tier]: { ...prev[tier], ...patch } }))
 
   const enabled = useMemo(
     () =>
@@ -58,9 +69,13 @@ export default function SubscriptionsPage() {
       subscriptionTiers.some((t) => {
         const a = draft[t.id]
         const b = new Set(saved[t.id])
-        return a.length !== b.size || a.some((k) => !b.has(k))
+        return (
+          a.length !== b.size ||
+          a.some((k) => !b.has(k)) ||
+          draftSettings[t.id].customTemplateLimit !== savedSettings[t.id].customTemplateLimit
+        )
       }),
-    [draft, saved],
+    [draft, saved, draftSettings, savedSettings],
   )
 
   const groups = useMemo(() => {
@@ -88,6 +103,7 @@ export default function SubscriptionsPage() {
 
   const handleSave = () => {
     setSaved(draft)
+    setSavedSettings(draftSettings)
     showToast({ variant: "success", title: "Subscriptions updated", message: "Changes to the subscription levels have been saved." })
   }
 
@@ -129,12 +145,20 @@ export default function SubscriptionsPage() {
                 <div className="flex flex-col gap-1">
                   <h1 className="text-xl font-bold text-[#33295e]">Subscription Management</h1>
                   <p className="text-sm text-slate-500 text-pretty">
-                    Choose which dashboards, templates and data feeds are included at each subscription level.
+                    Choose which dashboards, templates and data feeds are included at each subscription level, and
+                    set account limits.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   {isDirty && <span className="text-xs font-medium text-amber-600">Unsaved changes</span>}
-                  <Button variant="outline" disabled={!isDirty} onClick={() => setDraft(saved)}>
+                  <Button
+                    variant="outline"
+                    disabled={!isDirty}
+                    onClick={() => {
+                      setDraft(saved)
+                      setDraftSettings(savedSettings)
+                    }}
+                  >
                     Discard
                   </Button>
                   <Button
@@ -188,7 +212,18 @@ export default function SubscriptionsPage() {
                       </button>
                     )
                   })}
+                  <button
+                    role="tab"
+                    aria-selected={showSettings}
+                    onClick={() => setSectionId("settings")}
+                    className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      showSettings ? "bg-white text-[#33295e] shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    Settings
+                  </button>
                 </div>
+                {!showSettings && (
                 <div className="relative w-full max-w-xs">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
@@ -199,8 +234,12 @@ export default function SubscriptionsPage() {
                     aria-label={`Search ${section.label.toLowerCase()}`}
                   />
                 </div>
+                )}
               </div>
 
+              {showSettings ? (
+                <SettingsTable settings={draftSettings} onChange={updateSetting} />
+              ) : (
               <div className="rounded-lg border border-slate-200 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 text-slate-600">
@@ -256,10 +295,91 @@ export default function SubscriptionsPage() {
                   </tbody>
                 </table>
               </div>
+              )}
             </CardContent>
           </Card>
         </main>
       </div>
+    </div>
+  )
+}
+
+function SettingsTable({
+  settings,
+  onChange,
+}: {
+  settings: SettingsByTier
+  onChange: (tier: TierId, patch: Partial<TierSettings>) => void
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 overflow-hidden">
+      <table className="w-full text-sm">
+        <thead className="bg-slate-50 text-slate-600">
+          <tr>
+            <th scope="col" className="text-left font-semibold px-4 py-3">
+              Setting
+            </th>
+            {subscriptionTiers.map((tier) => (
+              <th key={tier.id} scope="col" className="w-48 text-center font-semibold px-4 py-3">
+                {tier.name}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="border-t border-slate-200 align-top">
+            <th scope="row" className="text-left font-normal px-4 py-4">
+              <div className="flex flex-col gap-0.5">
+                <span className="font-semibold text-slate-900">Custom templates</span>
+                <span className="text-xs text-slate-500 text-pretty">
+                  Maximum number of custom templates an account can create.
+                </span>
+              </div>
+            </th>
+            {subscriptionTiers.map((tier) => {
+              const limit = settings[tier.id].customTemplateLimit
+              const unlimited = limit === null
+              const inputId = `custom-template-limit-${tier.id}`
+              const unlimitedId = `custom-template-unlimited-${tier.id}`
+              return (
+                <td key={tier.id} className="px-4 py-4">
+                  <div className="flex flex-col items-center gap-2">
+                    <label htmlFor={inputId} className="sr-only">
+                      Custom template limit for {tier.name}
+                    </label>
+                    <Input
+                      id={inputId}
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      step={1}
+                      disabled={unlimited}
+                      value={unlimited ? "" : limit}
+                      placeholder={unlimited ? "Unlimited" : "0"}
+                      onChange={(e) => {
+                        const n = Math.max(0, Math.floor(Number(e.target.value) || 0))
+                        onChange(tier.id, { customTemplateLimit: n })
+                      }}
+                      className="w-28 text-center"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={unlimitedId}
+                        className={checkboxClass}
+                        checked={unlimited}
+                        onCheckedChange={(v) => onChange(tier.id, { customTemplateLimit: v === true ? null : 0 })}
+                      />
+                      <label htmlFor={unlimitedId} className="text-xs text-slate-600">
+                        Unlimited
+                      </label>
+                    </div>
+                  </div>
+                </td>
+              )
+            })}
+          </tr>
+        </tbody>
+      </table>
     </div>
   )
 }
