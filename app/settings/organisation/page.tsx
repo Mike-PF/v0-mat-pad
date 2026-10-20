@@ -252,7 +252,7 @@ export default function OrganisationPage() {
   const [drillDownSchoolId, setDrillDownSchoolId] = useState<string | null>(null)
   const [settingsTab, setSettingsTab] = useState<"subscription" | "basic" | "branding" | "powerbi">("subscription")
   const [activeSubscription, setActiveSubscription] = useState<"essentials" | "insight" | "enterprise" | null>(null)
-  const [addons, setAddons] = useState<{ reportBuilder: boolean }>({ reportBuilder: false })
+  const [addons, setAddons] = useState<{ reportBuilder: boolean; ai: boolean }>({ reportBuilder: false, ai: false })
   const [reportBuilderUsers, setReportBuilderUsers] = useState(2)
   const [subscriptionSaved, setSubscriptionSaved] = useState(false)
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -1034,6 +1034,35 @@ export default function OrganisationPage() {
                                 )}
                               </div>
                             )}
+                          </div>
+
+                          <div
+                            className={`rounded-lg border-2 transition-all ${
+                              addons.ai
+                                ? "border-[#33295e] bg-[#33295e]/5"
+                                : "border-slate-200 bg-white hover:border-slate-300"
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={addons.ai}
+                              onClick={() => setAddons(prev => ({ ...prev, ai: !prev.ai }))}
+                              className="flex w-full items-center justify-between p-4 text-left cursor-pointer"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-slate-900">AI</span>
+                                  {addons.ai && (
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#33295e] text-white">Enabled</span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 mt-0.5">Enables AI Chat and AI-assisted features across the platform.</p>
+                              </div>
+                              <div className={`w-10 h-6 rounded-full p-0.5 transition-colors ${addons.ai ? "bg-[#33295e]" : "bg-slate-300"}`}>
+                                <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${addons.ai ? "translate-x-4" : "translate-x-0"}`} />
+                              </div>
+                            </button>
                           </div>
                         </div>
                       </div>
