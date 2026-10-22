@@ -8,6 +8,13 @@ import { ChevronDown, Search, X } from "lucide-react"
 import { PDFReportModal } from "@/components/pdf-report-modal"
 import { ReportPreviewModal } from "@/components/report-preview-modal"
 import { ReportSignOffModal } from "@/components/report-sign-off-modal"
+import {
+  ReportScheduleModal,
+  FREQUENCY_LABELS,
+  describeSchedule,
+  type ReportSchedule,
+} from "@/components/report-schedule-modal"
+import { Mail } from "lucide-react"
 
 interface Report {
   id: string
@@ -59,6 +66,9 @@ export function PredefinedReportsContent() {
   }) => {
     setSignOffs((prev) => ({ ...prev, [record.reportId]: record }))
   }
+
+  const [scheduleReport, setScheduleReport] = useState<Report | null>(null)
+  const [schedules, setSchedules] = useState<Record<string, ReportSchedule>>({})
 
   const [dateRangeType, setDateRangeType] = useState("")
   const [selectedTermDate, setSelectedTermDate] = useState("")
@@ -531,6 +541,28 @@ export function PredefinedReportsContent() {
                               >
                                 Sign off
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setScheduleReport(report)
+                                }}
+                                className="text-xs"
+                              >
+                                <Mail className="w-3.5 h-3.5" aria-hidden="true" />
+                                {schedules[report.id] ? "Edit schedule" : "Schedule email"}
+                              </Button>
+                              {schedules[report.id] && (
+                                <span
+                                  className={`text-xs ${schedules[report.id].active ? "text-[#33295e]" : "text-slate-400"}`}
+                                >
+                                  {FREQUENCY_LABELS[schedules[report.id].frequency]} ·{" "}
+                                  {describeSchedule(schedules[report.id])} · {schedules[report.id].recipientIds.length}{" "}
+                                  {schedules[report.id].recipientIds.length === 1 ? "recipient" : "recipients"}
+                                  {!schedules[report.id].active && " (paused)"}
+                                </span>
+                              )}
                             </div>
                           </div>
                           {selectedReport?.id === report.id && (
@@ -922,6 +954,21 @@ export function PredefinedReportsContent() {
         currentUser={currentUser}
         existingSignOff={signOffReport ? signOffs[signOffReport.id] : null}
         onConfirm={handleConfirmSignOff}
+      />
+
+      <ReportScheduleModal
+        isOpen={scheduleReport !== null}
+        onClose={() => setScheduleReport(null)}
+        report={scheduleReport}
+        existing={scheduleReport ? (schedules[scheduleReport.id] ?? null) : null}
+        onSave={(s) => setSchedules((prev) => ({ ...prev, [s.reportId]: s }))}
+        onRemove={(id) =>
+          setSchedules((prev) => {
+            const next = { ...prev }
+            delete next[id]
+            return next
+          })
+        }
       />
     </div>
   )
