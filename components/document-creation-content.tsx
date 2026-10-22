@@ -384,6 +384,7 @@ export function DocumentCreationContent() {
       reportArea: string
       organizations: string[]
       roleIds: string[]
+      canScheduleEmail: boolean
     }
   }>({})
 
@@ -399,10 +400,18 @@ export function DocumentCreationContent() {
         reportArea: doc.reportArea ?? "",
         organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
         roleIds: [],
+        canScheduleEmail: false,
       }
     })
     setDocumentConfigs(configs)
   }, [])
+
+  const handleToggleScheduleEmail = (docId: string, canScheduleEmail: boolean) => {
+    setDocumentConfigs((prev) => ({
+      ...prev,
+      [docId]: { ...prev[docId], canScheduleEmail },
+    }))
+  }
 
   const handleToggleActive = (docId: string, isActive: boolean) => {
     setDocumentConfigs((prev) => ({
@@ -2293,7 +2302,8 @@ export function DocumentCreationContent() {
                         <th>Report Area</th>
                         <th>Organisation</th>
                         <th>Role</th>
-                        <th>Active</th>
+                          <th>Scheduled email</th>
+                          <th>Active</th>
                         <th className="text-right">
                           <span className="sr-only">Actions</span>
                         </th>
@@ -2358,6 +2368,14 @@ export function DocumentCreationContent() {
                                 onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
                               />
                               </div>
+                            </td>
+                            <td>
+                              <Switch
+                                checked={config?.canScheduleEmail ?? false}
+                                onCheckedChange={(checked) => handleToggleScheduleEmail(doc.id, checked)}
+                                aria-label={`${doc.name} can be emailed on a schedule`}
+                                className="data-[state=checked]:bg-[#33295e]"
+                              />
                             </td>
                             <td>
                               <Switch
