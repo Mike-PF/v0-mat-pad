@@ -1297,22 +1297,8 @@ export function DocumentCreationContent() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between gap-4 rounded-md border border-slate-200 px-4 py-3">
-              <div className="flex flex-col">
-                <label htmlFor="can-schedule-email" className="text-sm font-semibold text-slate-900">
-                  Scheduled email
-                </label>
-                <p className="text-sm text-slate-600">Allow this document to be emailed to users on a schedule.</p>
-              </div>
-              <Switch
-                id="can-schedule-email"
-                checked={canScheduleEmail}
-                onCheckedChange={setCanScheduleEmail}
-                className="data-[state=checked]:bg-[#33295e]"
-              />
-            </div>
-
             <div className="mt-6 grid grid-cols-3 gap-6 items-start">
+              <div className="flex flex-wrap gap-x-8 gap-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Report Data:</label>
                 <div className="flex items-center gap-2 py-2">
@@ -1343,6 +1329,37 @@ export function DocumentCreationContent() {
                     MAT
                   </span>
                 </div>
+              </div>
+              <div>
+                <label htmlFor="can-schedule-email" className="block text-sm font-semibold text-slate-900 mb-2">
+                  Scheduled Email:
+                </label>
+                <div className="flex items-center gap-2 py-2">
+                  <span className={`text-sm ${!canScheduleEmail ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                    No
+                  </span>
+                  <button
+                    id="can-schedule-email"
+                    type="button"
+                    role="switch"
+                    aria-checked={canScheduleEmail}
+                    aria-label="Allow this document to be emailed on a schedule"
+                    onClick={() => setCanScheduleEmail((v) => !v)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                      canScheduleEmail ? "bg-[#33295e]" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                        canScheduleEmail ? "translate-x-4" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm ${canScheduleEmail ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                    Yes
+                  </span>
+                </div>
+              </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
