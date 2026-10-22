@@ -293,6 +293,7 @@ export function DocumentCreationContent() {
   const [configSaved, setConfigSaved] = useState(false)
   const [editingForm, setEditingForm] = useState(false)
   const [documentName, setDocumentName] = useState("")
+  const [canScheduleEmail, setCanScheduleEmail] = useState(false)
   const [formLinks, setFormLinks] = useState<string[]>([])
   const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
@@ -519,6 +520,7 @@ export function DocumentCreationContent() {
     setShowDocumentEditor(true)
     setSelectedDocument(null)
     setDocumentName("")
+    setCanScheduleEmail(false)
     setSelectedSP("")
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -558,6 +560,7 @@ export function DocumentCreationContent() {
     setSelectedDocument(doc)
     setIsCreatingNew(false)
     setDocumentName(doc.name)
+    setCanScheduleEmail(documentConfigs[doc.id]?.canScheduleEmail ?? doc.canScheduleEmail ?? false)
     setSelectedSP(doc.sp)
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -1047,6 +1050,7 @@ export function DocumentCreationContent() {
       tagFormatOtherConfig: tagFormatOtherConfig, // Save Format Other configurations
       // Save document configuration settings
       isActive: documentConfigs[selectedDocument?.id || ""]?.isActive ?? true,
+      canScheduleEmail,
       isLive: documentConfigs[selectedDocument?.id || ""]?.isLive ?? true,
       isPublished: documentConfigs[selectedDocument?.id || ""]?.isPublished ?? false, // Save isPublished
       roles: documentConfigs[selectedDocument?.id || ""]?.roles ?? "All",
@@ -1291,6 +1295,21 @@ export function DocumentCreationContent() {
                   <option value="Performance Analytics">Performance Analytics</option>
                 </select>
               </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between gap-4 rounded-md border border-slate-200 px-4 py-3">
+              <div className="flex flex-col">
+                <label htmlFor="can-schedule-email" className="text-sm font-semibold text-slate-900">
+                  Scheduled email
+                </label>
+                <p className="text-sm text-slate-600">Allow this document to be emailed to users on a schedule.</p>
+              </div>
+              <Switch
+                id="can-schedule-email"
+                checked={canScheduleEmail}
+                onCheckedChange={setCanScheduleEmail}
+                className="data-[state=checked]:bg-[#33295e]"
+              />
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-6 items-start">
@@ -2302,8 +2321,7 @@ export function DocumentCreationContent() {
                         <th>Report Area</th>
                         <th>Organisation</th>
                         <th>Role</th>
-                          <th>Scheduled email</th>
-                          <th>Active</th>
+                        <th>Active</th>
                         <th className="text-right">
                           <span className="sr-only">Actions</span>
                         </th>
@@ -2368,14 +2386,6 @@ export function DocumentCreationContent() {
                                 onChange={(ids) => handleRoleIdsChange(doc.id, ids)}
                               />
                               </div>
-                            </td>
-                            <td>
-                              <Switch
-                                checked={config?.canScheduleEmail ?? false}
-                                onCheckedChange={(checked) => handleToggleScheduleEmail(doc.id, checked)}
-                                aria-label={`${doc.name} can be emailed on a schedule`}
-                                className="data-[state=checked]:bg-[#33295e]"
-                              />
                             </td>
                             <td>
                               <Switch
