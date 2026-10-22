@@ -1332,7 +1332,7 @@ export function DocumentCreationContent() {
               </div>
               <div>
                 <label htmlFor="can-schedule-email" className="block text-sm font-semibold text-slate-900 mb-2">
-                  Scheduled Email:
+                  Can Schedule Email:
                 </label>
                 <div className="flex items-center gap-2 py-2">
                   <span className={`text-sm ${!canScheduleEmail ? "text-slate-900 font-medium" : "text-slate-400"}`}>
