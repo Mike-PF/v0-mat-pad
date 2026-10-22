@@ -293,6 +293,7 @@ export function DocumentCreationContent() {
   const [configSaved, setConfigSaved] = useState(false)
   const [editingForm, setEditingForm] = useState(false)
   const [documentName, setDocumentName] = useState("")
+  const [canScheduleEmail, setCanScheduleEmail] = useState(false)
   const [formLinks, setFormLinks] = useState<string[]>([])
   const [formListOpen, setFormListOpen] = useState(false)
   const [sectionName, setSectionName] = useState("")
@@ -384,6 +385,7 @@ export function DocumentCreationContent() {
       reportArea: string
       organizations: string[]
       roleIds: string[]
+      canScheduleEmail: boolean
     }
   }>({})
 
@@ -399,10 +401,18 @@ export function DocumentCreationContent() {
         reportArea: doc.reportArea ?? "",
         organizations: doc.schoolUrn ? [doc.schoolUrn] : [],
         roleIds: [],
+        canScheduleEmail: false,
       }
     })
     setDocumentConfigs(configs)
   }, [])
+
+  const handleToggleScheduleEmail = (docId: string, canScheduleEmail: boolean) => {
+    setDocumentConfigs((prev) => ({
+      ...prev,
+      [docId]: { ...prev[docId], canScheduleEmail },
+    }))
+  }
 
   const handleToggleActive = (docId: string, isActive: boolean) => {
     setDocumentConfigs((prev) => ({
@@ -510,6 +520,7 @@ export function DocumentCreationContent() {
     setShowDocumentEditor(true)
     setSelectedDocument(null)
     setDocumentName("")
+    setCanScheduleEmail(false)
     setSelectedSP("")
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -549,6 +560,7 @@ export function DocumentCreationContent() {
     setSelectedDocument(doc)
     setIsCreatingNew(false)
     setDocumentName(doc.name)
+    setCanScheduleEmail(documentConfigs[doc.id]?.canScheduleEmail ?? doc.canScheduleEmail ?? false)
     setSelectedSP(doc.sp)
     setUploadedFile(null)
     setReportImage(null) // Reset report image
@@ -1038,6 +1050,7 @@ export function DocumentCreationContent() {
       tagFormatOtherConfig: tagFormatOtherConfig, // Save Format Other configurations
       // Save document configuration settings
       isActive: documentConfigs[selectedDocument?.id || ""]?.isActive ?? true,
+      canScheduleEmail,
       isLive: documentConfigs[selectedDocument?.id || ""]?.isLive ?? true,
       isPublished: documentConfigs[selectedDocument?.id || ""]?.isPublished ?? false, // Save isPublished
       roles: documentConfigs[selectedDocument?.id || ""]?.roles ?? "All",
@@ -1285,6 +1298,7 @@ export function DocumentCreationContent() {
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-6 items-start">
+              <div className="flex flex-wrap gap-x-8 gap-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Report Data:</label>
                 <div className="flex items-center gap-2 py-2">
@@ -1315,6 +1329,37 @@ export function DocumentCreationContent() {
                     MAT
                   </span>
                 </div>
+              </div>
+              <div>
+                <label htmlFor="can-schedule-email" className="block text-sm font-semibold text-slate-900 mb-2">
+                  Can Schedule Email:
+                </label>
+                <div className="flex items-center gap-2 py-2">
+                  <span className={`text-sm ${!canScheduleEmail ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                    No
+                  </span>
+                  <button
+                    id="can-schedule-email"
+                    type="button"
+                    role="switch"
+                    aria-checked={canScheduleEmail}
+                    aria-label="Allow this document to be emailed on a schedule"
+                    onClick={() => setCanScheduleEmail((v) => !v)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                      canScheduleEmail ? "bg-[#33295e]" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                        canScheduleEmail ? "translate-x-4" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm ${canScheduleEmail ? "text-slate-900 font-medium" : "text-slate-400"}`}>
+                    Yes
+                  </span>
+                </div>
+              </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Organisation:</label>
