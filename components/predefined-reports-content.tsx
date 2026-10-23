@@ -560,6 +560,7 @@ export function PredefinedReportsContent() {
                                   {FREQUENCY_LABELS[schedules[report.id].frequency]} ·{" "}
                                   {describeSchedule(schedules[report.id])} · {schedules[report.id].recipientIds.length}{" "}
                                   {schedules[report.id].recipientIds.length === 1 ? "recipient" : "recipients"}
+                          {schedules[report.id].passwordProtected && " · Password protected"}
                                   {!schedules[report.id].active && " (paused)"}
                                 </span>
                               )}
