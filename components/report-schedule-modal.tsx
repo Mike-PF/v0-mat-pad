@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Mail, Trash2 } from "lucide-react"
+import { Eye, EyeOff, Mail, Trash2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -29,8 +29,12 @@ export interface ReportSchedule {
   time: string
   recipientIds: string[]
   message: string
+  passwordProtected: boolean
+  password: string
   active: boolean
 }
+
+const MIN_PASSWORD_LENGTH = 8
 
 export const FREQUENCY_LABELS: Record<ScheduleFrequency, string> = {
   daily: "Daily",
@@ -80,6 +84,10 @@ export function ReportScheduleModal({ isOpen, onClose, report, existing, onSave,
   const [time, setTime] = useState("08:00")
   const [recipientIds, setRecipientIds] = useState<string[]>([])
   const [message, setMessage] = useState("")
+  const [passwordProtected, setPasswordProtected] = useState(false)
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [passwordError, setPasswordError] = useState("")
   const [active, setActive] = useState(true)
   const [error, setError] = useState("")
 
@@ -92,6 +100,10 @@ export function ReportScheduleModal({ isOpen, onClose, report, existing, onSave,
     setTime(existing?.time ?? "08:00")
     setRecipientIds(existing?.recipientIds ?? [])
     setMessage(existing?.message ?? "")
+    setPasswordProtected(existing?.passwordProtected ?? false)
+    setPassword(existing?.password ?? "")
+    setShowPassword(false)
+    setPasswordError("")
     setActive(existing?.active ?? true)
     setError("")
   }, [isOpen, existing])
@@ -114,14 +126,17 @@ export function ReportScheduleModal({ isOpen, onClose, report, existing, onSave,
     time,
     recipientIds,
     message,
+    passwordProtected,
+    password: passwordProtected ? password : "",
     active,
   }
 
   const handleSave = () => {
-    if (recipientIds.length === 0) {
-      setError("Select at least one recipient.")
-      return
-    }
+    const recipientsInvalid = recipientIds.length === 0
+    const passwordInvalid = passwordProtected && password.length < MIN_PASSWORD_LENGTH
+    if (recipientsInvalid) setError("Select at least one recipient.")
+    if (passwordInvalid) setPasswordError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`)
+    if (recipientsInvalid || passwordInvalid) return
     onSave(draft)
     onClose()
   }
@@ -259,6 +274,63 @@ export function ReportScheduleModal({ isOpen, onClose, report, existing, onSave,
               placeholder="Please find the latest report attached."
               className="rounded-md border border-slate-200 px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#33295e]/30"
             />
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-md border border-slate-200 px-3 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <Label htmlFor="schedule-password-protect" className="text-sm font-medium text-slate-900">
+                  Password protect (optional)
+                </Label>
+                <span className="text-xs text-slate-500">Recipients need a password to open the attached report.</span>
+              </div>
+              <Switch
+                id="schedule-password-protect"
+                checked={passwordProtected}
+                onCheckedChange={(checked) => {
+                  setPasswordProtected(checked)
+                  setPasswordError("")
+                }}
+              />
+            </div>
+            {passwordProtected && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="schedule-password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="schedule-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setPasswordError("")
+                    }}
+                    placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+                    aria-invalid={!!passwordError}
+                    aria-describedby="schedule-password-help"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-700"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {passwordError ? (
+                  <p id="schedule-password-help" role="alert" className="text-sm text-red-600">
+                    {passwordError}
+                  </p>
+                ) : (
+                  <p id="schedule-password-help" className="text-xs text-slate-500">
+                    Share this password with recipients separately — it is not included in the email.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2">
