@@ -9,7 +9,6 @@ import {
   Megaphone,
   Wrench,
   AlertCircle,
-  AlertTriangle,
   Ban,
   UserMinus,
   Info,
@@ -790,7 +789,6 @@ export function HomeContent() {
             {ofstedVisible.map((school) => {
               const headline = ofstedHeadline(school)
               const colors = getOfstedColor(headline)
-              const isConcern = headline === "Requires Improvement" || headline === "Inadequate"
 
               if (!school.areas) {
                 return (
@@ -805,8 +803,8 @@ export function HomeContent() {
                       </p>
                       <p className="text-[11px] text-slate-400">Inspected {school.date}</p>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {isConcern && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+  <div className="flex items-center gap-1 shrink-0">
+
                       <span
                         className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${colors.bg} ${colors.text}`}
                       >
@@ -840,8 +838,8 @@ export function HomeContent() {
                         Inspected {school.date} · {school.areas.length} areas
                       </p>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {isConcern && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+  <div className="flex items-center gap-1.5 shrink-0">
+
                       <span className="flex items-center gap-0.5" aria-hidden="true">
                         {school.areas.map((a) => (
                           <span
