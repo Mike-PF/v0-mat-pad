@@ -20,6 +20,7 @@ import {
   X,
   Play,
   ChevronRight,
+  ChevronDown,
   CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
@@ -101,12 +102,29 @@ const schoolsOverview = [
 const OFSTED_JUDGEMENTS = ["Inadequate", "Requires Improvement", "Good", "Outstanding"] as const
 type OfstedJudgement = (typeof OFSTED_JUDGEMENTS)[number]
 
-interface OfstedSchool {
+const OFSTED_AREAS = [
+  "Quality of education",
+  "Behaviour and attitudes",
+  "Personal development",
+  "Leadership and management",
+  "Early years provision",
+] as const
+type OfstedArea = (typeof OFSTED_AREAS)[number]
+
+interface OfstedAreaJudgement {
+  area: OfstedArea
+  judgement: OfstedJudgement
+}
+
+// Older inspections carry a single overall judgement; newer ones are graded per area instead.
+type OfstedSchool = {
   name: string
   abbr: string
-  judgement: OfstedJudgement
   date: string
-}
+} & (
+  | { judgement: OfstedJudgement; areas?: undefined }
+  | { judgement?: undefined; areas: OfstedAreaJudgement[] }
+)
 
 // Build a realistic MAT-sized dataset. Deterministic so it stays stable across renders.
 const SAINT_NAMES = [
@@ -191,9 +209,34 @@ function buildOfstedData(count: number): OfstedSchool[] {
     const judgement = pattern[i % pattern.length]
     const year = 2021 + (i % 4)
     const month = months[i % months.length]
-    schools.push({ name, abbr, judgement, date: `${month} ${year}` })
+    const date = `${month} ${year}`
+    if (year >= 2024) {
+      const areas = OFSTED_AREAS.filter(
+        (area) => area !== "Early years provision" || !type.includes("High"),
+      ).map((area, idx) => ({ area, judgement: varyAreaJudgement(judgement, i + idx) }))
+      schools.push({ name, abbr, date, areas })
+    } else {
+      schools.push({ name, abbr, date, judgement })
+    }
   }
   return schools
+}
+
+// Nudge some areas one grade up or down so area-based results look realistic.
+function varyAreaJudgement(base: OfstedJudgement, seed: number): OfstedJudgement {
+  const index = OFSTED_JUDGEMENTS.indexOf(base)
+  const shift = seed % 5 === 0 ? 1 : seed % 7 === 0 ? -1 : 0
+  const next = Math.min(OFSTED_JUDGEMENTS.length - 1, Math.max(0, index + shift))
+  return OFSTED_JUDGEMENTS[next]
+}
+
+// Headline used for the distribution and filter: the overall judgement, or the weakest area.
+function ofstedHeadline(school: OfstedSchool): OfstedJudgement {
+  if (school.judgement) return school.judgement
+  return school.areas.reduce<OfstedJudgement>(
+    (worst, a) => (OFSTED_JUDGEMENTS.indexOf(a.judgement) < OFSTED_JUDGEMENTS.indexOf(worst) ? a.judgement : worst),
+    "Outstanding",
+  )
 }
 
 // Change this number to scale the trust size (handles 5, 10, 50, 66, ...).
@@ -234,10 +277,10 @@ const ofstedConcernOrder: Record<OfstedJudgement, number> = {
 const ofstedTotal = ofstedData.length
 const ofstedCounts = OFSTED_JUDGEMENTS.map((judgement) => ({
   judgement,
-  count: ofstedData.filter((s) => s.judgement === judgement).length,
+  count: ofstedData.filter((s) => ofstedHeadline(s) === judgement).length,
 })).filter((c) => c.count > 0)
 const ofstedSorted = [...ofstedData].sort((a, b) => {
-  const order = ofstedConcernOrder[a.judgement] - ofstedConcernOrder[b.judgement]
+  const order = ofstedConcernOrder[ofstedHeadline(a)] - ofstedConcernOrder[ofstedHeadline(b)]
   return order !== 0 ? order : a.name.localeCompare(b.name)
 })
 
@@ -246,7 +289,8 @@ export function HomeContent() {
   const [selectedItem, setSelectedItem] = useState<WhatsNewItem | null>(null)
   // Ofsted judgement filter — null means "show all judgements".
   const [ofstedFilter, setOfstedFilter] = useState<OfstedJudgement | null>(null)
-  const ofstedVisible = ofstedFilter ? ofstedSorted.filter((s) => s.judgement === ofstedFilter) : ofstedSorted
+  const ofstedVisible = ofstedFilter ? ofstedSorted.filter((s) => ofstedHeadline(s) === ofstedFilter) : ofstedSorted
+  const [expandedOfsted, setExpandedOfsted] = useState<string | null>(null)
   const { items: notifications } = useNotifications()
 
   const filteredNews = notifications.filter((item) => {
@@ -744,29 +788,91 @@ export function HomeContent() {
           {/* Compact, scrollable school list — concerns surface first */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
             {ofstedVisible.map((school) => {
-              const colors = getOfstedColor(school.judgement)
-              const isConcern =
-                school.judgement === "Requires Improvement" || school.judgement === "Inadequate"
+              const headline = ofstedHeadline(school)
+              const colors = getOfstedColor(headline)
+              const isConcern = headline === "Requires Improvement" || headline === "Inadequate"
+
+              if (!school.areas) {
+                return (
+                  <div
+                    key={school.name}
+                    className="flex items-center gap-2.5 self-start px-2.5 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                  >
+                    <span className={`w-1.5 self-stretch rounded-full shrink-0 ${colors.dot}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-slate-800 truncate" title={school.name}>
+                        {school.name}
+                      </p>
+                      <p className="text-[11px] text-slate-400">Inspected {school.date}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {isConcern && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${colors.bg} ${colors.text}`}
+                      >
+                        {ofstedShortLabel(school.judgement)}
+                      </span>
+                    </div>
+                  </div>
+                )
+              }
+
+              const expanded = expandedOfsted === school.name
+              const panelId = `ofsted-areas-${school.name.replace(/\s+/g, "-").toLowerCase()}`
               return (
                 <div
                   key={school.name}
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                  className="self-start rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
                 >
-                  <span className={`w-1.5 self-stretch rounded-full shrink-0 ${colors.dot}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-slate-800 truncate" title={school.name}>
-                      {school.name}
-                    </p>
-                    <p className="text-[11px] text-slate-400">Inspected {school.date}</p>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {isConcern && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${colors.bg} ${colors.text}`}
-                    >
-                      {ofstedShortLabel(school.judgement)}
-                    </span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedOfsted(expanded ? null : school.name)}
+                    aria-expanded={expanded}
+                    aria-controls={panelId}
+                    className="flex w-full items-center gap-2.5 px-2.5 py-2 text-left"
+                  >
+                    <span className={`w-1.5 self-stretch rounded-full shrink-0 ${colors.dot}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-slate-800 truncate" title={school.name}>
+                        {school.name}
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        Inspected {school.date} · {school.areas.length} areas
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isConcern && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                      <span className="flex items-center gap-0.5" aria-hidden="true">
+                        {school.areas.map((a) => (
+                          <span
+                            key={a.area}
+                            className={`h-3.5 w-1.5 rounded-sm ${getOfstedColor(a.judgement).dot}`}
+                            title={`${a.area}: ${a.judgement}`}
+                          />
+                        ))}
+                      </span>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+                      />
+                    </div>
+                  </button>
+                  {expanded && (
+                    <dl id={panelId} className="flex flex-col gap-1.5 border-t border-slate-100 px-3 py-2.5">
+                      {school.areas.map((a) => {
+                        const areaColors = getOfstedColor(a.judgement)
+                        return (
+                          <div key={a.area} className="flex items-center justify-between gap-2">
+                            <dt className="text-[11px] text-slate-600">{a.area}</dt>
+                            <dd
+                              className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${areaColors.bg} ${areaColors.text}`}
+                            >
+                              {ofstedShortLabel(a.judgement)}
+                            </dd>
+                          </div>
+                        )
+                      })}
+                    </dl>
+                  )}
                 </div>
               )
             })}
