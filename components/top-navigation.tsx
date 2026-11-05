@@ -32,6 +32,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
         { id: "mapping", label: "Data Mapping", href: "/settings/mapping" },
       { id: "document-creation", label: "Document creation", href: "/settings/document-creation" },
       { id: "form-creation", label: "Form Creation", href: "/settings/form-creation" },
+      { id: "attribute-creation", label: "Attribute Creation", href: "/settings/attribute-creation" },
     ]
     }
 
