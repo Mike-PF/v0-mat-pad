@@ -11,6 +11,8 @@ export interface Datablock {
   id: string
   name: string
   section: string
+  /** Sample value shown on hover so mappers know what the datablock contains. */
+  example: string
 }
 
 export function childrenOf(attributes: Attribute[], parentId: string | null) {
@@ -98,23 +100,33 @@ export const DEFAULT_ATTRIBUTES: Attribute[] = [
 ]
 
 export const DATABLOCKS: Datablock[] = [
-  { id: "pupil-numbers", name: "Pupil numbers", section: "School Details" },
-  { id: "pupil-premium", name: "Pupil premium %", section: "School Details" },
-  { id: "send-register", name: "SEND register", section: "School Details" },
-  { id: "attendance-overall", name: "Overall attendance", section: "Attendance" },
-  { id: "persistent-absence", name: "Persistent absence", section: "Attendance" },
-  { id: "suspensions", name: "Suspensions", section: "Behaviour" },
-  { id: "exclusions", name: "Permanent exclusions", section: "Behaviour" },
-  { id: "behaviour-incidents", name: "Behaviour incidents", section: "Behaviour" },
-  { id: "ks2-rwm", name: "KS2 reading, writing & maths", section: "Outcomes" },
-  { id: "ks4-progress8", name: "KS4 Progress 8", section: "Outcomes" },
-  { id: "phonics-check", name: "Phonics screening check", section: "Outcomes" },
-  { id: "eyfs-gld", name: "EYFS good level of development", section: "Outcomes" },
-  { id: "staff-turnover", name: "Staff turnover", section: "Staffing" },
-  { id: "cpd-hours", name: "CPD hours", section: "Staffing" },
-  { id: "safeguarding-referrals", name: "Safeguarding referrals", section: "Safeguarding" },
-  { id: "budget-variance", name: "Budget variance", section: "Finance" },
-  { id: "reserves", name: "Reserves", section: "Finance" },
+  { id: "pupil-numbers", name: "Pupil numbers", section: "School Details", example: "412 pupils on roll" },
+  { id: "pupil-premium", name: "Pupil premium %", section: "School Details", example: "27.4% (113 pupils)" },
+  { id: "send-register", name: "SEND register", section: "School Details", example: "58 pupils (14.1%) — 9 with EHCP" },
+  { id: "attendance-overall", name: "Overall attendance", section: "Attendance", example: "94.6% year to date" },
+  { id: "persistent-absence", name: "Persistent absence", section: "Attendance", example: "16.2% of pupils below 90%" },
+  { id: "suspensions", name: "Suspensions", section: "Behaviour", example: "7 suspensions this term" },
+  { id: "exclusions", name: "Permanent exclusions", section: "Behaviour", example: "0 this academic year" },
+  { id: "behaviour-incidents", name: "Behaviour incidents", section: "Behaviour", example: "34 logged, down 12% on last term" },
+  { id: "ks2-rwm", name: "KS2 reading, writing & maths", section: "Outcomes", example: "64% at expected standard" },
+  { id: "ks4-progress8", name: "KS4 Progress 8", section: "Outcomes", example: "+0.18 (above average)" },
+  { id: "phonics-check", name: "Phonics screening check", section: "Outcomes", example: "82% met the standard" },
+  { id: "eyfs-gld", name: "EYFS good level of development", section: "Outcomes", example: "71% achieved GLD" },
+  { id: "staff-turnover", name: "Staff turnover", section: "Staffing", example: "11.5% over the last 12 months" },
+  { id: "cpd-hours", name: "CPD hours", section: "Staffing", example: "18.5 hours per teacher" },
+  { id: "safeguarding-referrals", name: "Safeguarding referrals", section: "Safeguarding", example: "12 referrals, 3 to children's services" },
+  { id: "budget-variance", name: "Budget variance", section: "Finance", example: "-£24,300 (1.2% under budget)" },
+  { id: "reserves", name: "Reserves", section: "Finance", example: "£486,000 (8.4% of income)" },
+  { id: "free-school-meals", name: "Free school meals %", section: "School Details", example: "24.8% eligible" },
+  { id: "eal", name: "English as an additional language", section: "School Details", example: "19.3% of pupils" },
+  { id: "authorised-absence", name: "Authorised absence", section: "Attendance", example: "3.9% of sessions" },
+  { id: "unauthorised-absence", name: "Unauthorised absence", section: "Attendance", example: "1.5% of sessions" },
+  { id: "ks1-reading", name: "KS1 reading", section: "Outcomes", example: "69% at expected standard" },
+  { id: "ks4-attainment8", name: "KS4 Attainment 8", section: "Outcomes", example: "47.2 average score" },
+  { id: "staff-absence", name: "Staff absence", section: "Staffing", example: "4.1 days per FTE" },
+  { id: "staff-fte", name: "Staff FTE", section: "Staffing", example: "52.6 FTE (31.0 teaching)" },
+  { id: "dsl-training", name: "DSL training compliance", section: "Safeguarding", example: "100% up to date" },
+  { id: "staffing-cost", name: "Staffing cost % of income", section: "Finance", example: "76.3%" },
 ]
 
 /** Each datablock maps to a single path through the tree, top level first. */

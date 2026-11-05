@@ -1,7 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ChevronRight, Search, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -24,28 +25,46 @@ type Filter = "all" | "mapped" | "unmapped"
 
 const samePath = (a: string[], b: string[]) => a.length === b.length && a.every((id, i) => id === b[i])
 
+const PAGE_SIZES = [10, 25, 50]
+
+// Keep datablocks grouped by section (in first-seen order) so pages read cleanly.
+const SECTION_ORDER = [...new Set(DATABLOCKS.map((b) => b.section))]
+const SORTED_DATABLOCKS = [...DATABLOCKS].sort(
+  (a, b) => SECTION_ORDER.indexOf(a.section) - SECTION_ORDER.indexOf(b.section),
+)
+
 export function DatablockMappingTab({ attributes, mappings, onSave }: DatablockMappingTabProps) {
   const [draft, setDraft] = useState<Record<string, string[]>>(mappings)
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState<Filter>("all")
   const [savedNote, setSavedNote] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const pathFor = (blockId: string) => validPath(attributes, draft[blockId])
   const isDirty = DATABLOCKS.some((b) => !samePath(pathFor(b.id), validPath(attributes, mappings[b.id])))
   const mappedCount = DATABLOCKS.filter((b) => pathFor(b.id).length > 0).length
 
-  const visibleSections = useMemo(() => {
+  const filteredBlocks = useMemo(() => {
     const q = search.trim().toLowerCase()
-    const groups = new Map<string, Datablock[]>()
-    for (const block of DATABLOCKS) {
+    return SORTED_DATABLOCKS.filter((block) => {
       const mapped = validPath(attributes, draft[block.id]).length > 0
-      if (filter === "mapped" && !mapped) continue
-      if (filter === "unmapped" && mapped) continue
-      if (q && !block.name.toLowerCase().includes(q) && !block.section.toLowerCase().includes(q)) continue
-      groups.set(block.section, [...(groups.get(block.section) ?? []), block])
-    }
-    return [...groups.entries()]
+      if (filter === "mapped" && !mapped) return false
+      if (filter === "unmapped" && mapped) return false
+      return !q || block.name.toLowerCase().includes(q) || block.section.toLowerCase().includes(q)
+    })
   }, [search, filter, draft, attributes])
+
+  const totalPages = Math.max(1, Math.ceil(filteredBlocks.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * pageSize
+  const pageBlocks = filteredBlocks.slice(pageStart, pageStart + pageSize)
+
+  const visibleSections = useMemo(() => {
+    const groups = new Map<string, Datablock[]>()
+    for (const block of pageBlocks) groups.set(block.section, [...(groups.get(block.section) ?? []), block])
+    return [...groups.entries()]
+  }, [pageBlocks])
 
   const selectAtLevel = (blockId: string, level: number, attributeId: string) => {
     setSavedNote(false)
@@ -76,6 +95,7 @@ export function DatablockMappingTab({ attributes, mappings, onSave }: DatablockM
   ]
 
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -83,7 +103,10 @@ export function DatablockMappingTab({ attributes, mappings, onSave }: DatablockM
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
               placeholder="Search datablocks"
               aria-label="Search datablocks"
               className="pl-9"
@@ -95,7 +118,10 @@ export function DatablockMappingTab({ attributes, mappings, onSave }: DatablockM
                 key={f.id}
                 type="button"
                 aria-pressed={filter === f.id}
-                onClick={() => setFilter(f.id)}
+                onClick={() => {
+                  setFilter(f.id)
+                  setPage(1)
+                }}
                 className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                   filter === f.id ? "bg-card text-[#33295e] shadow-sm" : "text-slate-500 hover:text-slate-700"
                 }`}
@@ -164,7 +190,74 @@ export function DatablockMappingTab({ attributes, mappings, onSave }: DatablockM
           </tbody>
         </table>
       </div>
+
+      {filteredBlocks.length > 0 && (
+        <nav aria-label="Datablock pagination" className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-600">
+          <div className="flex items-center gap-2">
+            <span id="rows-per-page-label">Rows per page</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => {
+                setPageSize(Number(v))
+                setPage(1)
+              }}
+            >
+              <SelectTrigger aria-labelledby="rows-per-page-label" className="h-9 w-20 bg-card">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZES.map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span aria-live="polite">
+              {pageStart + 1}–{Math.min(pageStart + pageSize, filteredBlocks.length)} of {filteredBlocks.length}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                disabled={currentPage === 1}
+                onClick={() => setPage(currentPage - 1)}
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                <Button
+                  key={n}
+                  variant={n === currentPage ? "default" : "ghost"}
+                  size="icon"
+                  className={`h-9 w-9 ${n === currentPage ? "bg-[#33295e] hover:bg-[#33295e]/90 text-white" : ""}`}
+                  onClick={() => setPage(n)}
+                  aria-label={`Page ${n}`}
+                  aria-current={n === currentPage ? "page" : undefined}
+                >
+                  {n}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                disabled={currentPage === totalPages}
+                onClick={() => setPage(currentPage + 1)}
+                aria-label="Next page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </nav>
+      )}
     </div>
+    </TooltipProvider>
   )
 }
 
@@ -197,7 +290,20 @@ function SectionRows({
       {blocks.map((block) => (
         <tr key={block.id} className="border-t border-slate-200 align-middle">
           <th scope="row" className="px-4 py-3 text-left font-medium text-slate-900">
-            {block.name}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="cursor-help text-left underline decoration-slate-300 decoration-dotted underline-offset-4 hover:decoration-[#33295e]"
+                >
+                  {block.name}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p className="text-xs opacity-70">Example</p>
+                <p className="font-medium">{block.example}</p>
+              </TooltipContent>
+            </Tooltip>
           </th>
           <td className="px-4 py-3">
             <CascadingSelectors
