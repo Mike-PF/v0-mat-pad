@@ -1,9 +1,10 @@
-export const MAX_ATTRIBUTES_PER_DATABLOCK = 5
+export const MAX_ATTRIBUTE_DEPTH = 5
 
 export interface Attribute {
   id: string
   name: string
   description: string
+  parentId: string | null
 }
 
 export interface Datablock {
@@ -12,14 +13,88 @@ export interface Datablock {
   section: string
 }
 
+export function childrenOf(attributes: Attribute[], parentId: string | null) {
+  return attributes.filter((a) => a.parentId === parentId)
+}
+
+/** 1-based depth of an attribute in the tree (top level = 1). */
+export function depthOf(attributes: Attribute[], id: string): number {
+  const byId = new Map(attributes.map((a) => [a.id, a]))
+  let depth = 0
+  let current = byId.get(id)
+  while (current) {
+    depth++
+    current = current.parentId ? byId.get(current.parentId) : undefined
+  }
+  return depth
+}
+
+/** The attribute itself plus every attribute beneath it. */
+export function subtreeIds(attributes: Attribute[], id: string): Set<string> {
+  const ids = new Set([id])
+  let added = true
+  while (added) {
+    added = false
+    for (const a of attributes) {
+      if (a.parentId && ids.has(a.parentId) && !ids.has(a.id)) {
+        ids.add(a.id)
+        added = true
+      }
+    }
+  }
+  return ids
+}
+
+/** Keeps the leading part of a path that is still a valid parent → child chain. */
+export function validPath(attributes: Attribute[], path: string[] = []): string[] {
+  const byId = new Map(attributes.map((a) => [a.id, a]))
+  const result: string[] = []
+  let parentId: string | null = null
+  for (const id of path.slice(0, MAX_ATTRIBUTE_DEPTH)) {
+    const attr = byId.get(id)
+    if (!attr || attr.parentId !== parentId) break
+    result.push(id)
+    parentId = id
+  }
+  return result
+}
+
+const node = (id: string, name: string, parentId: string | null = null, description = ""): Attribute => ({
+  id,
+  name,
+  description,
+  parentId,
+})
+
 // Mock data — replace with real attribute and datablock sources when available.
 export const DEFAULT_ATTRIBUTES: Attribute[] = [
-  { id: "quality-of-education", name: "Quality of education", description: "Curriculum intent, implementation and impact." },
-  { id: "behaviour-and-attitudes", name: "Behaviour and attitudes", description: "Attendance, conduct and attitudes to learning." },
-  { id: "personal-development", name: "Personal development", description: "Wider development, character and wellbeing." },
-  { id: "leadership-and-management", name: "Leadership and management", description: "Vision, governance, staff development and safeguarding." },
-  { id: "early-years-provision", name: "Early years provision", description: "Provision for children in the early years foundation stage." },
-  { id: "finance", name: "Finance", description: "Budget, spend and financial sustainability." },
+  node("qoe", "Quality of education", null, "Curriculum intent, implementation and impact."),
+  node("curriculum", "Curriculum", "qoe"),
+  node("intent", "Intent", "curriculum"),
+  node("reading", "Reading", "intent"),
+  node("early-reading", "Early reading & phonics", "reading"),
+  node("implementation", "Implementation", "curriculum"),
+  node("impact", "Impact", "curriculum"),
+  node("outcomes", "Outcomes", "impact"),
+  node("ks2-outcomes", "KS2 attainment", "outcomes"),
+  node("ks4-outcomes", "KS4 attainment", "outcomes"),
+  node("ba", "Behaviour and attitudes", null, "Attendance, conduct and attitudes to learning."),
+  node("attendance", "Attendance", "ba"),
+  node("persistent-absence-area", "Persistent absence", "attendance"),
+  node("behaviour", "Behaviour", "ba"),
+  node("suspensions-area", "Suspensions & exclusions", "behaviour"),
+  node("pd", "Personal development", null, "Wider development, character and wellbeing."),
+  node("wellbeing", "Wellbeing", "pd"),
+  node("careers", "Careers", "pd"),
+  node("lm", "Leadership and management", null, "Vision, governance, staff development and safeguarding."),
+  node("governance", "Governance", "lm"),
+  node("staff-development", "Staff development", "lm"),
+  node("safeguarding", "Safeguarding", "lm"),
+  node("finance", "Finance", "lm"),
+  node("budget", "Budget", "finance"),
+  node("reserves-area", "Reserves", "budget"),
+  node("ey", "Early years provision", null, "Provision for children in the early years foundation stage."),
+  node("eyfs-outcomes", "EYFS outcomes", "ey"),
 ]
 
 export const DATABLOCKS: Datablock[] = [
@@ -42,12 +117,14 @@ export const DATABLOCKS: Datablock[] = [
   { id: "reserves", name: "Reserves", section: "Finance" },
 ]
 
+/** Each datablock maps to a single path through the tree, top level first. */
 export function buildDefaultMappings(): Record<string, string[]> {
   return {
-    "attendance-overall": ["behaviour-and-attitudes"],
-    "persistent-absence": ["behaviour-and-attitudes", "personal-development"],
-    "ks2-rwm": ["quality-of-education"],
-    "eyfs-gld": ["early-years-provision", "quality-of-education"],
-    "budget-variance": ["finance", "leadership-and-management"],
+    "ks2-rwm": ["qoe", "curriculum", "impact", "outcomes", "ks2-outcomes"],
+    "phonics-check": ["qoe", "curriculum", "intent", "reading", "early-reading"],
+    "attendance-overall": ["ba", "attendance"],
+    "persistent-absence": ["ba", "attendance", "persistent-absence-area"],
+    "eyfs-gld": ["ey", "eyfs-outcomes"],
+    reserves: ["lm", "finance", "budget", "reserves-area"],
   }
 }
