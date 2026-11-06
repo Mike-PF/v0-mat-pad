@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette, SlidersHorizontal } from "lucide-react"
+import { Upload, Settings, ClipboardList, LogOut, ArrowLeftRight, Check, Cable, MessageSquare, LayoutDashboard, FileBarChart2, House, Palette, SlidersHorizontal, Headset } from "lucide-react"
+import { undockAndOpenSupportChat, useSupportChatDocked } from "@/lib/support-chat-dock"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { isPlatformAdmin } from "@/lib/current-org"
@@ -43,6 +44,7 @@ export function Sidebar({}: SidebarProps) {
   const [activeSchool, setActiveSchool] = useState(schools[0])
   const [mounted, setMounted] = useState(false)
   const [readOnlyForms, setReadOnlyForms] = useState(false)
+  const supportDocked = useSupportChatDocked()
 
   useEffect(() => {
     setMounted(true)
@@ -103,6 +105,26 @@ export function Sidebar({}: SidebarProps) {
 
       {/* Bottom section */}
       <div className="p-2 pb-4 space-y-1 border-t border-white/10">
+        {/* Support chat, shown here once the floating launcher has been closed */}
+        {supportDocked && (
+          <button
+            type="button"
+            onClick={undockAndOpenSupportChat}
+            className="relative w-full flex items-center justify-center rounded-lg h-11 transition-colors group"
+            title="Chat with support"
+            aria-label="Chat with support"
+          >
+            <IconCircle>
+              <Headset className="w-5 h-5" />
+            </IconCircle>
+            <span
+              className="absolute right-2 top-2 w-2.5 h-2.5 rounded-full border-2"
+              style={{ backgroundColor: ACCENT, borderColor: "#33295e" }}
+              aria-hidden="true"
+            />
+          </button>
+        )}
+
         {/* Logged in user */}
 
         <a

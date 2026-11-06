@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react"
-import { Headset, Minus, SendHorizontal } from "lucide-react"
+import { Headset, Minus, SendHorizontal, X } from "lucide-react"
+import { dockSupportChat, onSupportChatOpenRequest, useSupportChatDocked } from "@/lib/support-chat-dock"
 
 interface SupportMessage {
   id: number
@@ -38,9 +39,25 @@ export function SupportChatWidget() {
   const listRef = useRef<HTMLOListElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
+  const docked = useSupportChatDocked()
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight })
   }, [messages, agentTyping, open])
+
+  useEffect(
+    () =>
+      onSupportChatOpenRequest(() => {
+        setOpen(true)
+        setUnread(0)
+      }),
+    [],
+  )
+
+  const dock = () => {
+    setOpen(false)
+    dockSupportChat()
+  }
 
   const toggle = () => {
     setOpen((o) => !o)
@@ -74,6 +91,8 @@ export function SupportChatWidget() {
     e.preventDefault()
     send()
   }
+
+  if (docked) return null
 
   return (
     <div className="fixed bottom-6 left-[84px] z-40 flex flex-col items-start gap-3">
@@ -163,22 +182,33 @@ export function SupportChatWidget() {
         </section>
       )}
 
-      <button
-        type="button"
-        onClick={toggle}
-        aria-expanded={open}
-        aria-controls="support-chat-panel"
-        className="relative flex items-center gap-2 rounded-full bg-[#fd6d6d] py-2.5 pl-3.5 pr-4 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#f85a5a] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#33295e] focus-visible:ring-offset-2"
-      >
-        <Headset className="h-5 w-5" aria-hidden="true" />
-        {open ? "Close support" : "Chat with support"}
-        {unread > 0 && !open && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[#33295e] px-1 text-[11px] font-semibold text-white">
-            {unread}
-            <span className="sr-only"> unread {unread === 1 ? "message" : "messages"}</span>
-          </span>
-        )}
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-controls="support-chat-panel"
+          className="relative flex items-center gap-2 rounded-full bg-[#fd6d6d] py-2.5 pl-3.5 pr-4 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#f85a5a] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#33295e] focus-visible:ring-offset-2"
+        >
+          <Headset className="h-5 w-5" aria-hidden="true" />
+          {open ? "Close support" : "Chat with support"}
+          {unread > 0 && !open && (
+            <span className="absolute -left-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[#33295e] px-1 text-[11px] font-semibold text-white">
+              {unread}
+              <span className="sr-only"> unread {unread === 1 ? "message" : "messages"}</span>
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={dock}
+          aria-label="Hide support chat in the side menu"
+          title="Move to side menu"
+          className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-md transition-colors hover:bg-slate-50 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#33295e]"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   )
 }
