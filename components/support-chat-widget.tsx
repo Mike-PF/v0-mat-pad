@@ -113,17 +113,29 @@ export function SupportChatWidget() {
               </span>
               <div>
                 <h2 className="text-sm font-semibold text-white">Fuze Support</h2>
-                <p className="text-xs text-white/75">Online · usually replies in a few minutes</p>
+                <p className="text-xs text-white/75">Online · replies in minutes</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={toggle}
-              aria-label="Minimise support chat"
-              className="rounded-full p-1.5 text-white/85 transition-colors hover:bg-white/15 hover:text-white"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={toggle}
+                aria-label="Minimise support chat"
+                title="Minimise"
+                className="rounded-full p-1.5 text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={dock}
+                aria-label="Close support chat and move it to the side menu"
+                title="Close to side menu"
+                className="rounded-full p-1.5 text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </header>
 
           <ol ref={listRef} className="flex flex-1 flex-col gap-3 overflow-y-auto bg-slate-50 px-4 py-4" aria-live="polite">
