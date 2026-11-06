@@ -4,6 +4,7 @@ import { Poppins, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { ToastProvider } from "@/components/ui/toast"
 import { PrintQueueProvider } from "@/lib/print-queue"
+import { SupportChatWidget } from "@/components/support-chat-widget"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -34,7 +35,10 @@ export default function RootLayout({
     <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <body className="font-sans" suppressHydrationWarning>
         <ToastProvider>
-          <PrintQueueProvider>{children}</PrintQueueProvider>
+          <PrintQueueProvider>
+            {children}
+            <SupportChatWidget />
+          </PrintQueueProvider>
         </ToastProvider>
       </body>
     </html>
