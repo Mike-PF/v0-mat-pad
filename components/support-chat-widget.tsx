@@ -168,12 +168,12 @@ export function SupportChatWidget() {
         onClick={toggle}
         aria-expanded={open}
         aria-controls="support-chat-panel"
-        className="relative flex items-center gap-2 rounded-full border border-slate-200 bg-white py-2.5 pl-3.5 pr-4 text-sm font-medium text-[#33295e] shadow-lg transition-shadow hover:shadow-xl"
+        className="relative flex items-center gap-2 rounded-full bg-[#fd6d6d] py-2.5 pl-3.5 pr-4 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#f85a5a] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#33295e] focus-visible:ring-offset-2"
       >
         <Headset className="h-5 w-5" aria-hidden="true" />
         {open ? "Close support" : "Chat with support"}
         {unread > 0 && !open && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#fd6d6d] px-1 text-[11px] font-semibold text-white">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[#33295e] px-1 text-[11px] font-semibold text-white">
             {unread}
             <span className="sr-only"> unread {unread === 1 ? "message" : "messages"}</span>
           </span>
