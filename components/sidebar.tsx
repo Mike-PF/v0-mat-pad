@@ -114,14 +114,9 @@ export function Sidebar({}: SidebarProps) {
             title="Chat with support"
             aria-label="Chat with support"
           >
-            <IconCircle>
+            <IconCircle active>
               <Headset className="w-5 h-5" />
             </IconCircle>
-            <span
-              className="absolute right-2 top-2 w-2.5 h-2.5 rounded-full border-2"
-              style={{ backgroundColor: ACCENT, borderColor: "#33295e" }}
-              aria-hidden="true"
-            />
           </button>
         )}
 
