@@ -293,6 +293,39 @@ const systems = [
   },
 ]
 
+const comingSoonSystems = [
+  {
+    id: "sims",
+    name: "SIMS",
+    initials: "SI",
+    description: "Bring pupil, attendance and assessment records from SIMS into Fuze with a secure, scheduled read-only sync.",
+  },
+  {
+    id: "isams",
+    name: "iSAMS",
+    initials: "iS",
+    description: "Connect iSAMS to pull pupil records, timetables and academic reporting into your trust-wide dashboards.",
+  },
+  {
+    id: "scholarpack",
+    name: "ScholarPack",
+    initials: "SP",
+    description: "Sync primary school pupil, attendance and assessment data from ScholarPack automatically each night.",
+  },
+  {
+    id: "classcharts",
+    name: "Class Charts",
+    initials: "CC",
+    description: "Surface behaviour points, detentions and seating-plan insights from Class Charts alongside your MIS data.",
+  },
+  {
+    id: "entra",
+    name: "Microsoft Entra ID",
+    initials: "ME",
+    description: "Provision staff accounts and enable single sign-on to Fuze using your trust's Microsoft Entra ID directory.",
+  },
+]
+
 // Systems allowed per subscription tier
 const subscriptionTierAccess = {
   essentials: ["arbor", "bromcom"],
@@ -736,6 +769,45 @@ export default function ConnectionsPage() {
               )
             })}
           </div>
+
+          <section aria-labelledby="coming-soon-heading" className="mt-6">
+            <div className="flex items-center gap-2 mb-2 px-1">
+              <h2 id="coming-soon-heading" className="text-sm font-semibold text-slate-700">
+                Coming soon
+              </h2>
+              <span className="text-xs text-slate-500">{comingSoonSystems.length} connectors in development</span>
+            </div>
+            <ul className="flex flex-col gap-2">
+              {comingSoonSystems.map((system) => (
+                <li
+                  key={system.id}
+                  aria-disabled="true"
+                  className="flex items-start gap-4 p-4 bg-white border border-dashed border-slate-300 rounded-lg cursor-default"
+                >
+                  <div className="w-24 flex-shrink-0 flex items-center justify-center">
+                    <span
+                      className="flex items-center justify-center w-12 h-12 rounded-lg bg-slate-100 text-sm font-semibold text-slate-500"
+                      aria-hidden="true"
+                    >
+                      {system.initials}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-slate-700">{system.name}</h3>
+                      <span
+                        className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: "#fdeceb", color: "#c2413b" }}
+                      >
+                        Coming soon
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-500 leading-relaxed">{system.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       </div>
 
