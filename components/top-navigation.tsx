@@ -63,6 +63,12 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
       ]
     }
 
+    if (pathname.startsWith("/upload")) {
+      return [
+        { id: "upload", label: "Upload", href: "/upload" },
+      ]
+    }
+
     if (pathname.startsWith("/profile")) {
       return [
         { id: "profile", label: "Profile", href: "/profile" },
@@ -118,7 +124,7 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
       {/* Right side content */}
       <div className="flex items-center gap-6">
         {/* Progress Bar - only show on forms pages */}
-        {mounted && showProgress && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && (
+        {mounted && showProgress && !isHomePage && !isSettingsPage && !isPixelFusionPage && !isReportsPage && !isDashboardsPage && !pathname.startsWith("/profile") && !pathname.startsWith("/upload") && (
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-600">Progress:</div>
             <div className="flex items-center gap-2">
