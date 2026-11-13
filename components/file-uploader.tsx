@@ -1,48 +1,19 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import {
-  CalendarCheck,
-  Check,
-  CheckCircle2,
-  ClipboardList,
-  FileSearch,
-  FileText,
-  GraduationCap,
-  Landmark,
-  MoreHorizontal,
-  ShieldAlert,
-  UploadCloud,
-  X,
-  type LucideIcon,
-} from "lucide-react"
+import { Check, CheckCircle2, FileText, UploadCloud, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { FileTypePicker } from "@/components/file-type-picker"
+import { categoryFor, FILE_TYPES, type FileTypeOption } from "@/lib/upload-file-types"
 
 type UploadStatus = "idle" | "uploading" | "done"
-
-type FileTypeOption = {
-  value: string
-  label: string
-  description: string
-  icon: LucideIcon
-}
-
-const FILE_TYPES: FileTypeOption[] = [
-  { value: "idsr", label: "IDSR", description: "Inspection Data Summary Report", icon: FileSearch },
-  { value: "national", label: "National data", description: "DfE comparison datasets", icon: Landmark },
-  { value: "attendance", label: "Attendance", description: "Attendance and absence", icon: CalendarCheck },
-  { value: "census", label: "School census", description: "Termly census returns", icon: ClipboardList },
-  { value: "exclusions", label: "Suspensions", description: "Suspensions and exclusions", icon: ShieldAlert },
-  { value: "assessment", label: "Assessment", description: "KS2 / KS4 results", icon: GraduationCap },
-  { value: "other", label: "Other", description: "Anything else", icon: MoreHorizontal },
-]
 
 type RecentUpload = { id: string; name: string; type: string; size: number; when: string }
 
 const SEED_RECENT: RecentUpload[] = [
   { id: "r1", name: "IDSR_AllSaints_2026.pdf", type: "idsr", size: 2_480_000, when: "Yesterday, 16:42" },
-  { id: "r2", name: "attendance_autumn_wk10.csv", type: "attendance", size: 412_000, when: "10 Nov, 09:15" },
-  { id: "r3", name: "KS4_results_provisional.xlsx", type: "assessment", size: 1_150_000, when: "4 Nov, 14:03" },
+  { id: "r2", name: "KS4_national_comparison_2026.xlsx", type: "national", size: 1_150_000, when: "10 Nov, 09:15" },
+  { id: "r3", name: "IDSR_NotreDame_2026.pdf", type: "idsr", size: 2_020_000, when: "4 Nov, 14:03" },
 ]
 
 const ACCEPTED = ".csv,.xlsx,.xls,.docx,.doc,.pdf"
@@ -54,8 +25,8 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function typeFor(value: string) {
-  return FILE_TYPES.find((t) => t.value === value)
+function typeFor(types: FileTypeOption[], value: string) {
+  return types.find((t) => t.value === value)
 }
 
 function StepHeading({ step, title, done }: { step: number; title: string; done: boolean }) {
@@ -74,7 +45,7 @@ function StepHeading({ step, title, done }: { step: number; title: string; done:
   )
 }
 
-export function FileUploader() {
+export function FileUploader({ types = FILE_TYPES }: { types?: FileTypeOption[] }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const progressRef = useRef(0)
@@ -86,7 +57,7 @@ export function FileUploader() {
   const [progress, setProgress] = useState(0)
   const [recent, setRecent] = useState<RecentUpload[]>(SEED_RECENT)
 
-  const selectedType = typeFor(fileType)
+  const selectedType = typeFor(types, fileType)
   const isUploading = status === "uploading"
 
   useEffect(
@@ -154,50 +125,15 @@ export function FileUploader() {
           </p>
         </div>
 
-        <fieldset className="flex flex-col gap-4" disabled={isUploading}>
+        <fieldset className="flex min-w-0 flex-col gap-4" disabled={isUploading}>
           <legend className="sr-only">File type</legend>
           <StepHeading step={1} title="Choose a file type" done={!!fileType} />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-            {FILE_TYPES.map((t) => {
-              const Icon = t.icon
-              const active = t.value === fileType
-              return (
-                <label
-                  key={t.value}
-                  className={`group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#33295e] has-[:focus-visible]:ring-offset-2 ${
-                    active
-                      ? "border-[#33295e] bg-[#33295e] text-white shadow-md"
-                      : "border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="upload-file-type"
-                    value={t.value}
-                    checked={active}
-                    onChange={() => setFileType(t.value)}
-                    className="sr-only"
-                  />
-                  <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-md ${
-                      active ? "bg-white/15" : "bg-slate-100 group-hover:bg-white"
-                    }`}
-                  >
-                    <Icon className={`h-5 w-5 ${active ? "text-white" : "text-[#33295e]"}`} aria-hidden="true" />
-                  </span>
-                  <span className="flex flex-col gap-0.5">
-                    <span className="text-sm font-semibold">{t.label}</span>
-                    <span className={`text-xs leading-snug ${active ? "text-white/75" : "text-slate-500"}`}>
-                      {t.description}
-                    </span>
-                  </span>
-                  {active && (
-                    <Check className="absolute right-3 top-3 h-4 w-4 text-white" aria-hidden="true" />
-                  )}
-                </label>
-              )
-            })}
-          </div>
+          <FileTypePicker
+            types={types}
+            value={fileType}
+            onChange={setFileType}
+            recentValues={[...new Set(recent.map((r) => r.type))]}
+          />
         </fieldset>
 
         <div className="flex flex-col gap-4">
@@ -364,8 +300,8 @@ export function FileUploader() {
         </h2>
         <ul className="flex flex-col">
           {recent.map((r) => {
-            const t = typeFor(r.type)
-            const Icon = t?.icon ?? FileText
+            const t = typeFor(types, r.type)
+            const Icon = (t && categoryFor(t.category)?.icon) || FileText
             return (
               <li key={r.id} className="flex items-center gap-3 border-b border-slate-100 py-3 last:border-b-0">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100">
