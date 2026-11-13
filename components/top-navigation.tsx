@@ -63,6 +63,12 @@ export function TopNavigation({ showProgress = true }: { showProgress?: boolean 
       ]
     }
 
+    if (pathname.startsWith("/upload")) {
+      return [
+        { id: "upload", label: "Upload", href: "/upload" },
+      ]
+    }
+
     if (pathname.startsWith("/profile")) {
       return [
         { id: "profile", label: "Profile", href: "/profile" },
