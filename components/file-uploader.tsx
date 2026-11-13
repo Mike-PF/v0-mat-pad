@@ -3,8 +3,20 @@
 import { useEffect, useRef, useState } from "react"
 import { CheckCircle2, FileText, UploadCloud, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type UploadStatus = "idle" | "uploading" | "done"
+
+const FILE_TYPES = [
+  { value: "idsr", label: "IDSR", description: "Inspection Data Summary Report" },
+  { value: "national", label: "National data", description: "DfE / national comparison datasets" },
+  { value: "attendance", label: "Attendance", description: "Pupil attendance and absence records" },
+  { value: "census", label: "School census", description: "Termly census returns" },
+  { value: "exclusions", label: "Suspensions & exclusions", description: "Behaviour sanctions data" },
+  { value: "assessment", label: "Assessment", description: "KS2 / KS4 results and progress data" },
+  { value: "other", label: "Other", description: "Anything not listed above" },
+]
 
 const ACCEPTED = ".csv,.xlsx,.xls,.docx,.doc,.pdf"
 const MAX_SIZE_MB = 25
@@ -19,6 +31,8 @@ export function FileUploader() {
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [file, setFile] = useState<File | null>(null)
+  const [fileType, setFileType] = useState("")
+  const selectedType = FILE_TYPES.find((t) => t.value === fileType)
   const [error, setError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [status, setStatus] = useState<UploadStatus>("idle")
@@ -50,7 +64,7 @@ export function FileUploader() {
   }
 
   const startUpload = () => {
-    if (!file) return
+    if (!file || !fileType) return
     setStatus("uploading")
     setProgress(0)
     timerRef.current = setInterval(() => {
@@ -67,6 +81,29 @@ export function FileUploader() {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="upload-file-type" className="text-sm font-medium text-slate-900">
+          File type
+        </Label>
+        <Select value={fileType} onValueChange={setFileType} disabled={status === "uploading"}>
+          <SelectTrigger id="upload-file-type" className="w-full justify-between text-left sm:w-80">
+            <SelectValue placeholder="Select file type">
+              {selectedType?.label}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {FILE_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                <span className="flex flex-col">
+                  <span>{t.label}</span>
+                  <span className="text-xs text-slate-500">{t.description}</span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <input
         ref={inputRef}
         id="file-upload-input"
@@ -111,7 +148,14 @@ export function FileUploader() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-slate-900">{file.name}</p>
-              <p className="text-xs text-slate-500">{formatSize(file.size)}</p>
+              <p className="flex items-center gap-2 text-xs text-slate-500">
+                {formatSize(file.size)}
+                {selectedType && (
+                  <span className="rounded-full bg-[#33295e]/10 px-2 py-0.5 font-medium text-[#33295e]">
+                    {selectedType.label}
+                  </span>
+                )}
+              </p>
             </div>
             {status !== "uploading" && (
               <button
@@ -153,7 +197,10 @@ export function FileUploader() {
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex items-center justify-end gap-2">
+            {status === "idle" && !fileType && (
+              <p className="mr-auto text-xs text-amber-600">Select a file type to enable upload.</p>
+            )}
             {status === "done" ? (
               <Button onClick={clearFile} className="bg-[#33295e] text-white hover:bg-[#33295e]/90">
                 Upload another file
@@ -165,7 +212,7 @@ export function FileUploader() {
                 </Button>
                 <Button
                   onClick={startUpload}
-                  disabled={status === "uploading"}
+                  disabled={status === "uploading" || !fileType}
                   className="bg-[#33295e] text-white hover:bg-[#33295e]/90"
                 >
                   <UploadCloud className="h-4 w-4" aria-hidden="true" />
